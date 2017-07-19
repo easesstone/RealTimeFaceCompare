@@ -24,7 +24,7 @@ public class HBaseHelper {
     // 需要把配置放在外面，
     public static void initHBaseConfiguration(){
         innerHBaseConf = HBaseConfiguration.create();
-        String dataDir = System.getProperty("user.dir") + File.separator + "conf";
+        //String dataDir = System.getProperty("user.dir") + File.separator + "conf";
         Properties properties_hbase_confi = new Properties();
         try {
             properties_hbase_confi.load(new FileInputStream(System.getProperty("user.dir")
