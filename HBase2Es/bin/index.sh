@@ -1,4 +1,3 @@
-```
 curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
 {                   
     "settings": {
@@ -81,4 +80,3 @@ curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
     }
 }
 '
-```
