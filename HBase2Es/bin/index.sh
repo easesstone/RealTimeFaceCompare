@@ -1,5 +1,6 @@
+curl -XDELETE 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json'
 curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
-{                   
+{
     "settings": {
         "analysis": {
             "filter": {
@@ -21,50 +22,50 @@ curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
                 "ik": {
                     "tokenizer" : "ik_max_word"
                 }
-            }	
+            }
         }
     },
     "mappings": {
         "person": {
             "properties": {
                 "name" : {
-                    "type" : "string",
+                    "type" : "text",
                     "analyzer" : "ik_max_word"
                 },
                 "idcard" : {
-                    "type" : "string",
+                    "type" : "text",
                     "analyzer": "trigrams"
-                },               
+                },
                 "sex" : {
                     "type" : "long",
                     "index" : "not_analyzed"
                 },
                 "reson" : {
-                    "type" : "string",
+                    "type" : "text",
                     "analyzer" : "ik_max_word"
                 },
                 "pkey" : {
-                    "type" : "string",
+                    "type" : "text",
                     "index" : "not_analyzed"
                 },
                 "tag" : {
-                    "type" : "string",
+                    "type" : "text",
                     "index" : "not_analyzed"
                 },
                 "creator" : {
-                    "type" : "string",
+                    "type" : "text",
                     "analyzer" : "ik_max_word"
                 },
                 "cphone" : {
-                    "type" : "string",
+                    "type" : "text",
                     "analyzer": "trigrams"
                 },
-                "platformid" : {                          
-                    "type" : "string",
+                "platformid" : {
+                    "type" : "text",
                     "index" : "not_analyzed"
                 },
                 "feature" : {
-                    "type" : "string",
+                    "type" : "text",
                     "index" : "not_analyzed"
                 },
                 "createtime" : {
@@ -74,7 +75,7 @@ curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
                 "updatetime" : {
                     "type" : "date",
                     "format": "yyyy-MM-dd HH:mm:ss"
-                }	
+                }
             }
         }
     }
