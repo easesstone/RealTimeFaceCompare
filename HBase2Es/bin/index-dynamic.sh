@@ -29,7 +29,7 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
         "person": {
             "properties": {
                 "f" : {
-                    "type" : "string",
+                    "type" : "text",
                     "analyzer" : "trigrams"
                 },
                 "t" : {
@@ -37,7 +37,7 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                     "format": "yyyy-MM-dd HH:mm:ss"
                 },               
                 "fea" : {
-                    "type" : "String",
+                    "type" : "text",
                     "index" : "not_analyzed"
                 }
             }
