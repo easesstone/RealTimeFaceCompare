@@ -39,6 +39,10 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                 "fea" : {
                     "type" : "text",
                     "index" : "not_analyzed"
+                }，
+                "sj": {
+                    "type": "long",
+                    "index": "not_analyzed"
                 }
             }
         }
