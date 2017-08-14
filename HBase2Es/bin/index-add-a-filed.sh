@@ -1,4 +1,3 @@
-```
 curl -XPUT 's100:9200/dynamic/_mapping/person?pretty' -H 'Content-Type: application/json' -d'
 {
   "person": {
@@ -11,4 +10,4 @@ curl -XPUT 's100:9200/dynamic/_mapping/person?pretty' -H 'Content-Type: applicat
   }
 }
 '
-```
+
