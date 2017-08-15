@@ -226,19 +226,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         // 人员类型，也是精确的lists
         if (pkeys !=null && pkeys.size() >0){
-            booleanQueryBuilder.should(QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys));
+            booleanQueryBuilder.must(QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys));
         }
         // 身份证号可以是模糊的
         if (idCard != null){
-            booleanQueryBuilder.should(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
+            booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
         }
         // 名字可以是模糊的
         if (name != null){
-            booleanQueryBuilder.should(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
         }
         // 创建者姓名可以是模糊的
         if (creator != null){
-            booleanQueryBuilder.should(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
         }
 
         requestBuilder.setQuery(booleanQueryBuilder);
@@ -330,7 +330,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         putSearchRecordToHBase(null, searchResult, null);
         return searchResult;
     }
-
 
     @Override
     public ObjectSearchResult searchByCphone(String cphone, int start, int pageSize) {
