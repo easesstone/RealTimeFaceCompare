@@ -6,7 +6,7 @@ curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
             "filter": {
                 "trigrams_filter": {
                     "type":     "ngram",
-                    "min_gram": 2,
+                    "min_gram": 4,
                     "max_gram": 20
                 }
             },
