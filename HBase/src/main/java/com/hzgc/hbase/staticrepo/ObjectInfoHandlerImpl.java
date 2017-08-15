@@ -230,15 +230,30 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         // 身份证号可以是模糊的
         if (idCard != null){
-            booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
+            if (moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
+            }else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
+                        .analyzer("standard"));
+            }
         }
         // 名字可以是模糊的
         if (name != null){
-            booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            if (moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            } else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME, idCard)
+                        .analyzer("standard"));
+            }
         }
         // 创建者姓名可以是模糊的
         if (creator != null){
-            booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            if (moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            }else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator)
+                    .analyzer("standard"));
+            }
         }
 
         requestBuilder.setQuery(booleanQueryBuilder);
@@ -420,13 +435,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize){
-        List<Map<String, Object>> resultsTmp;
-        if (personInfoList == null || personInfoList.size() <= 0){
-            resultsTmp = getAllObjectINfo().getResults();
-        } else {
-            resultsTmp = personInfoList;
-        }
-
+        List<Map<String, Object>> resultsTmp = personInfoList;
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
 
         for (Map<String, Object> personInfo: resultsTmp){
@@ -469,7 +478,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-        return searchByPhotoAndThreshold(null, platformId,
+        return searchByPhotoAndThreshold(getAllObjectINfo().getResults(), platformId,
                 photo, threshold, feature, start, pageSize);
     }
 
