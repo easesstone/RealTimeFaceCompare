@@ -316,12 +316,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 searchResult.setSearchNums(1);
             } else {
                 searchResult.setResults(null);
-                searchResult.setSearchStatus(1);
+                searchResult.setSearchStatus(0);
                 searchResult.setSearchNums(0);
                 searchResult.setPhotoId(null);
             }
         } catch (IOException e) {
             LOG.info("根据rowkey获取对象信息的时候异常............");
+            searchResult.setSearchStatus(1);
             e.printStackTrace();
         } finally {
             LOG.info("释放table 对象........");
@@ -607,9 +608,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         searchResult.setSearchStatus(0);
         searchResult.setResults(results);
-        if (results.size() < 1){
-            searchResult.setSearchStatus(1);
-        }
         // 处理精确查找下，IK 分词器返回多余信息的情况，
         // 比如只需要小王炸，但是返回了小王炸 和小王炸小以及小王炸大的情况
         dealWithCreatorAndNameInNoMoHuSearch(searchResult, searchType, creatorOrName, moHuSearch);
