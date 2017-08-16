@@ -5,6 +5,7 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
+import com.hzgc.util.PinYinUtil;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import java.io.ByteArrayOutputStream;
@@ -350,7 +351,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                       boolean moHuSearch){
         List<Map<String, Object>> exectResult = new ArrayList<>();
         List<Map<String, Object>> tempList = searchResult.getResults();
-        if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType)
+        if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理精确查找，按照中文分词器查找的情况下（模糊查找），返回的数据过多的情况，
                 || ObjectInfoTable.NAME.equals(searchType))){
             for (Map<String, Object> objectMap: tempList){
                 String temp = null;
@@ -363,9 +364,27 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     exectResult.add(objectMap);
                 }
             }
-            searchResult.setResults(exectResult);
-            searchResult.setSearchNums(exectResult.size());
+        } else if (moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理同拼音的情况，李，理，离，张，章等
+                || ObjectInfoTable.NAME.equals(searchType))){
+            for (Map<String, Object> objectMap: tempList){
+                String temp = null;
+                if (ObjectInfoTable.CREATOR.equals(searchType)){
+                    temp = (String) objectMap.get(ObjectInfoTable.CREATOR);
+                }else if (ObjectInfoTable.NAME.equals(searchType)){
+                    temp = (String) objectMap.get(ObjectInfoTable.NAME);
+                }
+                if (temp != null){
+                    for (int i = 0;i < nameOrCreator.length(); i++){
+                        if (temp.contains(String.valueOf(nameOrCreator.charAt(i)))){
+                            exectResult.add(objectMap);
+                            break;
+                        }
+                    }
+                }
+            }
         }
+        searchResult.setResults(exectResult);
+        searchResult.setSearchNums(exectResult.size());
     }
 
     @Override
@@ -376,7 +395,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).setSize(10000);
         if (moHuSearch){
-            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
         } else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
         }
@@ -393,7 +412,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).setSize(10000);
         if(moHuSearch){
-            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
         }else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME,name));
         }
