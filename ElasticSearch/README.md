@@ -1,6 +1,7 @@
 参考链接：  
 http://www.jianshu.com/p/d9fb7afa634d  
 https://www.elastic.co/blog/to-shade-or-not-to-shade  
+https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/_embedding_jar_with_dependencies.html  
 
 java 依赖包冲突，使用maven的Shade方式解决
 
