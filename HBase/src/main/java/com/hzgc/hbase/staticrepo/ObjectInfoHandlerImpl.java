@@ -16,10 +16,13 @@ import org.apache.log4j.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
@@ -209,7 +212,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
         // 传入平台ID ，必须是确定的
         if (platformId != null){
@@ -274,7 +278,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId, String idCard,
                                                           boolean moHuSearch, int start, int pageSize) {
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient().prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF).setExplain(true).setSize(10000);
+                .setTypes(ObjectInfoTable.PERSON_COLF).setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         if (platformId != null){
             if (moHuSearch){
                 requestBuilder.setQuery(QueryBuilders.boolQuery()
@@ -353,7 +358,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         return  dealWithSearchRequesBuilder(null, requestBuilder, null,
                 null, null,
                 start, pageSize, false);
@@ -390,7 +396,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         if (moHuSearch){
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
         } else {
@@ -407,7 +414,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         if(moHuSearch){
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
         }else {
@@ -422,7 +430,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         return dealWithSearchRequesBuilder(true, null, requestBuilder, null,
                 null, null, -1, -1 , false );
@@ -594,27 +603,33 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                            int pageSize,
                                                            boolean moHuSearch){
         SearchResponse response = searchRequestBuilder.get();
-        SearchHits hits = response.getHits();
-        LOG.info("根据搜索条件得到的记录数是： " + hits.getTotalHits());
-        SearchHit[] searchHits = hits.getHits();
         ObjectSearchResult searchResult = new ObjectSearchResult();
-        String searchId = UUID.randomUUID().toString().replace("-", "");
-        searchResult.setSearchId(searchId);
-        if (photo == null){
-            searchResult.setPhotoId(null);
-        }else {
-            searchResult.setPhotoId(searchId);
-        }
-        searchResult.setSearchNums(hits.getTotalHits());
         List<Map<String, Object>> results = new ArrayList<>();
-        if (searchHits.length > 0){
-            for (SearchHit hit:searchHits){
-                Map<String, Object> source = hit.getSource();
-                // ES 的文档名，对应着HBase 的rowkey
-                source.put(ObjectInfoTable.ROWKEY, hit.getId());
-                results.add(source);
+        do {
+            SearchHits hits = response.getHits();
+            LOG.info("根据搜索条件得到的记录数是： " + hits.getTotalHits());
+            SearchHit[] searchHits = hits.getHits();
+            String searchId = UUID.randomUUID().toString().replace("-", "");
+            searchResult.setSearchId(searchId);
+            if (photo == null){
+                searchResult.setPhotoId(null);
+            }else {
+                searchResult.setPhotoId(searchId);
             }
-        }
+            searchResult.setSearchNums(hits.getTotalHits());
+            if (searchHits.length > 0){
+                for (SearchHit hit:searchHits){
+                    Map<String, Object> source = hit.getSource();
+                    // ES 的文档名，对应着HBase 的rowkey
+                    source.put(ObjectInfoTable.ROWKEY, hit.getId());
+                    results.add(source);
+                }
+            }
+            response = ElasticSearchHelper.getEsClient().prepareSearchScroll(response.getScrollId())
+                    .setScroll(new TimeValue(300000))
+                    .execute()
+                    .actionGet();
+        }while (response.getHits().getHits().length != 0);
         searchResult.setSearchStatus(0);
         searchResult.setResults(results);
         // 处理精确查找下，IK 分词器返回多余信息的情况，
