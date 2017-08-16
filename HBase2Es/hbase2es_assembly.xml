@@ -32,6 +32,12 @@
             <unpack>false</unpack>
             <scope>runtime</scope>
             <useProjectArtifact>false</useProjectArtifact>
+            <excludes>
+                <exclude>org.apache.hadoop:*:jar</exclude>
+                <exclude>org.apache.spark:*:jar</exclude>
+                <exclude>org.apache.zookeeper:*:jar</exclude>
+                <exclude>org.apache.avro:*:jar</exclude>
+            </excludes>
         </dependencySet>
     </dependencySets>
 
