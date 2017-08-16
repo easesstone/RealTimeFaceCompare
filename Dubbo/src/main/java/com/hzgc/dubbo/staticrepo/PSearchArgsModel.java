@@ -12,7 +12,7 @@ public class PSearchArgsModel implements Serializable {
     private int sex; // 性别
     private byte[] image; // 图片
     private String feature; // 特征值
-    private int thredshold; // 阈值
+    private float thredshold; // 阈值
     private List<String> pkeys; // 人员类型列表
     private String creator; // 布控人
     private String cphone; // 布控人手机号
@@ -107,11 +107,11 @@ public class PSearchArgsModel implements Serializable {
         this.feature = feature;
     }
 
-    public int getThredshold() {
+    public float getThredshold() {
         return thredshold;
     }
 
-    public void setThredshold(int thredshold) {
+    public void setThredshold(float thredshold) {
         this.thredshold = thredshold;
     }
 

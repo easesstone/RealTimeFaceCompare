@@ -206,7 +206,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     //多条件查询
     private ObjectSearchResult searchByMutiCondition(String platformId, String idCard,String name, int sex,
-                                                     byte[] photo, String feature,int threshold,
+                                                     byte[] photo, String feature,float threshold,
                                                      List<String> pkeys, String creator, String cphone,
                                                      int start, int pageSize,boolean moHuSearch){
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -440,7 +440,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private ObjectSearchResult searchByPhotoAndThreshold(List<Map<String, Object>> personInfoList,
                                                         String platformId,
                                                         byte[] photo,
-                                                        int threshold,
+                                                        float threshold,
                                                         String feature,
                                                         long start,
                                                         long pageSize){
@@ -483,7 +483,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByPhotoAndThreshold(String platformId,
                                                         byte[] photo,
-                                                        int threshold,
+                                                        float threshold,
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
