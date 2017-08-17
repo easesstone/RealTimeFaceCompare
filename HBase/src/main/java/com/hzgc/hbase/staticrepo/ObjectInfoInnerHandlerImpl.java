@@ -37,10 +37,10 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                     String id = hit.getId();
                     //得到每个人员类型对应的特征值
                     Map<String, Object> sourceList = hit.getSource();
-                    String pkey1 = hit.getType();
+                    String pkey1 = (String)sourceList.get("pkey");
                     String feature = (String) sourceList.get("feature");
                     //当有特征值时，才将结果返回
-                    if (null != feature && null != pkey1) {
+                    if (null != feature && null != pkey1 ) {
                         //将人员类型、rowkey和特征值进行拼接
                         String result = id + "ZHONGXIAN"+ pkey1 +"ZHONGXIAN" + feature;
                         //将结果添加到集合中

@@ -131,7 +131,7 @@ public class StaticRepoUtilSuite {
         ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
         List<String> a = new ArrayList<>();
         a.add("123456");
-        List<String> b = objectInfoInnerHandler.searchByPkeys(a);
+        List<String> b = objectInfoInnerHandler.searchByPkeys(null);
         System.out.println(b);
     }
     @Test

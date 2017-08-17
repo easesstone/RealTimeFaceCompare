@@ -34,7 +34,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
-        String idcard = ObjectInfoTable.IDCARD;
+        String idcard = (String)person.get(ObjectInfoTable.IDCARD);
+        Random random = new Random();
+        if (idcard == null || idcard.length() != 18) {
+            idcard = (random.nextInt(900000000) + 100000000) + ""
+                    + (random.nextInt(900000000) + 100000000);
+        }
         String rowkey =  platformId + idcard;
         LOG.info("rowkey: " + rowkey);
         // 获取table 对象，通过封装HBaseHelper 来获取
