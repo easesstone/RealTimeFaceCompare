@@ -1,5 +1,10 @@
 package com.hzgc.hbase.staticrepo;
 
+import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+import com.hzgc.hbase.util.HBaseHelper;
+import com.hzgc.hbase.util.HBaseUtil;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -7,11 +12,10 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
@@ -90,5 +94,28 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
             }
             return findResult;
         }
+    }
+
+    public int updateObjectInfoTime(String rowkey) {
+        // 获取table 对象，通过封装HBaseHelper 来获取
+        Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+        Put put = new Put(Bytes.toBytes(rowkey));
+        // 获取系统当前时间
+        Date date = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateString = format.format(date);
+        // 构造一个更新对象信息中的更新时间段的put
+        put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
+        try {
+            // 更新对象信息中的更新时间。
+            table.put(put);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 1;
+        } finally {
+            HBaseUtil.closTable(table);
+        }
+        return 0;
     }
 }
