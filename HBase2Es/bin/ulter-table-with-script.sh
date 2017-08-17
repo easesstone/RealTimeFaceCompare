@@ -1,0 +1,1 @@
+alter 'person',METHOD => 'table_att', 'coprocessor' =>'hdfs:///user/ldl/hbase2es-1.0-jar-with-dependencies.jar|com.hzgc.hbase2es.coproccessor.PersonRepo2EsObserver|1001|es_cluster=hbase2es-cluster,es_port=9300,es_hosts=172.18.18.100_172.18.18.101_172.18.18.102,es_index=dynamic,es_type=person'
