@@ -105,7 +105,7 @@ public interface ObjectInfoHandler {
      * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
     public ObjectSearchResult searchByPhotoAndThreshold(String platformId, byte[] photo,
-                                                        int threshold, String feature,
+                                                        float threshold, String feature,
                                                         long start, long pageSize);
 
     /**

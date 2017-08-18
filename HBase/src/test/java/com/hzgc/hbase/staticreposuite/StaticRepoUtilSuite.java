@@ -3,13 +3,12 @@ package com.hzgc.hbase.staticreposuite;
 import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
 import com.hzgc.hbase.staticrepo.*;
 import com.hzgc.hbase.util.HBaseHelper;
+import org.elasticsearch.client.Client;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
-import org.elasticsearch.client.Client;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,14 +21,14 @@ public class StaticRepoUtilSuite {
         String platformId = "1234";
         Map<String, Object> person = new HashMap<String, Object>();
         person.put("id","1111111111jkh11111111");
-        person.put("name", "花满天");
+        person.put("name", "化满天");
         person.put("idcard", "1111111111jkh11111111");
         person.put("sex", "1");
-       try {
-            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//       try {
+//            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         person.put("reason", "赌博");
         person.put("pkey", "123456");
         person.put("creator", "羊驼");
@@ -68,7 +67,7 @@ public class StaticRepoUtilSuite {
         Put put = new Put(Bytes.toBytes("111111111111111111123456"));
         put.addColumn(Bytes.toBytes("person"),Bytes.toBytes("name"),Bytes.toBytes("Liu siyang"));
         tableName.put(put);
-        List<String> rowkeys = new ArrayList<String>();
+        List<String> rowkeys = new ArrayList<>();
         rowkeys.add("111111111111111111123456");
         int flag = new ObjectInfoHandlerImpl().deleteObjectInfo(rowkeys);
         System.out.println(flag);
@@ -88,14 +87,14 @@ public class StaticRepoUtilSuite {
     @Test
     public void testByGetByPlatFormIdAndIdCard(){
         ObjectInfoHandlerImpl impl = new ObjectInfoHandlerImpl();
-        ObjectSearchResult searchResult = impl.searchByPlatFormIdAndIdCard("1234", "17719203341633873475",
+        ObjectSearchResult searchResult = impl.searchByPlatFormIdAndIdCard("12341", "13353271701785082384",
                 false, 1, 3);
         System.out.println(searchResult);
     }
 
     @Test
     public void testSearchByRowkey(){
-        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByRowkey("a4495983547d4bec828a6b31e12bea80");
+        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByRowkey("nihaomedadafdfeawdafa");
         System.out.println(objectSearchResult);
     }
 
@@ -107,29 +106,33 @@ public class StaticRepoUtilSuite {
 
     @Test
     public void testSearchByCreator(){
-        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByCreator("卫青",
-                true, 1, 5);
-        System.out.println(objectSearchResult);
+        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByCreator("2羊驼",
+                false, 1, 5);
+        System.out.println(objectSearchResult.getResults().size() + " " + objectSearchResult);
     }
 
     @Test
     public void testSearchByName(){
-        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByName("花妃花",
-                false, 1, 5);
-        System.out.println(objectSearchResult);
+        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByName("花",
+                true, 1, 5);
+        System.out.println(objectSearchResult.getResults().size() + " " + objectSearchResult);
+        for (Map<String, Object> person:objectSearchResult.getResults()){
+            System.out.println(person.get("name"));
+        }
     }
 
     @Test
     public void testGetPhotoByKey() throws IOException {
-        byte[] photo = new ObjectInfoHandlerImpl().getPhotoByKey("e590e89a002e44b3b302257a85684d1a");
+        byte[] photo = new ObjectInfoHandlerImpl().getPhotoByKey("nihaomedadafdfeawdafa");
         System.out.println(photo);
-        //Image2Byte2Image.byte2image(photo, "C:\\Users\\lenovo\\Desktop\\nima.png");
+        Image2Byte2Image.byte2image(photo, "C:\\Users\\lenovo\\Desktop\\nkkma.png");
     }
 
     @Test
     public void testimpl(){
         ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
         List<String> a = new ArrayList<>();
+        a.add("223458");
         a.add("123456");
         List<String> b = objectInfoInnerHandler.searchByPkeys(a);
         System.out.println(b);
@@ -145,7 +148,7 @@ public class StaticRepoUtilSuite {
     @Test
     public void testGetRocordOfObjectInfo(){
         SearchRecordHandlerImpl searchRecordHandler = new SearchRecordHandlerImpl();
-        String rk = "fd62eda051c54cf984368972908bc7df";
+        String rk = "101b568b87fc4d19aac1a0e2b00e5ae5";
         ObjectSearchResult o = searchRecordHandler.getRocordOfObjectInfo(rk,1,3);
         System.out.println(o);
     }

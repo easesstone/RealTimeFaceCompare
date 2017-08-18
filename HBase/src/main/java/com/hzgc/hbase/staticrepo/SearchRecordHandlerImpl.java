@@ -44,7 +44,7 @@ public class SearchRecordHandlerImpl implements SearchRecordHandler {
             }
             objectSearchResult.setSearchId(rowkey);
             if (useString.contains(SrecordTable.SEARCH_NUMS)) {
-                objectSearchResult.setSearchNums(Bytes.toInt(result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF),
+                objectSearchResult.setSearchNums(Bytes.toLong(result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF),
                         Bytes.toBytes(SrecordTable.SEARCH_NUMS))));
             }
             if(useString.contains(SrecordTable.RESULTS)) {

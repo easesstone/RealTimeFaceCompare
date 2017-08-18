@@ -5,6 +5,7 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
+import com.hzgc.util.PinYinUtil;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import java.io.ByteArrayOutputStream;
@@ -16,11 +17,13 @@ import org.apache.log4j.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import sun.rmi.transport.ObjectTable;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
@@ -34,7 +37,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
-        String idcard = ObjectInfoTable.IDCARD;
+        String idcard = (String)person.get(ObjectInfoTable.IDCARD);
+        Random random = new Random();
+        if (idcard == null || idcard.length() != 18) {
+            idcard = (random.nextInt(900000000) + 100000000) + ""
+                    + (random.nextInt(900000000) + 100000000);
+        }
         String rowkey =  platformId + idcard;
         LOG.info("rowkey: " + rowkey);
         // 获取table 对象，通过封装HBaseHelper 来获取
@@ -291,13 +299,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     //多条件查询
     private ObjectSearchResult searchByMutiCondition(String platformId, String idCard,String name, int sex,
-                                                     byte[] photo, String feature,int threshold,
+                                                     byte[] photo, String feature,float threshold,
                                                      List<String> pkeys, String creator, String cphone,
                                                      int start, int pageSize,boolean moHuSearch){
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
         // 传入平台ID ，必须是确定的
         if (platformId != null){
@@ -314,19 +323,34 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         // 人员类型，也是精确的lists
         if (pkeys !=null && pkeys.size() >0){
-            booleanQueryBuilder.should(QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys));
+            booleanQueryBuilder.must(QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys));
         }
         // 身份证号可以是模糊的
         if (idCard != null){
-            booleanQueryBuilder.should(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
+            if (moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
+            }else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
+                        .analyzer("standard"));
+            }
         }
         // 名字可以是模糊的
         if (name != null){
-            booleanQueryBuilder.should(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            if (moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            } else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME, idCard)
+                        .analyzer("standard"));
+            }
         }
         // 创建者姓名可以是模糊的
         if (creator != null){
-            booleanQueryBuilder.should(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            if (moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            }else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator)
+                    .analyzer("standard"));
+            }
         }
 
         requestBuilder.setQuery(booleanQueryBuilder);
@@ -346,30 +370,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId, String idCard,
                                                           boolean moHuSearch, int start, int pageSize) {
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient().prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF).setExplain(true).setSize(10000);
-        if (platformId != null){
-            if (moHuSearch){
-                requestBuilder.setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId))
-                        .must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard)));
-            }else {
-                requestBuilder.setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId))
-                        .must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                                .analyzer("standard")));
-            }
-        }else {
-            if (moHuSearch){
-                requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
-            }else {
-                requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                        .analyzer("standard"));
-            }
-        }
-        return dealWithSearchRequesBuilder(platformId, requestBuilder, null,
-                null, null,
-                start, pageSize, moHuSearch);
+        return searchByRowkey(platformId + idCard);
     }
 
     @Override
@@ -404,12 +405,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 searchResult.setSearchNums(1);
             } else {
                 searchResult.setResults(null);
-                searchResult.setSearchStatus(1);
+                searchResult.setSearchStatus(0);
                 searchResult.setSearchNums(0);
                 searchResult.setPhotoId(null);
             }
         } catch (IOException e) {
             LOG.info("根据rowkey获取对象信息的时候异常............");
+            searchResult.setSearchStatus(1);
             e.printStackTrace();
         } finally {
             LOG.info("释放table 对象........");
@@ -419,14 +421,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         return searchResult;
     }
 
-
     @Override
     public ObjectSearchResult searchByCphone(String cphone, int start, int pageSize) {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         return  dealWithSearchRequesBuilder(null, requestBuilder, null,
                 null, null,
                 start, pageSize, false);
@@ -439,8 +441,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                       boolean moHuSearch){
         List<Map<String, Object>> exectResult = new ArrayList<>();
         List<Map<String, Object>> tempList = searchResult.getResults();
-        if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType)
-                || ObjectInfoTable.NAME.equals(searchType))){
+        if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理精确查找，按照中文分词器查找的情况下
+                || ObjectInfoTable.NAME.equals(searchType))){                               // （模糊查找），返回的数据过多的情况，
             for (Map<String, Object> objectMap: tempList){
                 String temp = null;
                 if (ObjectInfoTable.CREATOR.equals(searchType)){
@@ -452,9 +454,27 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     exectResult.add(objectMap);
                 }
             }
-            searchResult.setResults(exectResult);
-            searchResult.setSearchNums(exectResult.size());
+        } else if (moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理同拼音的情况，李，理，离，张，章等
+                || ObjectInfoTable.NAME.equals(searchType))){
+            for (Map<String, Object> objectMap: tempList){
+                String temp = null;
+                if (ObjectInfoTable.CREATOR.equals(searchType)){
+                    temp = (String) objectMap.get(ObjectInfoTable.CREATOR);
+                }else if (ObjectInfoTable.NAME.equals(searchType)){
+                    temp = (String) objectMap.get(ObjectInfoTable.NAME);
+                }
+                if (temp != null){
+                    for (int i = 0;i < nameOrCreator.length(); i++){
+                        if (temp.contains(String.valueOf(nameOrCreator.charAt(i)))){
+                            exectResult.add(objectMap);
+                            break;
+                        }
+                    }
+                }
+            }
         }
+        searchResult.setResults(exectResult);
+        searchResult.setSearchNums(exectResult.size());
     }
 
     @Override
@@ -463,9 +483,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         if (moHuSearch){
-            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
         } else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
         }
@@ -480,9 +501,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         if(moHuSearch){
-            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
         }else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME,name));
         }
@@ -495,7 +517,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).setSize(10000);
+                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(300000)).setSize(1000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         return dealWithSearchRequesBuilder(true, null, requestBuilder, null,
                 null, null, -1, -1 , false );
@@ -504,17 +527,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private ObjectSearchResult searchByPhotoAndThreshold(List<Map<String, Object>> personInfoList,
                                                         String platformId,
                                                         byte[] photo,
-                                                        int threshold,
+                                                        float threshold,
                                                         String feature,
                                                         long start,
                                                         long pageSize){
-        List<Map<String, Object>> resultsTmp;
-        if (personInfoList == null || personInfoList.size() <= 0){
-            resultsTmp = getAllObjectINfo().getResults();
-        } else {
-            resultsTmp = personInfoList;
-        }
-
+        List<Map<String, Object>> resultsTmp = personInfoList;
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
 
         for (Map<String, Object> personInfo: resultsTmp){
@@ -549,11 +566,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByPhotoAndThreshold(String platformId,
                                                         byte[] photo,
-                                                        int threshold,
+                                                        float threshold,
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-        return searchByPhotoAndThreshold(null, platformId,
+        return searchByPhotoAndThreshold(getAllObjectINfo().getResults(), platformId,
                 photo, threshold, feature, start, pageSize);
     }
 
@@ -669,32 +686,35 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                            int pageSize,
                                                            boolean moHuSearch){
         SearchResponse response = searchRequestBuilder.get();
-        SearchHits hits = response.getHits();
-        LOG.info("根据搜索条件得到的记录数是： " + hits.getTotalHits());
-        SearchHit[] searchHits = hits.getHits();
         ObjectSearchResult searchResult = new ObjectSearchResult();
-        String searchId = UUID.randomUUID().toString().replace("-", "");
-        searchResult.setSearchId(searchId);
-        if (photo == null){
-            searchResult.setPhotoId(null);
-        }else {
-            searchResult.setPhotoId(searchId);
-        }
-        searchResult.setSearchNums(hits.getTotalHits());
         List<Map<String, Object>> results = new ArrayList<>();
-        if (searchHits.length > 0){
-            for (SearchHit hit:searchHits){
-                Map<String, Object> source = hit.getSource();
-                // ES 的文档名，对应着HBase 的rowkey
-                source.put(ObjectInfoTable.ROWKEY, hit.getId());
-                results.add(source);
+        do {
+            SearchHits hits = response.getHits();
+            LOG.info("根据搜索条件得到的记录数是： " + hits.getTotalHits());
+            SearchHit[] searchHits = hits.getHits();
+            String searchId = UUID.randomUUID().toString().replace("-", "");
+            searchResult.setSearchId(searchId);
+            if (photo == null){
+                searchResult.setPhotoId(null);
+            }else {
+                searchResult.setPhotoId(searchId);
             }
-        }
+            searchResult.setSearchNums(hits.getTotalHits());
+            if (searchHits.length > 0){
+                for (SearchHit hit:searchHits){
+                    Map<String, Object> source = hit.getSource();
+                    // ES 的文档名，对应着HBase 的rowkey
+                    source.put(ObjectInfoTable.ROWKEY, hit.getId());
+                    results.add(source);
+                }
+            }
+            response = ElasticSearchHelper.getEsClient().prepareSearchScroll(response.getScrollId())
+                    .setScroll(new TimeValue(300000))
+                    .execute()
+                    .actionGet();
+        }while (response.getHits().getHits().length != 0);
         searchResult.setSearchStatus(0);
         searchResult.setResults(results);
-        if (results.size() < 1){
-            searchResult.setSearchStatus(1);
-        }
         // 处理精确查找下，IK 分词器返回多余信息的情况，
         // 比如只需要小王炸，但是返回了小王炸 和小王炸小以及小王炸大的情况
         dealWithCreatorAndNameInNoMoHuSearch(searchResult, searchType, creatorOrName, moHuSearch);
