@@ -347,30 +347,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId, String idCard,
                                                           boolean moHuSearch, int start, int pageSize) {
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient().prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF).setExplain(true).setSize(10000);
-        if (platformId != null){
-            if (moHuSearch){
-                requestBuilder.setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId))
-                        .must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard)));
-            }else {
-                requestBuilder.setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId))
-                        .must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                                .analyzer("standard")));
-            }
-        }else {
-            if (moHuSearch){
-                requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
-            }else {
-                requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                        .analyzer("standard"));
-            }
-        }
-        return dealWithSearchRequesBuilder(platformId, requestBuilder, null,
-                null, null,
-                start, pageSize, moHuSearch);
+        return searchByRowkey(platformId + idCard);
     }
 
     @Override
