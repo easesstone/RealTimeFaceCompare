@@ -21,14 +21,14 @@ public class StaticRepoUtilSuite {
         String platformId = "1234";
         Map<String, Object> person = new HashMap<String, Object>();
         person.put("id","1111111111jkh11111111");
-        person.put("name", "花满天");
+        person.put("name", "化满天");
         person.put("idcard", "1111111111jkh11111111");
         person.put("sex", "1");
-       try {
-            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//       try {
+//            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         person.put("reason", "赌博");
         person.put("pkey", "123456");
         person.put("creator", "羊驼");
@@ -113,9 +113,11 @@ public class StaticRepoUtilSuite {
 
     @Test
     public void testSearchByName(){
-        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByName("花妃花",
-                false, 1, 5);
-        System.out.println(objectSearchResult);
+        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByName("花",
+                true, 1, 5);
+        for (Map<String, Object> person:objectSearchResult.getResults()){
+            System.out.println(person.get("name"));
+        }
     }
 
     @Test
