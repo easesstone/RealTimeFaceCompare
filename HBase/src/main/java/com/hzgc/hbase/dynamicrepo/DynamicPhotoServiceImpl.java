@@ -5,7 +5,6 @@ import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -16,6 +15,9 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.hzgc.util.ObjectUtil.byteToObject;
+import static com.hzgc.util.ObjectUtil.objectToByte;
 
 /**
  * 动态库实现类
@@ -78,7 +80,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return byte[] 小图特征值
      */
     @Override
-    public byte[] getFeature(String imageId, PictureType type) {
+    public byte[] getFeature(String imageId, PictureType type) throws Exception {
         byte[] feature = null;
         if (null != imageId) {
             Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
@@ -127,8 +129,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         if (null != rowKey && type == PictureType.PERSON) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
+                byte[] imageData = image;
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, image);
+                put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(image.toString()));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 table.put(put);
                 return true;
@@ -141,9 +144,10 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         } else if (null != rowKey && type == PictureType.CAR) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
+                byte[] imageData = image;
                 Put put = new Put(Bytes.toBytes(rowKey));
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
-                put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, image);
+                put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(image.toString()));
                 table.put(put);
                 return true;
             } catch (Exception e) {
@@ -173,7 +177,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         try {
             Put put = new Put(Bytes.toBytes(searchId));
             put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID, Bytes.toBytes(queryImageId));
-            byte[] searchMessage = ObjectUtil.objectToByte((Object) resList);
+            byte[] searchMessage = objectToByte(resList);
             put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE, searchMessage);
             searchRes.put(put);
             return true;
@@ -201,7 +205,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         try {
             Result result = searchRes.get(get);
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
+            searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");

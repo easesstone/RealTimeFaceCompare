@@ -1,11 +1,8 @@
 package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
-import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
-import com.hzgc.util.ObjectListSort.ListUtils;
-import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
@@ -14,7 +11,10 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 以图搜图接口实现类，内含四个方法（外）（彭聪）
@@ -31,7 +31,22 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public SearchResult search(SearchOption option) {
-        return null;
+        SearchResult searchResult = null;
+        RealTimeCompare realTimeCompare = new RealTimeCompare();
+        try {
+            searchResult = realTimeCompare.pictureSearch(option);
+            List<CapturedPicture> capturedPictureList = searchResult.getPictures();
+            System.out.println("查询结果：");
+            System.out.println(searchResult);
+            System.out.println("相似图片数量：" + searchResult.getTotal());
+            System.out.println("返回图片数量：" + capturedPictureList.size());
+            for (CapturedPicture aCapturedPictureList : capturedPictureList) {
+                System.out.println(aCapturedPictureList.toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return searchResult;
     }
 
     /**
@@ -49,20 +64,19 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
 
         Get get = new Get(Bytes.toBytes(searchId));
-        Result result = null;
+        Result result;
         try {
             result = searchResTable.get(get);
             String searchImageID = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID));
 
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            Map<String, Float> searchMessageMap = new HashMap<>();
+            Map<String, Float> searchMessageMap;
             searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
-            String returnId = null;
-            Float similarity = null;
+            String returnId;
+            Float similarity;
             if (!searchMessageMap.isEmpty()) {
-                Iterator<String> iter = searchMessageMap.keySet().iterator();
-                while (iter.hasNext()) {
-                    returnId = iter.next();
+                for (String s : searchMessageMap.keySet()) {
+                    returnId = s;
                     similarity = searchMessageMap.get(returnId);
                     CapturedPicture capturedPicture = new CapturedPicture();
                     capturedPicture.setId(returnId);
@@ -88,23 +102,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     }
                 }
             }
-            //结果集（capturedPictureList）排序
-            SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
-            ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
-
-            //排序后的结果集分页
-            List<CapturedPicture> subCapturePictureList;
-            if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
-                //结束行小于总数
-                subCapturePictureList = capturedPictureList.subList(offset, offset + count);
-            } else {
-                //结束行大于总数
-                subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
-            }
-
+            RealTimeCompare realTimeCompare = new RealTimeCompare();
+            List<CapturedPicture> sortedCapturePictureList = realTimeCompare.sortByParams(capturedPictureList, sortParams);
+            List<CapturedPicture> subCapturePictureList = realTimeCompare.pageSplit(sortedCapturePictureList, offset, count);
             searchResult.setPictures(subCapturePictureList);
             searchResult.setSearchId(searchId);
-            searchResult.setTotal(capturedPictureList.size());
+            searchResult.setTotal(sortedCapturePictureList.size());
         } catch (IOException e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");
@@ -181,8 +184,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId && param) {
             capturedPicture.setId(imageId);
-
-            Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
+           /* Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
             if (!map.isEmpty()) {
                 String ipcID = map.get("ipcID");
                 capturedPicture.setIpcId(ipcID);
@@ -190,11 +192,14 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 capturedPicture.setTimeStamp(Long.valueOf(timeStampStr));
             } else {
                 LOG.error("map is empty,used method CapturePictureSearchServiceImpl.getCaptureMessage.");
-            }
+            }*/
 
+            /*
             String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
+            TODO
+            */
             StringBuilder bigImageRowKey = new StringBuilder();
-            bigImageRowKey.append(rowKey).append("_").append("00");
+            bigImageRowKey.append(imageId).append("_").append("00");
 
             Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
@@ -333,6 +338,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     private void setCapturedPicture_person(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
+        String ipcID = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
+        capturedPicture.setIpcId(ipcID);
+
+        long time = Bytes.toLong(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+        capturedPicture.setTimeStamp(time);
+
         String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
         capturedPicture.setDescription(des);
 
@@ -352,6 +363,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
+        String ipcID = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
+        capturedPicture.setIpcId(ipcID);
+
+        long time = Bytes.toLong(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
+        capturedPicture.setTimeStamp(time);
+
         String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
         capturedPicture.setDescription(des);
 
