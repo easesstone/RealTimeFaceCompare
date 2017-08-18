@@ -15,8 +15,8 @@ public class DeviceTable implements Serializable {
     final static byte[] OBJTYPE_COL = Bytes.toBytes("type");
     final static byte[] OFFLINERK = Bytes.toBytes("offlineWarnRowKey");
     final static byte[] OFFLINECOL = Bytes.toBytes("objTypes");
-    public final static Integer IDENTIFY = 0;
-    public final static Integer ADDED = 1;
-    public final static Integer OFFLINE = 2;
+    public final static Integer IDENTIFY = 100;
+    public final static Integer ADDED = 101;
+    public final static Integer OFFLINE = 102;
 
 }

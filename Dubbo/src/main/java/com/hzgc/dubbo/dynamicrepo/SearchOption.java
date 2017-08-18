@@ -58,6 +58,24 @@ public class SearchOption implements Serializable {
      */
     private String sortParams;
 
+    /**
+     * 分页查询开始行
+     */
+    private int offset;
+
+    /**
+     * 查询条数
+     */
+    private int count;
+
+    public int getOffset() { return offset; }
+
+    public void setOffset(int offset) { this.offset = offset; }
+
+    public int getCount() { return count; }
+
+    public void setCount(int count) { this.count = count; }
+
     public SearchType getSearchType() {
         return searchType;
     }

@@ -23,4 +23,8 @@ public class SearchApiSuite {
         requestBuilder.setQuery(QueryBuilders.termsQuery("pkey", pkeys));
         System.out.println(requestBuilder.get().getHits().getTotalHits());
     }
+    @Test
+    public void testStringContains(){
+        System.out.println("根据搜索条件得到的记录数是".contains("到的记"));
+    }
 }
