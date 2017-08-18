@@ -19,7 +19,7 @@
         <module>JNI</module>
         <module>HBase2Es</module>
         <module>Util</module>
-        <module>ElasticSearch</module>
+        <!--<module>ElasticSearch</module>-->
     </modules>
 
     <properties>
