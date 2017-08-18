@@ -12,9 +12,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>transport</artifactId>
-            <version>${es.version}</version>
+            <groupId>com.hzgc</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
@@ -34,6 +34,11 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <version>2.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
@@ -71,6 +76,16 @@
                 </includes>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

@@ -101,7 +101,6 @@ public class RocketMQProducer implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("send message error...");
-            throw new RuntimeException(e);
         }
     }
 

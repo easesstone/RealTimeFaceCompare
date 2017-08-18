@@ -3,13 +3,12 @@ package com.hzgc.hbase.staticreposuite;
 import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
 import com.hzgc.hbase.staticrepo.*;
 import com.hzgc.hbase.util.HBaseHelper;
+import org.elasticsearch.client.Client;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
-import org.elasticsearch.client.Client;
 import org.junit.Test;
 
 import java.io.IOException;

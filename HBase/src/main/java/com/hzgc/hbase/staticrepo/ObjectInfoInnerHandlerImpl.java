@@ -48,8 +48,8 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                     Map<String,Object> sourceList = hit.getSource();
                     String feature = (String)sourceList.get("feature");
                     //当有特征值时，才将结果返回
-                    if(null != feature){
-                        //将人员类型、rowkey和特征值进行拼接
+                    if(null != feature && feature.length() == 2048){
+                        //将人员类型rowkey和特征值进行拼接
                         String result = id + "ZHONGXIAN" + a + "ZHONGXIAN" + feature;
                         //将结果添加到集合中
                         findResult.add(result);
