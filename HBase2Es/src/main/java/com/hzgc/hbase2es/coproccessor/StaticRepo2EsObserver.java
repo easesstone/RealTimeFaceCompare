@@ -2,6 +2,7 @@ package com.hzgc.hbase2es.coproccessor;
 
 import com.hzgc.hbase2es.es.ElasticSearchBulkOperator;
 import com.hzgc.hbase2es.util.EsClientUtils;
+import com.hzgc.util.PinYinUtil;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.client.Delete;
@@ -36,6 +37,12 @@ public class StaticRepo2EsObserver extends EsObserver {
                 String value = Bytes.toString(CellUtil.cloneValue(cell));
                 if (!"photo".equals(key)){
                     infoJson.put(key, value);
+                    if ("name".equals(key)){
+                        infoJson.put("namepin", PinYinUtil.toHanyuPinyin(value));
+                    }
+                    if ("creator".equals(key)){
+                        infoJson.put("creatorpin", PinYinUtil.toHanyuPinyin(value));
+                    }
                     LOG.info("Put data into es {key:" + key + ", value:" + value + "}");
                 }
             }

@@ -3,13 +3,12 @@ package com.hzgc.hbase.staticreposuite;
 import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
 import com.hzgc.hbase.staticrepo.*;
 import com.hzgc.hbase.util.HBaseHelper;
+import org.elasticsearch.client.Client;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
-import org.elasticsearch.client.Client;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,14 +21,14 @@ public class StaticRepoUtilSuite {
         String platformId = "1234";
         Map<String, Object> person = new HashMap<String, Object>();
         person.put("id","1111111111jkh11111111");
-        person.put("name", "花满天");
+        person.put("name", "化满天");
         person.put("idcard", "1111111111jkh11111111");
         person.put("sex", "1");
-       try {
-            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//       try {
+//            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         person.put("reason", "赌博");
         person.put("pkey", "123456");
         person.put("creator", "羊驼");
@@ -114,9 +113,11 @@ public class StaticRepoUtilSuite {
 
     @Test
     public void testSearchByName(){
-        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByName("花妃花",
-                false, 1, 5);
-        System.out.println(objectSearchResult);
+        ObjectSearchResult objectSearchResult = new ObjectInfoHandlerImpl().searchByName("花",
+                true, 1, 5);
+        for (Map<String, Object> person:objectSearchResult.getResults()){
+            System.out.println(person.get("name"));
+        }
     }
 
     @Test
@@ -131,7 +132,7 @@ public class StaticRepoUtilSuite {
         ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
         List<String> a = new ArrayList<>();
         a.add("123456");
-        List<String> b = objectInfoInnerHandler.searchByPkeys(a);
+        List<String> b = objectInfoInnerHandler.searchByPkeys(null);
         System.out.println(b);
     }
     @Test

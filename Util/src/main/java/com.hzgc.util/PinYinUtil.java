@@ -30,11 +30,15 @@ public class PinYinUtil {
         char[] cl_chars = chineseLanguage.trim().toCharArray();
         StringBuilder pinyin = new StringBuilder();
         try {
-            for (char cl_char : cl_chars) {
-                if (String.valueOf(cl_char).matches("[\\u4e00-\\u9fa5]+")) {
-                    pinyin.append(PinyinHelper.toHanyuPinyinStringArray(cl_char, defaultFormat)[0]);
+            for (int i = 0; i < cl_chars.length; i++){
+                if (String.valueOf(cl_chars[i]).matches("[\\u4e00-\\u9fa5]+")) {
+                    pinyin.append(PinyinHelper.toHanyuPinyinStringArray(cl_chars[i], defaultFormat)[0] + " ");
                 } else {
-                    pinyin.append(cl_char);
+                    if (i < cl_chars.length - 1 && String.valueOf(cl_chars[i + 1]).matches("[\\u4e00-\\u9fa5]+")){
+                        pinyin.append(cl_chars[i] + " ");
+                    }else {
+                        pinyin.append(cl_chars[i]);
+                    }
                 }
             }
         } catch (BadHanyuPinyinOutputFormatCombination e) {

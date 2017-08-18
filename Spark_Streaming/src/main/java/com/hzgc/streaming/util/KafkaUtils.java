@@ -17,7 +17,7 @@ public class KafkaUtils implements Serializable {
     private KafkaUtils(){
         Properties props = new Properties();
         // 此处配置的是kafka的broker地址:端口列表
-        props.put("metadata.broker.list", "172.18.18.101:21005");
+        props.put("metadata.broker.list", "172.18.18.100:21005");
         //配置key的序列化类
         props.put("key.serializer.class", "kafka.serializer.StringEncoder");
         //配置value的序列化类

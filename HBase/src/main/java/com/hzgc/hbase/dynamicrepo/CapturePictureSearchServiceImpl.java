@@ -4,12 +4,14 @@ import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.util.ListUtils;
 import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.core.config.plugins.util.ResolverUtil;
 
 import java.io.IOException;
 import java.util.*;
@@ -80,17 +82,27 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     capturedPicture.setExtend(mapEx);
                     byte[] smallImage = personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
                     capturedPicture.setSmallImage(smallImage);
+                    long timeStamp = Bytes.toLong(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+                    capturedPicture.setTimeStamp(timeStamp);
                     capturedPictureList.add(capturedPicture);
                 }
             }
-            if (offset + count - 1 > capturedPictureList.size()) {
+           /* System.out.println("-------------------------capturedPictureList---------------------");
+            System.out.println(capturedPictureList);
+            System.out.println("-------------------------capturedPictureList---------------------");*/
+            String [] sortNameArr = {"ipcId","similarity","timeStamp"};
+            boolean [] isAscArr = {true,false,true};
+            ListUtils.sort(capturedPictureList,sortNameArr,isAscArr);
+
+            /* if (offset + count - 1 > capturedPictureList.size()) {
                 capturedPictureCutList = capturedPictureList.subList(offset - 1, capturedPictureList.size());
             } else {
                 capturedPictureCutList = capturedPictureList.subList(offset - 1, offset + count - 1);
             }
             if (null != capturedPictureCutList) {
                 searchResult.setPictures(capturedPictureCutList);
-            }
+            }*/
+            searchResult.setPictures(capturedPictureList);
             searchResult.setSearchId(searchId);
             searchResult.setTotal(capturedPictureList.size());
 
@@ -153,6 +165,16 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 break;
             case 5:
                 if (PictureType.BIG_CAR.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 6:
+                if (PictureType.MESSAGE_PERSON.getType() == type) {
+                    param = true;
+                }
+                break;
+            case 7:
+                if (PictureType.MESSAGE_CAR.getType() == type) {
                     param = true;
                 }
                 break;
@@ -272,6 +294,30 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     } catch (IOException e) {
                         e.printStackTrace();
                         LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 5");
+                    } finally {
+                        HBaseUtil.closTable(car);
+                    }
+                    break;
+                case 6:
+                    try {
+                        Get get = new Get(Bytes.toBytes(imageId));
+                        Result result = person.get(get);
+                        setCapturedPicture_person(capturedPicture, result, mapEx);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 6");
+                    } finally {
+                        HBaseUtil.closTable(car);
+                    }
+                    break;
+                case 7:
+                    try {
+                        Get get = new Get(Bytes.toBytes(imageId));
+                        Result result = car.get(get);
+                        setCapturedPicture_car(capturedPicture, result, mapEx);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 7");
                     } finally {
                         HBaseUtil.closTable(car);
                     }
