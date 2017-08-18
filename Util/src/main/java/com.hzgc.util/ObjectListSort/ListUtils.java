@@ -1,4 +1,4 @@
-package com.hzgc.util;
+package com.hzgc.util.ObjectListSort;
 
 import java.lang.reflect.Field;
 import java.text.NumberFormat;
@@ -9,12 +9,58 @@ import java.util.List;
 
 public class ListUtils {
     /**
+     * 根据排序string来生成sql排序，多个排序字段用逗号隔开。'+'表示升序，'-'表示降序，如+id,-name
+     *
+     * @param sortParams 排序字符串
+     * @return SortParam 排序入参对象
+     */
+    public static SortParam getOrderStringBySort(String sortParams) {
+        SortParam sortParam = new SortParam();
+        if (!sortParams.isEmpty()) {
+            StringBuffer orderString = new StringBuffer();
+            String[] orderStringList = sortParams.split(",");
+            for (String s : orderStringList) {
+                char orderTypeChar = s.charAt(0);
+                // 降序
+                if ("-".toCharArray()[0] == orderTypeChar) {
+                    orderString.append(s.substring(1));
+                    orderString.append(" ");
+                    orderString.append("false");
+                }
+                // 升序
+                else {
+                    orderString.append(s.substring(1));
+                    orderString.append(" ");
+                    orderString.append("true");
+                }
+                if (!s.equals(orderStringList[orderStringList.length - 1])) {
+                    orderString.append(",");
+                }
+            }
+
+            String[] splitStr = orderString.toString().split(",");
+            String[] sortNameArr = new String[splitStr.length];
+            boolean[] isAscArr = new boolean[splitStr.length];
+            for (int i = 0; i < splitStr.length; i++) {
+                String[] oneParm = splitStr[i].split(" ");
+                sortNameArr[i] = oneParm[0];
+                isAscArr[i] = oneParm[1].equals("true");
+            }
+            sortParam.setSortNameArr(sortNameArr);
+            sortParam.setIsAscArr(isAscArr);
+        } else {
+            sortParam = null;
+        }
+        return sortParam;
+    }
+
+    /**
      * 对list的元素按照多个属性名称排序,
      * list元素的属性可以是数字（byte、short、int、long、float、double等，支持正数、负数、0）、char、String、java.util.Date
      *
-     * @param list
+     * @param list        排序对象
      * @param sortnameArr list元素的属性名称
-     * @param isAsc    true升序，false降序
+     * @param isAsc       true升序，false降序
      */
     public static <E> void sort(List<E> list, final boolean isAsc, final String... sortnameArr) {
         Collections.sort(list, new Comparator<E>() {
@@ -39,7 +85,7 @@ public class ListUtils {
     /**
      * 给list的每个属性都指定是升序还是降序
      *
-     * @param list
+     * @param list        排序对象
      * @param sortnameArr 参数数组
      * @param typeArr     每个属性对应的升降序数组， true升序，false降序
      */
@@ -126,7 +172,7 @@ public class ListUtils {
      *
      * @param obj       属性名称所在的对象
      * @param fieldName 属性名称
-     * @return
+     * @return Object
      * @throws Exception
      */
     public static Object forceGetFieldValue(Object obj, String fieldName) throws Exception {
