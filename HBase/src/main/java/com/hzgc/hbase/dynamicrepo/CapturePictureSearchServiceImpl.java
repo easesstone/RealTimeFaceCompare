@@ -4,14 +4,14 @@ import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
-import com.hzgc.util.ListUtils;
+import com.hzgc.util.ObjectListSort.ListUtils;
+import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.apache.logging.log4j.core.config.plugins.util.ResolverUtil;
 
 import java.io.IOException;
 import java.util.*;
@@ -47,7 +47,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
         SearchResult searchResult = new SearchResult();
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        List<CapturedPicture> capturedPictureCutList = new ArrayList<>();
 
         Get get = new Get(Bytes.toBytes(searchId));
         Result result = null;
@@ -87,26 +86,23 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     capturedPictureList.add(capturedPicture);
                 }
             }
-           /* System.out.println("-------------------------capturedPictureList---------------------");
-            System.out.println(capturedPictureList);
-            System.out.println("-------------------------capturedPictureList---------------------");*/
-            String [] sortNameArr = {"ipcId","similarity","timeStamp"};
-            boolean [] isAscArr = {true,false,true};
-            ListUtils.sort(capturedPictureList,sortNameArr,isAscArr);
+            //结果集（capturedPictureList）排序
+            SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
+            ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
 
-            /* if (offset + count - 1 > capturedPictureList.size()) {
-                capturedPictureCutList = capturedPictureList.subList(offset - 1, capturedPictureList.size());
+            //排序后的结果集分页
+            List<CapturedPicture> subCapturePictureList;
+            if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
+                //结束行小于总数
+                subCapturePictureList = capturedPictureList.subList(offset, offset + count);
             } else {
-                capturedPictureCutList = capturedPictureList.subList(offset - 1, offset + count - 1);
+                //结束行大于总数
+                subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
             }
-            if (null != capturedPictureCutList) {
-                searchResult.setPictures(capturedPictureCutList);
-            }*/
-            searchResult.setPictures(capturedPictureList);
+
+            searchResult.setPictures(subCapturePictureList);
             searchResult.setSearchId(searchId);
             searchResult.setTotal(capturedPictureList.size());
-
-
         } catch (IOException e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");
