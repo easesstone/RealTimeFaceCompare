@@ -6,7 +6,6 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
-import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -14,7 +13,12 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.hzgc.util.ObjectUtil.byteToObject;
 
 /**
  * 以图搜图接口实现类，内含四个方法（外）（彭聪）
@@ -31,7 +35,25 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public SearchResult search(SearchOption option) {
-        return null;
+        SearchResult searchResult = null;
+        RealTimeCompare realTimeCompare = new RealTimeCompare();
+        try {
+            searchResult = realTimeCompare.pictureSearch(option);
+            List<CapturedPicture> capturedPictureList = searchResult.getPictures();
+            System.out.println("查询结果：");
+            System.out.println(searchResult);
+            System.out.println("相似图片数量：" + searchResult.getTotal());
+            System.out.println("返回图片数量：" + capturedPictureList.size());
+            for (CapturedPicture aCapturedPictureList : capturedPictureList) {
+                System.out.println(aCapturedPictureList.toString());
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return searchResult;
     }
 
     /**
@@ -49,20 +71,19 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
 
         Get get = new Get(Bytes.toBytes(searchId));
-        Result result = null;
+        Result result;
         try {
             result = searchResTable.get(get);
             String searchImageID = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID));
 
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
             Map<String, Float> searchMessageMap = new HashMap<>();
-            searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
-            String returnId = null;
-            Float similarity = null;
+            searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
+            String returnId;
+            Float similarity;
             if (!searchMessageMap.isEmpty()) {
-                Iterator<String> iter = searchMessageMap.keySet().iterator();
-                while (iter.hasNext()) {
-                    returnId = iter.next();
+                for (String s : searchMessageMap.keySet()) {
+                    returnId = s;
                     similarity = searchMessageMap.get(returnId);
                     CapturedPicture capturedPicture = new CapturedPicture();
                     capturedPicture.setId(returnId);
