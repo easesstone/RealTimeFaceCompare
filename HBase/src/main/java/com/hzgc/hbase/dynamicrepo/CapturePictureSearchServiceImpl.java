@@ -6,6 +6,7 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
+import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -17,8 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.hzgc.util.ObjectUtil.byteToObject;
 
 /**
  * 以图搜图接口实现类，内含四个方法（外）（彭聪）
@@ -77,8 +76,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             String searchImageID = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID));
 
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            Map<String, Float> searchMessageMap = new HashMap<>();
-            searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
+            Map<String, Float> searchMessageMap;
+            searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
             String returnId;
             Float similarity;
             if (!searchMessageMap.isEmpty()) {
@@ -200,7 +199,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId && param) {
             capturedPicture.setId(imageId);
-
             Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
             if (!map.isEmpty()) {
                 String ipcID = map.get("ipcID");
@@ -210,7 +208,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             } else {
                 LOG.error("map is empty,used method CapturePictureSearchServiceImpl.getCaptureMessage.");
             }
-
             String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
             StringBuilder bigImageRowKey = new StringBuilder();
             bigImageRowKey.append(rowKey).append("_").append("00");

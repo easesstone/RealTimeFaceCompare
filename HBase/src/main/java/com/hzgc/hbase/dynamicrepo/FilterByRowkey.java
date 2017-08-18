@@ -33,10 +33,11 @@ public class FilterByRowkey {
     static {
         ElasticSearchHelper.getEsClient();
     }
-    public SearchRequestBuilder getSearchRequestBuilder(SearchOption option){
+
+    public SearchRequestBuilder getSearchRequestBuilder(SearchOption option) {
         String index = "dynamic";
         String type = "person";
-        if(option.getSearchType() != null || option.getDeviceIds() != null || option.getStartDate() != null ||
+        if (option.getSearchType() != null || option.getDeviceIds() != null || option.getStartDate() != null ||
                 option.getEndDate() != null || option.getIntervals() != null) {
             SearchType searchType = option.getSearchType();
             List<String> deviceId = option.getDeviceIds();
@@ -84,12 +85,12 @@ public class FilterByRowkey {
         }
     }
 
-    public List<String> getSearchResponse(SearchRequestBuilder searchRequestBuilder){
+    public List<String> getSearchResponse(SearchRequestBuilder searchRequestBuilder) {
         SearchResponse searchResponse = searchRequestBuilder.get();
         SearchHits hits = searchResponse.getHits();
         List<String> RowKey = new ArrayList<>();
         SearchHit[] hits1 = hits.getHits();
-        if (hits1.length > 0 ) {
+        if (hits1.length > 0) {
             for (SearchHit hit : hits1) {
                 String rowKey = hit.getId();
                 RowKey.add(rowKey);
@@ -97,12 +98,12 @@ public class FilterByRowkey {
         }
         return RowKey;
     }
+
     /**
-     *
      * @param option 搜索选项
      * @return List<String> 符合条件的rowKey集合
      */
-    public List<String> getRowKey(SearchOption option){
+    public List<String> getRowKey(SearchOption option) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(option);
         return getSearchResponse(searchRequestBuilder);
     }
