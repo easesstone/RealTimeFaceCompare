@@ -5,6 +5,7 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
+import com.hzgc.util.PinYinUtil;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import java.io.ByteArrayOutputStream;
@@ -36,7 +37,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
-        String idcard = ObjectInfoTable.IDCARD;
+        String idcard = (String)person.get(ObjectInfoTable.IDCARD);
+        Random random = new Random();
+        if (idcard == null || idcard.length() != 18) {
+            idcard = (random.nextInt(900000000) + 100000000) + ""
+                    + (random.nextInt(900000000) + 100000000);
+        }
         String rowkey =  platformId + idcard;
         LOG.info("rowkey: " + rowkey);
         // 获取table 对象，通过封装HBaseHelper 来获取
@@ -364,31 +370,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId, String idCard,
                                                           boolean moHuSearch, int start, int pageSize) {
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient().prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF).setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
-                .setScroll(new TimeValue(300000)).setSize(1000);
-        if (platformId != null){
-            if (moHuSearch){
-                requestBuilder.setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId))
-                        .must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard)));
-            }else {
-                requestBuilder.setQuery(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId))
-                        .must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                                .analyzer("standard")));
-            }
-        }else {
-            if (moHuSearch){
-                requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
-            }else {
-                requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                        .analyzer("standard"));
-            }
-        }
-        return dealWithSearchRequesBuilder(platformId, requestBuilder, null,
-                null, null,
-                start, pageSize, moHuSearch);
+        return searchByRowkey(platformId + idCard);
     }
 
     @Override
@@ -459,8 +441,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                       boolean moHuSearch){
         List<Map<String, Object>> exectResult = new ArrayList<>();
         List<Map<String, Object>> tempList = searchResult.getResults();
-        if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType)
-                || ObjectInfoTable.NAME.equals(searchType))){
+        if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理精确查找，按照中文分词器查找的情况下
+                || ObjectInfoTable.NAME.equals(searchType))){                               // （模糊查找），返回的数据过多的情况，
             for (Map<String, Object> objectMap: tempList){
                 String temp = null;
                 if (ObjectInfoTable.CREATOR.equals(searchType)){
@@ -472,9 +454,27 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     exectResult.add(objectMap);
                 }
             }
-            searchResult.setResults(exectResult);
-            searchResult.setSearchNums(exectResult.size());
+        } else if (moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理同拼音的情况，李，理，离，张，章等
+                || ObjectInfoTable.NAME.equals(searchType))){
+            for (Map<String, Object> objectMap: tempList){
+                String temp = null;
+                if (ObjectInfoTable.CREATOR.equals(searchType)){
+                    temp = (String) objectMap.get(ObjectInfoTable.CREATOR);
+                }else if (ObjectInfoTable.NAME.equals(searchType)){
+                    temp = (String) objectMap.get(ObjectInfoTable.NAME);
+                }
+                if (temp != null){
+                    for (int i = 0;i < nameOrCreator.length(); i++){
+                        if (temp.contains(String.valueOf(nameOrCreator.charAt(i)))){
+                            exectResult.add(objectMap);
+                            break;
+                        }
+                    }
+                }
+            }
         }
+        searchResult.setResults(exectResult);
+        searchResult.setSearchNums(exectResult.size());
     }
 
     @Override
@@ -486,7 +486,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         if (moHuSearch){
-            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
+            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
         } else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
         }
@@ -504,7 +504,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         if(moHuSearch){
-            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
+            requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
         }else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME,name));
         }

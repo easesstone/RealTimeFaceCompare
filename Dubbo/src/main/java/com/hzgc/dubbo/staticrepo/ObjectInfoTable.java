@@ -6,6 +6,8 @@ public class ObjectInfoTable implements Serializable {
     public static final String TABLE_NAME = "objectinfo"; // 表名
     public static final String ROWKEY = "id";              // 对象信息的唯一标志
     public static final String PERSON_COLF = "person";  // person列族
+    public static final String NAME_PIN = "namepin";    // 姓名的拼音
+    public static final String CREATOR_PIN = "creatorpin";  // 创建者的拼音
 
     // 以下是和平台组公用的属性
     public static final String PLATFORMID = "platformid";  // 平台ID

@@ -28,7 +28,7 @@ public class SearchApiSuite {
     }
 
     @Test
-    public void testSearchByScrol01(){
+    public void testSearchByScrol01() {
         PSearchArgsModel pSearchArgsModel = new PSearchArgsModel();
         pSearchArgsModel.setRowkey(null);
         pSearchArgsModel.setPaltaformId("0001");
@@ -53,5 +53,10 @@ public class SearchApiSuite {
 
         ObjectInfoHandler objectInfoHandler = new ObjectInfoHandlerImpl();
         System.out.println(objectInfoHandler.getObjectInfo(pSearchArgsModel));
+    }
+
+    @Test
+    public void testStringContains(){
+        System.out.println("根据搜索条件得到的记录数是".contains("到的记"));
     }
 }

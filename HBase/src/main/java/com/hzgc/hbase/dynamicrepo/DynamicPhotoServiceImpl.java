@@ -127,9 +127,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         if (null != rowKey && type == PictureType.PERSON) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
-                byte[] imageData = image;
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(image.toString()));
+                put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, image);
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 table.put(put);
                 return true;
@@ -142,10 +141,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         } else if (null != rowKey && type == PictureType.CAR) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
-                byte[] imageData = image;
                 Put put = new Put(Bytes.toBytes(rowKey));
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
-                put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(image.toString()));
+                put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, image);
                 table.put(put);
                 return true;
             } catch (Exception e) {

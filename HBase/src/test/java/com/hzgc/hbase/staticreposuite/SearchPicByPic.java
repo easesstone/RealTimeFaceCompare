@@ -6,11 +6,11 @@ import com.hzgc.hbase.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.client.Client;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.client.Client;
 import org.junit.Before;
 import org.junit.Test;
 
