@@ -96,6 +96,31 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         }
     }
 
+    public  List<String> searchByPkeysUpdateTime(){
+        List<String> findResult = new ArrayList<>();
+        QueryBuilder qb = matchAllQuery();
+        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient().prepareSearch("objectinfo")
+                .setTypes("person").setExplain(true).setSize(10000).setQuery(qb);
+        SearchResponse searchResponse = requestBuilder.get();
+        SearchHits hits = searchResponse.getHits();
+        SearchHit[] searchHits = hits.getHits();
+        System.out.println("pkey为：null时，查询得到的记录数为：" + hits.getTotalHits());
+        if (searchHits.length > 0) {
+            for (SearchHit hit : searchHits) {
+                //得到每个人员类型对应的rowkey
+                String id = hit.getId();
+                //得到每个人员类型对应的特征值
+                Map<String, Object> sourceList = hit.getSource();
+                String updatetime = (String) sourceList.get("updatetime");
+                //将人员类型、rowkey和特征值进行拼接
+                String result = id + "ZHONGXIAN" + updatetime;
+                //将结果添加到集合中
+                findResult.add(result);
+            }
+        }
+        return findResult;
+   }
+
     public int updateObjectInfoTime(String rowkey) {
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
