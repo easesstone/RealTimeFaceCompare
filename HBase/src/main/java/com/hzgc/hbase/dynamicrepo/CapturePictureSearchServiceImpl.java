@@ -95,7 +95,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     capturedPicture.setExtend(mapEx);
                     byte[] smallImage = personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
                     capturedPicture.setSmallImage(smallImage);
-                    capturedPictureList.add(capturedPicture);
+                    if (personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP) != null) {
+                        long timeStamp = Bytes.toLong(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+                        capturedPicture.setTimeStamp(timeStamp);
+                        capturedPictureList.add(capturedPicture);
+                    }
                 }
             }
             RealTimeCompare realTimeCompare = new RealTimeCompare();
