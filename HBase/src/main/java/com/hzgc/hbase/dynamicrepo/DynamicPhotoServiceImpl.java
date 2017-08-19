@@ -5,6 +5,7 @@ import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
+import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -16,7 +17,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.hzgc.util.ObjectUtil.byteToObject;
 import static com.hzgc.util.ObjectUtil.objectToByte;
 
 /**
@@ -205,7 +205,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         try {
             Result result = searchRes.get(get);
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
+            searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");

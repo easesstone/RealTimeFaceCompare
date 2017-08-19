@@ -3,9 +3,9 @@ package com.hzgc.hbase.dynamicrepo;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.jni.FaceFunction;
+import com.hzgc.util.ObjectListSort.ListUtils;
+import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.UuidUtil;
-import com.hzgc.util.obejectListSort.ListUtils;
-import com.hzgc.util.obejectListSort.SortParam;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -248,7 +248,6 @@ public class RealTimeCompare implements Serializable {
         JavaRDD<String> imageIdListRdd = jsc.parallelize(imageIdList);
         //根据imageId进行特征查询并转化为float[]
         JavaPairRDD<String, float[]> imageIdFeaRDD = imageIdListRdd.mapToPair((PairFunction<String, String, float[]>) x -> new Tuple2<>(x, FaceFunction.byteArr2floatArr(dynamicPhotoService.getFeature(x, pictureType))));
-        List<Tuple2<String, float[]>> tempList = imageIdFeaRDD.collect();
         return imageIdFeaRDD.collect();
     }
 

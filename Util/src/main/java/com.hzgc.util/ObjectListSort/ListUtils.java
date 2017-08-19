@@ -17,7 +17,7 @@ public class ListUtils {
     public static SortParam getOrderStringBySort(String sortParams) {
         SortParam sortParam = new SortParam();
         if (!sortParams.isEmpty()) {
-            StringBuffer orderString = new StringBuffer();
+            StringBuilder orderString = new StringBuilder();
             String[] orderStringList = sortParams.split(",");
             for (String s : orderStringList) {
                 char orderTypeChar = s.charAt(0);
@@ -42,9 +42,9 @@ public class ListUtils {
             String[] sortNameArr = new String[splitStr.length];
             boolean[] isAscArr = new boolean[splitStr.length];
             for (int i = 0; i < splitStr.length; i++) {
-                String[] oneParm = splitStr[i].split(" ");
-                sortNameArr[i] = oneParm[0];
-                isAscArr[i] = oneParm[1].equals("true");
+                String[] oneParam = splitStr[i].split(" ");
+                sortNameArr[i] = oneParam[0];
+                isAscArr[i] = oneParam[1].equals("true");
             }
             sortParam.setSortNameArr(sortNameArr);
             sortParam.setIsAscArr(isAscArr);

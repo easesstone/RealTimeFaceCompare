@@ -129,6 +129,7 @@ public class FaceFunction {
 
     /**
      * float数组转byte数组
+     *
      * @param feature 特征值（float[]）
      * @return 特征值(byte[])
      */
@@ -187,7 +188,7 @@ public class FaceFunction {
      * @param historyFeatureStr 库中的特征值
      * @return 相似度
      */
-    public static float  featureCompare (String currentFeatureStr,String historyFeatureStr) {
+    public static float featureCompare(String currentFeatureStr, String historyFeatureStr) {
         float[] currentFeature = FaceFunction.string2floatArray(currentFeatureStr);
         float[] historyFeature = FaceFunction.string2floatArray(historyFeatureStr);
         return featureCompare(currentFeature, historyFeature);
@@ -208,7 +209,7 @@ public class FaceFunction {
         return null;
     }
 
-    private static float featureCompare(float[] currentFeature, float[] historyFeature) {
+    public static float featureCompare(float[] currentFeature, float[] historyFeature) {
         double similarityDegree = 0;
         double currentFeatureMultiple = 0;
         double historyFeatureMultiple = 0;
@@ -225,7 +226,7 @@ public class FaceFunction {
         if (actualValue >= 100) {
             return 100;
         }
-        return (float)actualValue;
+        return (float) actualValue;
     }
 
     /**
