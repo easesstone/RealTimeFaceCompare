@@ -1,5 +1,6 @@
 package com.hzgc.hbase2es.coproccessor;
 
+import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.hbase2es.es.ElasticSearchBulkOperator;
 import com.hzgc.hbase2es.util.EsClientUtils;
 import com.hzgc.util.PinYinUtil;
@@ -35,13 +36,13 @@ public class StaticRepo2EsObserver extends EsObserver {
             for (Cell cell : entry.getValue()) {
                 String key = Bytes.toString(CellUtil.cloneQualifier(cell));
                 String value = Bytes.toString(CellUtil.cloneValue(cell));
-                if (!"photo".equals(key)){
+                if (!ObjectInfoTable.PHOTO.equals(key)){
                     infoJson.put(key, value);
-                    if ("name".equals(key)){
-                        infoJson.put("namepin", PinYinUtil.toHanyuPinyin(value));
+                    if (ObjectInfoTable.NAME.equals(key)){
+                        infoJson.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(value));
                     }
-                    if ("creator".equals(key)){
-                        infoJson.put("creatorpin", PinYinUtil.toHanyuPinyin(value));
+                    if (ObjectInfoTable.CREATOR.equals(key)){
+                        infoJson.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(value));
                     }
                     LOG.info("Put data into es {key:" + key + ", value:" + value + "}");
                 }

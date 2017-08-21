@@ -1,7 +1,8 @@
 package com.hzgc.hbase2es;
 
-import com.hzgc.hbase2es.utils.HBaseHelper;
+import com.hzgc.hbase2es.util.HBaseHelper;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
 
@@ -26,24 +27,30 @@ public class HBase2EsSuite {
     public void testCrateTableWithCoprocessor(){
         //es_cluster=zcits,es_type=zcestestrecord,es_index=zcestestrecord,es_port=9100,es_host=master
         // 注意，索引的命名规则，必须是小写字母的，不可以包含大写字母
-        Map<String, String> mapOfOberserverArgs = new HashMap<String, String>();
-        mapOfOberserverArgs.put("es_cluster","my-cluser");
-        mapOfOberserverArgs.put("es_index","objectinfo");
-        mapOfOberserverArgs.put("es_type","pcl");
-        mapOfOberserverArgs.put("es_hosts","s100_s101_s102");
-        HBaseHelper helper = new HBaseHelper();
-        try {
-            helper.dropTable("ObjectInfo");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Table table = helper.crateTableWithCoprocessor("ObjectInfo", "com.hzgc.hbase2es.HBase2EsObserver",
-                "hdfs:///user/ldl/hbase2es-1.0-jar-with-dependencies.jar", mapOfOberserverArgs, 3, "pcl");
-        try {
-            HBaseHelper.getHBaseConnection().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(table);
+//        Map<String, String> mapOfOberserverArgs = new HashMap<String, String>();
+//        mapOfOberserverArgs.put("es_cluster","my-cluser");
+//        mapOfOberserverArgs.put("es_index","objectinfo");
+//        mapOfOberserverArgs.put("es_type","pcl");
+//        mapOfOberserverArgs.put("es_hosts","s100_s101_s102");
+//        HBaseHelper helper = new HBaseHelper();
+//        try {
+//            helper.dropTable("ObjectInfo");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        Table table = HBaseHelper.crateTableWithCoprocessor("ObjectInfo", "com.hzgc.hbase2es.HBase2EsObserver",
+//                "hdfs:///user/ldl/hbase2es-1.0-jar-with-dependencies.jar", mapOfOberserverArgs, 3, "pcl");
+//        try {
+//            HBaseHelper.getHBaseConnection().close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println(table);
+    }
+
+    @Test
+    public void testHbaseConn(){
+        Connection connection = HBaseHelper.getHBaseConnection();
+        System.out.println(connection);
     }
 }
