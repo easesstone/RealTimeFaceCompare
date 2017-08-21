@@ -85,11 +85,11 @@ public class DynamicTable implements Serializable {
     /**
      * upFea表列簇-人
      */
-    public static final byte[] UPFEA_PERSON_COLUMNFAMILY = Bytes.toBytes("P");
+    public static final byte[] UPFEA_PERSON_COLUMNFAMILY = Bytes.toBytes("p");
     /**
      * 图片-人
      */
-    public static final byte[] UPFEA_PERSON_COLUMN_SMALLIMAGE = Bytes.toBytes("p");
+    public static final byte[] UPFEA_PERSON_COLUMN_SMALLIMAGE = Bytes.toBytes("s");
     /**
      * 特征值-人
      */
@@ -101,7 +101,7 @@ public class DynamicTable implements Serializable {
     /**
      * 图片-车
      */
-    public static final byte[] UPFEA_CAR_COLUMN_SMALLIMAGE = Bytes.toBytes("p");
+    public static final byte[] UPFEA_CAR_COLUMN_SMALLIMAGE = Bytes.toBytes("s");
     /**
      * 特征值-车
      */
@@ -118,10 +118,6 @@ public class DynamicTable implements Serializable {
      * searchRes表列簇
      */
     public static final byte[] SEARCHRES_COLUMNFAMILY = Bytes.toBytes("i");
-    /**
-     * 查询图片ID
-     */
-    public static final byte[] SEARCHRES_COLUMN_SEARCHIMAGEID = Bytes.toBytes("q");
     /**
      * 查询信息
      */

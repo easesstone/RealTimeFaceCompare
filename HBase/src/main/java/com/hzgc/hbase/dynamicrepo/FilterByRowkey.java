@@ -59,7 +59,7 @@ public class FilterByRowkey {
                     boolQueryBuilder.must(boolQueryBuilder2);
                 }
             }
-            if (searchType.equals(searchType.PERSON)) {
+            if (searchType.equals(SearchType.PERSON)) {
                 if (deviceId != null) {
                     Iterator it = deviceId.iterator();
                     while (it.hasNext()) {

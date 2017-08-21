@@ -42,6 +42,11 @@ public class CapturedPicture implements Serializable {
      */
     private long timeStamp;
 
+    /**
+     * 车牌，当 SearchType 为 CAR 时有用，需要支持模糊搜索
+     */
+    private String plateNumber;
+
     public String getId() {
         return id;
     }
@@ -106,6 +111,14 @@ public class CapturedPicture implements Serializable {
         this.bigImage = bigImage;
     }
 
+    public String getPlateNumber() {
+        return plateNumber;
+    }
+
+    public void setPlateNumber(String plateNumber) {
+        this.plateNumber = plateNumber;
+    }
+
     @Override
     public String toString() {
         return "CapturedPicture{" +
@@ -117,6 +130,7 @@ public class CapturedPicture implements Serializable {
                 ", smallImage=" + Arrays.toString(smallImage) +
                 ", bigImage=" + Arrays.toString(bigImage) +
                 ", timeStamp=" + timeStamp +
+                ", plateNumber='" + plateNumber + '\'' +
                 '}';
     }
 }
