@@ -20,31 +20,31 @@ public class FilterByRowKeySuit {
         SearchOption option = new SearchOption();
         List<String> deviecId = new ArrayList<>();
         deviecId.add("17130NCY0HZ0002");
-       deviecId.add("17130NCY0HZ0003");
+        deviecId.add("17130NCY0HZ0003");
         List<TimeInterval> list = new ArrayList<>();
         TimeInterval timeInterval = new TimeInterval();
-        timeInterval.setStart(1739);
-        timeInterval.setEnd(1740);
+        timeInterval.setStart(0000);
+        timeInterval.setEnd(2300);
         list.add(timeInterval);
         TimeInterval timeInterval1 = new TimeInterval();
 
-        timeInterval1.setStart(1742);
-        timeInterval1.setEnd(1743);
+        timeInterval1.setStart(0000);
+        timeInterval1.setEnd(2359);
         list.add(timeInterval1);
-        option.setIntervals(list);
-        option.setDeviceIds(deviecId);
+       // option.setIntervals(list);
+        //option.setDeviceIds(deviecId);
         option.setSearchType(SearchType.PERSON);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
         try {
-           date = simpleDateFormat.parse("2017-08-13 17:41:24");
+           date = simpleDateFormat.parse("2001-07-01 17:41:24");
         } catch (ParseException e) {
             e.printStackTrace();
         }
         option.setStartDate(date);
         Date date1 = new Date();
         try {
-            date1 = simpleDateFormat.parse("2017-08-15 17:45:17");
+            date1 = simpleDateFormat.parse("2100-09-23 17:45:17");
         } catch (ParseException e) {
             e.printStackTrace();
         }

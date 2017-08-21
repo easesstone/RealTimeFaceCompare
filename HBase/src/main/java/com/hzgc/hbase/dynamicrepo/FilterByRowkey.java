@@ -15,11 +15,14 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -34,78 +37,13 @@ public class FilterByRowkey {
         ElasticSearchHelper.getEsClient();
     }
 
-    public SearchRequestBuilder getSearchRequestBuilder(SearchOption option) {
-        String index = "dynamic";
-        String type = "person";
-        if (option.getSearchType() != null || option.getDeviceIds() != null || option.getStartDate() != null ||
-                option.getEndDate() != null || option.getIntervals() != null) {
-            SearchType searchType = option.getSearchType();
-            List<String> deviceId = option.getDeviceIds();
-            Date startTime = option.getStartDate();
-            Date endTime = option.getEndDate();
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            BoolQueryBuilder boolQueryBuilder1 = QueryBuilders.boolQuery();
-            BoolQueryBuilder boolQueryBuilder2 = QueryBuilders.boolQuery();
-            List<TimeInterval> timeIntervals = option.getIntervals();
-            TimeInterval timeInterval;
-            if (timeIntervals != null) {
-                Iterator it1 = timeIntervals.iterator();
-                while (it1.hasNext()) {
-                    timeInterval = (TimeInterval) it1.next();
-                    int start1 = timeInterval.getStart();
-                    int end1 = timeInterval.getEnd();
-                    boolQueryBuilder2.should(QueryBuilders.rangeQuery("sj").gte(start1).lte(end1));
-                    boolQueryBuilder.must(boolQueryBuilder2);
-                }
-            }
-            if (searchType.equals(SearchType.PERSON)) {
-                if (deviceId != null) {
-                    Iterator it = deviceId.iterator();
-                    while (it.hasNext()) {
-                        String t = (String) it.next();
-                        boolQueryBuilder1.should(QueryBuilders.matchPhraseQuery("s", t).analyzer("standard"));
-                    }
-                    boolQueryBuilder.must(boolQueryBuilder1);
-                }
-                if (startTime != null && endTime != null) {
-                    String start = simpleDateFormat.format(startTime);
-                    String end = simpleDateFormat.format(endTime);
-                    boolQueryBuilder.must(QueryBuilders.rangeQuery("t").gte(start).lte(end));
-                }
-            } else {
-
-            }
-            return ElasticSearchHelper.getEsClient().prepareSearch(index)
-                    .setTypes(type).setExplain(true).setSize(10000).setQuery(boolQueryBuilder);
-        } else {
-            QueryBuilder qb = matchAllQuery();
-            return ElasticSearchHelper.getEsClient().prepareSearch(index)
-                    .setTypes(type).setExplain(true).setSize(10000).setQuery(qb);
-        }
-    }
-
-    public List<String> getSearchResponse(SearchRequestBuilder searchRequestBuilder) {
-        SearchResponse searchResponse = searchRequestBuilder.get();
-        SearchHits hits = searchResponse.getHits();
-        List<String> RowKey = new ArrayList<>();
-        SearchHit[] hits1 = hits.getHits();
-        if (hits1.length > 0) {
-            for (SearchHit hit : hits1) {
-                String rowKey = hit.getId();
-                RowKey.add(rowKey);
-            }
-        }
-        return RowKey;
-    }
-
     /**
      * @param option 搜索选项
      * @return List<String> 符合条件的rowKey集合
      */
     public List<String> getRowKey(SearchOption option) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(option);
-        return getSearchResponse(searchRequestBuilder);
+        return dealWithSearchRequestBuilder(searchRequestBuilder);
     }
 
     /**
@@ -182,5 +120,115 @@ public class FilterByRowkey {
             HBaseUtil.closTable(table);
         }
         return rowKeyList;
+    }
+
+    // 内部方法，对穿过来的SearchOption 进行封装成类似拼装SQL 一样的实现。
+    // 最终生成一个SearchRequestBuilder 请求
+    private SearchRequestBuilder getSearchRequestBuilder(SearchOption option) {
+        // 传过来为空，返回空
+        if (option == null){
+            return null;
+        }
+        // 获取搜索类型，搜索类型要么是人，要么是车，不可以为空，为空不处理
+        SearchType searchType = option.getSearchType();
+        // 搜索类型为空，则返回空。
+        if (searchType == null){
+            return null;
+        }
+
+        // es 中的索引，
+        String index = "";
+        // es 中类型
+        String type = "";
+        // 最终封装成的boolQueryBuilder 对象。
+        BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
+
+        // 搜索类型为车的情况下
+        if (SearchType.PERSON.equals(searchType)){
+            // 获取设备ID
+            List<String> deviceId = option.getDeviceIds();
+            // 起始时间
+            Date startTime = option.getStartDate();
+            // 结束时间
+            Date endTime = option.getEndDate();
+            // 时间段
+            List<TimeInterval> timeIntervals = option.getIntervals();
+            // 设备ID 的的boolQueryBuilder
+            BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
+            // 格式化时间
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            // 设备ID 存在的时候的处理
+            if (deviceId != null){
+                if (deviceId != null) {
+                    Iterator it = deviceId.iterator();
+                    while (it.hasNext()) {
+                        String t = (String) it.next();
+                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery("s", t).analyzer("standard"));
+                    }
+                    totalBQ.must(devicdIdBQ);
+                }
+            }
+            // 开始时间和结束时间存在的时候的处理
+            if (startTime != null && endTime != null) {
+                String start = dateFormat.format(startTime);
+                String end = dateFormat.format(endTime);
+                totalBQ.must(QueryBuilders.rangeQuery("t").gte(start).lte(end));
+            }
+            //TimeIntervals 时间段的封装类
+            TimeInterval timeInterval;
+            // 时间段的BoolQueryBuilder
+            BoolQueryBuilder timeInQB = QueryBuilders.boolQuery();
+            // 对时间段的处理
+            if (timeIntervals != null) {
+                Iterator<TimeInterval> timeInIt = timeIntervals.iterator();
+                while (timeInIt.hasNext()) {
+                    timeInterval = timeInIt.next();
+                    int start_sj = timeInterval.getStart();
+                    int end_sj = timeInterval.getEnd();
+                    timeInQB.should(QueryBuilders.rangeQuery("sj").gte(start_sj).lte(end_sj));
+                    totalBQ.must(timeInQB);
+                }
+            }
+            index = DynamicTable.DYNAMIC_INDEX;
+            type = DynamicTable.PERSON_INDEX_TYPE;
+        }else if (SearchType.CAR.equals(searchType)){     // 搜索的是车的情况下
+
+        }
+        return ElasticSearchHelper.getEsClient()
+                .prepareSearch(index)
+                .setTypes(type)
+                .setQuery(totalBQ)
+                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(60000))
+                .setExplain(true)
+                .setSize(5000);
+    }
+
+   // 内部方法,处理SearchRequestBuilder
+    private List<String> dealWithSearchRequestBuilder(SearchRequestBuilder searchRequestBuilder) {
+        // requestBuilder 为空，则返回空
+        if (searchRequestBuilder == null){
+            return null;
+        }
+        // 通过SearchRequestBuilder 获取response 对象。
+        SearchResponse searchResponse = searchRequestBuilder.get();
+        // 最终要返回的值
+        List<String> rowkeys = new ArrayList<>();
+        // 滚动查询
+        do {
+            SearchHits searchHits = searchResponse.getHits();
+            SearchHit[] hits = searchHits.getHits();
+            if (hits.length > 0) {
+                for (SearchHit hit : hits) {
+                    String rowKey = hit.getId();
+                    rowkeys.add(rowKey);
+                }
+            }
+            searchResponse = ElasticSearchHelper.getEsClient().prepareSearchScroll(searchResponse.getScrollId())
+                    .setScroll(new TimeValue(60000))
+                    .execute()
+                    .actionGet();
+        }while (searchResponse.getHits().getHits().length != 0);
+        return rowkeys;
     }
 }
