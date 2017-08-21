@@ -42,5 +42,5 @@ public interface CapturePictureSearchService {
      * @param type    图片类型，人/车
      * @return CapturedPicture    动态库对象
      */
-    public CapturedPicture getCaptureMessage(String imageId, int type);
+    CapturedPicture getCaptureMessage(String imageId, int type);
 }
