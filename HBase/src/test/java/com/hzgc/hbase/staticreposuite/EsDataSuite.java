@@ -46,7 +46,7 @@ public class EsDataSuite {
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
                 .setScroll(new TimeValue(300000))
-                .setExplain(true).setSize(200);
+                .setExplain(true).setSize(2000);
         QueryBuilder qb = QueryBuilders.matchQuery("name", "花");
         builder.setQuery(qb);
         SearchResponse response = builder.get();
@@ -57,5 +57,39 @@ public class EsDataSuite {
                     .execute()
                     .actionGet();
         }while (response.getHits().getHits().length != 0);
+    }
+
+    @Test
+    public void testGetResultOfDynamicRepo(){
+        QueryBuilder qb = QueryBuilders.matchAllQuery();
+        Client client = ElasticSearchHelper.getEsClient();
+        SearchRequestBuilder builder = client.prepareSearch("dynamic")
+                .setTypes("person")
+                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setQuery(qb)
+                .setScroll(new TimeValue(6000))
+                .setExplain(true).setSize(2000);
+        SearchResponse response = builder.get();
+        long total_time = 0;
+        do {
+            long start_time = System.currentTimeMillis();
+            System.out.println("Search  total " + response.getHits().getHits().length);
+            SearchHit[] hits = response.getHits().getHits();
+            for (SearchHit hit:hits){
+                String time = (String) hit.getSource().get("t");
+                String sj = (String) hit.getSource().get("sj");
+                if (time == null){
+                    System.out.println(time + ": " + hit.getId());
+                }
+            }
+            long end_time = System.currentTimeMillis();
+            total_time += (end_time - start_time);
+            response = client.prepareSearchScroll(response.getScrollId())
+                    .setScroll(new TimeValue(6000))
+                    .execute()
+                    .actionGet();
+        }while (response.getHits().getHits().length != 0);
+        System.out.println(total_time);
+
     }
 }

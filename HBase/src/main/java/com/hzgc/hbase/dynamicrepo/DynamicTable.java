@@ -126,4 +126,8 @@ public class DynamicTable implements Serializable {
      * 查询信息
      */
     public static final byte[] SEARCHRES_COLUMN_SEARCHMESSAGE = Bytes.toBytes("m");
+    // 以下是索引类型常量
+    public static final String DYNAMIC_INDEX = "dynamic";
+    public static final String PERSON_INDEX_TYPE = "person";
+
 }
