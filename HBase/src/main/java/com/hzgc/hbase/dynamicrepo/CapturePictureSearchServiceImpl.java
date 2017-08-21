@@ -1,7 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
-import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
@@ -73,8 +72,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         Result result;
         try {
             result = searchResTable.get(get);
-            String searchImageID = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID));
-
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
             Map<String, Float> searchMessageMap;
             searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
@@ -119,7 +116,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 //结束行大于总数
                 subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
             }
-
             searchResult.setPictures(subCapturePictureList);
             searchResult.setSearchId(searchId);
             searchResult.setTotal(capturedPictureList.size());
@@ -199,7 +195,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId && param) {
             capturedPicture.setId(imageId);
-            Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
+            // FIXME: 2017-8-19 部署时需要修改此处代码，解除注释
+            /* Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
             if (!map.isEmpty()) {
                 String ipcID = map.get("ipcID");
                 capturedPicture.setIpcId(ipcID);
@@ -207,10 +204,10 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 capturedPicture.setTimeStamp(Long.valueOf(timeStampStr));
             } else {
                 LOG.error("map is empty,used method CapturePictureSearchServiceImpl.getCaptureMessage.");
-            }
-            String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
+            }*/
+            //String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
             StringBuilder bigImageRowKey = new StringBuilder();
-            bigImageRowKey.append(rowKey).append("_").append("00");
+            bigImageRowKey.append(imageId).append("_").append("00");
 
             Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
@@ -355,6 +352,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
         mapEx.put("ex", ex);
         capturedPicture.setExtend(mapEx);
+
+        //不从rowkey解析，直接从数据库中读取ipcId和timestamp
+        String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
+        capturedPicture.setIpcId(ipcId);
+
+        long time = Bytes.toLong(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+        capturedPicture.setTimeStamp(time);
     }
 
     private void setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
@@ -374,6 +378,16 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
         mapEx.put("ex", ex);
         capturedPicture.setExtend(mapEx);
+
+        //不从rowkey解析，直接从数据库中读取ipcId和timestamp
+        String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
+        capturedPicture.setIpcId(ipcId);
+
+        long time = Bytes.toLong(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
+        capturedPicture.setTimeStamp(time);
+
+        String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
+        capturedPicture.setPlateNumber(plateNumber);
     }
 
     private void setBigImageToCapturedPicture_car(CapturedPicture capturedPicture, Result bigImageResult) {

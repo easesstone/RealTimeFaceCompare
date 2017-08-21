@@ -5,7 +5,6 @@ import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -14,9 +13,11 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.hzgc.util.ObjectUtil.byteToObject;
 import static com.hzgc.util.ObjectUtil.objectToByte;
 
 /**
@@ -47,7 +48,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                LOG.error("inserte feature by rowkey from table_person failed! used method DynamicPhotoServiceImpl.insertePictureFeature.");
+                LOG.error("insert feature by rowKey from table_person failed! used method DynamicPhotoServiceImpl.insertePictureFeature.");
             } finally {
                 HBaseUtil.closTable(person);
             }
@@ -61,12 +62,12 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                LOG.error("inserte feature by rowkey from table_car failed! used method DynamicPhotoServiceImpl.insertePictureFeature.");
+                LOG.error("insert feature by rowKey from table_car failed! used method DynamicPhotoServiceImpl.insertPictureFeature.");
             } finally {
                 HBaseUtil.closTable(car);
             }
         } else {
-            LOG.error("method DynamicPhotoServiceImpl.insertePictureFeature param is empty.");
+            LOG.error("method DynamicPhotoServiceImpl.insertPictureFeature param is empty.");
         }
         return false;
     }
@@ -80,7 +81,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return byte[] 小图特征值
      */
     @Override
-    public byte[] getFeature(String imageId, PictureType type) throws Exception {
+    public byte[] getFeature(String imageId, PictureType type) {
         byte[] feature = null;
         if (null != imageId) {
             Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
@@ -92,7 +93,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     feature = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_person failed! used method FilterByRowkey.getSmallImage");
+                    LOG.error("get feature by imageId from table_person failed! used method FilterByRowKey.getSmallImage");
                 } finally {
                     HBaseUtil.closTable(personTable);
                 }
@@ -102,13 +103,13 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     feature = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_car failed! used method FilterByRowkey.getSmallImage");
+                    LOG.error("get feature by imageId from table_car failed! used method FilterByRowKey.getSmallImage");
                 } finally {
                     HBaseUtil.closTable(personTable);
                 }
             }
         } else {
-            LOG.error("method FilterByRowkey.getFeature param is empty");
+            LOG.error("method FilterByRowKey.getFeature param is empty");
         }
         return feature;
     }
@@ -129,30 +130,28 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         if (null != rowKey && type == PictureType.PERSON) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
-                byte[] imageData = image;
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(image.toString()));
+                put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 table.put(put);
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                LOG.error("inserte feature by rowkey from table_person failed! used method DynamicPhotoServiceImpl.insertePictureFeature.");
+                LOG.error("insert feature by rowKey from table_person failed! used method DynamicPhotoServiceImpl.insertPictureFeature.");
             } finally {
                 HBaseUtil.closTable(table);
             }
         } else if (null != rowKey && type == PictureType.CAR) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
-                byte[] imageData = image;
                 Put put = new Put(Bytes.toBytes(rowKey));
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
-                put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(image.toString()));
+                put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 table.put(put);
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                LOG.error("inserte feature by rowkey from table_car failed! used method DynamicPhotoServiceImpl.upPictureInsert.");
+                LOG.error("insert feature by rowKey from table_car failed! used method DynamicPhotoServiceImpl.upPictureInsert.");
             } finally {
                 HBaseUtil.closTable(table);
             }
@@ -167,23 +166,21 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * 表名：searchRes
      *
      * @param searchId     查询ID（rowKey）
-     * @param queryImageId 查询图片ID
      * @param resList      查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
     @Override
-    public boolean insertSearchRes(String searchId, String queryImageId, Map<String, Float> resList) {
+    public boolean insertSearchRes(String searchId, Map<String, Float> resList) {
         Table searchRes = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
         try {
             Put put = new Put(Bytes.toBytes(searchId));
-            put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHIMAGEID, Bytes.toBytes(queryImageId));
             byte[] searchMessage = objectToByte(resList);
             put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE, searchMessage);
             searchRes.put(put);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            LOG.error("inserte data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.insertSearchRes.");
+            LOG.error("insert data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.insertSearchRes.");
         } finally {
             HBaseUtil.closTable(searchRes);
         }
@@ -205,7 +202,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         try {
             Result result = searchRes.get(get);
             byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
+            searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");
