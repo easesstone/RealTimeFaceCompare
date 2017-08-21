@@ -10,7 +10,6 @@ public class FileUtil {
 
     public static File loadResourceFile(String resourceName) {
         if (StringUtil.strIsRight(resourceName)) {
-            System.out.println(ClassLoader.getSystemResource(""));
             URL url = ClassLoader.getSystemResource(resourceName);
             if (url != null) {
                 File file = new File(url.getPath());
