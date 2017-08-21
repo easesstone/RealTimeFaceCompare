@@ -19,10 +19,11 @@
         <module>JNI</module>
         <module>HBase2Es</module>
         <module>Util</module>
-        <module>ElasticSearch</module>
+        <!--<module>ElasticSearch</module>-->
     </modules>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hbase.version>1.0.2</hbase.version>
         <log4j.version>1.2.17</log4j.version>
         <hadoop.version>2.7.2</hadoop.version>
