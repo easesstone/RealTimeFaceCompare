@@ -24,9 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 
 
-/**
- * Created by Administrator on 2017-8-12.
- */
 public class RealTimeCompare implements Serializable {
     private static Logger LOG = Logger.getLogger(RealTimeCompare.class);
     private static SearchType searchType;//查询类型（人、车）

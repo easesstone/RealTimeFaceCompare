@@ -72,9 +72,7 @@ public class FilterByRowkey {
                     }
                 }
                 if (!map.isEmpty()) {
-                    Iterator<String> iter = map.keySet().iterator();
-                    while (iter.hasNext()) {
-                        String key = iter.next();
+                    for (String key : map.keySet()) {
                         String value = map.get(key);
                         if (value.contains(plateNumber)) {
                             rowKeyList.add(key);
