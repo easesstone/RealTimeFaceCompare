@@ -17,7 +17,6 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -27,8 +26,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class FilterByRowkey {
     private static Logger LOG = Logger.getLogger(FilterByRowkey.class);
@@ -205,7 +202,7 @@ public class FilterByRowkey {
                 .setSize(5000);
     }
 
-   // 内部方法,处理SearchRequestBuilder
+    // 内部方法,处理SearchRequestBuilder
     private List<String> dealWithSearchRequestBuilder(SearchRequestBuilder searchRequestBuilder) {
         // requestBuilder 为空，则返回空
         if (searchRequestBuilder == null){
