@@ -206,12 +206,15 @@ public class RealTimeCompare implements Serializable {
      * @return 返回满足所有查询条件的图片rowkey
      */
     private SearchResult compareByOthers(PictureType pictureType, SearchOption option) {
+        imgSimilarityMap = new HashMap<>();
+        capturePictureSearchService = new CapturePictureSearchServiceImpl();
+        capturedPictures = new ArrayList<>();
         //采用HBase+elasticSearch，根据deviceId、时间参数圈定查询范围,得到一组满足条件的图像id
         imageIdList = getImageIdListFromHBase(option);
         if (null != imageIdList && imageIdList.size() > 0) {
             JavaRDD<String> imageIdListRDD = jsc.parallelize(imageIdList);
             int messageType = pictureType.getType() + 6;
-            imageIdListRDD.filter(v1 -> v1 != null && v1.length() > 0).foreach((VoidFunction<String>) s -> {
+            imageIdListRDD.foreach((VoidFunction<String>) s -> {
                 //根据imageId 读取数据的其他信息
                 CapturedPicture capturedPicture;
                 //人车的type+6对应只返回图片的信息，而不返回图片数据
@@ -234,6 +237,7 @@ public class RealTimeCompare implements Serializable {
             searchResult.setSearchId(searchId);
             //设置查询到的总得记录条数
             searchResult.setTotal(capturedPictures.size());
+            System.out.println("list size:" + capturedPictures.size());
             //保存到Hbase
             boolean flag = dynamicPhotoService.insertSearchRes(searchId, imgSimilarityMap);
             if (flag) {

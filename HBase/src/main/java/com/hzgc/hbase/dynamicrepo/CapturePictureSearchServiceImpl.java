@@ -33,7 +33,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         HBaseHelper.getHBaseConnection();
         SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
         jsc = new JavaSparkContext(conf);
-        //RealTimeCompare.setJsc(jsc);
     }
 
     /**
