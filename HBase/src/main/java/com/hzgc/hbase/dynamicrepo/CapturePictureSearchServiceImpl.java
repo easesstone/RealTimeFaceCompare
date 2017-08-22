@@ -1,6 +1,7 @@
 package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
+import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
@@ -11,6 +12,8 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +26,15 @@ import java.util.Map;
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
+    private static JavaSparkContext jsc;
+
+    static {
+        ElasticSearchHelper.getEsClient();
+        HBaseHelper.getHBaseConnection();
+        SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
+        jsc = new JavaSparkContext(conf);
+        //RealTimeCompare.setJsc(jsc);
+    }
 
     /**
      * 接收应用层传递的参数进行搜图，如果大数据处理的时间过长，
@@ -32,11 +44,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 搜索结果SearchResult对象
      */
     @Override
-    public SearchResult search(SearchOption option) {
-        SearchResult searchResult = null;
+    public synchronized SearchResult search(SearchOption option) {
         RealTimeCompare realTimeCompare = new RealTimeCompare();
+        SearchResult searchResult = null;
         try {
-            searchResult = realTimeCompare.pictureSearch(option);
+            searchResult = realTimeCompare.pictureSearch(option, jsc);
             List<CapturedPicture> capturedPictureList = searchResult.getPictures();
             System.out.println("查询结果：");
             System.out.println(searchResult);
@@ -44,9 +56,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             System.out.println("返回图片数量：" + capturedPictureList.size());
             for (CapturedPicture aCapturedPictureList : capturedPictureList) {
                 System.out.println(aCapturedPictureList.toString());
-
             }
-
         } catch (Exception e) {
             e.printStackTrace();
 
