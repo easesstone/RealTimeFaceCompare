@@ -9,7 +9,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hzgc</groupId>
     <artifactId>hbase2es</artifactId>
     <properties>
          <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,6 +59,12 @@
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
             <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>dubbo</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- 日志文件管理包 -->
         <!-- log start -->
