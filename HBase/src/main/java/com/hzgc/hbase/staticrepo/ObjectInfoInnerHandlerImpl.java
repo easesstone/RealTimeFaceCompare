@@ -68,27 +68,28 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         List<String> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
-        scan.setStartRow(Bytes.toBytes("0"));
-        scan.setStopRow(Bytes.toBytes("9999999999999999999999999"));
         try {
             ResultScanner resultScanner = objectinfo.getScanner(scan);
             Iterator<Result> iterator = resultScanner.iterator();
             while (iterator.hasNext()){
                 Result result = iterator.next();
-                String rowKey = String.valueOf(result.getRow());
-                String pkey = String.valueOf(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                String rowKey = Bytes.toString(result.getRow());
+                String pkey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
-                String feature = String.valueOf(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.FEATURE)));
-                if(null != feature && feature.length() == 2048){
+                byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.FEATURE));
+                if(null != feature && feature.length > 20){
                     //将人员类型rowkey和特征值进行拼接
-                    String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature;
+                    String feature_str = new String(feature, "ISO8859-1");
+                    String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature_str;
                     //将结果添加到集合中
                     findResult.add(result1);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            HBaseUtil.closTable(objectinfo);
         }
         return findResult;
     }
