@@ -15,6 +15,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import org.apache.log4j.*;
@@ -59,6 +60,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             if (ObjectInfoTable.PHOTO.equals(field)) {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         (byte[]) person.get(field));
+            }else if (ObjectInfoTable.FEATURE.equals(field)){
+                try {
+                    put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
+                            ((String)person.get(field)).getBytes("ISO8859-1"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             } else {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         Bytes.toBytes((String) person.get(field)));
@@ -172,6 +180,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             if (ObjectInfoTable.PHOTO.equals(field)) {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         (byte[]) person.get(field));
+            } else if (ObjectInfoTable.FEATURE.equals(field)){
+                try {
+                    put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
+                            ((String)person.get(field)).getBytes("ISO8859-1"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             } else {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         Bytes.toBytes((String) person.get(field)));

@@ -68,27 +68,28 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         List<String> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
-        scan.setStartRow(Bytes.toBytes("0"));
-        scan.setStopRow(Bytes.toBytes("9999999999999999999999999"));
         try {
             ResultScanner resultScanner = objectinfo.getScanner(scan);
             Iterator<Result> iterator = resultScanner.iterator();
             while (iterator.hasNext()){
                 Result result = iterator.next();
-                String rowKey = String.valueOf(result.getRow());
-                String pkey = String.valueOf(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                String rowKey = Bytes.toString(result.getRow());
+                String pkey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
-                String feature = String.valueOf(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.FEATURE)));
-                if(null != feature && feature.length() == 2048){
+                byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.FEATURE));
+                if(null != feature && feature.length == 2048){
                     //将人员类型rowkey和特征值进行拼接
-                    String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature;
+                    String feature_str = new String(feature, "ISO8859-1");
+                    String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature_str;
                     //将结果添加到集合中
                     findResult.add(result1);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            HBaseUtil.closTable(objectinfo);
         }
         return findResult;
     }
@@ -166,7 +167,6 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         do {
             SearchHits hits = searchResponse.getHits();
             SearchHit[] searchHits = hits.getHits();
-            System.out.println("pkey为：null时，查询得到的记录数为：" + hits.getTotalHits());
             if (searchHits.length > 0) {
                 for (SearchHit hit : searchHits) {
                     //得到每个人员类型对应的rowkey
@@ -174,8 +174,9 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                     //得到每个人员类型对应的特征值
                     Map<String, Object> sourceList = hit.getSource();
                     String updatetime = (String) sourceList.get("updatetime");
+                    String pkey = (String)sourceList.get("pkey");
                     //将人员类型、rowkey和特征值进行拼接
-                    String result = id + "ZHONGXIAN" + updatetime;
+                    String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
                     //将结果添加到集合中
                     findResult.add(result);
                 }
