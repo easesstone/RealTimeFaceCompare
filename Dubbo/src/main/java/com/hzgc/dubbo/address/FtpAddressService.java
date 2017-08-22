@@ -9,6 +9,6 @@ public interface FtpAddressService {
      *
      * @return key = ip,返回地址；key = port,返回端口号;key = user,返回账户名;key = password,返回密码
      */
-	public Properties getftpAddress();
+    Properties getftpAddress();
 
 }

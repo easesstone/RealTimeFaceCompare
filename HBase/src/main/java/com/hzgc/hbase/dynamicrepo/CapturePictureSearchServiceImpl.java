@@ -53,12 +53,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             System.out.println(searchResult);
             System.out.println("相似图片数量：" + searchResult.getTotal());
             System.out.println("返回图片数量：" + capturedPictureList.size());
-            for (CapturedPicture aCapturedPictureList : capturedPictureList) {
-                System.out.println(aCapturedPictureList.toString());
-            }
         } catch (Exception e) {
             e.printStackTrace();
-
         }
         return searchResult;
     }
