@@ -1,6 +1,7 @@
 package com.hzgc.ftpserver.kafka.consumer;
 
 import com.hzgc.ftpserver.kafka.consumer.face.FaceConsumerContext;
+import com.hzgc.ftpserver.kafka.consumer.feature.FeatureConsumerContext;
 import com.hzgc.ftpserver.kafka.consumer.json.JsonConsumerContext;
 import com.hzgc.ftpserver.kafka.consumer.picture2.PicConsumerContext;
 import org.apache.hadoop.conf.Configuration;
@@ -23,10 +24,11 @@ public class ConsumerGroupsMain implements Serializable {
         try {
             Configuration hbaseConf = HBaseConfiguration.create();
             Connection hbaseConn = ConnectionFactory.createConnection(hbaseConf);
-            executors = Executors.newFixedThreadPool(3);
+            executors = Executors.newFixedThreadPool(4);
             executors.submit(new PicConsumerContext(hbaseConn));
             executors.submit(new FaceConsumerContext(hbaseConn));
             executors.submit(new JsonConsumerContext(hbaseConn));
+            executors.submit(new FeatureConsumerContext(hbaseConn));
         } catch (IOException e) {
             e.printStackTrace();
         }
