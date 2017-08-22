@@ -78,7 +78,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
                 byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.FEATURE));
-                if(null != feature && feature.length > 20){
+                if(null != feature && feature.length == 2048){
                     //将人员类型rowkey和特征值进行拼接
                     String feature_str = new String(feature, "ISO8859-1");
                     String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature_str;
