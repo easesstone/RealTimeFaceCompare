@@ -72,9 +72,7 @@ public class FilterByRowkey {
                     }
                 }
                 if (!map.isEmpty()) {
-                    Iterator<String> iter = map.keySet().iterator();
-                    while (iter.hasNext()) {
-                        String key = iter.next();
+                    for (String key : map.keySet()) {
                         String value = map.get(key);
                         if (value.contains(plateNumber)) {
                             rowKeyList.add(key);
@@ -184,7 +182,9 @@ public class FilterByRowkey {
                 while (timeInIt.hasNext()) {
                     timeInterval = timeInIt.next();
                     int start_sj = timeInterval.getStart();
+                    start_sj = start_sj / 60 + start_sj % 60;
                     int end_sj = timeInterval.getEnd();
+                    end_sj = end_sj / 60 + end_sj % 60;
                     timeInQB.should(QueryBuilders.rangeQuery("sj").gte(start_sj).lte(end_sj));
                     totalBQ.must(timeInQB);
                 }
@@ -197,6 +197,7 @@ public class FilterByRowkey {
         return ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
                 .setTypes(type)
+                .setFetchSource(new String[]{"sj"}, null)
                 .setQuery(totalBQ)
                 .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
