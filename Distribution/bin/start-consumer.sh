@@ -34,7 +34,7 @@ function start_consumer()
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
-    nohup java -classpath $CONF_DIR:$LIB_JARS com.hzgc.ftpserver.kafka.consumer.ConsumerGroupsMain > ${LOG_FILE} 2>&1 &
+    nohup java -server -Xms2g -Xmx4g  -XX:PermSize=512m -XX:MaxPermSize=512m  -classpath $CONF_DIR:$LIB_JARS com.hzgc.ftpserver.kafka.consumer.ConsumerGroupsMain > ${LOG_FILE} 2>&1 &
 }
 
 #####################################################################

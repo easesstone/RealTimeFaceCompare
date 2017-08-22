@@ -189,6 +189,43 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
    }
 
+    public  List<String> searchByPkeysUpdateTime(List<String> pkeys){
+        List<String> findResult = new ArrayList<>();
+        QueryBuilder qb = QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys);
+        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
+                .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setTypes(ObjectInfoTable.PERSON_COLF)
+                .setQuery(qb)
+                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(6000))
+                .setSize(1000)
+                .setExplain(true);
+        SearchResponse searchResponse = requestBuilder.get();
+        do {
+            SearchHits hits = searchResponse.getHits();
+            SearchHit[] searchHits = hits.getHits();
+            if (searchHits.length > 0) {
+                for (SearchHit hit : searchHits) {
+                    //得到每个人员类型对应的rowkey
+                    String id = hit.getId();
+                    //得到每个人员类型对应的特征值
+                    Map<String, Object> sourceList = hit.getSource();
+                    String updatetime = (String) sourceList.get("updatetime");
+                    String pkey = (String)sourceList.get("pkey");
+                    //将人员类型、rowkey和特征值进行拼接
+                    String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
+                    //将结果添加到集合中
+                    findResult.add(result);
+                }
+            }
+            searchResponse = ElasticSearchHelper.getEsClient().prepareSearchScroll(searchResponse.getScrollId())
+                    .setScroll(new TimeValue(6000))
+                    .execute()
+                    .actionGet();
+        } while (searchResponse.getHits().getHits().length != 0);
+        return findResult;
+    }
+
     public int updateObjectInfoTime(String rowkey) {
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
