@@ -2,10 +2,10 @@
 <configuration>
     <property>
         <name>hbase.zookeeper.quorum</name>
-        <value>ldl</value>
+        <value>s116,s115,s114</value>
     </property>
     <property>
         <name>hbase.zookeeper.property.clientPort</name>
-        <value>2181</value>
+        <value>24002</value>
     </property>
 </configuration>

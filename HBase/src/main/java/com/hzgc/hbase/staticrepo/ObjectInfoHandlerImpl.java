@@ -6,7 +6,11 @@ import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.util.PinYinUtil;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
+import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.util.Bytes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,6 +49,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         String rowkey =  platformId + idcard;
         LOG.info("rowkey: " + rowkey);
+        List<Put> puts = new ArrayList<>();
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         //构造Put 对象
@@ -71,7 +76,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 Bytes.toBytes(ObjectInfoTable.PLATFORMID), Bytes.toBytes(platformId));
         // 执行Put 操作，往表格里面添加一行数据
         try {
-            objectinfo.put(put);
+            puts.add(put);
+            Put putOfTNums = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            putOfTNums.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                    Bytes.toBytes(getTotalNums(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF) + 1));
+            puts.add(putOfTNums);
+            objectinfo.put(puts);
             LOG.info("Form addition successed!");
             return 0;
         } catch (IOException e) {
@@ -87,6 +98,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public int deleteObjectInfo(List<String> rowkeys) {
         // 获取table 对象，通过封装HBaseHelper 来获取
+        //
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Delete> deletes = new ArrayList<>();
         Delete delete;
@@ -94,9 +106,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             delete = new Delete(Bytes.toBytes(rowkey));
             deletes.add(delete);
         }
+        Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+        put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                Bytes.toBytes(getTotalNums(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF) - 1));
         // 执行删除操作
         try {
             table.delete(deletes);
+            table.put(put);
             LOG.info("table delete successed!");
             return 0;
         } catch (IOException e) {
@@ -107,6 +124,36 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             //关闭表连接
             HBaseUtil.closTable(table);
         }
+    }
+
+    private long getTotalNums(String tableName, String family){
+        AggregationClient ac = new AggregationClient(HBaseHelper.getHBaseConfiguration());
+        String coprocessorClassName = "org.apache.hadoop.hbase.coprocessor.AggregateImplementation";
+        Admin admin = null;
+        long rowCount = 0;
+        try {
+            admin = HBaseHelper.getHBaseConnection().getAdmin();
+            TableName tableName1 = TableName.valueOf(tableName);
+            HTableDescriptor htd = admin.getTableDescriptor(tableName1);
+            boolean flag = htd.hasCoprocessor(coprocessorClassName);// 有就是true 没有就是 false
+            if (!flag) {
+                admin.disableTable(tableName1);
+                htd.addCoprocessor(coprocessorClassName);
+                admin.modifyTable(tableName1, htd);
+                admin.enableTable(tableName1);
+            }
+            Scan scan = new Scan();
+            scan.addFamily(Bytes.toBytes(family));
+            final LongColumnInterpreter longColumnInterpreter = new LongColumnInterpreter();
+            try {
+                rowCount = ac.rowCount(TableName.valueOf(tableName), longColumnInterpreter, scan);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return rowCount;
     }
 
     @Override

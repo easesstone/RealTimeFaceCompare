@@ -3,11 +3,12 @@ package com.hzgc.hbase.staticreposuite;
 import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
 import com.hzgc.hbase.staticrepo.*;
 import com.hzgc.hbase.util.HBaseHelper;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
+import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.elasticsearch.client.Client;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 
@@ -16,11 +17,12 @@ import java.util.*;
 
 public class StaticRepoUtilSuite {
 
+    // 测试往静态信息库中插入一条数据
     @Test
     public void testAddObjectInfo(){
         String platformId = "1234";
         Map<String, Object> person = new HashMap<String, Object>();
-        person.put("id","1111111111jkh11111111");
+//        person.put("id","1111111111jkh11111111");
         person.put("name", "化满天");
         person.put("idcard", "1111111111jkh11111111");
         person.put("sex", "1");
@@ -39,6 +41,13 @@ public class StaticRepoUtilSuite {
         int flag = new ObjectInfoHandlerImpl().addObjectInfo(platformId, person);
         System.out.println(flag);
     }
+
+    //测试获取hbase 中静态信息库的总记录数
+    @Test
+    public void testGetTotalNums(){
+        System.out.println(new ObjectInfoInnerHandlerImpl().getTotalNums());
+    }
+
     @Test
     public void testUpdateObjectInfo(){
         Map<String, Object> person = new HashMap<String, Object>();
@@ -61,17 +70,20 @@ public class StaticRepoUtilSuite {
         System.out.println(flag);
     }
 
+    // 测试删除静态信息库里面的一条数据
     @Test
     public void testDeleteObjectInfo() throws IOException {
-        Table tableName = HBaseHelper.getTable("objectinfo");
-        Put put = new Put(Bytes.toBytes("111111111111111111123456"));
-        put.addColumn(Bytes.toBytes("person"),Bytes.toBytes("name"),Bytes.toBytes("Liu siyang"));
-        tableName.put(put);
+//        Table tableName = HBaseHelper.getTable("objectinfo");
+//        Put put = new Put(Bytes.toBytes("111111111111111111123456"));
+//        put.addColumn(Bytes.toBytes("person"),Bytes.toBytes("name"),Bytes.toBytes("Liu siyang"));
+//        tableName.put(put);
         List<String> rowkeys = new ArrayList<>();
-        rowkeys.add("111111111111111111123456");
+        rowkeys.add("06efa837aec14fbebb1fd4435e8b9994");
         int flag = new ObjectInfoHandlerImpl().deleteObjectInfo(rowkeys);
         System.out.println(flag);
     }
+
+    // 测试HBbase 连接
     @Test
     public void testHbaseConn(){
         Connection conn = HBaseHelper.getHBaseConnection();
@@ -181,5 +193,35 @@ public class StaticRepoUtilSuite {
         String rk = "fd62eda051c54cfmmnc7df";
         byte[] a = searchRecordHandler.getSearchPhoto(rk);
         System.out.println(a);
+    }
+
+    public static long rowCount(String tableName, String family) throws IOException {
+        AggregationClient ac = new AggregationClient(HBaseHelper.getHBaseConfiguration());
+        String coprocessorClassName = "org.apache.hadoop.hbase.coprocessor.AggregateImplementation";
+        Admin admin = HBaseHelper.getHBaseConnection().getAdmin();
+        TableName tableName1 = TableName.valueOf(tableName);
+        HTableDescriptor htd = admin.getTableDescriptor(tableName1);
+        boolean flag = htd.hasCoprocessor(coprocessorClassName);// 有就是true 没有就是 false
+        if (!flag) {
+            admin.disableTable(tableName1);
+            htd.addCoprocessor(coprocessorClassName);
+            admin.modifyTable(tableName1, htd);
+            admin.enableTable(tableName1);
+        }
+        Scan scan = new Scan();
+        scan.addFamily(Bytes.toBytes(family));
+        long rowCount = 0;
+        final LongColumnInterpreter longColumnInterpreter = new LongColumnInterpreter();
+        try {
+            rowCount = ac.rowCount(TableName.valueOf(tableName), longColumnInterpreter, scan);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return rowCount;
+    }
+
+    @Test
+    public void testRowCount() throws IOException {
+        System.out.println(rowCount("objectinfo", "person"));
     }
 }
