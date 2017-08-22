@@ -167,7 +167,6 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         do {
             SearchHits hits = searchResponse.getHits();
             SearchHit[] searchHits = hits.getHits();
-            System.out.println("pkey为：null时，查询得到的记录数为：" + hits.getTotalHits());
             if (searchHits.length > 0) {
                 for (SearchHit hit : searchHits) {
                     //得到每个人员类型对应的rowkey
