@@ -3,11 +3,7 @@ package com.hzgc.hbase.staticrepo;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
-import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -27,58 +23,71 @@ import java.util.*;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable{
+    private ObjectInfoInnerHandlerImpl(){}
     static {
         ElasticSearchHelper.getEsClient();
     }
-
-    private long totalNums;
+    private static ObjectInfoInnerHandlerImpl instance;
+    private static long totalNums = getTotalNums();
 
     // 对外接口，用于判断HBase 中的静态信息库数据量是否有改变,true 表示有变化
     // false 表示没有变化
-    public boolean totalNumIsChange(){
-        if (totalNums == getTotalNums()){
+    public synchronized boolean totalNumIsChange(){
+        long newTotalNums = getTotalNums();
+        if (totalNums == newTotalNums){
+            System.out.println("totalNums is not change, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
             return false;
         } else {
-            setTotalNums();
+            System.out.println("totalNums has changed, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
+            setTotalNums(newTotalNums);
             return true;
         }
     }
 
+    public static ObjectInfoInnerHandlerImpl getInstance() {
+        if (instance == null) {
+            synchronized (ObjectInfoInnerHandlerImpl.class) {
+                if (instance == null) {
+                    instance = new ObjectInfoInnerHandlerImpl();
+                }
+            }
+        }
+        return instance;
+    }
     // 类内部使用方法
-    private void setTotalNums(){
-        totalNums = getTotalNums();
+    private static synchronized void setTotalNums(long newToalNums){
+        totalNums = newToalNums;
+        System.out.println("set new number successfull, new number is:" + totalNums);
     }
 
     // 类内部使用方法
-    public long getTotalNums(){
-       Get get = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
-       Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-       try {
+    public static synchronized long getTotalNums(){
+        Get get = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+        Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+        try {
             Result result = table.get(get);
             return Bytes.toLong(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                     Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS)));
         } catch (IOException e) {
-           e.printStackTrace();
-           return 0L;
-       }
+            e.printStackTrace();
+            return 0L;
+        }
     }
 
     //查询所有的数据，返回其中的rowkey 和 feature
-    public List<String> searchByPkeys() {
+    public synchronized List<String> searchByPkeys() {
         List<String> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
         try {
             ResultScanner resultScanner = objectinfo.getScanner(scan);
-            Iterator<Result> iterator = resultScanner.iterator();
-            while (iterator.hasNext()){
-                Result result = iterator.next();
+            for (Result result : resultScanner) {
                 String rowKey = Bytes.toString(result.getRow());
                 String pkey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
                 byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.FEATURE));
-                if(null != feature && feature.length == 2048){
+                if (null != feature && feature.length == 2048) {
                     //将人员类型rowkey和特征值进行拼接
                     String feature_str = new String(feature, "ISO8859-1");
                     String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature_str;
@@ -96,7 +105,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
 
     // 根据pkey 的List 来进行返回符合条件的数据，
     @Override
-    public List<String> searchByPkeys(List<String> pkeys) {
+    public synchronized List<String> searchByPkeys(List<String> pkeys) {
         if (pkeys == null){
             return null;
         }
@@ -152,7 +161,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public  List<String> searchByPkeysUpdateTime(){
+    public synchronized List<String> searchByPkeysUpdateTime(){
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = matchAllQuery();
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -187,9 +196,9 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                     .actionGet();
         } while (searchResponse.getHits().getHits().length != 0);
         return findResult;
-   }
+    }
 
-    public  List<String> searchByPkeysUpdateTime(List<String> pkeys){
+    public synchronized  List<String> searchByPkeysUpdateTime(List<String> pkeys){
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys);
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -226,7 +235,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public int updateObjectInfoTime(String rowkey) {
+    public synchronized int updateObjectInfoTime(String rowkey) {
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Put put = new Put(Bytes.toBytes(rowkey));
