@@ -4,6 +4,7 @@ import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.util.DateUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.ObjectUtil;
@@ -107,7 +108,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     capturedPicture.setExtend(mapEx);
                     byte[] smallImage = personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
                     capturedPicture.setSmallImage(smallImage);
-                    long timeStamp = Bytes.toLong(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+                    String time = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+                    long timeStamp = DateUtil.dateToTimeStamp(time);
                     capturedPicture.setTimeStamp(timeStamp);
                     capturedPictureList.add(capturedPicture);
                 }
@@ -366,8 +368,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
         capturedPicture.setIpcId(ipcId);
 
-        long time = Bytes.toLong(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-        capturedPicture.setTimeStamp(time);
+        String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+        long timeStamp = DateUtil.dateToTimeStamp(time);
+        capturedPicture.setTimeStamp(timeStamp);
     }
 
     private void setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
@@ -392,8 +395,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
         capturedPicture.setIpcId(ipcId);
 
-        long time = Bytes.toLong(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
-        capturedPicture.setTimeStamp(time);
+        String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
+        long timeStamp = DateUtil.dateToTimeStamp(time);
+        capturedPicture.setTimeStamp(timeStamp);
 
         String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
         capturedPicture.setPlateNumber(plateNumber);
