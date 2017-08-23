@@ -20,8 +20,9 @@ import scala.collection.JavaConverters
 object FaceOffLineAlarmJob {
   def main(args: Array[String]): Unit = {
     val offLineAlarmMessage = new OffLineAlarmMessage()
-    val appName = PropertiesUtils.getPropertiesValue("job.offLine.appName")
-    val master = PropertiesUtils.getPropertiesValue("job.offLine.master")
+    val propertiesUtils=new PropertiesUtils()
+    val appName = propertiesUtils.getPropertiesValue("job.offLine.appName")
+    val master = propertiesUtils.getPropertiesValue("job.offLine.master")
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     val sc = new SparkContext(conf)
     val deviceUtilImpl = new DeviceUtilImpl()

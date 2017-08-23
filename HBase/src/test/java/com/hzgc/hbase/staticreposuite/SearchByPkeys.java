@@ -9,11 +9,11 @@ import java.util.List;
  */
 public class SearchByPkeys {
     public static void main(String[] args) {
-        /*ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
+        ObjectInfoInnerHandlerImpl objectInfoInnerHandler = ObjectInfoInnerHandlerImpl.getInstance();
         List<String> a  =  objectInfoInnerHandler.searchByPkeys();
         for (String str: a){
             System.out.println(str);
         }
-        System.out.println(a.size());*/
+        System.out.println(a.size());
     }
 }

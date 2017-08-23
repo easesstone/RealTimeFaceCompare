@@ -25,9 +25,10 @@ object FaceRecognizeAlarmJob {
   def main(args: Array[String]): Unit = {
     val objectInfoInnerHandlerImpl = ObjectInfoInnerHandlerImpl.getInstance()
     val deviceUtilI = new DeviceUtilImpl()
+    val propertiesUtils=new PropertiesUtils()
     //初始化spark的配置对象
-    val appName = PropertiesUtils.getPropertiesValue("job.recognizeAlarm.appName")
-    val master = PropertiesUtils.getPropertiesValue("job.recognizeAlarm.master")
+    val appName = propertiesUtils.getPropertiesValue("job.recognizeAlarm.appName")
+    val master = propertiesUtils.getPropertiesValue("job.recognizeAlarm.master")
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     //初始化StreamingContext对象
     val ssc = new StreamingContext(conf, Durations.seconds(3))
@@ -39,25 +40,14 @@ object FaceRecognizeAlarmJob {
     }
     val staticStoreRDD = ssc.sparkContext.parallelize(Utils.javaList2arrayBuffer(list).toList)
 
-//    var pp = objectInfoInnerHandlerImpl.searchByPkeys(new util.ArrayList[String]())
-//    var broadpp = ssc.sparkContext.broadcast(pp)
-//    while () {
-//      if (true) {
-//        pp = objectInfoInnerHandlerImpl.searchByPkeys(new util.ArrayList[String]())
-//        broadpp = ssc.sparkContext.broadcast(pp)
-//      }
-//    }
     //获取动态人脸照片的DStream，返回类型为：[Tuple2[String, Array[Byte]]]
-    val kafkaGroupId = PropertiesUtils.getPropertiesValue("kafka.FaceRecognizeAlarmJob.group.id")
-    //TODO   kafka 重写编码器
+    val kafkaGroupId = propertiesUtils.getPropertiesValue("kafka.FaceRecognizeAlarmJob.group.id")
     val kafkaDynamicPhoto = ComDataUtils.getKafkaDynamicPhoto(ssc, kafkaGroupId)
     //对提取着特征值失败的进行过滤，将特征值由字节数组转化为String（注意编码方式）
-    //TODO 合并
     val kafkaDynamicPhotoFilter = kafkaDynamicPhoto.filter(_._2.length != 0).filter(null != _._2).
       map(dPhoto => (dPhoto._1, new String(dPhoto._2, "ISO-8859-1")))
     //通过kafkaId来获取设备id.(dynamicID,deviceID,dynamicFeatureStr)
     val getDeviceID = kafkaDynamicPhotoFilter.map(dPhotoF => (dPhotoF._1, FtpUtil.getRowKeyMessage(dPhotoF._1).get("ipcID"), dPhotoF._2))
-
     /**
       * 将从kafka读取的数据根据是否具有识别告警进行过滤
       * 17130NCY0HZ0001-T_00000000000000_170523160015_0000004015_02
@@ -67,17 +57,12 @@ object FaceRecognizeAlarmJob {
       val dynamicID = gdPair._1
       val deviceID = gdPair._2
       val dynamicFeatureStr = gdPair._3
-
-      //TODO 平台id进行判断
       //获取平台id
       val platID = deviceUtilI.getplatfromID(deviceID)
       //通过设备id获取告警规则
-      //TODO 修改
       val isRecognizeWarn = deviceUtilI.isWarnTypeBinding(deviceID).get(DeviceTable.IDENTIFY)
-      //TODO  isAddWarn修改
       val isAddWarn = deviceUtilI.isWarnTypeBinding(deviceID).get(DeviceTable.OFFLINE)
       if (null != isRecognizeWarn) {
-      //TODO 命名规范  字符串的拼接使用StringB
         var strR1 = ""
         var strR2 = ""
         var strA1 = ""
@@ -121,7 +106,6 @@ object FaceRecognizeAlarmJob {
       //初始化sqlContext对象及隐式转换
       val sqlContext = new SQLContext(ssc.sparkContext)
       import sqlContext.implicits._
-//      val staticStoreRDD = ssc.sparkContext.parallelize(Utils.javaList2arrayBuffer(broadpp.value).toList)
       val splitRDD = staticStoreRDD.map(staticPair => (staticPair.split("ZHONGXIAN")(0), staticPair.split("ZHONGXIAN")(1), staticPair.split("ZHONGXIAN")(2)))
       //将静态数据库映射为staticTable表
       val staticTable = splitRDD.toDF("staticID", "staticObjectType", "staticFeatureStr").registerTempTable("staticTable")
@@ -160,13 +144,13 @@ object FaceRecognizeAlarmJob {
         * 对结果数据过滤出符合范围的更新数据并进行时间更新
         * 进行识别时间更新，为离线告警的时间的依据 ObjectInfoHandlerImpl  updateObjectInfo
         */
-//      val timeUpDateRangeFilterResult = rangeFilterResult.
-//        filter(timeUpDateRangeFilter => FilterUtils.rangeFilterFun(timeUpDateRangeFilter._6.split("_"), timeUpDateRangeFilter._9))
-//      val timeUpdateResult = timeUpDateRangeFilterResult.map(timeUpdate => (timeUpdate._8))
-//
-//      timeUpdateResult.foreach(timeUpdateElem => {
-//        objectInfoInnerHandlerImpl.updateObjectInfoTime(timeUpdateElem)
-//      })
+      val timeUpDateRangeFilterResult = rangeFilterResult.
+        filter(timeUpDateRangeFilter => FilterUtils.rangeFilterFun(timeUpDateRangeFilter._6.split("_"), timeUpDateRangeFilter._9))
+      val timeUpdateResult = timeUpDateRangeFilterResult.map(timeUpdate => (timeUpdate._8))
+
+      timeUpdateResult.foreach(timeUpdateElem => {
+        objectInfoInnerHandlerImpl.updateObjectInfoTime(timeUpdateElem)
+      })
 
       /**
         * 对比对结果通过动态照片的唯一标识进行分组

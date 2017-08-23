@@ -6,6 +6,7 @@ import java.io.Serializable;
  * 识别告警静态库比对结果类。（刘善彬）
  */
 public class Item implements Serializable {
+
     /**
      * 静态库id
      */

@@ -78,31 +78,17 @@
         </dependency>
     </dependencies>
 
-    <!--<resources>-->
-        <!--<resource>-->
-            <!--<targetPath>${project.build.directory}/classes/conf</targetPath>-->
-            <!--<directory>src/main/resources</directory>-->
-            <!--<includes>-->
-                <!--<include>*.propertie</include>-->
-            <!--</includes>-->
-        <!--</resource>-->
-    <!--</resources>-->
-    <!--<plugins>-->
-    <!--<plugin>-->
-        <!--<groupId>org.scala-tools</groupId>-->
-        <!--<artifactId>maven-scala-plugin</artifactId>-->
-        <!--<version>2.15.2</version>-->
-        <!--<executions>-->
-            <!--<execution>-->
-                <!--<goals>-->
-                    <!--<goal>compile</goal>-->
-                    <!--<goal>testCompile</goal>-->
-                <!--</goals>-->
-            <!--</execution>-->
-        <!--</executions>-->
-    <!--</plugin>-->
 
     <build>
+        <resources>
+            <resource>
+                <targetPath>${project.build.directory}/classes/conf</targetPath>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>*.propertie</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.scala-tools</groupId>
@@ -117,25 +103,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-assembly-plugin</artifactId>-->
-            <!--<version>3.0.0</version>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>dist</id>-->
-            <!--<phase>package</phase>-->
-            <!--<goals>-->
-            <!--<goal>single</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-            <!--<descriptors>-->
-            <!--<descriptor>streaming_assembly.xml</descriptor>-->
-            <!--</descriptors>-->
-            <!--</configuration>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
         </plugins>
     </build>
 </project>

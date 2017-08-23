@@ -29,14 +29,15 @@ import scala.collection.mutable.ArrayBuffer
 object FaceRecognizeAlarmJob {
   def main(args: Array[String]): Unit = {
     val deviceUtilI = new DeviceUtilImpl()
-    val appName = PropertiesUtils.getPropertiesValue("job.recognizeAlarm.appName")
-    val master = PropertiesUtils.getPropertiesValue("job.recognizeAlarm.master")
+    val propertiesUtils=new PropertiesUtils()
+    val appName = propertiesUtils.getPropertiesValue("job.recognizeAlarm.appName")
+    val master = propertiesUtils.getPropertiesValue("job.recognizeAlarm.master")
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     val ssc = new StreamingContext(conf, Durations.seconds(3))
     //获取动态人脸照片的DStream，返回类型为：[Tuple2[String, Array[Byte]]]
-    val kafkaGroupId = PropertiesUtils.getPropertiesValue("kafka.FaceRecognizeAlarmJob.group.id")
-    val topics = Set(PropertiesUtils.getPropertiesValue("kafka.topic.name"))
-    val brokers = PropertiesUtils.getPropertiesValue("kafka.metadata.broker.list")
+    val kafkaGroupId = propertiesUtils.getPropertiesValue("kafka.FaceRecognizeAlarmJob.group.id")
+    val topics = Set(propertiesUtils.getPropertiesValue("kafka.topic.name"))
+    val brokers = propertiesUtils.getPropertiesValue("kafka.metadata.broker.list")
     val kafkaParams = Map(
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId

@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.Properties;
 
 /**
- * Created by Administrator on 2017/8/1.
+ * 生产测试数据to kafka（刘善彬）
  */
 public class AddDataToKafka implements Serializable {
     private final Producer<String, byte[]> producer;
@@ -37,7 +37,6 @@ public class AddDataToKafka implements Serializable {
             byte[] b = new byte[1024];
             int n = 0;
             while ((n = fis.read(b)) != -1) {
-                //  System.out.println(new String(b,0,n));
                 bos.write(b, 0, n);
             }
             fis.close();

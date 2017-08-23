@@ -7,6 +7,7 @@ import java.io.Serializable;
  * 识别告警推送信息类（刘善彬）
  */
 public class RecognizeAlarmMessage implements Serializable {
+
     /**
      * 告警类型
      */

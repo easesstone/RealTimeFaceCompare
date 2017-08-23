@@ -15,9 +15,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 object FaceOffLineAlarmJob {
   def main(args: Array[String]): Unit = {
     val offLineAlarmMessage = new OffLineAlarmMessage()
+    val propertiesUtils=new PropertiesUtils()
     val objectInfoInnerHandlerImpl = ObjectInfoInnerHandlerImpl.getInstance()
-    val appName = PropertiesUtils.getPropertiesValue("job.offLine.appName")
-    val master = PropertiesUtils.getPropertiesValue("job.offLine.master")
+    val appName = propertiesUtils.getPropertiesValue("job.offLine.appName")
+    val master = propertiesUtils.getPropertiesValue("job.offLine.master")
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     val sc = new SparkContext(conf)
     val deviceUtilImpl = new DeviceUtilImpl()
@@ -51,8 +52,6 @@ object FaceOffLineAlarmJob {
       val gson = new Gson()
       //将结果推送至MQ
       offLineAlarmMessage.setAlarmType(DeviceTable.OFFLINE.toString)
-//      offLineAlarmMessage.setObjectType(resultElem._2)
-//      offLineAlarmMessage.setOffLineDays(resultElem._4)
       offLineAlarmMessage.setStaticID(resultElem._1)
       offLineAlarmMessage.setUpdateTime(resultElem._3)
       val str = gson.toJson(offLineAlarmMessage)

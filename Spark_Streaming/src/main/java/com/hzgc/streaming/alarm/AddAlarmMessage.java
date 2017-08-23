@@ -7,10 +7,10 @@ import java.io.Serializable;
  * 新增告警推送信息类（刘善彬）
  */
 public class AddAlarmMessage implements Serializable {
+
     /**
      * 告警类型
      */
-
     private String alarmType;
 
     /**

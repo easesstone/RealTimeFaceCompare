@@ -1,10 +1,5 @@
 package com.hzgc.streaming.util
 
-import java.util
-
-import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
-
-import scala.collection.JavaConverters
 
 /**
   * 自定义过滤函数（刘善彬 To 内）

@@ -23,8 +23,9 @@ object FaceAddAlarmJob {
   def main(args: Array[String]): Unit = {
     val objectInfoInnerHandlerImpl = ObjectInfoInnerHandlerImpl.getInstance()
     //初始化spark的配置对象
-    val appName = PropertiesUtils.getPropertiesValue("job.addAlarm.appName")
-    val master = PropertiesUtils.getPropertiesValue("job.addAlarm.master")
+    val propertiesUtils=new PropertiesUtils()
+    val appName = propertiesUtils.getPropertiesValue("job.addAlarm.appName")
+    val master = propertiesUtils.getPropertiesValue("job.addAlarm.master")
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     //初始化StreamingContext对象
     val ssc = new StreamingContext(conf, Durations.seconds(3))
@@ -32,7 +33,7 @@ object FaceAddAlarmJob {
     val deviceUtilI = new DeviceUtilImpl()
     val utils = new Utils()
     //获取动态人脸照片的DStream，返回类型为：[Tuple2[String, Array[Byte]]]
-    val kafkaGroupId = PropertiesUtils.getPropertiesValue("kafka.FaceAddAlarmJob.group.id")
+    val kafkaGroupId = propertiesUtils.getPropertiesValue("kafka.FaceAddAlarmJob.group.id")
     val kafkaDynamicPhoto = ComDataUtils.getKafkaDynamicPhoto(ssc, kafkaGroupId)
     //对提取着特征值失败的进行过滤，将特征值由字节数组转化为String（注意编码方式）
     val kafkaDynamicPhotoFilter = kafkaDynamicPhoto.filter(_._2.length != 0).filter(null != _._2).
