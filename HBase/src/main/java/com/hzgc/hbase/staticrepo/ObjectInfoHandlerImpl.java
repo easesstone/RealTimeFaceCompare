@@ -205,10 +205,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 System.out.println(put);
                 LOG.info("table update successed!");
                 Result result = table.get(get);
-                String platformid = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.PLATFORMID)));
-                String idcard = (String) person.get(ObjectInfoTable.IDCARD);
-                String newRowKey = platformid + idcard;
+                String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.IDCARD)));
+                String pKey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.PKEY)));
+                String newRowKey = pKey + idCard;
                 Put put1 = new Put(Bytes.toBytes(newRowKey));
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.PLATFORMID),
                         result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -253,7 +254,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                                 Bytes.toBytes(ObjectInfoTable.ROWKEY)));
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.IDCARD),Bytes.toBytes(idcard));
+                        Bytes.toBytes(ObjectInfoTable.IDCARD),Bytes.toBytes(idCard));
                 table.put(put1);
                 Delete delete = new Delete(Bytes.toBytes(id));
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
