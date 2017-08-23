@@ -43,12 +43,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
         String idcard = (String)person.get(ObjectInfoTable.IDCARD);
+        String pkey = (String)person.get(ObjectInfoTable.PKEY);
         Random random = new Random();
         if (idcard == null || idcard.length() != 18) {
             idcard = (random.nextInt(900000000) + 100000000) + ""
                     + (random.nextInt(900000000) + 100000000);
         }
-        String rowkey =  platformId + idcard;
+        String rowkey = pkey  + idcard;
         LOG.info("rowkey: " + rowkey);
         List<Put> puts = new ArrayList<>();
         // 获取table 对象，通过封装HBaseHelper 来获取
@@ -516,6 +517,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     exectResult.add(objectMap);
                 }
             }
+            searchResult.setResults(exectResult);
+            searchResult.setSearchNums(exectResult.size());
         } else if (moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理同拼音的情况，李，理，离，张，章等
                 || ObjectInfoTable.NAME.equals(searchType))){
             for (Map<String, Object> objectMap: tempList){
@@ -534,9 +537,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     }
                 }
             }
+            searchResult.setResults(exectResult);
+            searchResult.setSearchNums(exectResult.size());
         }
-        searchResult.setResults(exectResult);
-        searchResult.setSearchNums(exectResult.size());
     }
 
     @Override
