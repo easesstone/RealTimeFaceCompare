@@ -23,23 +23,11 @@ public class OffLineAlarmMessage implements Serializable {
      */
     private String updateTime;
 
-    /**
-     * 离线天数
-     */
-    private Double offLineDays;
-
-    /**
-     * 对象类型
-     */
-    private String objectType;
-
     /**构造函数**/
-    public OffLineAlarmMessage(String staticID, String alarmType, String updateTime, Double offLineDays,String objectType) {
+    public OffLineAlarmMessage(String staticID, String alarmType, String updateTime) {
         this.staticID = staticID;
         this.alarmType = alarmType;
         this.updateTime = updateTime;
-        this.offLineDays = offLineDays;
-        this.objectType=objectType;
     }
     public OffLineAlarmMessage() {
     }
@@ -69,19 +57,5 @@ public class OffLineAlarmMessage implements Serializable {
         this.alarmType = alarmType;
     }
 
-    public Double getOffLineDays() {
-        return offLineDays;
-    }
 
-    public void setOffLineDays(Double offLineDays) {
-        this.offLineDays = offLineDays;
-    }
-
-    public String getObjectType() {
-        return objectType;
-    }
-
-    public void setObjectType(String objectType) {
-        this.objectType = objectType;
-    }
 }

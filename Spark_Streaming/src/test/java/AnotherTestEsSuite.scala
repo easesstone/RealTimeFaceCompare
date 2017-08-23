@@ -7,11 +7,11 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 object AnotherTestEsSuite {
 
-  val esClient = new ObjectInfoInnerHandlerImpl()
+ /* val esClient = new ObjectInfoInnerHandlerImpl()
   val helper = ElasticSearchHelper.getEsClient
   val sparkConf: SparkConf = new SparkConf().setAppName("FaceRecognizeAlarmJob").setMaster("local[7]")
   val ssc = new StreamingContext(sparkConf, Seconds(3))
   def main(args: Array[String]): Unit = {
 
-  }
+  }*/
 }

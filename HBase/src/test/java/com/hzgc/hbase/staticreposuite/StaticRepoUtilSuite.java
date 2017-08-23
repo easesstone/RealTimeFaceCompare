@@ -43,10 +43,10 @@ public class StaticRepoUtilSuite {
     }
 
     //测试获取hbase 中静态信息库的总记录数
-    @Test
+    /*@Test
     public void testGetTotalNums(){
         System.out.println(new ObjectInfoInnerHandlerImpl().getTotalNums());
-    }
+    }*/
 
     @Test
     public void testUpdateObjectInfo(){
@@ -140,7 +140,7 @@ public class StaticRepoUtilSuite {
         Image2Byte2Image.byte2image(photo, "C:\\Users\\lenovo\\Desktop\\nkkma.png");
     }
 
-    @Test
+   /* @Test
     public void testimpl(){
         ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
         List<String> a = new ArrayList<>();
@@ -148,7 +148,7 @@ public class StaticRepoUtilSuite {
         a.add("123456");
         List<String> b = objectInfoInnerHandler.searchByPkeys(a);
         System.out.println(b);
-    }
+    }*/
     @Test
     public void testGetPhotoByRowkey() throws IOException {
        ObjectInfoHandlerImpl objectInfoHandler = new ObjectInfoHandlerImpl();
