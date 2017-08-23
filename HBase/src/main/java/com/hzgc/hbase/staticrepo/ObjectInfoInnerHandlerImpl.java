@@ -24,15 +24,28 @@ import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable{
     private ObjectInfoInnerHandlerImpl(){}
+    private static ObjectInfoInnerHandlerImpl instance;
+    private static long totalNums = getTotalNums();
+    private static List<String> totalList = null;
+
     static {
         ElasticSearchHelper.getEsClient();
     }
-    private static ObjectInfoInnerHandlerImpl instance;
-    private static long totalNums = getTotalNums();
+
+    public synchronized List<String> getTotalList() {
+        if (totalList == null || totalNumIsChange()) {
+            System.out.println("start load static info repo...");
+            totalList = searchByPkeys();
+            System.out.println("load static info repo successfull...");
+            return totalList;
+        } else {
+            return totalList;
+        }
+    }
 
     // 对外接口，用于判断HBase 中的静态信息库数据量是否有改变,true 表示有变化
     // false 表示没有变化
-    public synchronized boolean totalNumIsChange(){
+    private synchronized boolean totalNumIsChange(){
         long newTotalNums = getTotalNums();
         if (totalNums == newTotalNums){
             System.out.println("totalNums is not change, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
