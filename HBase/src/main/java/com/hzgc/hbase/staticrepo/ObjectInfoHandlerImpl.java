@@ -198,10 +198,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         String dateString = format.format(date);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
-        if(fieldlist.contains(ObjectInfoTable.IDCARD)){
-            Get get = new Get(Bytes.toBytes(id));
-            try {
-                table.put(put);
+        try {
+            table.put(put);
+            if(fieldlist.contains(ObjectInfoTable.IDCARD) || fieldlist.contains(ObjectInfoTable.PKEY)){
+                Get get = new Get(Bytes.toBytes(id));
                 System.out.println(put);
                 LOG.info("table update successed!");
                 Result result = table.get(get);
@@ -247,12 +247,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.UPDATETIME),
                         result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                                 Bytes.toBytes(ObjectInfoTable.UPDATETIME)));
-                put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.RELATED),
-                        result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                                Bytes.toBytes(ObjectInfoTable.RELATED)));
-                put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.ROWKEY),
-                        result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                                Bytes.toBytes(ObjectInfoTable.ROWKEY)));
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD),Bytes.toBytes(idCard));
                 table.put(put1);
@@ -288,13 +282,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.ROWKEY));
                 table.delete(delete);
-            } catch (IOException e) {
-                e.printStackTrace();
-                LOG.error("table update failed!");
-            }finally {
-                //关闭表连接
-                HBaseUtil.closTable(table);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOG.error("table update failed!");
+        }finally {
+            //关闭表连接
+            HBaseUtil.closTable(table);
         }
         return 0;
     }
