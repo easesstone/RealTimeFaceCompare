@@ -303,7 +303,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             if (type == PictureType.PERSON.getType()) {
                 Result[] results = person.get(gets);
                 for (Result result : results) {
-                    capturedPicture= new CapturedPicture();
+                    capturedPicture = new CapturedPicture();
                     setCapturedPicture_person(capturedPicture, result, mapEx);
                     capturedPictureList.add(capturedPicture);
                     System.out.println(capturedPicture);
