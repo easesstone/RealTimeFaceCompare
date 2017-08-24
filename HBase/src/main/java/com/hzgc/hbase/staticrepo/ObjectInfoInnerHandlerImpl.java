@@ -5,6 +5,7 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -23,6 +24,8 @@ import java.util.*;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable{
+
+    private static Logger LOG = Logger.getLogger(ObjectInfoInnerHandlerImpl.class);
     private ObjectInfoInnerHandlerImpl(){}
     private static ObjectInfoInnerHandlerImpl instance;
     private static long totalNums = getTotalNums();
@@ -248,26 +251,36 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public synchronized int updateObjectInfoTime(String rowkey) {
+
+    public synchronized int updateObjectInfoTime(List<String> rowkeys) {
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-        Put put = new Put(Bytes.toBytes(rowkey));
-        // 获取系统当前时间
-        Date date = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateString = format.format(date);
-        // 构造一个更新对象信息中的更新时间段的put
-        put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
+        List<Put> puts = new ArrayList<>();
         try {
-            // 更新对象信息中的更新时间。
-            table.put(put);
+           for(int i = 0;i < rowkeys.size(); i++){
+               Put put = new Put(Bytes.toBytes(rowkeys.get(i)));
+               // 获取系统当前时间
+               Date date = new Date();
+               SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+               String dateString = format.format(date);
+               // 构造一个更新对象信息中的更新时间段的put
+               put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                       Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
+               puts.add(put);
+               if (i % 10000 == 0){
+                   table.put(puts);
+                   puts.clear();
+               }
+           }
+           if (puts.size() > 0){
+               table.put(puts);
+           }
+           return 0;
         } catch (IOException e) {
             e.printStackTrace();
             return 1;
         } finally {
             HBaseUtil.closTable(table);
         }
-        return 0;
     }
 }

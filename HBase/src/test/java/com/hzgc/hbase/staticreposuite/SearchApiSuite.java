@@ -5,12 +5,23 @@ import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.staticrepo.ObjectInfoHandlerImpl;
+import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandler;
+import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl;
+import com.hzgc.hbase.util.HBaseHelper;
+import com.hzgc.hbase.util.HBaseUtil;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class SearchApiSuite {
@@ -59,4 +70,36 @@ public class SearchApiSuite {
     public void testStringContains(){
         System.out.println("根据搜索条件得到的记录数是".contains("到的记"));
     }
+
+    //获取静态信息库下面的所有rowkeys
+    public List<String> getAllRowKeyOfStaticRepo() {
+        List<String> findResult = new ArrayList<>();
+        Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+        Scan scan = new Scan();
+        try {
+            ResultScanner resultScanner = objectinfo.getScanner(scan);
+            Iterator<Result> iterator = resultScanner.iterator();
+            while (iterator.hasNext()){
+                Result result = iterator.next();
+                String rowKey = Bytes.toString(result.getRow());
+                findResult.add(rowKey);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            HBaseUtil.closTable(objectinfo);
+        }
+        return findResult;
+    }
+
+    @Test
+    public void testUpdateObjectInfoTime(){
+        new ObjectInfoInnerHandlerImpl().updateObjectInfoTime(getAllRowKeyOfStaticRepo());
+    }
+
+    @Test
+    public void testUpdateObjectInfoTimeDemo(){
+        new ObjectInfoInnerHandlerImpl().updateObjectInfoTimeDemo(getAllRowKeyOfStaticRepo());
+    }
+
 }
