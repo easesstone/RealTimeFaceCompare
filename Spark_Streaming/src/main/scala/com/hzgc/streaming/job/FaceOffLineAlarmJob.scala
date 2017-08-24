@@ -1,66 +1,70 @@
 package com.hzgc.streaming.job
 
+import java.util
 import com.google.gson.Gson
 import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
+import com.hzgc.rocketmq.util.RocketMQProducer
 import com.hzgc.streaming.alarm.OffLineAlarmMessage
 import com.hzgc.streaming.util.{FilterUtils, PropertiesUtils, Utils}
 import org.apache.spark.{SparkConf, SparkContext}
+import scala.collection.JavaConverters
 
 /**
-  * 人脸识别离线告警任务（刘善彬）（备用）
+  * 人脸识别离线告警任务（刘善彬）
   *
   */
 
 object FaceOffLineAlarmJob {
   def main(args: Array[String]): Unit = {
     val offLineAlarmMessage = new OffLineAlarmMessage()
-    val propertiesUtils=new PropertiesUtils()
-    val objectInfoInnerHandlerImpl = ObjectInfoInnerHandlerImpl.getInstance()
-    val appName = propertiesUtils.getPropertiesValue("job.offLine.appName")
-    val master = propertiesUtils.getPropertiesValue("job.offLine.master")
+    val properties = PropertiesUtils.getProperties
+    val appName = properties.getProperty("job.offLine.appName")
+    val master = properties.getProperty("job.offLine.master")
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     val sc = new SparkContext(conf)
     val deviceUtilImpl = new DeviceUtilImpl()
-    val staticData = objectInfoInnerHandlerImpl.searchByPkeys()
-    val staticDataRDD = sc.parallelize(Utils.javaList2arrayBuffer(staticData).toList)
-    val filterRdd = staticDataRDD.map(pair => {
-      // println(pair.split("ZHONGXIAN").length)
-      (pair.split("ZHONGXIAN")(0), pair.split("ZHONGXIAN")(1), pair.split("ZHONGXIAN")(3))
-    }).filter(filter => filter._2 != null)
-
-    val rule = filterRdd.map(elem => {
-      val offLineAlarmRule = deviceUtilImpl.getThreshold.get(elem._2)
-      //因为规则库不齐全。所以要加一个判断
-      var str = ""
-      if (offLineAlarmRule != null) {
-        val it = offLineAlarmRule.keySet().iterator()
-        while (it.hasNext) {
-          val key = it.next()
-          str = offLineAlarmRule.get(key).toString
-        }
-        (elem._1, elem._2, elem._3, str)
+    val offLineAlarmRule = deviceUtilImpl.getThreshold
+    val separator = "ZHONGXIAN"
+    if (offLineAlarmRule != null && !offLineAlarmRule.isEmpty) {
+      println("Start offline alarm task data processing ...")
+      val objTypeList = new util.ArrayList[String](offLineAlarmRule.keySet())
+      val returnResult = ObjectInfoInnerHandlerImpl.getInstance().searchByPkeysUpdateTime(objTypeList)
+      if (returnResult != null && !returnResult.isEmpty) {
+        val totalData = sc.parallelize(JavaConverters.asScalaBufferConverter(returnResult).asScala)
+        val splitResult = totalData.map(totailDataElem => (totailDataElem.split(separator)(0), totailDataElem.split(separator)(1), totailDataElem.split(separator)(2)))
+        val getDays = splitResult.map(splitResultElem => {
+          val objRole = offLineAlarmRule.get(splitResultElem._2)
+          val objRoleIt = objRole.keySet().iterator()
+          var days = 0
+          while (objRoleIt.hasNext) {
+            val key = objRoleIt.next()
+            days = objRole.get(key)
+          }
+          (splitResultElem._1, splitResultElem._2, splitResultElem._3, days)
+        })
+        val filterResult = getDays.map(getDaysElem => (getDaysElem._1, getDaysElem._2, getDaysElem._3, Utils.timeTransition(getDaysElem._3), getDaysElem._4)).
+          filter(filter => FilterUtils.dayFilterFun(filter._5.toString, filter._4))
+        //将离线告警信息推送到MQ
+        filterResult.foreach(filterResultElem => {
+          val rocketMQProducer = RocketMQProducer.getInstance()
+          val offLineAlarmMessage = new OffLineAlarmMessage()
+          val gson = new Gson()
+          offLineAlarmMessage.setAlarmType(DeviceTable.OFFLINE.toString)
+          offLineAlarmMessage.setStaticID(filterResultElem._1)
+          offLineAlarmMessage.setUpdateTime(filterResultElem._3)
+          val alarmStr = gson.toJson(offLineAlarmMessage)
+          //离线告警信息推送的时候，平台id为对象类型字符串的前4个字节。
+          val platID = filterResultElem._2.substring(0, 4)
+          rocketMQProducer.send(platID, DeviceTable.OFFLINE.toString, filterResultElem._1, alarmStr.getBytes(), null);
+        })
       } else {
-        (elem._1, elem._2, elem._3, null)
+        println("No data was received from the static repository,the task is not running！")
       }
-    }).filter(filt => filt._4 != null)
-
-    val result = rule.
-      map(r => (r._1, r._2, r._3, Utils.timeTransition(r._3), r._4)).
-      filter(fi => FilterUtils.dayFilterFun(fi._5, fi._4))
-    result.collect().foreach(resultElem => {
-      val gson = new Gson()
-      //将结果推送至MQ
-      offLineAlarmMessage.setAlarmType(DeviceTable.OFFLINE.toString)
-      offLineAlarmMessage.setStaticID(resultElem._1)
-      offLineAlarmMessage.setUpdateTime(resultElem._3)
-      val str = gson.toJson(offLineAlarmMessage)
-      println(str)
-    })
-
+    } else {
+      println("Object types have been dispatched offline alarm,the task is not running！")
+    }
     sc.stop()
-
-
   }
 
 }

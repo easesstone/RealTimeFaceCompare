@@ -6,6 +6,9 @@ import com.hzgc.hbase.device.DeviceUtilImpl;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 模拟规则库（设定测试规则                                                       ）
+ */
 public class PutDataDemo {
     public List<WarnRule> setwarnRuleData() {
         List<WarnRule> rules = new ArrayList<WarnRule>();

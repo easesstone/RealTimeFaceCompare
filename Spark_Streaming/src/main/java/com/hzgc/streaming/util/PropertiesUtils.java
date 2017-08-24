@@ -12,13 +12,11 @@ import java.util.Properties;
  */
 public class PropertiesUtils implements Serializable {
     /**
-     * 通过key获取资源文件的value
+     * 加载资源文件
      *
-     * @param key 资源文件的key
-     * @return 返回key对应资源文件的value
-     * @throws Exception
+     * @return Properties对象
      */
-    public String getPropertiesValue(String key) {
+    public static Properties getProperties() {
         Properties ps = new Properties();
         try {
             InputStream is = new FileInputStream(FileUtil.loadResourceFile("sparkJob.properties"));
@@ -26,8 +24,7 @@ public class PropertiesUtils implements Serializable {
         } catch (Exception e) {
             System.out.println(e);
         }
-        String value = ps.getProperty(key);
-        return value;
+        return ps;
     }
 
 }

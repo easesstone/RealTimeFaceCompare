@@ -3,7 +3,6 @@ package com.hzgc.streaming.alarm;
 import java.io.Serializable;
 
 /**
- *
  * 离线告警信息类（刘善彬）
  */
 public class OffLineAlarmMessage implements Serializable {
@@ -23,16 +22,21 @@ public class OffLineAlarmMessage implements Serializable {
      */
     private String updateTime;
 
-    /**构造函数**/
+    /**
+     * 构造函数
+     **/
     public OffLineAlarmMessage(String staticID, String alarmType, String updateTime) {
         this.staticID = staticID;
         this.alarmType = alarmType;
         this.updateTime = updateTime;
     }
+
     public OffLineAlarmMessage() {
     }
 
-    /**Getter and Setter**/
+    /**
+     * Getter and Setter
+     **/
     public String getStaticID() {
         return staticID;
     }

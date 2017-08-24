@@ -55,18 +55,18 @@ public class AddDataToKafka implements Serializable {
     }
 
     void produce() throws Exception {
-
-//        String filePath = "C:\\Users\\Administrator\\Desktop\\人脸比对需求文档\\静态信息库图片\\彭聪-2017_8_11_17_32_913.jpg";
+        String filePath1 = "C:\\Users\\Administrator\\Desktop\\人脸比对需求文档\\静态信息库图片\\彭聪-2017_8_11_17_32_913.jpg";
         String filePath="C:\\Users\\Administrator\\Desktop\\人脸比对需求文档\\静态信息库图片\\1.jpg";
         byte[] bt = File2byte(filePath);
-        //算法初始化
         NativeFunction.init();
         for (int i = 2; i < 10; i++) {
             float[] feature = FaceFunction.featureExtract(bt);//17130NCY0HZ0001-T
             String feature2string = FaceFunction.floatArray2string(feature);
-            //17130NCY0HZ0004-0_00000000000000_170523160015_0000004075_02
+            /**
+             * kafka 发送格式:
+             * 17130NCY0HZ0004-0_00000000000000_170523160015_0000004075_02
+             */
             producer.send(new KeyedMessage<String, byte[]>(TOPIC, "17130NCY0HZ000" + i + "-T_00000000000000_170523160015_0000004015_02", feature2string.getBytes("ISO-8859-1")));
-            // producer.send(new KeyedMessage<String, byte[]>(TOPIC,"0003"+i+"-T_00000000000000_170523160015_0000004015_02"  ,feature2string.getBytes("ISO-8859-1")));
         }
         //销毁算法连接
         NativeFunction.destory();

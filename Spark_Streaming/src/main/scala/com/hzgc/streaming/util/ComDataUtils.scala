@@ -26,9 +26,9 @@ object ComDataUtils extends Serializable {
     * @return 返回InputDStream
     */
   def getKafkaDynamicPhoto(ssc: StreamingContext, kafkaGroupId: String): InputDStream[Tuple2[String, Array[Byte]]] = {
-    val propertiesUtils=new PropertiesUtils()
-    val topics = Set(propertiesUtils.getPropertiesValue("kafka.topic.name"))
-    val brokers = propertiesUtils.getPropertiesValue("kafka.metadata.broker.list")
+    val properties = PropertiesUtils.getProperties
+    val topics = Set(properties.getProperty("kafka.topic.name"))
+    val brokers = properties.getProperty("kafka.metadata.broker.list")
     val kafkaParams = Map(
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
@@ -44,11 +44,11 @@ object ComDataUtils extends Serializable {
     * @return RDD[(ImmutableBytesWritable,Result)]
     */
   def getHbaseStaticPhoto(sc: SparkContext): RDD[(ImmutableBytesWritable, Result)] = {
-    val propertiesUtils=new PropertiesUtils()
+    val properties = PropertiesUtils.getProperties
     val hbaseConf = HBaseConfiguration.create()
-    val tableName = propertiesUtils.getPropertiesValue("hbase.table.static.name")
-    hbaseConf.set("hbase.zookeeper.quorum", propertiesUtils.getPropertiesValue("hbase.zookeeper.quorum"))
-    hbaseConf.set("hbase.zookeeper.property.clientPort", propertiesUtils.getPropertiesValue("hbase.zookeeper.property.clientPort"))
+    val tableName = properties.getProperty("hbase.table.static.name")
+    hbaseConf.set("hbase.zookeeper.quorum", properties.getProperty("hbase.zookeeper.quorum"))
+    hbaseConf.set("hbase.zookeeper.property.clientPort", properties.getProperty("hbase.zookeeper.property.clientPort"))
     hbaseConf.set(TableInputFormat.INPUT_TABLE, tableName)
     val rdd = sc.newAPIHadoopRDD(hbaseConf, classOf[TableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],

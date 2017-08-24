@@ -17,15 +17,20 @@ public class Item implements Serializable {
      */
     private String similarity;
 
-    /**构造函数**/
-    public Item(String staticID,  String similarity) {
+    /**
+     * 构造函数
+     **/
+    public Item(String staticID, String similarity) {
         this.staticID = staticID;
         this.similarity = similarity;
     }
+
     public Item() {
     }
 
-    /**Getter and Setter**/
+    /**
+     * Getter and Setter
+     **/
     public String getStaticID() {
         return staticID;
     }
