@@ -65,7 +65,6 @@ public class RocketMQProducer implements Serializable {
 
     public void send(String tag, byte[] data) {
         send(topic, tag, null, data, null);
-        LOG.info("Send MQ message[topic:" + topic + ", tag:" + tag + "]");
     }
 
     public void send(String tag, String key, byte[] data) {
@@ -78,11 +77,11 @@ public class RocketMQProducer implements Serializable {
             if (tag == null || tag.length() == 0) {
                 msg = new Message(topic, data);
             } else if (key == null || key.length() == 0) {
-                msg = new Message(topic, data);
+                msg = new Message(topic, tag, data);
             } else {
                 msg = new Message(topic, tag, key, data);
             }
-
+            LOG.info("Send MQ message[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + "]");
             //long startTime = System.currentTimeMillis();
             SendResult sendResult;
             if (selector != null) {
