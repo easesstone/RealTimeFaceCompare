@@ -49,7 +49,7 @@ object FaceRecognizeAlarmJob {
                   sim: String)
 
   def main(args: Array[String]): Unit = {
-    val sparkConf: SparkConf = new SparkConf().setAppName("FaceRecognizeAlarmJob").setMaster("local[6]")
+    val sparkConf: SparkConf = new SparkConf().setAppName("FaceRecognizeAlarmJob").setMaster("yarn-client")
     val ssc = new StreamingContext(sparkConf, Seconds(1))
     val esClient = new ObjectInfoInnerHandlerImpl()
     val warnClient = new DeviceUtilImpl()
