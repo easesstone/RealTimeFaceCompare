@@ -7,6 +7,7 @@ import java.io.Serializable;
  * 识别告警推送信息类（刘善彬）
  */
 public class RecognizeAlarmMessage implements Serializable {
+
     /**
      * 告警类型
      */
@@ -27,17 +28,22 @@ public class RecognizeAlarmMessage implements Serializable {
      */
     private Item[] items;
 
-    /**构造函数**/
+    /**
+     * 构造函数
+     **/
     public RecognizeAlarmMessage(String alarmType, String dynamicDeviceID, String dynamicID, Item[] items) {
         this.alarmType = alarmType;
         this.dynamicDeviceID = dynamicDeviceID;
         this.dynamicID = dynamicID;
         this.items = items;
     }
+
     public RecognizeAlarmMessage() {
     }
 
-    /**Getter and Setter**/
+    /**
+     * Getter and Setter
+     **/
     public String getAlarmType() {
         return alarmType;
     }

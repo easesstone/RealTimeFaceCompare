@@ -94,12 +94,12 @@ public class SearchApiSuite {
 
     @Test
     public void testUpdateObjectInfoTime(){
-        new ObjectInfoInnerHandlerImpl().updateObjectInfoTime(getAllRowKeyOfStaticRepo());
+//        new ObjectInfoInnerHandlerImpl().updateObjectInfoTime(getAllRowKeyOfStaticRepo());
     }
 
     @Test
     public void testUpdateObjectInfoTimeDemo(){
-        new ObjectInfoInnerHandlerImpl().updateObjectInfoTimeDemo(getAllRowKeyOfStaticRepo());
+//        new ObjectInfoInnerHandlerImpl().updateObjectInfoTimeDemo(getAllRowKeyOfStaticRepo());
     }
 
 }
