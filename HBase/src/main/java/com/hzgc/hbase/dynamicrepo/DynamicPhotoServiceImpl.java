@@ -66,6 +66,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             } catch (Exception e) {
                 e.printStackTrace();
                 LOG.error("insert feature by rowKey from table_car failed! used method DynamicPhotoServiceImpl.insertPictureFeature.");
+            } finally {
+                HBaseUtil.closTable(car);
             }
         } else {
             LOG.error("method DynamicPhotoServiceImpl.insertPictureFeature param is empty.");
@@ -95,6 +97,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 } catch (IOException e) {
                     e.printStackTrace();
                     LOG.error("get feature by imageId from table_person failed! used method FilterByRowKey.getSmallImage");
+                } finally {
+                    HBaseUtil.closTable(personTable);
                 }
             } else if (type == PictureType.CAR) {
                 try {
@@ -103,6 +107,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 } catch (IOException e) {
                     e.printStackTrace();
                     LOG.error("get feature by imageId from table_car failed! used method FilterByRowKey.getSmallImage");
+                } finally {
+                    HBaseUtil.closTable(carTable);
                 }
             }
         } else {
@@ -111,12 +117,19 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         return feature;
     }
 
+    /**
+     * 批量获取特征值
+     *
+     * @param imageIdList 图片ID列表
+     * @param type        查询类型
+     * @return 特征值列表
+     */
     public List<float[]> getFeature(List<String> imageIdList, PictureType type) {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
             Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
-            List<Get> gets = new ArrayList<Get>();
+            List<Get> gets = new ArrayList<>();
             for (String imageId : imageIdList) {
                 Get get = new Get(Bytes.toBytes(imageId));
                 //get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
@@ -132,6 +145,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 } catch (IOException e) {
                     e.printStackTrace();
                     LOG.error("get feature by imageId from table_person failed! used method FilterByRowKey.getSmallImage");
+                } finally {
+                    HBaseUtil.closTable(personTable);
                 }
             } else if (type == PictureType.CAR) {
                 try {
@@ -143,6 +158,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 } catch (IOException e) {
                     e.printStackTrace();
                     LOG.error("get feature by imageId from table_car failed! used method FilterByRowKey.getSmallImage");
+                } finally {
+                    HBaseUtil.closTable(carTable);
                 }
             }
         } else {
@@ -152,7 +169,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     }
 
     /**
-     * 将上传的图片、rowKey、特征值插入人脸/车辆特征库 （内）
+     * 将上传的图片、rowKey、特征值插入upFea特征库 （内）
      * 表名：upFea
      *
      * @param type    人/车
@@ -175,6 +192,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             } catch (Exception e) {
                 e.printStackTrace();
                 LOG.error("insert feature by rowKey from table_person failed! used method DynamicPhotoServiceImpl.insertPictureFeature.");
+            } finally {
+                HBaseUtil.closTable(table);
             }
         } else if (null != rowKey && type == PictureType.CAR) {
             try {
@@ -187,6 +206,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             } catch (Exception e) {
                 e.printStackTrace();
                 LOG.error("insert feature by rowKey from table_car failed! used method DynamicPhotoServiceImpl.upPictureInsert.");
+            } finally {
+                HBaseUtil.closTable(table);
             }
         } else {
             LOG.error("method DynamicPhotoServiceImpl.upPictureInsert param is empty.");
@@ -214,6 +235,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("insert data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.insertSearchRes.");
+        } finally {
+            HBaseUtil.closTable(searchRes);
         }
         return false;
     }
@@ -223,7 +246,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * 表名：searchRes
      *
      * @param searchID 查询ID（rowKey）
-     * @return search结果数据列表
+     * @return 查询信息列表
      */
     @Override
     public Map<String, Float> getSearchRes(String searchID) {
@@ -237,16 +260,18 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");
+        } finally {
+            HBaseUtil.closTable(searchRes);
         }
         return searchMessageMap;
     }
 
     /**
-     * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
+     * 根据id（rowKey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *
-     * @param imageId id（rowkey）
+     * @param imageId id（rowKey）
      * @param type    图片类型，人/车
-     * @return DynamicObject    动态库对象
+     * @return CapturedPicture
      */
     public CapturedPicture getCaptureMessage(String imageId, int type) {
         CapturedPicture capturedPicture = new CapturedPicture();
@@ -263,6 +288,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 } catch (IOException e) {
                     e.printStackTrace();
                     LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 6");
+                } finally {
+                    HBaseUtil.closTable(person);
                 }
             } else {
                 try {
@@ -272,6 +299,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 } catch (IOException e) {
                     e.printStackTrace();
                     LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 7");
+                } finally {
+                    HBaseUtil.closTable(car);
                 }
             }
         } else {
@@ -283,16 +312,16 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     /**
      * 批量查询图片对象
      *
-     * @param imageIdList 图片Id列表
+     * @param imageIdList 图片ID列表
      * @param type        搜索类型
-     * @return 图片对象列表
+     * @return List<CapturedPicture> 图片对象列表
      */
     @Override
     public List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type) {
         Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
         Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        List<Get> gets = new ArrayList<Get>();
+        List<Get> gets = new ArrayList<>();
         Map<String, Object> mapEx = new HashMap<>();
         for (String imageId : imageIdList) {
             Get get = new Get(Bytes.toBytes(imageId));
@@ -318,6 +347,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            HBaseUtil.closTable(person);
+            HBaseUtil.closTable(car);
         }
         return capturedPictureList;
     }
@@ -330,7 +362,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         mapEx.put("ex", ex);
         capturedPicture.setExtend(mapEx);
 
-        //不从rowkey解析，直接从数据库中读取ipcId和timestamp
         String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
         capturedPicture.setIpcId(ipcId);
 
@@ -347,7 +378,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         mapEx.put("ex", ex);
         capturedPicture.setExtend(mapEx);
 
-        //不从rowkey解析，直接从数据库中读取ipcId和timestamp
         String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
         capturedPicture.setIpcId(ipcId);
 

@@ -26,10 +26,17 @@ public interface DynamicPhotoService {
      */
     byte[] getFeature(String imageId, PictureType type);
 
+    /**
+     * 批量获取特征值
+     *
+     * @param imageIdList 图片ID列表
+     * @param type        查询类型
+     * @return 特征值列表
+     */
     List<float[]> getFeature(List<String> imageIdList, PictureType type);
 
     /**
-     * 将上传的图片、rowKey、特征值插入人脸/车辆特征库 （内）
+     * 将上传的图片、rowKey、特征值插入upFea特征库 （内）
      * 表名：upFea
      *
      * @param type    人/车
@@ -55,21 +62,25 @@ public interface DynamicPhotoService {
      * 表名：searchRes
      *
      * @param searchID 查询ID（rowKey）
-     * @return search结果数据列表
+     * @return 查询信息列表
      */
     Map<String, Float> getSearchRes(String searchID);
 
     /**
-     * @param imageId
-     * @param type
-     * @return
+     * 根据id（rowKey）获取动态信息库内容（DynamicObject对象）（刘思阳）
+     *
+     * @param imageId id（rowKey）
+     * @param type    图片类型，人/车
+     * @return CapturedPicture
      */
     CapturedPicture getCaptureMessage(String imageId, int type);
 
     /**
-     * @param imageIdList
-     * @param type
-     * @return
+     * 批量查询图片对象
+     *
+     * @param imageIdList 图片ID列表
+     * @param type        搜索类型
+     * @return List<CapturedPicture> 图片对象列表
      */
     List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type);
 }
