@@ -84,18 +84,7 @@ public class FtpUtil implements Serializable {
                 }
                 prefixNameKey.insert(0, stringBuilder);
             }
-
-            if (ipcID.length() == 32) {
-                key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00");
-            } else if (ipcID.length() == 31) {
-                key.append(ipcID).append("__").append(timeName).append("_").append(prefixNameKey).append("_00");
-            } else if (ipcID.length() <= 30) {
-                StringBuilder stringBuffer = new StringBuilder();
-                for (int i = 0; i < 31 - ipcID.length(); i++) {
-                    stringBuffer.insert(0, "0");
-                }
-                key.append(ipcID).append("_").append(stringBuffer).append("_").append(timeName).append("_").append(prefixNameKey).append("_00");
-            }
+            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00");
         } else {
             key.append(fileName);
         }
@@ -104,7 +93,7 @@ public class FtpUtil implements Serializable {
 
     public static Map<String, String> getRowKeyMessage(String rowKey) {
         String ipcID = rowKey.substring(0, rowKey.indexOf("_"));
-        String timeStr = rowKey.substring(33, rowKey.lastIndexOf("_"));
+        String timeStr = rowKey.substring(13, rowKey.lastIndexOf("_"));
 
         String year = timeStr.substring(0, 2);
         String month = timeStr.substring(2, 4);
