@@ -140,7 +140,7 @@ public class StaticRepoUtilSuite {
         Image2Byte2Image.byte2image(photo, "C:\\Users\\lenovo\\Desktop\\nkkma.png");
     }
 
-    @Test
+   @Test
     public void testimpl(){
 //        ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
 //        List<String> a = new ArrayList<>();
