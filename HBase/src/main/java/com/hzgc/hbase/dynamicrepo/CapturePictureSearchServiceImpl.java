@@ -210,19 +210,10 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId && param) {
             capturedPicture.setId(imageId);
-            // FIXME: 2017-8-19 部署时需要修改此处代码，解除注释
-            /* Map<String, String> map = FtpUtil.getRowKeyMessage(imageId);
-            if (!map.isEmpty()) {
-                String ipcID = map.get("ipcID");
-                capturedPicture.setIpcId(ipcID);
-                String timeStampStr = map.get("time");
-                capturedPicture.setTimeStamp(Long.valueOf(timeStampStr));
-            } else {
-                LOG.error("map is empty,used method CapturePictureSearchServiceImpl.getCaptureMessage.");
-            }*/
-            //String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
+
+            String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
             StringBuilder bigImageRowKey = new StringBuilder();
-            bigImageRowKey.append(imageId).append("_").append("00");
+            bigImageRowKey.append(rowKey).append("_").append("00");
 
             Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
@@ -368,7 +359,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         mapEx.put("ex", ex);
         capturedPicture.setExtend(mapEx);
 
-        //不从rowkey解析，直接从数据库中读取ipcId和timestamp
         String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
         capturedPicture.setIpcId(ipcId);
 
@@ -395,7 +385,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         mapEx.put("ex", ex);
         capturedPicture.setExtend(mapEx);
 
-        //不从rowkey解析，直接从数据库中读取ipcId和timestamp
         String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
         capturedPicture.setIpcId(ipcId);
 
