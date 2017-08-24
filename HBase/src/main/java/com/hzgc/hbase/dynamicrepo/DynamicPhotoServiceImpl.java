@@ -333,15 +333,18 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 Result[] results = person.get(gets);
                 for (Result result : results) {
                     capturedPicture = new CapturedPicture();
+                    String rowKey = Bytes.toString(result.getRow());
+                    capturedPicture.setId(rowKey);
                     setCapturedPicture_person(capturedPicture, result, mapEx);
                     capturedPictureList.add(capturedPicture);
-                    System.out.println(capturedPicture);
                 }
             } else {
                 Result[] results = car.get(gets);
                 for (Result result : results) {
                     capturedPicture = new CapturedPicture();
-                    setCapturedPicture_person(capturedPicture, result, mapEx);
+                    String rowKey = Bytes.toString(result.getRow());
+                    capturedPicture.setId(rowKey);
+                    setCapturedPicture_car(capturedPicture, result, mapEx);
                     capturedPictureList.add(capturedPicture);
                 }
             }
