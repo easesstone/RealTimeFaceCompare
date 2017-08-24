@@ -26,7 +26,6 @@ public interface CapturePictureSearchService {
      */
     SearchResult getSearchResult(String searchId, int offset, int count, String sortParams);
 
-
     /**
      * 查看人、车图片有哪些属性
      *

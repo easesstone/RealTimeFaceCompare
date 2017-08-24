@@ -43,12 +43,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
         String idcard = (String)person.get(ObjectInfoTable.IDCARD);
+        String pkey = (String)person.get(ObjectInfoTable.PKEY);
         Random random = new Random();
         if (idcard == null || idcard.length() != 18) {
             idcard = (random.nextInt(900000000) + 100000000) + ""
                     + (random.nextInt(900000000) + 100000000);
         }
-        String rowkey =  platformId + idcard;
+        String rowkey = pkey  + idcard;
         LOG.info("rowkey: " + rowkey);
         List<Put> puts = new ArrayList<>();
         // 获取table 对象，通过封装HBaseHelper 来获取
@@ -197,17 +198,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         String dateString = format.format(date);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
-        if(fieldlist.contains(ObjectInfoTable.IDCARD)){
-            Get get = new Get(Bytes.toBytes(id));
-            try {
-                table.put(put);
+        try {
+            table.put(put);
+            if(fieldlist.contains(ObjectInfoTable.IDCARD) || fieldlist.contains(ObjectInfoTable.PKEY)){
+                Get get = new Get(Bytes.toBytes(id));
                 System.out.println(put);
                 LOG.info("table update successed!");
                 Result result = table.get(get);
-                String platformid = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.PLATFORMID)));
-                String idcard = (String) person.get(ObjectInfoTable.IDCARD);
-                String newRowKey = platformid + idcard;
+                String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.IDCARD)));
+                String pKey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.PKEY)));
+                String newRowKey = pKey + idCard;
                 Put put1 = new Put(Bytes.toBytes(newRowKey));
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.PLATFORMID),
                         result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -245,14 +247,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.UPDATETIME),
                         result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                                 Bytes.toBytes(ObjectInfoTable.UPDATETIME)));
-                put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.RELATED),
-                        result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                                Bytes.toBytes(ObjectInfoTable.RELATED)));
-                put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.ROWKEY),
-                        result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                                Bytes.toBytes(ObjectInfoTable.ROWKEY)));
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.IDCARD),Bytes.toBytes(idcard));
+                        Bytes.toBytes(ObjectInfoTable.IDCARD),Bytes.toBytes(idCard));
                 table.put(put1);
                 Delete delete = new Delete(Bytes.toBytes(id));
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -286,13 +282,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.ROWKEY));
                 table.delete(delete);
-            } catch (IOException e) {
-                e.printStackTrace();
-                LOG.error("table update failed!");
-            }finally {
-                //关闭表连接
-                HBaseUtil.closTable(table);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOG.error("table update failed!");
+        }finally {
+            //关闭表连接
+            HBaseUtil.closTable(table);
         }
         return 0;
     }
@@ -516,6 +512,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     exectResult.add(objectMap);
                 }
             }
+            searchResult.setResults(exectResult);
+            searchResult.setSearchNums(exectResult.size());
         } else if (moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理同拼音的情况，李，理，离，张，章等
                 || ObjectInfoTable.NAME.equals(searchType))){
             for (Map<String, Object> objectMap: tempList){
@@ -534,9 +532,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     }
                 }
             }
+            searchResult.setResults(exectResult);
+            searchResult.setSearchNums(exectResult.size());
         }
-        searchResult.setResults(exectResult);
-        searchResult.setSearchNums(exectResult.size());
     }
 
     @Override
@@ -596,18 +594,22 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         List<Map<String, Object>> resultsTmp = personInfoList;
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
 
-        for (Map<String, Object> personInfo: resultsTmp){
-            Map<String, Object> personInfoTmp = new HashMap<>();
-            personInfoTmp.putAll(personInfo);
-            Set<String> attributes = personInfo.keySet();
-            for (String attr : attributes) {
-                if ("feature".equals(attr)) {
-                    String feture_his = (String) personInfo.get(attr);
-                    float related = FaceFunction.featureCompare(feature, feture_his);
-                    System.out.println(personInfo.get("id") + ", " + related);
-                    if (related > threshold) {
-                        personInfoTmp.put(ObjectInfoTable.RELATED, related);
-                        resultsFinal.add(personInfoTmp);
+        if (feature.length() == 2048){
+            for (Map<String, Object> personInfo: resultsTmp){
+                Map<String, Object> personInfoTmp = new HashMap<>();
+                personInfoTmp.putAll(personInfo);
+                Set<String> attributes = personInfo.keySet();
+                for (String attr : attributes) {
+                    if ("feature".equals(attr)) {
+                        String feature_his = (String) personInfo.get(attr);
+                        if (feature_his.length() == 2048){
+                            float related = FaceFunction.featureCompare(feature, feature_his);
+                            System.out.println(personInfo.get("id") + ", " + related);
+                            if (related > threshold) {
+                                personInfoTmp.put(ObjectInfoTable.RELATED, related);
+                                resultsFinal.add(personInfoTmp);
+                            }
+                        }
                     }
                 }
             }

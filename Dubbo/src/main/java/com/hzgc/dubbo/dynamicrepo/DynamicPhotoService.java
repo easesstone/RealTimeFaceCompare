@@ -1,5 +1,6 @@
 package com.hzgc.dubbo.dynamicrepo;
 
+import java.util.List;
 import java.util.Map;
 
 public interface DynamicPhotoService {
@@ -26,7 +27,16 @@ public interface DynamicPhotoService {
     byte[] getFeature(String imageId, PictureType type);
 
     /**
-     * 将上传的图片、rowKey、特征值插入人脸/车辆特征库 （内）
+     * 批量获取特征值
+     *
+     * @param imageIdList 图片ID列表
+     * @param type        查询类型
+     * @return 特征值列表
+     */
+    List<float[]> getFeature(List<String> imageIdList, PictureType type);
+
+    /**
+     * 将上传的图片、rowKey、特征值插入upFea特征库 （内）
      * 表名：upFea
      *
      * @param type    人/车
@@ -41,8 +51,8 @@ public interface DynamicPhotoService {
      * 将查询ID、查询相关信息插入查询结果库 （内）（刘思阳）
      * 表名：searchRes
      *
-     * @param searchId     查询ID（rowKey）
-     * @param resList      查询信息（返回图片ID、相识度）
+     * @param searchId 查询ID（rowKey）
+     * @param resList  查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
     boolean insertSearchRes(String searchId, Map<String, Float> resList);
@@ -52,7 +62,25 @@ public interface DynamicPhotoService {
      * 表名：searchRes
      *
      * @param searchID 查询ID（rowKey）
-     * @return search结果数据列表
+     * @return 查询信息列表
      */
     Map<String, Float> getSearchRes(String searchID);
+
+    /**
+     * 根据id（rowKey）获取动态信息库内容（DynamicObject对象）（刘思阳）
+     *
+     * @param imageId id（rowKey）
+     * @param type    图片类型，人/车
+     * @return CapturedPicture
+     */
+    CapturedPicture getCaptureMessage(String imageId, int type);
+
+    /**
+     * 批量查询图片对象
+     *
+     * @param imageIdList 图片ID列表
+     * @param type        搜索类型
+     * @return List<CapturedPicture> 图片对象列表
+     */
+    List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type);
 }

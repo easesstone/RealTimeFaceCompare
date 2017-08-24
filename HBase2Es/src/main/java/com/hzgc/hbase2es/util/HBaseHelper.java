@@ -8,6 +8,7 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.log4j.Logger;
 
 
@@ -125,6 +126,7 @@ public class HBaseHelper implements Serializable {
                 HColumnDescriptor columnDescriptor = new HColumnDescriptor(columnFamily);
                 columnDescriptor.setMaxVersions(maxVersion);
                 columnDescriptor.setTimeToLive(timeToLive);
+                columnDescriptor.setCompressionType(Compression.Algorithm.SNAPPY);
                 tableDescriptor.addFamily(columnDescriptor);
             }
             admin.createTable(tableDescriptor);
@@ -162,6 +164,7 @@ public class HBaseHelper implements Serializable {
                 HColumnDescriptor columnDescriptor = new HColumnDescriptor(columnFamily);
                 columnDescriptor.setMaxVersions(maxVersion);
                 columnDescriptor.setTimeToLive(timeToLive);
+                columnDescriptor.setCompressionType(Compression.Algorithm.SNAPPY);
                 tableDescriptor.addFamily(columnDescriptor);
             }
             admin.createTable(tableDescriptor);
