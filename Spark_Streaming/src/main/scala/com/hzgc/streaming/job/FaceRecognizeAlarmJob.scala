@@ -8,7 +8,7 @@ import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.rocketmq.util.RocketMQProducer
 import com.hzgc.streaming.alarm.{Item, RecognizeAlarmMessage}
-import com.hzgc.streaming.util.{FilterUtils, PropertiesUtils}
+import com.hzgc.streaming.util.{FilterUtils, PropertiesUtils, Utils}
 import kafka.serializer.{DefaultDecoder, StringDecoder}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -135,6 +135,7 @@ object FaceRecognizeAlarmJob {
           var deviceID = ""
           var platID = ""
           val items = ArrayBuffer[Item]()
+          val timeUpdateItems = ArrayBuffer[String]()
           rddElem.foreach(rddElemStr => {
             val item = new Item()
             val recognizeAlarmStr = rddElemStr.split(separator)
@@ -150,7 +151,7 @@ object FaceRecognizeAlarmJob {
             if (offLineObjTypeList != null && offLineObjTypeList.length > 0) {
               val offLineObjTypeListArr = recognizeAlarmStr(4).split("_")
               if (FilterUtils.rangeFilterFun(offLineObjTypeListArr, objType)) {
-                ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(recognizeAlarmStr(6))
+                timeUpdateItems += recognizeAlarmStr(6)
               }
             }
             item.setStaticID(recognizeAlarmStr(6))
@@ -163,6 +164,7 @@ object FaceRecognizeAlarmJob {
           recognizeAlarmMessage.setItems(items.toArray)
           val recognizeAlarmResult = gson.toJson(recognizeAlarmMessage)
           val rocketMQProducer = RocketMQProducer.getInstance()
+          ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(Utils.arrayBuffer2javaList(timeUpdateItems.toArray))
           rocketMQProducer.send(platID, DeviceTable.IDENTIFY.toString, dynamicID, recognizeAlarmResult.getBytes(), null)
         })
 
