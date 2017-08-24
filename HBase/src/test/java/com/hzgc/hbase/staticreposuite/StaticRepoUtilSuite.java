@@ -45,7 +45,7 @@ public class StaticRepoUtilSuite {
     //测试获取hbase 中静态信息库的总记录数
     @Test
     public void testGetTotalNums(){
-        System.out.println(new ObjectInfoInnerHandlerImpl().getTotalNums());
+//        System.out.println(new ObjectInfoInnerHandlerImpl().getTotalNums());
     }
 
     @Test
@@ -142,12 +142,12 @@ public class StaticRepoUtilSuite {
 
     @Test
     public void testimpl(){
-        ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
-        List<String> a = new ArrayList<>();
-        a.add("223458");
-        a.add("123456");
-        List<String> b = objectInfoInnerHandler.searchByPkeys(a);
-        System.out.println(b);
+//        ObjectInfoInnerHandlerImpl objectInfoInnerHandler = new ObjectInfoInnerHandlerImpl();
+//        List<String> a = new ArrayList<>();
+//        a.add("223458");
+//        a.add("123456");
+//        List<String> b = objectInfoInnerHandler.searchByPkeys(a);
+//        System.out.println(b);
     }
     @Test
     public void testGetPhotoByRowkey() throws IOException {
