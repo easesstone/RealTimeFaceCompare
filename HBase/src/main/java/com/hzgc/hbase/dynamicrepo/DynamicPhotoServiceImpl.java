@@ -292,7 +292,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
         Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        List<Get> gets = new ArrayList<Get>();
+        List<Get> gets = new ArrayList<>();
         Map<String, Object> mapEx = new HashMap<>();
         for (String imageId : imageIdList) {
             Get get = new Get(Bytes.toBytes(imageId));
@@ -304,14 +304,17 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 Result[] results = person.get(gets);
                 for (Result result : results) {
                     capturedPicture = new CapturedPicture();
+                    String imageId = Bytes.toString(result.getRow());
+                    capturedPicture.setId(imageId);
                     setCapturedPicture_person(capturedPicture, result, mapEx);
                     capturedPictureList.add(capturedPicture);
-                    System.out.println(capturedPicture);
                 }
             } else {
                 Result[] results = car.get(gets);
                 for (Result result : results) {
                     capturedPicture = new CapturedPicture();
+                    String imageId = Bytes.toString(result.getRow());
+                    capturedPicture.setId(imageId);
                     setCapturedPicture_person(capturedPicture, result, mapEx);
                     capturedPictureList.add(capturedPicture);
                 }

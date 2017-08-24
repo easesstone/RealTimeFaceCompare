@@ -198,16 +198,10 @@ public class RealTimeCompare implements Serializable {
         imageIdList = getImageIdListFromHBase(option);
         if (null != imageIdList && imageIdList.size() > 0) {
             capturedPictures = dynamicPhotoService.getCaptureMessage(imageIdList, pictureType.getType());
-            List<CapturedPicture> capturedPictureListNew = new ArrayList<>();
-            for (int i = 0; i < imageIdList.size(); i++) {
-                CapturedPicture capturedPicture = capturedPictures.get(i);
-                capturedPicture.setId(imageIdList.get(i));
-                capturedPictureListNew.add(capturedPicture);
-            }
             //根据排序参数进行排序
-            capturedPictureListNew = sortByParams(capturedPictureListNew, sortParams);
+            capturedPictures = sortByParams(capturedPictures, sortParams);
             //进行分页操作
-            List<CapturedPicture> subCapturedPictures = pageSplit(capturedPictureListNew, offset, count);
+            List<CapturedPicture> subCapturedPictures = pageSplit(capturedPictures, offset, count);
             //返回最终结果
             searchResult = new SearchResult();
             //分组返回图片对象
@@ -303,7 +297,6 @@ public class RealTimeCompare implements Serializable {
         List<CapturedPicture> capturedPictureListNew = new ArrayList<>();
         for (int i = 0; i < imageIdFilterList.size(); i++) {
             CapturedPicture capturedPicture = capturedPictures.get(i);
-            capturedPicture.setId(imageIdFilterList.get(i));
             capturedPicture.setSimilarity(simFilterList.get(i));
             capturedPictureListNew.add(capturedPicture);
         }
