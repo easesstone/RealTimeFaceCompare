@@ -594,18 +594,22 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         List<Map<String, Object>> resultsTmp = personInfoList;
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
 
-        for (Map<String, Object> personInfo: resultsTmp){
-            Map<String, Object> personInfoTmp = new HashMap<>();
-            personInfoTmp.putAll(personInfo);
-            Set<String> attributes = personInfo.keySet();
-            for (String attr : attributes) {
-                if ("feature".equals(attr)) {
-                    String feture_his = (String) personInfo.get(attr);
-                    float related = FaceFunction.featureCompare(feature, feture_his);
-                    System.out.println(personInfo.get("id") + ", " + related);
-                    if (related > threshold) {
-                        personInfoTmp.put(ObjectInfoTable.RELATED, related);
-                        resultsFinal.add(personInfoTmp);
+        if (feature.length() == 2048){
+            for (Map<String, Object> personInfo: resultsTmp){
+                Map<String, Object> personInfoTmp = new HashMap<>();
+                personInfoTmp.putAll(personInfo);
+                Set<String> attributes = personInfo.keySet();
+                for (String attr : attributes) {
+                    if ("feature".equals(attr)) {
+                        String feature_his = (String) personInfo.get(attr);
+                        if (feature_his.length() == 2048){
+                            float related = FaceFunction.featureCompare(feature, feature_his);
+                            System.out.println(personInfo.get("id") + ", " + related);
+                            if (related > threshold) {
+                                personInfoTmp.put(ObjectInfoTable.RELATED, related);
+                                resultsFinal.add(personInfoTmp);
+                            }
+                        }
                     }
                 }
             }
