@@ -27,13 +27,10 @@ import java.util.Map;
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
-    private static JavaSparkContext jsc;
 
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
-        SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
-        jsc = new JavaSparkContext(conf);
     }
 
     /**
@@ -48,18 +45,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         RealTimeCompare realTimeCompare = new RealTimeCompare();
         SearchResult searchResult = null;
         try {
-            searchResult = realTimeCompare.pictureSearch(option, jsc);
-            List<CapturedPicture> capturedPictureList = searchResult.getPictures();
-            System.out.println("查询结果：");
-            System.out.println(searchResult);
-            System.out.println("相似图片数量：" + searchResult.getTotal());
-            System.out.println("返回图片数量：" + capturedPictureList.size());
-            for (CapturedPicture aCapturedPictureList : capturedPictureList) {
-                System.out.println(aCapturedPictureList.toString());
-            }
+            searchResult = realTimeCompare.pictureSearch(option);
         } catch (Exception e) {
             e.printStackTrace();
-
         }
         return searchResult;
     }
@@ -108,8 +96,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     capturedPicture.setExtend(mapEx);
                     byte[] smallImage = personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
                     capturedPicture.setSmallImage(smallImage);
-                    String time = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-                    long timeStamp = DateUtil.dateToTimeStamp(time);
+                    long timeStamp = Bytes.toLong(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
                     capturedPicture.setTimeStamp(timeStamp);
                     capturedPictureList.add(capturedPicture);
                 }
@@ -212,7 +199,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 String ipcID = map.get("ipcID");
                 capturedPicture.setIpcId(ipcID);
                 String timeStampStr = map.get("time");
-                capturedPicture.setTimeStamp(Long.valueOf(timeStampStr));
+                capturedPicture.setTimeStamp(Long.valueOfvalueOf(timeStampStr));
             } else {
                 LOG.error("map is empty,used method CapturePictureSearchServiceImpl.getCaptureMessage.");
             }*/

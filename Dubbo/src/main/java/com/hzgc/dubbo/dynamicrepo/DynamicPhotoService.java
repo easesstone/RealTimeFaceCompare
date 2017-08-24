@@ -1,5 +1,6 @@
 package com.hzgc.dubbo.dynamicrepo;
 
+import java.util.List;
 import java.util.Map;
 
 public interface DynamicPhotoService {
@@ -25,6 +26,8 @@ public interface DynamicPhotoService {
      */
     byte[] getFeature(String imageId, PictureType type);
 
+    List<float[]> getFeature(List<String> imageIdList, PictureType type);
+
     /**
      * 将上传的图片、rowKey、特征值插入人脸/车辆特征库 （内）
      * 表名：upFea
@@ -41,8 +44,8 @@ public interface DynamicPhotoService {
      * 将查询ID、查询相关信息插入查询结果库 （内）（刘思阳）
      * 表名：searchRes
      *
-     * @param searchId     查询ID（rowKey）
-     * @param resList      查询信息（返回图片ID、相识度）
+     * @param searchId 查询ID（rowKey）
+     * @param resList  查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
     boolean insertSearchRes(String searchId, Map<String, Float> resList);
@@ -55,4 +58,18 @@ public interface DynamicPhotoService {
      * @return search结果数据列表
      */
     Map<String, Float> getSearchRes(String searchID);
+
+    /**
+     * @param imageId
+     * @param type
+     * @return
+     */
+    CapturedPicture getCaptureMessage(String imageId, int type);
+
+    /**
+     * @param imageIdList
+     * @param type
+     * @return
+     */
+    List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type);
 }
