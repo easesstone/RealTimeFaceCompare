@@ -394,23 +394,22 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         // 名字可以是模糊的
         if (name != null){
-            if (moHuSearch){
-                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME, name));
-            } else {
-                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME, idCard)
-                        .analyzer("standard"));
+            if(moHuSearch){
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN,
+                        PinYinUtil.toHanyuPinyin(name)));
+            }else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME,name));
             }
         }
         // 创建者姓名可以是模糊的
         if (creator != null){
             if (moHuSearch){
-                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR, creator));
-            }else {
-                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator)
-                    .analyzer("standard"));
+                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN,
+                        PinYinUtil.toHanyuPinyin(creator)));
+            } else {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
             }
         }
-
         requestBuilder.setQuery(booleanQueryBuilder);
         // 后续，根据查出来的人员信息，如果有图片，特征值，以及阈值，（则调用算法进行比对，得出相似度比较高的）
         // 由或者多条件查询里面不支持传入图片以及阈值，特征值。
