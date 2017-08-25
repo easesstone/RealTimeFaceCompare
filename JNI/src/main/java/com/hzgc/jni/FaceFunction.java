@@ -65,19 +65,23 @@ public class FaceFunction {
                 }
                 bais = new ByteArrayInputStream(baos.toByteArray());
                 BufferedImage image = ImageIO.read(bais);
-                int height = image.getHeight();
-                int width = image.getWidth();
-                int[] rgbArray = new int[height * width * 3];
-                for (int h = 0; h < height; h++) {
-                    for (int w = 0; w < width; w++) {
-                        int pixel = image.getRGB(w, h);
-                        rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;
-                        rgbArray[h * width * 3 + w * 3 + 1] = (pixel & 0xff00) >> 8;
-                        rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
+                if (image != null) {
+                    int height = image.getHeight();
+                    int width = image.getWidth();
+                    int[] rgbArray = new int[height * width * 3];
+                    for (int h = 0; h < height; h++) {
+                        for (int w = 0; w < width; w++) {
+                            int pixel = image.getRGB(w, h);
+                            rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;
+                            rgbArray[h * width * 3 + w * 3 + 1] = (pixel & 0xff00) >> 8;
+                            rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
+                        }
                     }
+                    feature = NativeFunction.feature_extract(rgbArray, width, height);
+                    return feature;
+                } else {
+                    return null;
                 }
-                feature = NativeFunction.feature_extract(rgbArray, width, height);
-                return feature;
             } else {
                 throw new FileNotFoundException(imageFile.getName() + " is not exists");
             }
