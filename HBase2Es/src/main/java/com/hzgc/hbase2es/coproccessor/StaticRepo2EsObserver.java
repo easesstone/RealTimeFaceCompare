@@ -36,6 +36,9 @@ public class StaticRepo2EsObserver extends EsObserver {
             for (Cell cell : entry.getValue()) {
                 String key = Bytes.toString(CellUtil.cloneQualifier(cell));
                 String value = Bytes.toString(CellUtil.cloneValue(cell));
+                if (ObjectInfoTable.FEATURE.equals(key)){
+                    value = new String(CellUtil.cloneValue(cell), "ISO-8859-1");
+                }
                 if (!ObjectInfoTable.PHOTO.equals(key)){
                     infoJson.put(key, value);
                     if (ObjectInfoTable.NAME.equals(key)){

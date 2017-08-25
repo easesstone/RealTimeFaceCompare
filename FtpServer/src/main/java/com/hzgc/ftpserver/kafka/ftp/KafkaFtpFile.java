@@ -189,9 +189,9 @@ public class KafkaFtpFile implements FtpFile, Serializable {
     public boolean mkdir() {
         //manual settings so that it does not create files
         boolean retVal = true;
-//        if (isWritable()) {
-//            retVal = file.mkdir();
-//        }
+        if (isWritable()) {
+            retVal = file.mkdir();
+        }
         return retVal;
     }
 

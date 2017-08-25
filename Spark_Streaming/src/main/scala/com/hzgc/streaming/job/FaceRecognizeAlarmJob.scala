@@ -146,7 +146,7 @@ object FaceRecognizeAlarmJob {
             platID = recognizeAlarmStr(2)
             /**
               * 识别时间更新
-              * (更新因为是一条一条的更新，速度目前比较慢，后续需要优化，一次更新一个list)
+              * 将符合更新条件的数据加入list里面
               */
             if (offLineObjTypeList != null && offLineObjTypeList.length > 0) {
               val offLineObjTypeListArr = recognizeAlarmStr(4).split("_")
@@ -164,7 +164,9 @@ object FaceRecognizeAlarmJob {
           recognizeAlarmMessage.setItems(items.toArray)
           val recognizeAlarmResult = gson.toJson(recognizeAlarmMessage)
           val rocketMQProducer = RocketMQProducer.getInstance()
-          ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(Utils.arrayBuffer2javaList(timeUpdateItems.toArray))
+          if(!timeUpdateItems.isEmpty && timeUpdateItems != null){
+            ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(Utils.arrayBuffer2javaList(timeUpdateItems.toArray))
+          }
           rocketMQProducer.send(platID, DeviceTable.IDENTIFY.toString, dynamicID, recognizeAlarmResult.getBytes(), null)
         })
 

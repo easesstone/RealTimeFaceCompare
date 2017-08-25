@@ -6,7 +6,6 @@ import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.DateUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -15,6 +14,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.hzgc.util.ObjectUtil.byteToObject;
@@ -280,12 +281,13 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
             Map<String, Object> mapEx = new HashMap<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             if (type == PictureType.PERSON.getType()) {
                 try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = person.get(get);
-                    setCapturedPicture_person(capturedPicture, result, mapEx);
-                } catch (IOException e) {
+                    setCapturedPicture_person(capturedPicture, result, mapEx,dateFormat);
+                } catch (IOException | ParseException e) {
                     e.printStackTrace();
                     LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 6");
                 } finally {
@@ -295,8 +297,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = car.get(get);
-                    setCapturedPicture_car(capturedPicture, result, mapEx);
-                } catch (IOException e) {
+                    setCapturedPicture_car(capturedPicture, result, mapEx,dateFormat);
+                } catch (IOException | ParseException e) {
                     e.printStackTrace();
                     LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 7");
                 } finally {
@@ -323,6 +325,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
         List<Get> gets = new ArrayList<>();
         Map<String, Object> mapEx = new HashMap<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (String imageId : imageIdList) {
             Get get = new Get(Bytes.toBytes(imageId));
             gets.add(get);
@@ -335,7 +338,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     capturedPicture = new CapturedPicture();
                     String rowKey = Bytes.toString(result.getRow());
                     capturedPicture.setId(rowKey);
-                    setCapturedPicture_person(capturedPicture, result, mapEx);
+                    setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
                     capturedPictureList.add(capturedPicture);
                 }
             } else {
@@ -344,12 +347,13 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     capturedPicture = new CapturedPicture();
                     String rowKey = Bytes.toString(result.getRow());
                     capturedPicture.setId(rowKey);
-                    setCapturedPicture_car(capturedPicture, result, mapEx);
+                    setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
                     capturedPictureList.add(capturedPicture);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
+            LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.");
         } finally {
             HBaseUtil.closTable(person);
             HBaseUtil.closTable(car);
@@ -357,7 +361,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         return capturedPictureList;
     }
 
-    private void setCapturedPicture_person(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
+    private void setCapturedPicture_person(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx, SimpleDateFormat dateFormat) throws ParseException {
         String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
         capturedPicture.setDescription(des);
 
@@ -369,11 +373,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         capturedPicture.setIpcId(ipcId);
 
         String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-        long timeStamp = DateUtil.dateToTimeStamp(time);
-        capturedPicture.setTimeStamp(timeStamp);
+        Date timeStamp = dateFormat.parse(time);
+        capturedPicture.setTimeStamp(timeStamp.getTime());
     }
 
-    private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
+    private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx, SimpleDateFormat dateFormat) throws ParseException {
         String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
         capturedPicture.setDescription(des);
 
@@ -385,8 +389,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         capturedPicture.setIpcId(ipcId);
 
         String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
-        long timeStamp = DateUtil.dateToTimeStamp(time);
-        capturedPicture.setTimeStamp(timeStamp);
+        Date timeStamp = dateFormat.parse(time);
+        capturedPicture.setTimeStamp(timeStamp.getTime());
 
         String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
         capturedPicture.setPlateNumber(plateNumber);
