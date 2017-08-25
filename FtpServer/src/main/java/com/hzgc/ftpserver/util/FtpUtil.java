@@ -93,7 +93,7 @@ public class FtpUtil implements Serializable {
 
     public static Map<String, String> getRowKeyMessage(String rowKey) {
         String ipcID = rowKey.substring(0, rowKey.indexOf("_"));
-        String timeStr = rowKey.substring(13, rowKey.lastIndexOf("_"));
+        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.lastIndexOf("_"));
 
         String year = timeStr.substring(0, 2);
         String month = timeStr.substring(2, 4);
