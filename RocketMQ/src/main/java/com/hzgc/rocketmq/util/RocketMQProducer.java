@@ -81,7 +81,7 @@ public class RocketMQProducer implements Serializable {
             } else {
                 msg = new Message(topic, tag, key, data);
             }
-            LOG.info("Send MQ message[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + "]");
+            LOG.info("Send MQ message[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + ", key:" + msg.getKeys() + "]");
             //long startTime = System.currentTimeMillis();
             SendResult sendResult;
             if (selector != null) {
