@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Map;
 
 public class KafkaSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(KafkaSTOR.class);
@@ -125,7 +126,8 @@ public class KafkaSTOR extends AbstractCommand {
                         int faceNum = FtpUtil.pickPicture(fileName);
                         String faceKey = FtpUtil.faceKey(faceNum, key);
                         kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFace(), faceKey, photBytes);
-                        rocketMQProducer.send(FtpUtil.getRowKeyMessage(faceKey).get("ipcID"),faceKey, photBytes);
+                        Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceKey);
+                        rocketMQProducer.send(parseKey.get("ipcID"),parseKey.get("mqkey"), photBytes);
                         float[] feature = FaceFunction.featureExtract(photBytes);
                         if (feature != null && feature.length == 512) {
                             kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), faceKey, FaceFunction.floatArray2ByteArray(feature));

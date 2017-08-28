@@ -4,6 +4,7 @@ import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -111,6 +112,7 @@ public class FtpUtil implements Serializable {
             long timeStamp = date.getTime();
             map.put("ipcID", ipcID);
             map.put("time", String.valueOf(timeStamp));
+            map.put("mqkey", time.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
