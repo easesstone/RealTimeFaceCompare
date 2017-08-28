@@ -1,7 +1,10 @@
 package com.hzgc.hbase.staticreposuite;
 
+import com.hzgc.dubbo.staticrepo.ObjectInfoHandler;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
+import com.hzgc.hbase.staticrepo.ObjectInfoHandlerImpl;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -16,6 +19,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -91,5 +96,15 @@ public class EsDataSuite {
         }while (response.getHits().getHits().length != 0);
         System.out.println(total_time);
 
+    }
+
+    @Test
+    public void testGetObjcetInfo(){
+        ObjectInfoHandlerImpl handler = new ObjectInfoHandlerImpl();
+        ObjectSearchResult objectSearchResult = handler.getAllObjectINfo();
+        List<java.util.Map<String, Object>> persons = objectSearchResult.getResults();
+        for (Map<String, Object> person:objectSearchResult.getResults()){
+            System.out.println("updatetime: " + person.get("updatetime"));
+        }
     }
 }

@@ -363,7 +363,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
         // 传入平台ID ，必须是确定的
@@ -484,7 +484,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         return  dealWithSearchRequesBuilder(null, requestBuilder, null,
                 null, null,
@@ -542,7 +542,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         if (moHuSearch){
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
@@ -560,7 +560,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         if(moHuSearch){
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
@@ -572,11 +572,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 start, pageSize, moHuSearch);
     }
 
-    private ObjectSearchResult getAllObjectINfo(){
+    public ObjectSearchResult getAllObjectINfo(){
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         return dealWithSearchRequesBuilder(true, null, requestBuilder, null,
