@@ -24,4 +24,10 @@ public class DateUtil {
         }
         return 0;
     }
+
+    public static void main(String[] args) {
+        String s = "2017-01-01 00:00:00";
+        long sss = dateToTimeStamp(s);
+        System.out.println(sss);
+    }
 }
