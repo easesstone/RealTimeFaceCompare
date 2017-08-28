@@ -286,7 +286,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = person.get(get);
-                    setCapturedPicture_person(capturedPicture, result, mapEx,dateFormat);
+                    setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
                     LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 6");
@@ -297,7 +297,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = car.get(get);
-                    setCapturedPicture_car(capturedPicture, result, mapEx,dateFormat);
+                    setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
                     LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 7");
@@ -320,43 +320,45 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      */
     @Override
     public List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type) {
-        Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-        Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        List<Get> gets = new ArrayList<>();
-        Map<String, Object> mapEx = new HashMap<>();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        for (String imageId : imageIdList) {
-            Get get = new Get(Bytes.toBytes(imageId));
-            gets.add(get);
-        }
-        CapturedPicture capturedPicture;
-        try {
-            if (type == PictureType.PERSON.getType()) {
-                Result[] results = person.get(gets);
-                for (Result result : results) {
-                    capturedPicture = new CapturedPicture();
-                    String rowKey = Bytes.toString(result.getRow());
-                    capturedPicture.setId(rowKey);
-                    setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
-                    capturedPictureList.add(capturedPicture);
-                }
-            } else {
-                Result[] results = car.get(gets);
-                for (Result result : results) {
-                    capturedPicture = new CapturedPicture();
-                    String rowKey = Bytes.toString(result.getRow());
-                    capturedPicture.setId(rowKey);
-                    setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
-                    capturedPictureList.add(capturedPicture);
-                }
+        if (imageIdList != null) {
+            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+            List<Get> gets = new ArrayList<>();
+            Map<String, Object> mapEx = new HashMap<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (String imageId : imageIdList) {
+                Get get = new Get(Bytes.toBytes(imageId));
+                gets.add(get);
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-            LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.");
-        } finally {
-            HBaseUtil.closTable(person);
-            HBaseUtil.closTable(car);
+            CapturedPicture capturedPicture;
+            try {
+                if (type == PictureType.PERSON.getType()) {
+                    Result[] results = person.get(gets);
+                    for (Result result : results) {
+                        capturedPicture = new CapturedPicture();
+                        String rowKey = Bytes.toString(result.getRow());
+                        capturedPicture.setId(rowKey);
+                        setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
+                        capturedPictureList.add(capturedPicture);
+                    }
+                } else {
+                    Result[] results = car.get(gets);
+                    for (Result result : results) {
+                        capturedPicture = new CapturedPicture();
+                        String rowKey = Bytes.toString(result.getRow());
+                        capturedPicture.setId(rowKey);
+                        setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
+                        capturedPictureList.add(capturedPicture);
+                    }
+                }
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+                LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.");
+            } finally {
+                HBaseUtil.closTable(person);
+                HBaseUtil.closTable(car);
+            }
         }
         return capturedPictureList;
     }
