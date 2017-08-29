@@ -56,7 +56,7 @@ object FaceOffLineAlarmJob {
           val alarmStr = gson.toJson(offLineAlarmMessage)
           //离线告警信息推送的时候，平台id为对象类型字符串的前4个字节。
           val platID = filterResultElem._2.substring(0, 4)
-          rocketMQProducer.send(platID, DeviceTable.OFFLINE.toString, filterResultElem._1, alarmStr.getBytes(), null);
+          rocketMQProducer.send(platID, "alarm_" + DeviceTable.OFFLINE.toString, filterResultElem._1, alarmStr.getBytes(), null);
         })
       } else {
         println("No data was received from the static repository,the task is not running！")
