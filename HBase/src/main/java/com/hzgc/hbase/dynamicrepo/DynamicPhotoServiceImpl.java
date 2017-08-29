@@ -1,11 +1,13 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hzgc.dubbo.dynamicrepo.CapturedPicture;
 import com.hzgc.dubbo.dynamicrepo.DynamicPhotoService;
 import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
+import com.hzgc.util.ListSplitUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -14,9 +16,11 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 import static com.hzgc.util.ObjectUtil.byteToObject;
 import static com.hzgc.util.ObjectUtil.objectToByte;
@@ -188,9 +192,87 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 }
             }
         } else {
-            LOG.error("method DynamicPhotoServiceImpl.getFeature param is empty");
+            LOG.error("method DynamicPhotoServiceImpl.getBatchFeature param is empty");
         }
         return feaFloatList;
+    }
+
+    /**
+     * 批量多线程获取特征值
+     *
+     * @param imageIdList 图片id列表
+     * @param type        图片类型
+     * @return 特征值列表
+     */
+    @Override
+    public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
+        //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 5;
+        List<float[]> feaList = new ArrayList<>();
+        List<List<String>> lstBatchImageId;
+        if (imageIdList.size() < parallel) {
+            lstBatchImageId = new ArrayList<>(1);
+            lstBatchImageId.add(imageIdList);
+        } else {
+            lstBatchImageId = new ArrayList<>(parallel);
+            for (int i = 0; i < parallel; i++) {
+                List<String> lst = new ArrayList<>();
+                lstBatchImageId.add(lst);
+            }
+            /*for (int i = 0; i < imageIdList.size(); i++) {
+                lstBatchImageId.get(i % parallel).add(imageIdList.get(i));
+            }*/
+            lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
+        }
+        List<Future<List<float[]>>> futures = new ArrayList<>(parallel);
+        ThreadFactoryBuilder builder = new ThreadFactoryBuilder();
+        builder.setNameFormat("ParallelBatchQuery");
+        ThreadFactory factory = builder.build();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchImageId.size(), factory);
+
+        for (List<String> keys : lstBatchImageId) {
+            BatchFeaCallable callable = new BatchFeaCallable(keys, type);
+            FutureTask<List<float[]>> future = (FutureTask<List<float[]>>) executor.submit(callable);
+            futures.add(future);
+        }
+        executor.shutdown();
+
+        // Wait for all the tasks to finish
+        try {
+            boolean stillRunning = !executor.awaitTermination(
+                    5000000, TimeUnit.MILLISECONDS);
+            if (stillRunning) {
+                try {
+                    executor.shutdownNow();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        // Look for any exception
+        for (Future f : futures) {
+            try {
+                if (f.get() != null) {
+                    feaList.addAll((List<float[]>) f.get());
+                }
+            } catch (InterruptedException e) {
+                try {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        return feaList;
     }
 
     /**
@@ -216,7 +298,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                LOG.error("insert feature by rowKey from table_person failed! used method DynamicPhotoServiceImpl.upPictureInsert.");
+                LOG.error("insert feature by rowKey from table_person failed! used method DynamicPhotoServiceImpl.insertPictureFeature.");
             } finally {
                 HBaseUtil.closTable(table);
             }
@@ -388,7 +470,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                                 capturedPicture.setId(rowKey);
                                 setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
                                 capturedPictureList.add(capturedPicture);
-                            }else {
+                            } else {
                                 LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                             }
                         }
@@ -402,6 +484,79 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             } finally {
                 HBaseUtil.closTable(person);
                 HBaseUtil.closTable(car);
+            }
+        }
+        return capturedPictureList;
+    }
+
+    /**
+     * 多线程批量获取图片信息
+     *
+     * @param imageIdList 图片Id列表
+     * @param type        图片类型
+     * @return 图片对象列表
+     */
+    @Override
+    public List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type) {
+        //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 5;
+        List<CapturedPicture> capturedPictureList = new ArrayList<>();
+        List<List<String>> lstBatchImageId;
+        if (imageIdList.size() < parallel) {
+            lstBatchImageId = new ArrayList<>(1);
+            lstBatchImageId.add(imageIdList);
+        } else {
+            lstBatchImageId = new ArrayList<>(parallel);
+            for (int i = 0; i < parallel; i++) {
+                List<String> lst = new ArrayList<>();
+                lstBatchImageId.add(lst);
+            }
+            //将rowKey list 平均分成多个sublist
+            lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
+        }
+        List<Future<List<CapturedPicture>>> futures = new ArrayList<>(parallel);
+        ThreadFactoryBuilder builder = new ThreadFactoryBuilder();
+        builder.setNameFormat("ParallelBatchQuery");
+        ThreadFactory factory = builder.build();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchImageId.size(), factory);
+
+        for (List<String> keys : lstBatchImageId) {
+            Callable<List<CapturedPicture>> callable = new BatchCapturedPictureCallable(keys, type);
+            FutureTask<List<CapturedPicture>> future = (FutureTask<List<CapturedPicture>>) executor.submit(callable);
+            futures.add(future);
+        }
+        executor.shutdown();
+        // Wait for all the tasks to finish
+        try {
+            boolean stillRunning = !executor.awaitTermination(
+                    60000, TimeUnit.MILLISECONDS);
+            if (stillRunning) {
+                try {
+                    executor.shutdownNow();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+        for (Future f : futures) {
+            try {
+                if (f.get() != null) {
+                    capturedPictureList.addAll((List<CapturedPicture>) f.get());
+                }
+            } catch (InterruptedException e) {
+                try {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
         }
         return capturedPictureList;
@@ -450,3 +605,37 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         }
     }
 }
+
+//调用接口类，实现Callable接口
+class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, Serializable {
+    private List<String> keys;
+    private int type;
+
+    BatchCapturedPictureCallable(List<String> lstKeys, int searchType) {
+        this.keys = lstKeys;
+        this.type = searchType;
+    }
+
+    public List<CapturedPicture> call() throws Exception {
+        DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
+        return dynamicPhotoService.getBatchCaptureMessage(keys, type);
+    }
+
+}
+
+//调用接口类，实现Callable接口
+class BatchFeaCallable implements Callable<List<float[]>>, Serializable {
+    private List<String> keys;
+    private PictureType type;
+
+    BatchFeaCallable(List<String> lstKeys, PictureType pictureType) {
+        this.keys = lstKeys;
+        this.type = pictureType;
+    }
+
+    public List<float[]> call() throws Exception {
+        DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
+        return dynamicPhotoService.getBatchFeature(keys, type);
+    }
+}
+

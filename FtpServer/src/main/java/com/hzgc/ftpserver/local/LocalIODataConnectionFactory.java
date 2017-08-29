@@ -5,7 +5,9 @@ import org.apache.ftpserver.DataConnectionConfiguration;
 import org.apache.ftpserver.DataConnectionException;
 import org.apache.ftpserver.ftplet.DataConnection;
 import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.impl.*;
+import org.apache.ftpserver.impl.FtpIoSession;
+import org.apache.ftpserver.impl.FtpServerContext;
+import org.apache.ftpserver.impl.ServerDataConnectionFactory;
 import org.apache.ftpserver.ssl.ClientAuth;
 import org.apache.ftpserver.ssl.SslConfiguration;
 import org.slf4j.Logger;
@@ -20,28 +22,17 @@ import java.net.*;
 public class LocalIODataConnectionFactory implements ServerDataConnectionFactory, Serializable {
     private final Logger LOG = LoggerFactory
             .getLogger(LocalIODataConnectionFactory.class);
-
-    private FtpServerContext serverContext;
-
-    private Socket dataSoc;
-
     ServerSocket servSoc;
-
     InetAddress address;
-
     int port = 0;
-
     long requestTime = 0L;
-
     boolean passive = false;
-
     boolean secure = false;
-
-    private boolean isZip = false;
-
     InetAddress serverControlAddress;
-
     FtpIoSession session;
+    private FtpServerContext serverContext;
+    private Socket dataSoc;
+    private boolean isZip = false;
 
     public LocalIODataConnectionFactory(final FtpServerContext serverContext,
                                         final FtpIoSession session) {
@@ -421,11 +412,7 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
         }
 
         // idle time is within limit - not a timeout
-        if ((currTime - requestTime) < maxIdleTime) {
-            return false;
-        }
-
-        return true;
+        return (currTime - requestTime) >= maxIdleTime;
     }
 
     /**
