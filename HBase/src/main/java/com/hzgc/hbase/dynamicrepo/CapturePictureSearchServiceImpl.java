@@ -24,10 +24,13 @@ import java.util.*;
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
+    //private static JavaSparkContext jsc;
 
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
+        /*SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
+        jsc = new JavaSparkContext(conf);*/
     }
 
     /**
@@ -38,7 +41,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 搜索结果SearchResult对象
      */
     @Override
-    public synchronized SearchResult search(SearchOption option) {
+    public SearchResult search(SearchOption option) {
         RealTimeCompare realTimeCompare = new RealTimeCompare();
         SearchResult searchResult = null;
         try {
@@ -362,7 +365,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
             long timeStamp = DateUtil.dateToTimeStamp(time);
             capturedPicture.setTimeStamp(timeStamp);
-        }else {
+        } else {
             LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_person.");
         }
     }
@@ -403,7 +406,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
             String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
             capturedPicture.setPlateNumber(plateNumber);
-        }else {
+        } else {
             LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_car.");
         }
     }
@@ -412,7 +415,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         if (bigImageResult != null) {
             byte[] bigImage = bigImageResult.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
             capturedPicture.setBigImage(bigImage);
-        }else {
+        } else {
             LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_car.");
         }
     }
