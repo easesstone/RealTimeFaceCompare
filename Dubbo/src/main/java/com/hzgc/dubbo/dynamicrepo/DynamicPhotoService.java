@@ -36,6 +36,15 @@ public interface DynamicPhotoService {
     List<float[]> getBatchFeature(List<String> imageIdList, PictureType type);
 
     /**
+     * 批量多线程获取特征值
+     *
+     * @param imageIdList
+     * @param type
+     * @return
+     */
+    List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type);
+
+    /**
      * 将上传的图片、rowKey、特征值插入upFea特征库 （内）
      * 表名：upFea
      *
@@ -83,4 +92,13 @@ public interface DynamicPhotoService {
      * @return List<CapturedPicture> 图片对象列表
      */
     List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
+
+    /**
+     * 批量多线程查询图片对象
+     *
+     * @param imageIdList
+     * @param type
+     * @return
+     */
+    List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type);
 }
