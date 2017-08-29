@@ -125,6 +125,7 @@ object FaceRecognizeAlarmJob {
       */
     computeResult.foreachRDD(rdd => {
       rdd.foreachPartition(pResult => {
+        val rocketMQProducer = RocketMQProducer.getInstance()
         pResult.foreach(rddElem => {
           val gson = new Gson()
           val recognizeAlarmMessage = new RecognizeAlarmMessage()
@@ -163,11 +164,10 @@ object FaceRecognizeAlarmJob {
           recognizeAlarmMessage.setDynamicID(dynamicID)
           recognizeAlarmMessage.setItems(items.toArray)
           val recognizeAlarmResult = gson.toJson(recognizeAlarmMessage)
-          val rocketMQProducer = RocketMQProducer.getInstance()
-          if(!timeUpdateItems.isEmpty && timeUpdateItems != null){
+          if (!timeUpdateItems.isEmpty && timeUpdateItems != null) {
             ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(Utils.arrayBuffer2javaList(timeUpdateItems.toArray))
           }
-          rocketMQProducer.send(platID, DeviceTable.IDENTIFY.toString, dynamicID, recognizeAlarmResult.getBytes(), null)
+          rocketMQProducer.send(platID, "alarm_" + DeviceTable.IDENTIFY.toString, dynamicID, recognizeAlarmResult.getBytes(), null)
         })
 
       })
