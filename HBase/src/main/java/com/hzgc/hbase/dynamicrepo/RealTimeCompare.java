@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 单机版
+ * 多线程
  */
 public class RealTimeCompare implements Serializable {
     private Logger LOG = Logger.getLogger(RealTimeCompare.class);
