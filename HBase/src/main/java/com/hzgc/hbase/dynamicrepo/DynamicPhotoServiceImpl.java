@@ -8,10 +8,7 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.util.ListSplitUtil;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
@@ -51,6 +48,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 person.put(put);
                 return true;
@@ -145,7 +143,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             List<Get> gets = new ArrayList<>();
             for (String imageId : imageIdList) {
                 Get get = new Get(Bytes.toBytes(imageId));
-                //get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
+                get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
                 gets.add(get);
             }
             if (type == PictureType.PERSON) {
@@ -290,10 +288,17 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public boolean upPictureInsert(PictureType type, String rowKey, float[] feature, byte[] image) {
         Table table = HBaseHelper.getTable(DynamicTable.TABLE_UPFEA);
+        try {
+            table.setWriteBufferSize(64 * 1024 * 1024);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (null != rowKey && type == PictureType.PERSON) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                //put.setDurability(Durability.SKIP_WAL);
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 table.put(put);
@@ -337,6 +342,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         Table searchRes = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
         try {
             Put put = new Put(Bytes.toBytes(searchId));
+            put.setDurability(Durability.ASYNC_WAL);
             byte[] searchMessage = objectToByte(resList);
             put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE, searchMessage);
             searchRes.put(put);
@@ -439,13 +445,18 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             List<Get> gets = new ArrayList<>();
             Map<String, Object> mapEx = new HashMap<>();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            for (String imageId : imageIdList) {
-                Get get = new Get(Bytes.toBytes(imageId));
-                gets.add(get);
-            }
+
             CapturedPicture capturedPicture;
             try {
                 if (type == PictureType.PERSON.getType()) {
+                    for (String imageId : imageIdList) {
+                        Get get = new Get(Bytes.toBytes(imageId));
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA);
+                        gets.add(get);
+                    }
                     Result[] results = person.get(gets);
                     if (results != null) {
                         for (Result result : results) {
@@ -463,6 +474,15 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                         LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                     }
                 } else {
+                    for (String imageId : imageIdList) {
+                        Get get = new Get(Bytes.toBytes(imageId));
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA);
+                        gets.add(get);
+                    }
                     Result[] results = car.get(gets);
                     if (results != null) {
                         for (Result result : results) {
