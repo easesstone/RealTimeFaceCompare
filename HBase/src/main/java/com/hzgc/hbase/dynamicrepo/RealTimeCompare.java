@@ -172,7 +172,7 @@ public class RealTimeCompare implements Serializable {
                 //根据阈值对计算结果进行过滤，并进行排序分页等操作
                 searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
             } else {
-                Log.info("imageIdFeaTupList is null");
+                Log.info("imageIdList is null");
             }
         } else {
             LOG.info("no image find in HBase satisfy the search option");
@@ -219,13 +219,13 @@ public class RealTimeCompare implements Serializable {
                     }
 
                 } else {
-                    LOG.info("imageIdFeaTupList is null");
+                    LOG.info("imageIdList is null");
                 }
             } else {
-                LOG.info("No image find in HBase satisfy the search option");
+                LOG.info("the feature float[] is null or short than 512");
             }
         } else {
-            LOG.error("the feature float[] is null or short than 512");
+            LOG.error("No image find in HBase satisfy the search option");
         }
         return searchResult;
     }
