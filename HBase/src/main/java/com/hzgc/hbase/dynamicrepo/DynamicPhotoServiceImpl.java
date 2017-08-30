@@ -63,6 +63,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
                 car.put(put);
                 return true;
@@ -219,9 +220,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 List<String> lst = new ArrayList<>();
                 lstBatchImageId.add(lst);
             }
-            /*for (int i = 0; i < imageIdList.size(); i++) {
-                lstBatchImageId.get(i % parallel).add(imageIdList.get(i));
-            }*/
             lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
         }
         List<Future<List<float[]>>> futures = new ArrayList<>(parallel);
@@ -292,7 +290,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.setDurability(Durability.SKIP_WAL);
                 put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
@@ -308,6 +305,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 table.put(put);
