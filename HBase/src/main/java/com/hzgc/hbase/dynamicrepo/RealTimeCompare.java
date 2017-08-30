@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
  * 单机版
  */
 public class RealTimeCompare implements Serializable {
+    private Logger LOG = Logger.getLogger(RealTimeCompare.class);
     private byte[] image;// 图片的二进制数据
     private String imageId;//图片 id ,优先使用图片流数组
     private float threshold = Float.MIN_VALUE;//阈值
@@ -32,8 +33,7 @@ public class RealTimeCompare implements Serializable {
     private SearchResult searchResult;//查询结果，最终的返回值
     private List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
     private List<Float> simList;//相似度列表，保存比对后的相似度
-    private Logger LOG = Logger.getLogger(RealTimeCompare.class);
-
+  
     public RealTimeCompare() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
     }
