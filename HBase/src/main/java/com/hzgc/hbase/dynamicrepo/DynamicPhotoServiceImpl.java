@@ -209,7 +209,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
-        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 5;
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         List<float[]> feaList = new ArrayList<>();
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
@@ -501,7 +501,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
-        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 5;
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
