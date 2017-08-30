@@ -19,22 +19,22 @@ import java.util.stream.Collectors;
  * 单机版
  */
 public class RealTimeCompare implements Serializable {
-    private static byte[] image;// 图片的二进制数据
-    private static String imageId;//图片 id ,优先使用图片流数组
-    private static float threshold = Float.MIN_VALUE;//阈值
-    private static String sortParams;//排序参数
-    private static int offset;//分页查询开始行
-    private static int count;//分页查询条数
-    private static String searchId;//查询Id 由UUID生成
-    private static DynamicPhotoService dynamicPhotoService;
-    private static List<String> imageIdList;//用于保存筛选出来的一组一个图片的id
-    private static List<CapturedPicture> capturedPictures;//图片对象列表
-    private static HashMap<String, Float> imgSimilarityMap;//图片Id和相似度的映射关系
-    private static SearchResult searchResult;//查询结果，最终的返回值
-    private static List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
-    private static List<Float> simList;//相似度列表，保存比对后的相似度
+    private byte[] image;// 图片的二进制数据
+    private String imageId;//图片 id ,优先使用图片流数组
+    private float threshold = Float.MIN_VALUE;//阈值
+    private String sortParams;//排序参数
+    private int offset;//分页查询开始行
+    private int count;//分页查询条数
+    private String searchId;//查询Id 由UUID生成
+    private DynamicPhotoService dynamicPhotoService;
+    private List<String> imageIdList;//用于保存筛选出来的一组一个图片的id
+    private List<CapturedPicture> capturedPictures;//图片对象列表
+    private HashMap<String, Float> imgSimilarityMap;//图片Id和相似度的映射关系
+    private SearchResult searchResult;//查询结果，最终的返回值
+    private List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
+    private List<Float> simList;//相似度列表，保存比对后的相似度
 
-    static {
+    public RealTimeCompare() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
     }
 
