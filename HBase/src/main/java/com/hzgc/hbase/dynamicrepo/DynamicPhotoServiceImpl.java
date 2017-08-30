@@ -207,6 +207,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      */
     @Override
     public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
+
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
         int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         List<float[]> feaList = new ArrayList<>();
