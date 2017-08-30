@@ -1,9 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.dynamicrepo.PictureType;
-import com.hzgc.dubbo.dynamicrepo.SearchOption;
-import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.dubbo.dynamicrepo.TimeInterval;
+import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
@@ -271,4 +268,36 @@ public class FilterByRowkey {
         return rowKeyList;
     }
 
+    /**
+     * 获取HBase 数据库中全部数据
+     *
+     * @return AllImageIdList
+     */
+    private List<CapturedPicture> getAllCaputurePicFromHbase() {
+        Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+        Table car = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+        List<CapturedPicture> capturedPictures = new ArrayList<>();
+        Scan scan = new Scan();
+        scan.setCaching(10000);
+        try {
+            ResultScanner scanner = person.getScanner(scan);
+            for (Result result : scanner) {
+                byte[] bytes = result.getRow();
+                String string = Bytes.toString(bytes);
+            }
+        } catch (IOException e) {
+            LOG.error("scan table person failed.");
+        }
+        try {
+            ResultScanner scanner = car.getScanner(scan);
+            for (Result result : scanner) {
+                byte[] bytes = result.getRow();
+                String string = Bytes.toString(bytes);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOG.error("scan table person failed.");
+        }
+        return capturedPictures;
+    }
 }
