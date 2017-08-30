@@ -172,7 +172,7 @@ public class RealTimeCompare implements Serializable {
                 //根据阈值对计算结果进行过滤，并进行排序分页等操作
                 searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
             } else {
-                Log.info("imageIdList is null");
+                LOG.info("imageIdList is null");
             }
         } else {
             LOG.info("no image find in HBase satisfy the search option");
