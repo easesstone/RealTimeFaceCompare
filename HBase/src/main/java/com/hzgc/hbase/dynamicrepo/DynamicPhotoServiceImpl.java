@@ -288,16 +288,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public boolean upPictureInsert(PictureType type, String rowKey, float[] feature, byte[] image) {
         Table table = HBaseHelper.getTable(DynamicTable.TABLE_UPFEA);
-        try {
-            table.setWriteBufferSize(64 * 1024 * 1024);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         if (null != rowKey && type == PictureType.PERSON) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
-                //put.setDurability(Durability.SKIP_WAL);
+                put.setDurability(Durability.SKIP_WAL);
                 put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
