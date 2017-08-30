@@ -33,7 +33,7 @@ public class RealTimeCompare implements Serializable {
     private SearchResult searchResult;//查询结果，最终的返回值
     private List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
     private List<Float> simList;//相似度列表，保存比对后的相似度
-  
+
     public RealTimeCompare() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
     }
@@ -152,14 +152,16 @@ public class RealTimeCompare implements Serializable {
             //采用HBase+elasticSearch，根据deviceId、时间参数圈定查询范围,得到一组满足条件的图像id
             long esTime = System.currentTimeMillis();
             imageIdList = getImageIdListFromEs(option);
+            LOG.info("从es中筛选图片Id的数量" + imageIdList.size() + " ,时间消耗：" + (System.currentTimeMillis() - esTime));
+            long filterSpicTime = System.currentTimeMillis();
             imageIdList = imageIdList.stream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-            LOG.info("从es中筛选图片Id的时间消耗：" + (System.currentTimeMillis() - esTime));
+            LOG.info("过滤出小图的数量：" + imageIdList.size() + " ,时间消耗：" + (System.currentTimeMillis() - filterSpicTime));
             if (null != imageIdList && imageIdList.size() > 0) {
                 //根据imageId找出对应特征加入组成二元组并加入到列表
                 try {
                     long getFeaTime = System.currentTimeMillis();
                     feaFloatList = getFeaByImageId(imageIdList, pictureType);
-                    LOG.info("从HBase中获取特征的时间消耗：" + (System.currentTimeMillis() - getFeaTime));
+                    LOG.info("从HBase中获取特征的数量：" + feaFloatList.size() + ",时间消耗：" + (System.currentTimeMillis() - getFeaTime));
                 } catch (Exception e) {
                     LOG.error("get float[] feature failed by getFeaByImageId method");
                 }
@@ -170,7 +172,7 @@ public class RealTimeCompare implements Serializable {
                 } else {
                     LOG.info("feaFloatList is null");
                 }
-                LOG.info("特征比对时间：" + (System.currentTimeMillis() - compareTime));
+                LOG.info("特征比对数量：" + feaFloatList.size() + " ,时间消耗：" + (System.currentTimeMillis() - compareTime));
                 //根据阈值对计算结果进行过滤，并进行排序分页等操作
                 searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
             } else {
@@ -347,7 +349,7 @@ public class RealTimeCompare implements Serializable {
                 imgSimilarityMap.put(imageIdList.get(i), simList.get(i));
             }
         }
-        LOG.info("根据相似度过滤imageId时间消耗：" + (System.currentTimeMillis() - thresholdTime));
+        LOG.info("根据相似度过滤imageId的数量：" + imgSimilarityMap.size() + " ,时间消耗：" + (System.currentTimeMillis() - thresholdTime));
         long getMultiBatchCaptureMessageTime = System.currentTimeMillis();
         //capturedPictures = dynamicPhotoService.getBatchCaptureMessage(imageIdFilterList, type);
         capturedPictures = dynamicPhotoService.getMultiBatchCaptureMessage(imageIdFilterList, type);
@@ -358,16 +360,16 @@ public class RealTimeCompare implements Serializable {
             capturedPicture.setSimilarity(simFilterList.get(i));
             capturedPictureListNew.add(capturedPicture);
         }
-        LOG.info("根据ImageId多线程批量获取图片对象时间消耗：" + (System.currentTimeMillis() - getMultiBatchCaptureMessageTime));
+        LOG.info("根据ImageId多线程批量获取图片对象的数量：" + capturedPictureListNew.size() + " ,时间消耗：" + (System.currentTimeMillis() - getMultiBatchCaptureMessageTime));
         long sortTime = System.currentTimeMillis();
         //根据排序参数进行排序
         capturedPictureListNew = sortByParams(capturedPictureListNew, sortParams);
-        LOG.info("对图片对象进行排序时间消耗：" + (System.currentTimeMillis() - sortTime));
+        LOG.info("对" + capturedPictureListNew.size() + "张图片对象进行排序时间消耗：" + (System.currentTimeMillis() - sortTime));
         //打印结果
         long splitTime = System.currentTimeMillis();
         //进行分页操作
         List<CapturedPicture> subCapturedPictures = pageSplit(capturedPictureListNew, offset, count);
-        LOG.info("分页时间消耗：" + (System.currentTimeMillis() - splitTime));
+        LOG.info("分页返回" + subCapturedPictures.size() + "时间消耗：" + (System.currentTimeMillis() - splitTime));
         //返回最终结果
         searchResult = new SearchResult();
         //分组返回图片对象
