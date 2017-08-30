@@ -108,13 +108,6 @@ public class RealTimeCompare implements Serializable {
                         capturedPictureList.addAll(capturedPicturesPerson);
                     }
                 }
-                if (null != carImageIdList && carImageIdList.size() > 0) {
-                    pictureType = PictureType.CAR;
-                    List<CapturedPicture> capturedPicturesCar = dynamicPhotoService.getMultiBatchCaptureMessage(carImageIdList, pictureType.getType());
-                    if (null != capturedPictureList) {
-                        capturedPictureList.addAll(capturedPicturesCar);
-                    }
-                }
                 //根据排序参数进行排序
                 capturedPictures = sortByParams(capturedPictureList, sortParams);
                 //进行分页操作
@@ -290,8 +283,7 @@ public class RealTimeCompare implements Serializable {
      */
     private List<String> getImageIdListFromEs(SearchOption option) {
         FilterByRowkey filterByRowkey = new FilterByRowkey();
-        List<String> rowKeyList = filterByRowkey.getRowKey(option);
-        return rowKeyList;
+        return filterByRowkey.getRowKey(option);
     }
 
     /**
