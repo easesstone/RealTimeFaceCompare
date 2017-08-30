@@ -157,6 +157,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                                 float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
                                 feaFloatList.add(featureFloat);
                             } else {
+                                feaFloatList.add(null);
                                 LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                             }
                         }
@@ -178,6 +179,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                                 float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA));
                                 feaFloatList.add(featureFloat);
                             } else {
+                                feaFloatList.add(null);
                                 LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                             }
                         }
