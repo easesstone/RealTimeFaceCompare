@@ -372,9 +372,6 @@ public class RealTimeCompare implements Serializable {
         capturedPictureListNew = sortByParams(capturedPictureListNew, sortParams);
         LOG.info("对图片对象进行排序时间消耗：" + (System.currentTimeMillis() - sortTime));
         //打印结果
-        /*for (CapturedPicture capturedPicture : capturedPictureListNew) {
-            System.out.println(capturedPicture);
-        }*/
         long splitTime = System.currentTimeMillis();
         //进行分页操作
         List<CapturedPicture> subCapturedPictures = pageSplit(capturedPictureListNew, offset, count);
