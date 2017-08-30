@@ -618,6 +618,21 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         objectSearchResult.setSearchId(searchId); // searchId
         objectSearchResult.setSearchStatus(0);  // status
         objectSearchResult.setSearchNums(resultsFinal.size());   // results nums
+        // 按照相似度从大小排序
+        Collections.sort(resultsFinal, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                float relate01 = (float) o1.get(ObjectInfoTable.RELATED);
+                float relate02 = (float) o2.get(ObjectInfoTable.RELATED);
+                if (relate01 > relate02){
+                    return -1;
+                } else if (relate01 == relate02){
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
         objectSearchResult.setResults(resultsFinal);  // results
         objectSearchResult.setPhotoId(searchId);   // photoId
         putSearchRecordToHBase(platformId, objectSearchResult, photo);
