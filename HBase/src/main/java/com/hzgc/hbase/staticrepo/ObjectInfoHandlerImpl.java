@@ -686,12 +686,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         long start = System.currentTimeMillis();
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Get get = new Get(Bytes.toBytes(rowkey));
+        get.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PHOTO));
         Result result;
         byte[] photo;
         try {
             result = table.get(get);
             photo = result.getValue(Bytes.toBytes("person"), Bytes.toBytes("photo"));
-            LOG.info("get data from table successed!");
         } catch (IOException e) {
             LOG.error("get data from table failed!");
             e.printStackTrace();
