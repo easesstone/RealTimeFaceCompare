@@ -48,7 +48,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.setDurability(Durability.ASYNC_WAL);
+                put.setDurability(Durability.SKIP_WAL);
                 put.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 person.put(put);
                 return true;
@@ -63,7 +63,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.setDurability(Durability.ASYNC_WAL);
+                put.setDurability(Durability.SKIP_WAL);
                 put.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
                 car.put(put);
                 return true;
@@ -142,8 +142,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
             List<Get> gets = new ArrayList<>();
-            for (String imageId : imageIdList) {
-                Get get = new Get(Bytes.toBytes(imageId));
+            for (int i = 0; i < imageIdList.size(); i++) {
+                Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                 get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
                 gets.add(get);
             }
@@ -151,7 +151,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Result[] results = personTable.get(gets);
                     if (results != null) {
-                        for (Result result : results) {
+                        for (int i = 0; i < results.length; i++) {
+                            Result result = results[i];
                             if (result != null) {
                                 float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
                                 feaFloatList.add(featureFloat);
@@ -207,9 +208,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      */
     @Override
     public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
-
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
         int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
+        LOG.info("当前线程数：" + parallel);
         List<float[]> feaList = new ArrayList<>();
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
@@ -291,7 +292,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.setDurability(Durability.ASYNC_WAL);
+                put.setDurability(Durability.SKIP_WAL);
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 table.put(put);
@@ -306,7 +307,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
-                put.setDurability(Durability.ASYNC_WAL);
+                put.setDurability(Durability.SKIP_WAL);
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 table.put(put);
@@ -443,8 +444,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             CapturedPicture capturedPicture;
             try {
                 if (type == PictureType.PERSON.getType()) {
-                    for (String imageId : imageIdList) {
-                        Get get = new Get(Bytes.toBytes(imageId));
+                    for (int i = 0; i < imageIdList.size(); i++) {
+                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
@@ -453,7 +454,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     }
                     Result[] results = person.get(gets);
                     if (results != null) {
-                        for (Result result : results) {
+                        for (int i = 0; i < results.length; i++) {
+                            Result result = results[i];
                             capturedPicture = new CapturedPicture();
                             if (result != null) {
                                 String rowKey = Bytes.toString(result.getRow());
@@ -516,6 +518,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     public List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
         int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
+        LOG.info("当前线程数：" + parallel);
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
@@ -600,25 +603,21 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
 
     private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx, SimpleDateFormat dateFormat) throws ParseException {
         String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
-        if (result != null) {
-            capturedPicture.setDescription(des);
+        capturedPicture.setDescription(des);
 
-            String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
-            mapEx.put("ex", ex);
-            capturedPicture.setExtend(mapEx);
+        String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
+        mapEx.put("ex", ex);
+        capturedPicture.setExtend(mapEx);
 
-            String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
-            capturedPicture.setIpcId(ipcId);
+        String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
+        capturedPicture.setIpcId(ipcId);
 
-            String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
-            Date timeStamp = dateFormat.parse(time);
-            capturedPicture.setTimeStamp(timeStamp.getTime());
+        String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
+        Date timeStamp = dateFormat.parse(time);
+        capturedPicture.setTimeStamp(timeStamp.getTime());
 
-            String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
-            capturedPicture.setPlateNumber(plateNumber);
-        } else {
-            LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.setCapturedPicture_car.");
-        }
+        String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
+        capturedPicture.setPlateNumber(plateNumber);
     }
 }
 
