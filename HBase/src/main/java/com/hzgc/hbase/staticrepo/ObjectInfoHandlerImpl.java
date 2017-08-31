@@ -374,12 +374,21 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                      byte[] photo, String feature,float threshold,
                                                      List<String> pkeys, String creator, String cphone,
                                                      int start, int pageSize,boolean moHuSearch){
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
-                .prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
-                .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setSize(1000);
+        SearchRequestBuilder requestBuilder = null;
+        if (photo != null && feature != null){
+            requestBuilder = ElasticSearchHelper.getEsClient()
+                    .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                    .setTypes(ObjectInfoTable.PERSON_COLF)
+                    .setExplain(true).addSort("updatetime", SortOrder.DESC)
+                    .setScroll(new TimeValue(300000)).setSize(1000);
+        } else {
+            requestBuilder = ElasticSearchHelper.getEsClient()
+                    .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                    .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
+                    .setTypes(ObjectInfoTable.PERSON_COLF)
+                    .setExplain(true).addSort("updatetime", SortOrder.DESC)
+                    .setScroll(new TimeValue(300000)).setSize(1000);
+        }
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
         // 传入平台ID ，必须是确定的
         if (platformId != null){
@@ -834,11 +843,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 处理精确查找下，IK 分词器返回多余信息的情况，
         // 比如只需要小王炸，但是返回了小王炸 和小王炸小以及小王炸大的情况
         dealWithCreatorAndNameInNoMoHuSearch(searchResult, searchType, creatorOrName, moHuSearch);
-        if (!isSkipRecord && photo != null){
+        if (!isSkipRecord && photo == null){
             putSearchRecordToHBase(paltformID, searchResult, photo);
+            //处理搜索的数据,根据是否需要分页进行返回
+            HBaseUtil.dealWithPaging(searchResult, start, pageSize);
         }
-        //处理搜索的数据,根据是否需要分页进行返回
-        HBaseUtil.dealWithPaging(searchResult, start, pageSize);
         LOG.info("dealWithSearchRequesBuilder, time: " + (System.currentTimeMillis() - start_time));
         return searchResult;
     }
