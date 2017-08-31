@@ -11,12 +11,14 @@ import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
 import org.apache.ftpserver.util.IoUtils;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Map;
 
 public class KafkaSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(KafkaSTOR.class);
@@ -125,7 +127,12 @@ public class KafkaSTOR extends AbstractCommand {
                         int faceNum = FtpUtil.pickPicture(fileName);
                         String faceKey = FtpUtil.faceKey(faceNum, key);
                         kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFace(), faceKey, photBytes);
-                        rocketMQProducer.send(FtpUtil.getRowKeyMessage(faceKey).get("ipcID"), photBytes);
+                        Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceKey);
+                        SendResult tempResult = rocketMQProducer.
+                                send(parseKey.get("ipcID"),parseKey.get("mqkey"), photBytes);
+
+                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
+                                parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
                         float[] feature = FaceFunction.featureExtract(photBytes);
                         if (feature != null && feature.length == 512) {
                             kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), faceKey, FaceFunction.floatArray2ByteArray(feature));

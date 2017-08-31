@@ -3,6 +3,7 @@ package com.hzgc.ftpserver.kafka.consumer;
 import com.hzgc.ftpserver.util.FtpUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -21,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WorkerThread implements Runnable, Serializable {
     private Logger LOG = Logger.getLogger(WorkerThread.class);
-    private ConsumerRecord<String, byte[]> consumerRecord;
     private BlockingQueue<ConsumerRecord<String, byte[]>> buffer;
     private ConcurrentHashMap<String, Boolean> isCommit;
     private Connection hbaseConn;
@@ -61,10 +61,11 @@ public class WorkerThread implements Runnable, Serializable {
                 picTable = hbaseConn.getTable(TableName.valueOf(tableName));
             }
             while (true) {
-                consumerRecord = buffer.take();
+                ConsumerRecord<String, byte[]> consumerRecord = buffer.take();
                 picTable = hbaseConn.getTable(TableName.valueOf(tableName));
                 if (null != columnFamily && null != column_pic && null != consumerRecord) {
                     Put put = new Put(Bytes.toBytes(consumerRecord.key()));
+                    put.setDurability(Durability.SKIP_WAL);
                     put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_pic), consumerRecord.value());
                     Map<String, String> map = FtpUtil.getRowKeyMessage(consumerRecord.key());
                     String ipcID = map.get("ipcID");
@@ -74,8 +75,11 @@ public class WorkerThread implements Runnable, Serializable {
                     put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_ipcID), Bytes.toBytes(ipcID));
                     put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_time), Bytes.toBytes(dateFormat.format(date)));
                     picTable.put(put);
-                    System.out.printf(Thread.currentThread().getName() + "topic = %s, offset = %d, key = %s, value = %s, patition = %s\n",
-                            consumerRecord.topic(), consumerRecord.offset(), consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    LOG.info(Thread.currentThread().getName() + " [topic:" + consumerRecord.topic() +
+                            ", offset:" + consumerRecord.offset() +
+                            ", key:" + consumerRecord.key()+
+                            ", partition:" + consumerRecord.partition() +
+                            "]");
                 }
             }
         } catch (Exception e) {

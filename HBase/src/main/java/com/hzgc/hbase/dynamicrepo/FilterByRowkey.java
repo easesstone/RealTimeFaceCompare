@@ -1,8 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.dynamicrepo.SearchOption;
-import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.dubbo.dynamicrepo.TimeInterval;
+import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
@@ -121,13 +119,13 @@ public class FilterByRowkey {
     // 最终生成一个SearchRequestBuilder 请求
     private SearchRequestBuilder getSearchRequestBuilder(SearchOption option) {
         // 传过来为空，返回空
-        if (option == null){
+        if (option == null) {
             return null;
         }
         // 获取搜索类型，搜索类型要么是人，要么是车，不可以为空，为空不处理
         SearchType searchType = option.getSearchType();
         // 搜索类型为空，则返回空。
-        if (searchType == null){
+        if (searchType == null) {
             return null;
         }
 
@@ -139,7 +137,7 @@ public class FilterByRowkey {
         BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
 
         // 搜索类型为车的情况下
-        if (SearchType.PERSON.equals(searchType)){
+        if (SearchType.PERSON.equals(searchType)) {
             // 获取设备ID
             List<String> deviceId = option.getDeviceIds();
             // 起始时间
@@ -153,7 +151,7 @@ public class FilterByRowkey {
             // 格式化时间
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             // 设备ID 存在的时候的处理
-            if (deviceId != null){
+            if (deviceId != null) {
                 if (deviceId != null) {
                     Iterator it = deviceId.iterator();
                     while (it.hasNext()) {
@@ -188,7 +186,7 @@ public class FilterByRowkey {
             }
             index = DynamicTable.DYNAMIC_INDEX;
             type = DynamicTable.PERSON_INDEX_TYPE;
-        }else if (SearchType.CAR.equals(searchType)){     // 搜索的是车的情况下
+        } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
 
         }
         return ElasticSearchHelper.getEsClient()
@@ -205,7 +203,7 @@ public class FilterByRowkey {
     // 内部方法,处理SearchRequestBuilder
     private List<String> dealWithSearchRequestBuilder(SearchRequestBuilder searchRequestBuilder) {
         // requestBuilder 为空，则返回空
-        if (searchRequestBuilder == null){
+        if (searchRequestBuilder == null) {
             return null;
         }
         // 通过SearchRequestBuilder 获取response 对象。
@@ -226,7 +224,80 @@ public class FilterByRowkey {
                     .setScroll(new TimeValue(60000))
                     .execute()
                     .actionGet();
-        }while (searchResponse.getHits().getHits().length != 0);
+        } while (searchResponse.getHits().getHits().length != 0);
         return rowkeys;
+    }
+
+    /**
+     * 获取HBase 数据库中全部数据
+     *
+     * @return AllImageIdList
+     */
+    private List<String> getAllImageIdListFromHbase(PictureType type) {
+        Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+        Table car = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+        List<String> rowKeyList = new ArrayList<>();
+        Scan scan = new Scan();
+        scan.setCaching(10000);
+        if (null != type && type == PictureType.PERSON) {
+            try {
+                ResultScanner scanner = person.getScanner(scan);
+                for (Result result : scanner) {
+                    byte[] bytes = result.getRow();
+                    String string = Bytes.toString(bytes);
+                    rowKeyList.add(string);
+                }
+            } catch (IOException e) {
+                LOG.error("scan table person failed.");
+            }
+        } else {
+            if (null != type && type == PictureType.CAR) {
+                try {
+                    ResultScanner scanner = car.getScanner(scan);
+                    for (Result result : scanner) {
+                        byte[] bytes = result.getRow();
+                        String string = Bytes.toString(bytes);
+                        rowKeyList.add(string);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    LOG.error("scan table person failed.");
+                }
+            }
+        }
+        return rowKeyList;
+    }
+
+    /**
+     * 获取HBase 数据库中全部数据
+     *
+     * @return AllImageIdList
+     */
+    private List<CapturedPicture> getAllCaputurePicFromHbase() {
+        Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+        Table car = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+        List<CapturedPicture> capturedPictures = new ArrayList<>();
+        Scan scan = new Scan();
+        scan.setCaching(10000);
+        try {
+            ResultScanner scanner = person.getScanner(scan);
+            for (Result result : scanner) {
+                byte[] bytes = result.getRow();
+                String string = Bytes.toString(bytes);
+            }
+        } catch (IOException e) {
+            LOG.error("scan table person failed.");
+        }
+        try {
+            ResultScanner scanner = car.getScanner(scan);
+            for (Result result : scanner) {
+                byte[] bytes = result.getRow();
+                String string = Bytes.toString(bytes);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOG.error("scan table person failed.");
+        }
+        return capturedPictures;
     }
 }

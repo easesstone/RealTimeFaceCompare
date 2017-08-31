@@ -378,7 +378,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
         // 传入平台ID ，必须是确定的
@@ -506,7 +506,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         return  dealWithSearchRequesBuilder(null, requestBuilder, null,
                 null, null,
@@ -567,7 +567,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         if (moHuSearch){
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
@@ -586,7 +586,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         if(moHuSearch){
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
@@ -598,13 +598,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 start, pageSize, moHuSearch);
     }
 
-    private ObjectSearchResult getAllObjectInfo(){
+    public ObjectSearchResult getAllObjectInfo(){
         long start = System.currentTimeMillis();
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(new String[]{ObjectInfoTable.FEATURE}, null)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         ObjectSearchResult objectSearchResult = dealWithSearchRequesBuilder(true, null, requestBuilder, null,
@@ -649,6 +649,21 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         objectSearchResult.setSearchId(searchId); // searchId
         objectSearchResult.setSearchStatus(0);  // status
         objectSearchResult.setSearchNums(resultsFinal.size());   // results nums
+        // 按照相似度从大小排序
+        Collections.sort(resultsFinal, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                float relate01 = (float) o1.get(ObjectInfoTable.RELATED);
+                float relate02 = (float) o2.get(ObjectInfoTable.RELATED);
+                if (relate01 > relate02){
+                    return -1;
+                } else if (relate01 == relate02){
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
         objectSearchResult.setResults(resultsFinal);  // results
         objectSearchResult.setPhotoId(searchId);   // photoId
         putSearchRecordToHBase(platformId, objectSearchResult, photo);
