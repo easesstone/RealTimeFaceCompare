@@ -33,12 +33,13 @@ import org.elasticsearch.search.sort.SortOrder;
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
 
-   public ObjectInfoHandlerImpl(){
+    public ObjectInfoHandlerImpl(){
         NativeFunction.init();
     }
 
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> person) {
+        long start = System.currentTimeMillis();
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
@@ -50,12 +51,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     + (random.nextInt(900000000) + 100000000);
         }
         String rowkey = pkey  + idcard;
-        LOG.info("rowkey: " + rowkey);
+        LOG.info("addObjectInfo, rowkey: " + rowkey);
         List<Put> puts = new ArrayList<>();
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         //构造Put 对象
         Put put = new Put(Bytes.toBytes(rowkey));
+        put.setDurability(Durability.ASYNC_WAL);
         // 添加列族属性
         for (String field : fieldlist) {
             if (ObjectInfoTable.PHOTO.equals(field)) {
@@ -101,6 +103,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } finally {
             // 关闭表格和连接对象。
             HBaseUtil.closTable(objectinfo);
+            LOG.info("addObjectInfo, time: " + (System.currentTimeMillis() - start));
         }
     }
 
@@ -108,10 +111,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public int deleteObjectInfo(List<String> rowkeys) {
         // 获取table 对象，通过封装HBaseHelper 来获取
         //
+        long start = System.currentTimeMillis();
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Delete> deletes = new ArrayList<>();
         Delete delete;
         for (String rowkey : rowkeys) {
+            LOG.info("deleteObjectInfo, rowkey: " + rowkey);
             delete = new Delete(Bytes.toBytes(rowkey));
             deletes.add(delete);
         }
@@ -132,10 +137,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } finally {
             //关闭表连接
             HBaseUtil.closTable(table);
+            LOG.info("deleteObjectInfo, time： " + (System.currentTimeMillis() - start));
         }
     }
 
     private long getTotalNums(String tableName, String family){
+       long start = System.currentTimeMillis();
         AggregationClient ac = new AggregationClient(HBaseHelper.getHBaseConfiguration());
         String coprocessorClassName = "org.apache.hadoop.hbase.coprocessor.AggregateImplementation";
         Admin admin = null;
@@ -162,11 +169,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        LOG.info("getTotalNums, time: " + (System.currentTimeMillis() - start));
         return rowCount;
     }
 
     @Override
     public int updateObjectInfo(Map<String, Object> person) {
+        long start = System.currentTimeMillis();
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         String id = (String) person.get(ObjectInfoTable.ROWKEY);
@@ -177,6 +186,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             fieldlist.add(it.next());
         }
         Put put = new Put(Bytes.toBytes(id));
+        put.setDurability(Durability.ASYNC_WAL);
         for (String field : fieldlist) {
             if (ObjectInfoTable.PHOTO.equals(field)) {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
@@ -200,10 +210,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
         try {
             table.put(put);
+            LOG.info("updateObjectInfo,not include idcard and pkey, time：" + (System.currentTimeMillis() - start));
             if(fieldlist.contains(ObjectInfoTable.IDCARD) || fieldlist.contains(ObjectInfoTable.PKEY)){
                 Get get = new Get(Bytes.toBytes(id));
-                System.out.println(put);
-                LOG.info("table update successed!");
                 Result result = table.get(get);
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));
@@ -211,6 +220,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
                 String newRowKey = pKey + idCard;
                 Put put1 = new Put(Bytes.toBytes(newRowKey));
+                put1.setDurability(Durability.ASYNC_WAL);
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),Bytes.toBytes(ObjectInfoTable.PLATFORMID),
                         result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                                 Bytes.toBytes(ObjectInfoTable.PLATFORMID)));
@@ -251,6 +261,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.IDCARD),Bytes.toBytes(idCard));
                 table.put(put1);
                 Delete delete = new Delete(Bytes.toBytes(id));
+                delete.setDurability(Durability.ASYNC_WAL);
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PLATFORMID));
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -285,16 +296,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            LOG.error("table update failed!");
+            LOG.error("updateObjectInfo, failed!");
         }finally {
             //关闭表连接
             HBaseUtil.closTable(table);
         }
+        LOG.info("updateObjectInfo, include idcard and pkey, time：" + (System.currentTimeMillis() - start));
         return 0;
     }
 
     @Override
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
+        long start = System.currentTimeMillis();
         ObjectSearchResult objectSearchResult;
         switch (pSearchArgsModel.getSearchType()){
             case "searchByPlatFormIdAndIdCard":{
@@ -352,6 +365,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 break;
             }
         }
+        LOG.info("getObjectInfo, total search time: " + (System.currentTimeMillis() - start));
         return objectSearchResult;
     }
 
@@ -362,6 +376,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                      int start, int pageSize,boolean moHuSearch){
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
@@ -413,7 +428,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         requestBuilder.setQuery(booleanQueryBuilder);
         // 后续，根据查出来的人员信息，如果有图片，特征值，以及阈值，（则调用算法进行比对，得出相似度比较高的）
         // 由或者多条件查询里面不支持传入图片以及阈值，特征值。
-        ObjectSearchResult objectSearchResult = dealWithSearchRequesBuilder(platformId, requestBuilder, null,
+        ObjectSearchResult objectSearchResult = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
                 null, null,
                 start, pageSize, moHuSearch);
         //处理以图搜图
@@ -430,8 +445,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         return searchByRowkey(platformId + idCard);
     }
 
+    /**
+     * 获取数据待优化
+     * @param rowkey  标记一条对象信息的唯一标志。
+     * @return
+     */
     @Override
     public ObjectSearchResult searchByRowkey(String rowkey) {
+        long start = System.currentTimeMillis();
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Get get = new Get(Bytes.toBytes(rowkey));
         Result result;
@@ -471,10 +492,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             searchResult.setSearchStatus(1);
             e.printStackTrace();
         } finally {
-            LOG.info("释放table 对象........");
             HBaseUtil.closTable(table);
         }
         putSearchRecordToHBase(null, searchResult, null);
+        LOG.info("searchByRowkey(pkey + idcard), time: " + (System.currentTimeMillis() - start));
         return searchResult;
     }
 
@@ -482,6 +503,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult searchByCphone(String cphone, int start, int pageSize) {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
@@ -496,6 +518,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private void dealWithCreatorAndNameInNoMoHuSearch(ObjectSearchResult searchResult,String searchType,
                                                       String nameOrCreator,
                                                       boolean moHuSearch){
+        long start = System.currentTimeMillis();
         List<Map<String, Object>> exectResult = new ArrayList<>();
         List<Map<String, Object>> tempList = searchResult.getResults();
         if (!moHuSearch && tempList != null &&(ObjectInfoTable.CREATOR.equals(searchType) // 处理精确查找，按照中文分词器查找的情况下
@@ -534,6 +557,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             searchResult.setResults(exectResult);
             searchResult.setSearchNums(exectResult.size());
         }
+        LOG.info("dealWithCreatorAndNameInNoMoHuSearch, time: " + (System.currentTimeMillis() - start));
     }
 
     @Override
@@ -541,6 +565,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                               int start, int pageSize) {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
@@ -559,6 +584,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                            int start, int pageSize) {
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
@@ -572,15 +598,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 start, pageSize, moHuSearch);
     }
 
-    public ObjectSearchResult getAllObjectINfo(){
+    public ObjectSearchResult getAllObjectInfo(){
+        long start = System.currentTimeMillis();
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setFetchSource(new String[]{ObjectInfoTable.FEATURE}, null)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(1000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
-        return dealWithSearchRequesBuilder(true, null, requestBuilder, null,
-                null, null, -1, -1 , false );
+        ObjectSearchResult objectSearchResult = dealWithSearchRequesBuilder(true, null, requestBuilder, null,
+                null, null, -1, -1 , false );;
+        LOG.info("getAllObjectINfo, time: " + (System.currentTimeMillis() - start));
+        return  objectSearchResult;
     }
 
     private ObjectSearchResult searchByPhotoAndThreshold(List<Map<String, Object>> personInfoList,
@@ -590,6 +620,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize){
+        long start_time = System.currentTimeMillis();
         List<Map<String, Object>> resultsTmp = personInfoList;
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
 
@@ -637,6 +668,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         objectSearchResult.setPhotoId(searchId);   // photoId
         putSearchRecordToHBase(platformId, objectSearchResult, photo);
         HBaseUtil.dealWithPaging(objectSearchResult, (int)start, (int)pageSize);
+        LOG.info("searchByPhotoAndThreshold, time: " + (System.currentTimeMillis() - start_time));
         return objectSearchResult;
 
     }
@@ -648,29 +680,33 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-        return searchByPhotoAndThreshold(getAllObjectINfo().getResults(), platformId,
+        return searchByPhotoAndThreshold(getAllObjectInfo().getResults(), platformId,
                 photo, threshold, feature, start, pageSize);
     }
 
     @Override
     public String getFeature(String tag, byte[] photo) {
+        long start = System.currentTimeMillis();
         float[] floatFeature = FaceFunction.featureExtract(photo);
+        String feature = "";
         if (floatFeature != null && floatFeature.length == 512) {
-            return FaceFunction.floatArray2string(floatFeature);
+            feature = FaceFunction.floatArray2string(floatFeature);
         }
-        return "";
+        LOG.info("getFeature, time: " + (System.currentTimeMillis() - start));
+        return feature;
     }
 
     @Override
     public byte[] getPhotoByKey(String rowkey) {
+        long start = System.currentTimeMillis();
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Get get = new Get(Bytes.toBytes(rowkey));
+        get.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PHOTO));
         Result result;
         byte[] photo;
         try {
             result = table.get(get);
             photo = result.getValue(Bytes.toBytes("person"), Bytes.toBytes("photo"));
-            LOG.info("get data from table successed!");
         } catch (IOException e) {
             LOG.error("get data from table failed!");
             e.printStackTrace();
@@ -678,11 +714,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } finally {
             HBaseUtil.closTable(table);
         }
+        LOG.info("getPhotoByKey, time: " + (System.currentTimeMillis() - start));
         return photo;
     }
 
     // 保存历史查询记录
     private void putSearchRecordToHBase(String platformId, ObjectSearchResult searchResult, byte[] photo){
+        long start =  System.currentTimeMillis();
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ObjectOutputStream oout = null;
         byte[] results = null;
@@ -707,6 +745,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (searchResult != null){
             Table table = HBaseHelper.getTable(SrecordTable.TABLE_NAME);
             Put put = new Put(Bytes.toBytes(searchResult.getSearchId()));
+            put.setDurability(Durability.ASYNC_WAL);
             LOG.info("srecord rowkey is:  " + searchResult.getSearchId());
             put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.SEARCH_STATUS),
                     Bytes.toBytes(searchResult.getSearchStatus()))
@@ -728,13 +767,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             try {
                 table.put(put);
-                LOG.info("excute putSearchRecordToHBase done.");
             } catch (IOException e) {
                 LOG.info("excute putSearchRecordToHBase failed.");
                 e.printStackTrace();
             } finally {
-                LOG.info("释放table 对象......");
                 HBaseUtil.closTable(table);
+                LOG.info("putSearchRecordToHBase, time: " + (System.currentTimeMillis() - start));
             }
         }
     }
@@ -763,12 +801,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                            int start,
                                                            int pageSize,
                                                            boolean moHuSearch){
+        long start_time = System.currentTimeMillis();
         SearchResponse response = searchRequestBuilder.get();
         ObjectSearchResult searchResult = new ObjectSearchResult();
         List<Map<String, Object>> results = new ArrayList<>();
         do {
             SearchHits hits = response.getHits();
-            LOG.info("根据搜索条件得到的记录数是： " + hits.getTotalHits());
             SearchHit[] searchHits = hits.getHits();
             String searchId = UUID.randomUUID().toString().replace("-", "");
             searchResult.setSearchId(searchId);
@@ -796,12 +834,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 处理精确查找下，IK 分词器返回多余信息的情况，
         // 比如只需要小王炸，但是返回了小王炸 和小王炸小以及小王炸大的情况
         dealWithCreatorAndNameInNoMoHuSearch(searchResult, searchType, creatorOrName, moHuSearch);
-        if (!isSkipRecord){
+        if (!isSkipRecord && photo != null){
             putSearchRecordToHBase(paltformID, searchResult, photo);
         }
         //处理搜索的数据,根据是否需要分页进行返回
         HBaseUtil.dealWithPaging(searchResult, start, pageSize);
-        LOG.info("最终返回的记录数是： " + searchResult.getResults().size() + " 条");
+        LOG.info("dealWithSearchRequesBuilder, time: " + (System.currentTimeMillis() - start_time));
         return searchResult;
     }
 }
