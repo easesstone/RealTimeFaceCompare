@@ -226,7 +226,7 @@ public class FaceFunction {
         }
 
         double tempSim = similarityDegree / Math.sqrt(currentFeatureMultiple) / Math.sqrt(historyFeatureMultiple);
-        double actualValue = new BigDecimal((tempSim + tempSim / 2) * 100).
+        double actualValue = new BigDecimal((0.5 + (tempSim / 2)) * 100).
                 setScale(2, BigDecimal.ROUND_HALF_UP).
                 doubleValue();
         if (actualValue >= 100) {
