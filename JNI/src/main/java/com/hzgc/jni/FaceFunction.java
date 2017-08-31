@@ -205,10 +205,12 @@ public class FaceFunction {
      * @return float[]
      */
     public static float[] byteArr2floatArr(byte[] fea) {
-        try {
-            return FaceFunction.string2floatArray(new String(fea, "ISO-8859-1"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        if (null != fea && fea.length == 2048) {
+            try {
+                return FaceFunction.string2floatArray(new String(fea, "ISO-8859-1"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -224,7 +226,7 @@ public class FaceFunction {
         }
 
         double tempSim = similarityDegree / Math.sqrt(currentFeatureMultiple) / Math.sqrt(historyFeatureMultiple);
-        double actualValue = new BigDecimal((tempSim + tempSim / 2) * 100).
+        double actualValue = new BigDecimal((0.5 + (tempSim / 2)) * 100).
                 setScale(2, BigDecimal.ROUND_HALF_UP).
                 doubleValue();
         if (actualValue >= 100) {

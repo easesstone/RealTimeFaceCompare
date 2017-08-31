@@ -33,7 +33,16 @@ public interface DynamicPhotoService {
      * @param type        查询类型
      * @return 特征值列表
      */
-    List<float[]> getFeature(List<String> imageIdList, PictureType type);
+    List<float[]> getBatchFeature(List<String> imageIdList, PictureType type);
+
+    /**
+     * 批量多线程获取特征值
+     *
+     * @param imageIdList
+     * @param type
+     * @return
+     */
+    List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type);
 
     /**
      * 将上传的图片、rowKey、特征值插入upFea特征库 （内）
@@ -82,5 +91,14 @@ public interface DynamicPhotoService {
      * @param type        搜索类型
      * @return List<CapturedPicture> 图片对象列表
      */
-    List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type);
+    List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
+
+    /**
+     * 批量多线程查询图片对象
+     *
+     * @param imageIdList
+     * @param type
+     * @return
+     */
+    List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type);
 }

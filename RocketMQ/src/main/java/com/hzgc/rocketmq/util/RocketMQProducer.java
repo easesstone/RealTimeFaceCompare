@@ -19,6 +19,7 @@ import java.util.UUID;
 public class RocketMQProducer implements Serializable {
     private static Logger LOG = Logger.getLogger(RocketMQProducer.class);
     private static String topic;
+    private static String messTopic;
     private static Properties properties = new Properties();
     private static RocketMQProducer instance = null;
     private DefaultMQProducer producer;
@@ -30,6 +31,7 @@ public class RocketMQProducer implements Serializable {
             properties.load(fis);
             String namesrvAddr = properties.getProperty("address");
             topic = properties.getProperty("topic");
+            messTopic = properties.getProperty("messTopic");
             String producerGroup = properties.getProperty("group", UUID.randomUUID().toString());
             if (StringUtil.strIsRight(namesrvAddr) && StringUtil.strIsRight(topic) && StringUtil.strIsRight(producerGroup)) {
                 producer = new DefaultMQProducer(producerGroup);
@@ -59,19 +61,20 @@ public class RocketMQProducer implements Serializable {
         return instance;
     }
 
-    public void send(byte[] data) {
-        send(topic, null, null, data, null);
+    public SendResult send(byte[] data) {
+        return send(topic, null, null, data, null);
     }
 
-    public void send(String tag, byte[] data) {
-        send(topic, tag, null, data, null);
+    public SendResult send(String tag, byte[] data) {
+        return send(topic, tag, null, data, null);
     }
 
-    public void send(String tag, String key, byte[] data) {
-        send(topic, tag, key, data, null);
+    public SendResult send(String tag, String key, byte[] data) {
+        return send(topic, tag, key, data, null);
     }
 
-    public void send(String topic, String tag, String key, byte[] data, final MessageQueueSelector selector) {
+    public SendResult send(String topic, String tag, String key, byte[] data, final MessageQueueSelector selector) {
+        SendResult sendResult = null;
         try {
             Message msg;
             if (tag == null || tag.length() == 0) {
@@ -81,9 +84,8 @@ public class RocketMQProducer implements Serializable {
             } else {
                 msg = new Message(topic, tag, key, data);
             }
-            LOG.info("Send MQ message[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + "]");
+            LOG.info("Send MQ message[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + ", key:" + msg.getKeys() + "]");
             //long startTime = System.currentTimeMillis();
-            SendResult sendResult;
             if (selector != null) {
                 sendResult = producer.send(msg, new MessageQueueSelector() {
                     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
@@ -95,17 +97,20 @@ public class RocketMQProducer implements Serializable {
             }
             //log.info(startTime);
             LOG.info(sendResult);
-            System.out.println(sendResult);
-
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("send message error...");
         }
+        return sendResult;
     }
 
-    public void shutdown() {
+    void shutdown() {
         if (producer != null) {
             producer.shutdown();
         }
+    }
+
+    public String getMessTopic() {
+        return messTopic;
     }
 }

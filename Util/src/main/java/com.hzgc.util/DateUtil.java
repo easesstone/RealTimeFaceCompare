@@ -12,13 +12,15 @@ public class DateUtil {
      * @param timeStamp String类型时间
      * @return long类型时间
      */
-    public static long dateToTimeStamp(String timeStamp){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            Date date = dateFormat.parse(timeStamp);
-            return date.getTime();
-        } catch (ParseException e) {
-            e.printStackTrace();
+    public static long dateToTimeStamp(String timeStamp) {
+        if (timeStamp != null) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date date = dateFormat.parse(timeStamp);
+                return date.getTime();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         return 0;
     }

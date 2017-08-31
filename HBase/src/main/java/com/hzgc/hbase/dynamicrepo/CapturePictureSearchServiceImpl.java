@@ -24,10 +24,13 @@ import java.util.*;
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
+    //private static JavaSparkContext jsc;
 
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
+        /*SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
+        jsc = new JavaSparkContext(conf);*/
     }
 
     /**
@@ -38,7 +41,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 搜索结果SearchResult对象
      */
     @Override
-    public synchronized SearchResult search(SearchOption option) {
+    public SearchResult search(SearchOption option) {
         RealTimeCompare realTimeCompare = new RealTimeCompare();
         SearchResult searchResult = null;
         try {
@@ -66,63 +69,70 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         Get get = new Get(Bytes.toBytes(searchId));
-        Result result;
         try {
-            result = searchResTable.get(get);
-            byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            Map<String, Float> searchMessageMap;
-            searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
-            String returnId;
-            Float similarity;
-            if (!searchMessageMap.isEmpty()) {
-                for (String s : searchMessageMap.keySet()) {
-                    returnId = s;
-                    similarity = searchMessageMap.get(returnId);
-                    CapturedPicture capturedPicture = new CapturedPicture();
-                    capturedPicture.setId(returnId);
-                    capturedPicture.setSimilarity(similarity);
+            Result result = searchResTable.get(get);
+            if (result != null) {
+                byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
+                Map<String, Float> searchMessageMap;
+                searchMessageMap = (Map<String, Float>) ObjectUtil.byteToObject(searchMessage);
+                String returnId;
+                Float similarity;
+                if (!searchMessageMap.isEmpty()) {
+                    for (String s : searchMessageMap.keySet()) {
+                        returnId = s;
+                        similarity = searchMessageMap.get(returnId);
+                        CapturedPicture capturedPicture = new CapturedPicture();
+                        capturedPicture.setId(returnId);
+                        capturedPicture.setSimilarity(similarity);
 
-                    Get get1 = new Get(Bytes.toBytes(returnId));
-                    Result personResult = personTable.get(get1);
+                        Get get1 = new Get(Bytes.toBytes(returnId));
+                        Result personResult = personTable.get(get1);
 
-                    String description = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
-                    capturedPicture.setDescription(description);
-                    String ipcID = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
-                    capturedPicture.setIpcId(ipcID);
-                    String extend = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
-                    Map<String, Object> mapEx = new HashMap<>();
-                    mapEx.put("ex", extend);
-                    capturedPicture.setExtend(mapEx);
-                    byte[] smallImage = personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-                    capturedPicture.setSmallImage(smallImage);
-                    String time = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-                    Date date = dateFormat.parse(time);
-                    capturedPicture.setTimeStamp(date.getTime());
-                    capturedPictureList.add(capturedPicture);
+                        if (personResult != null) {
+                            String description = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
+                            capturedPicture.setDescription(description);
+                            String ipcID = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
+                            capturedPicture.setIpcId(ipcID);
+                            String extend = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
+                            Map<String, Object> mapEx = new HashMap<>();
+                            mapEx.put("ex", extend);
+                            capturedPicture.setExtend(mapEx);
+                            byte[] smallImage = personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+                            capturedPicture.setSmallImage(smallImage);
+                            String time = Bytes.toString(personResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+                            Date date = dateFormat.parse(time);
+                            capturedPicture.setTimeStamp(date.getTime());
+                            capturedPictureList.add(capturedPicture);
+                        } else {
+                            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                        }
+                    }
                 }
-            }
-            //结果集（capturedPictureList）排序
-            SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
-            ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
+                //结果集（capturedPictureList）排序
+                SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
+                ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
 
-            //排序后的结果集分页
-            List<CapturedPicture> subCapturePictureList;
-            if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
-                //结束行小于总数
-                subCapturePictureList = capturedPictureList.subList(offset, offset + count);
+                //排序后的结果集分页
+                List<CapturedPicture> subCapturePictureList;
+                if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
+                    //结束行小于总数
+                    subCapturePictureList = capturedPictureList.subList(offset, offset + count);
+                } else {
+                    //结束行大于总数
+                    subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
+                }
+                searchResult.setPictures(subCapturePictureList);
+                searchResult.setSearchId(searchId);
+                searchResult.setTotal(capturedPictureList.size());
             } else {
-                //结束行大于总数
-                subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
+                LOG.error("get Result form table_searchRes is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
             }
-            searchResult.setPictures(subCapturePictureList);
-            searchResult.setSearchId(searchId);
-            searchResult.setTotal(capturedPictureList.size());
         } catch (IOException e) {
             e.printStackTrace();
-            LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");
+            LOG.error("get data by searchId from table_searchRes failed! used method CapturePictureSearchServiceImpl.getSearchResult.");
         } catch (ParseException e) {
             e.printStackTrace();
-            LOG.error("Date format failed! used method DynamicPhotoServiceImpl.getSearchRes.");
+            LOG.error("Date format failed! used method CapturePictureSearchServiceImpl.getSearchResult.");
         } finally {
             HBaseUtil.closTable(searchResTable);
         }
@@ -332,57 +342,81 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
-        byte[] smallImage = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-        capturedPicture.setSmallImage(smallImage);
+        if (result != null) {
+            byte[] smallImage = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+            capturedPicture.setSmallImage(smallImage);
+        } else {
+            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_person.");
+        }
     }
 
     private void setCapturedPicture_person(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
-        String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
-        capturedPicture.setDescription(des);
+        if (result != null) {
+            String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
+            capturedPicture.setDescription(des);
 
-        String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
-        mapEx.put("ex", ex);
-        capturedPicture.setExtend(mapEx);
+            String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
+            mapEx.put("ex", ex);
+            capturedPicture.setExtend(mapEx);
 
-        String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
-        capturedPicture.setIpcId(ipcId);
+            String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
+            capturedPicture.setIpcId(ipcId);
 
-        String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-        long timeStamp = DateUtil.dateToTimeStamp(time);
-        capturedPicture.setTimeStamp(timeStamp);
+            String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+            long timeStamp = DateUtil.dateToTimeStamp(time);
+            capturedPicture.setTimeStamp(timeStamp);
+        } else {
+            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_person.");
+        }
     }
 
     private void setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
-        byte[] bigImage = bigImageResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-        capturedPicture.setBigImage(bigImage);
+        if (bigImageResult != null) {
+            byte[] bigImage = bigImageResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+            capturedPicture.setBigImage(bigImage);
+        } else {
+            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_person.");
+        }
     }
 
     private void setSmallImageToCapturedPicture_car(CapturedPicture capturedPicture, Result result) {
-        byte[] smallImage = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-        capturedPicture.setSmallImage(smallImage);
+        if (result != null) {
+            byte[] smallImage = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
+            capturedPicture.setSmallImage(smallImage);
+        } else {
+            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_car.");
+        }
     }
 
     private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
-        String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
-        capturedPicture.setDescription(des);
+        if (result != null) {
+            String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
+            capturedPicture.setDescription(des);
 
-        String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
-        mapEx.put("ex", ex);
-        capturedPicture.setExtend(mapEx);
+            String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
+            mapEx.put("ex", ex);
+            capturedPicture.setExtend(mapEx);
 
-        String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
-        capturedPicture.setIpcId(ipcId);
+            String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
+            capturedPicture.setIpcId(ipcId);
 
-        String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
-        long timeStamp = DateUtil.dateToTimeStamp(time);
-        capturedPicture.setTimeStamp(timeStamp);
+            String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
+            long timeStamp = DateUtil.dateToTimeStamp(time);
+            capturedPicture.setTimeStamp(timeStamp);
 
-        String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
-        capturedPicture.setPlateNumber(plateNumber);
+            String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
+            capturedPicture.setPlateNumber(plateNumber);
+        } else {
+            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_car.");
+        }
     }
 
     private void setBigImageToCapturedPicture_car(CapturedPicture capturedPicture, Result bigImageResult) {
-        byte[] bigImage = bigImageResult.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-        capturedPicture.setBigImage(bigImage);
+        if (bigImageResult != null) {
+            byte[] bigImage = bigImageResult.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
+            capturedPicture.setBigImage(bigImage);
+        } else {
+            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_car.");
+        }
     }
 }

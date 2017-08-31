@@ -108,7 +108,7 @@ object FaceAddAlarmJob {
             addAlarmMessage.setDynamicDeviceID(rddElem._2)
             addAlarmMessage.setDynamicID(rddElem._1)
             val strgson = gson.toJson(addAlarmMessage)
-            rocketMQProducer.send(rddElem._3, DeviceTable.ADDED.toString, rddElem._1, strgson.getBytes(), null)
+            rocketMQProducer.send(rddElem._3, "alarm_" + DeviceTable.ADDED.toString, rddElem._1, strgson.getBytes(), null)
           }
         })
       })

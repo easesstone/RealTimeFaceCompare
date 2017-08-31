@@ -1,22 +1,23 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hzgc.dubbo.dynamicrepo.CapturedPicture;
 import com.hzgc.dubbo.dynamicrepo.DynamicPhotoService;
 import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import com.hzgc.util.ListSplitUtil;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 import static com.hzgc.util.ObjectUtil.byteToObject;
 import static com.hzgc.util.ObjectUtil.objectToByte;
@@ -47,6 +48,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 person.put(put);
                 return true;
@@ -61,6 +63,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
                 car.put(put);
                 return true;
@@ -94,26 +97,34 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             if (type == PictureType.PERSON) {
                 try {
                     Result result = personTable.get(get);
-                    feature = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA);
+                    if (result != null) {
+                        feature = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA);
+                    } else {
+                        LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.getFeature.");
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_person failed! used method FilterByRowKey.getSmallImage");
+                    LOG.error("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getFeature");
                 } finally {
                     HBaseUtil.closTable(personTable);
                 }
             } else if (type == PictureType.CAR) {
                 try {
                     Result result = carTable.get(get);
-                    feature = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA);
+                    if (result != null) {
+                        feature = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA);
+                    } else {
+                        LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getFeature.");
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_car failed! used method FilterByRowKey.getSmallImage");
+                    LOG.error("get feature by imageId from table_car failed! used method DynamicPhotoServiceImpl.getFeature");
                 } finally {
                     HBaseUtil.closTable(carTable);
                 }
             }
         } else {
-            LOG.error("method FilterByRowKey.getFeature param is empty");
+            LOG.error("method DynamicPhotoServiceImpl.getFeature param is empty");
         }
         return feature;
     }
@@ -125,7 +136,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @param type        查询类型
      * @return 特征值列表
      */
-    public List<float[]> getFeature(List<String> imageIdList, PictureType type) {
+    public List<float[]> getBatchFeature(List<String> imageIdList, PictureType type) {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
             Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
@@ -133,40 +144,134 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             List<Get> gets = new ArrayList<>();
             for (String imageId : imageIdList) {
                 Get get = new Get(Bytes.toBytes(imageId));
-                //get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
+                get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
                 gets.add(get);
             }
             if (type == PictureType.PERSON) {
                 try {
                     Result[] results = personTable.get(gets);
-                    for (Result result : results) {
-                        float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
-                        feaFloatList.add(featureFloat);
+                    if (results != null) {
+                        for (Result result : results) {
+                            if (result != null) {
+                                float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
+                                feaFloatList.add(featureFloat);
+                            } else {
+                                feaFloatList.add(null);
+                                LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                            }
+                        }
+                    } else {
+                        LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_person failed! used method FilterByRowKey.getSmallImage");
+                    LOG.error("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getBatchFeature");
                 } finally {
                     HBaseUtil.closTable(personTable);
                 }
             } else if (type == PictureType.CAR) {
                 try {
                     Result[] results = carTable.get(gets);
-                    for (Result result : results) {
-                        float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA));
-                        feaFloatList.add(featureFloat);
+                    if (results != null) {
+                        for (Result result : results) {
+                            if (result != null) {
+                                float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA));
+                                feaFloatList.add(featureFloat);
+                            } else {
+                                feaFloatList.add(null);
+                                LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                            }
+                        }
+                    } else {
+                        LOG.error("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_car failed! used method FilterByRowKey.getSmallImage");
+                    LOG.error("get feature by imageId from table_car failed! used method DynamicPhotoServiceImpl.getBatchFeature");
                 } finally {
                     HBaseUtil.closTable(carTable);
                 }
             }
         } else {
-            LOG.error("method FilterByRowKey.getFeature param is empty");
+            LOG.error("method DynamicPhotoServiceImpl.getBatchFeature param is empty");
         }
         return feaFloatList;
+    }
+
+    /**
+     * 批量多线程获取特征值
+     *
+     * @param imageIdList 图片id列表
+     * @param type        图片类型
+     * @return 特征值列表
+     */
+    @Override
+    public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
+
+        //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
+        List<float[]> feaList = new ArrayList<>();
+        List<List<String>> lstBatchImageId;
+        if (imageIdList.size() < parallel) {
+            lstBatchImageId = new ArrayList<>(1);
+            lstBatchImageId.add(imageIdList);
+        } else {
+            lstBatchImageId = new ArrayList<>(parallel);
+            for (int i = 0; i < parallel; i++) {
+                List<String> lst = new ArrayList<>();
+                lstBatchImageId.add(lst);
+            }
+            lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
+        }
+        List<Future<List<float[]>>> futures = new ArrayList<>(parallel);
+        ThreadFactoryBuilder builder = new ThreadFactoryBuilder();
+        builder.setNameFormat("ParallelBatchQuery");
+        ThreadFactory factory = builder.build();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchImageId.size(), factory);
+
+        for (List<String> keys : lstBatchImageId) {
+            BatchFeaCallable callable = new BatchFeaCallable(keys, type);
+            FutureTask<List<float[]>> future = (FutureTask<List<float[]>>) executor.submit(callable);
+            futures.add(future);
+        }
+        executor.shutdown();
+
+        // Wait for all the tasks to finish
+        try {
+            boolean stillRunning = !executor.awaitTermination(
+                    5000000, TimeUnit.MILLISECONDS);
+            if (stillRunning) {
+                try {
+                    executor.shutdownNow();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        // Look for any exception
+        for (Future f : futures) {
+            try {
+                if (f.get() != null) {
+                    feaList.addAll((List<float[]>) f.get());
+                }
+            } catch (InterruptedException e) {
+                try {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        return feaList;
     }
 
     /**
@@ -186,6 +291,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 put.addColumn(DynamicTable.UPFEA_PERSON_COLUMNFAMILY, DynamicTable.UPFEA_PERSON_COLUMN_FEA, Bytes.toBytes(featureStr));
                 table.put(put);
@@ -200,6 +306,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
+                put.setDurability(Durability.ASYNC_WAL);
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_FEA, Bytes.toBytes(featureStr));
                 put.addColumn(DynamicTable.UPFEA_CAR_COLUMNFAMILY, DynamicTable.UPFEA_CAR_COLUMN_SMALLIMAGE, Bytes.toBytes(Arrays.toString(image)));
                 table.put(put);
@@ -229,6 +336,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         Table searchRes = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
         try {
             Put put = new Put(Bytes.toBytes(searchId));
+            put.setDurability(Durability.ASYNC_WAL);
             byte[] searchMessage = objectToByte(resList);
             put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE, searchMessage);
             searchRes.put(put);
@@ -256,8 +364,12 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         Get get = new Get(Bytes.toBytes(searchID));
         try {
             Result result = searchRes.get(get);
-            byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-            searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
+            if (result != null) {
+                byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
+                searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
+            } else {
+                LOG.error("get Result form table_searchRes is null! used method DynamicPhotoServiceImpl.getSearchRes.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("get data by searchId from table_searchRes failed! used method DynamicPhotoServiceImpl.getSearchRes.");
@@ -286,10 +398,10 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = person.get(get);
-                    setCapturedPicture_person(capturedPicture, result, mapEx,dateFormat);
+                    setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
-                    LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 6");
+                    LOG.error("get CapturedPicture by rowkey from table_person failed! used method DynamicPhotoServiceImpl.getCaptureMessage.case 6");
                 } finally {
                     HBaseUtil.closTable(person);
                 }
@@ -297,16 +409,16 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Get get = new Get(Bytes.toBytes(imageId));
                     Result result = car.get(get);
-                    setCapturedPicture_car(capturedPicture, result, mapEx,dateFormat);
+                    setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
-                    LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 7");
+                    LOG.error("get CapturedPicture by rowkey from table_car failed! used method DynamicPhotoServiceImpl.getCaptureMessage.case 7");
                 } finally {
                     HBaseUtil.closTable(car);
                 }
             }
         } else {
-            LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage param is empty.");
+            LOG.error("method DynamicPhotoServiceImpl.getCaptureMessage param is empty.");
         }
         return capturedPicture;
     }
@@ -319,80 +431,227 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return List<CapturedPicture> 图片对象列表
      */
     @Override
-    public List<CapturedPicture> getCaptureMessage(List<String> imageIdList, int type) {
-        Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-        Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+    public List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type) {
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        List<Get> gets = new ArrayList<>();
-        Map<String, Object> mapEx = new HashMap<>();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        for (String imageId : imageIdList) {
-            Get get = new Get(Bytes.toBytes(imageId));
-            gets.add(get);
-        }
-        CapturedPicture capturedPicture;
-        try {
-            if (type == PictureType.PERSON.getType()) {
-                Result[] results = person.get(gets);
-                for (Result result : results) {
-                    capturedPicture = new CapturedPicture();
-                    String rowKey = Bytes.toString(result.getRow());
-                    capturedPicture.setId(rowKey);
-                    setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
-                    capturedPictureList.add(capturedPicture);
+        if (imageIdList != null) {
+            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+            List<Get> gets = new ArrayList<>();
+            Map<String, Object> mapEx = new HashMap<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            CapturedPicture capturedPicture;
+            try {
+                if (type == PictureType.PERSON.getType()) {
+                    for (String imageId : imageIdList) {
+                        Get get = new Get(Bytes.toBytes(imageId));
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
+                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA);
+                        gets.add(get);
+                    }
+                    Result[] results = person.get(gets);
+                    if (results != null) {
+                        for (Result result : results) {
+                            capturedPicture = new CapturedPicture();
+                            if (result != null) {
+                                String rowKey = Bytes.toString(result.getRow());
+                                capturedPicture.setId(rowKey);
+                                setCapturedPicture_person(capturedPicture, result, mapEx, dateFormat);
+                                capturedPictureList.add(capturedPicture);
+                            } else {
+                                LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                            }
+                        }
+                    } else {
+                        LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                    }
+                } else {
+                    for (String imageId : imageIdList) {
+                        Get get = new Get(Bytes.toBytes(imageId));
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM);
+                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA);
+                        gets.add(get);
+                    }
+                    Result[] results = car.get(gets);
+                    if (results != null) {
+                        for (Result result : results) {
+                            capturedPicture = new CapturedPicture();
+                            if (result != null) {
+                                String rowKey = Bytes.toString(result.getRow());
+                                capturedPicture.setId(rowKey);
+                                setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
+                                capturedPictureList.add(capturedPicture);
+                            } else {
+                                LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                            }
+                        }
+                    } else {
+                        LOG.error("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                    }
                 }
-            } else {
-                Result[] results = car.get(gets);
-                for (Result result : results) {
-                    capturedPicture = new CapturedPicture();
-                    String rowKey = Bytes.toString(result.getRow());
-                    capturedPicture.setId(rowKey);
-                    setCapturedPicture_car(capturedPicture, result, mapEx, dateFormat);
-                    capturedPictureList.add(capturedPicture);
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+                LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+            } finally {
+                HBaseUtil.closTable(person);
+                HBaseUtil.closTable(car);
+            }
+        }
+        return capturedPictureList;
+    }
+
+    /**
+     * 多线程批量获取图片信息
+     *
+     * @param imageIdList 图片Id列表
+     * @param type        图片类型
+     * @return 图片对象列表
+     */
+    @Override
+    public List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type) {
+        //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
+        List<CapturedPicture> capturedPictureList = new ArrayList<>();
+        List<List<String>> lstBatchImageId;
+        if (imageIdList.size() < parallel) {
+            lstBatchImageId = new ArrayList<>(1);
+            lstBatchImageId.add(imageIdList);
+        } else {
+            lstBatchImageId = new ArrayList<>(parallel);
+            for (int i = 0; i < parallel; i++) {
+                List<String> lst = new ArrayList<>();
+                lstBatchImageId.add(lst);
+            }
+            //将rowKey list 平均分成多个sublist
+            lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
+        }
+        List<Future<List<CapturedPicture>>> futures = new ArrayList<>(parallel);
+        ThreadFactoryBuilder builder = new ThreadFactoryBuilder();
+        builder.setNameFormat("ParallelBatchQuery");
+        ThreadFactory factory = builder.build();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchImageId.size(), factory);
+
+        for (List<String> keys : lstBatchImageId) {
+            Callable<List<CapturedPicture>> callable = new BatchCapturedPictureCallable(keys, type);
+            FutureTask<List<CapturedPicture>> future = (FutureTask<List<CapturedPicture>>) executor.submit(callable);
+            futures.add(future);
+        }
+        executor.shutdown();
+        // Wait for all the tasks to finish
+        try {
+            boolean stillRunning = !executor.awaitTermination(
+                    60000, TimeUnit.MILLISECONDS);
+            if (stillRunning) {
+                try {
+                    executor.shutdownNow();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-            LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.");
-        } finally {
-            HBaseUtil.closTable(person);
-            HBaseUtil.closTable(car);
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+        for (Future f : futures) {
+            try {
+                if (f.get() != null) {
+                    capturedPictureList.addAll((List<CapturedPicture>) f.get());
+                }
+            } catch (InterruptedException e) {
+                try {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
         return capturedPictureList;
     }
 
     private void setCapturedPicture_person(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx, SimpleDateFormat dateFormat) throws ParseException {
-        String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
-        capturedPicture.setDescription(des);
+        if (result != null) {
+            String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
+            capturedPicture.setDescription(des);
 
-        String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
-        mapEx.put("ex", ex);
-        capturedPicture.setExtend(mapEx);
+            String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
+            mapEx.put("ex", ex);
+            capturedPicture.setExtend(mapEx);
 
-        String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
-        capturedPicture.setIpcId(ipcId);
+            String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
+            capturedPicture.setIpcId(ipcId);
 
-        String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-        Date timeStamp = dateFormat.parse(time);
-        capturedPicture.setTimeStamp(timeStamp.getTime());
+            String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
+            Date timeStamp = dateFormat.parse(time);
+            capturedPicture.setTimeStamp(timeStamp.getTime());
+        } else {
+            LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.setCapturedPicture_person.");
+        }
     }
 
     private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx, SimpleDateFormat dateFormat) throws ParseException {
         String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
-        capturedPicture.setDescription(des);
+        if (result != null) {
+            capturedPicture.setDescription(des);
 
-        String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
-        mapEx.put("ex", ex);
-        capturedPicture.setExtend(mapEx);
+            String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
+            mapEx.put("ex", ex);
+            capturedPicture.setExtend(mapEx);
 
-        String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
-        capturedPicture.setIpcId(ipcId);
+            String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
+            capturedPicture.setIpcId(ipcId);
 
-        String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
-        Date timeStamp = dateFormat.parse(time);
-        capturedPicture.setTimeStamp(timeStamp.getTime());
+            String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
+            Date timeStamp = dateFormat.parse(time);
+            capturedPicture.setTimeStamp(timeStamp.getTime());
 
-        String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
-        capturedPicture.setPlateNumber(plateNumber);
+            String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
+            capturedPicture.setPlateNumber(plateNumber);
+        } else {
+            LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.setCapturedPicture_car.");
+        }
     }
 }
+
+//调用接口类，实现Callable接口
+class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, Serializable {
+    private List<String> keys;
+    private int type;
+
+    BatchCapturedPictureCallable(List<String> lstKeys, int searchType) {
+        this.keys = lstKeys;
+        this.type = searchType;
+    }
+
+    public List<CapturedPicture> call() throws Exception {
+        DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
+        return dynamicPhotoService.getBatchCaptureMessage(keys, type);
+    }
+
+}
+
+//调用接口类，实现Callable接口
+class BatchFeaCallable implements Callable<List<float[]>>, Serializable {
+    private List<String> keys;
+    private PictureType type;
+
+    BatchFeaCallable(List<String> lstKeys, PictureType pictureType) {
+        this.keys = lstKeys;
+        this.type = pictureType;
+    }
+
+    public List<float[]> call() throws Exception {
+        DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
+        return dynamicPhotoService.getBatchFeature(keys, type);
+    }
+}
+

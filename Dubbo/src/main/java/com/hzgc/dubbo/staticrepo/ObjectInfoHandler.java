@@ -17,28 +17,28 @@ public interface ObjectInfoHandler {
      *               其中的K 的具体，请参考给出的数据库字段设计
      * @return 返回值为0，表示插入成功，返回值为1，表示插入失败
      */
-    public byte addObjectInfo(String platformId, Map<String, Object> person);
+    byte addObjectInfo(String platformId, Map<String, Object> person);
 
     /**
      * 删除对象的信息  （外）（李第亮）
      * @param rowkeys 具体的一个人员信息的ID，值唯一
      * @return 返回值为0，表示删除成功，返回值为1，表示删除失败
      */
-    public int deleteObjectInfo(List<String> rowkeys);
+    int deleteObjectInfo(List<String> rowkeys);
 
     /**
      * 修改对象的信息   （外）（李第亮）
      * @param person K-V 对，里面存放的是字段和值之间的一一对应关系，参考添加里的描述
      * @return 返回值为0，表示更新成功，返回值为1，表示更新失败
      */
-    public int updateObjectInfo(Map<String, Object> person);
+    int updateObjectInfo(Map<String, Object> person);
 
     /**
      * 可以匹配精确查找，以图搜索人员信息，模糊查找   （外）（李第亮）
      * @param pSearchArgsModel 搜索参数的封装
      * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel);
+    ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel);
 
     /**
      * 根据传进来的平台id  和身份证号进行查询  （外）（李第亮）
@@ -49,16 +49,16 @@ public interface ObjectInfoHandler {
      * @param pageSize  需要返回的记录数
      * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId,
-                                                          String IdCard, boolean moHuSearch,
-                                                          int start, int pageSize);
+    ObjectSearchResult searchByPlatFormIdAndIdCard(String platformId,
+                                                   String IdCard, boolean moHuSearch,
+                                                   int start, int pageSize);
 
     /**
      * 根据rowkey 进行查询 （外）
      * @param rowkey  标记一条对象信息的唯一标志。
      * @return  返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult searchByRowkey(String rowkey);
+    ObjectSearchResult searchByRowkey(String rowkey);
 
 
     /**
@@ -68,7 +68,7 @@ public interface ObjectInfoHandler {
      * @param pageSize  需要返回的记录数
      * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult searchByCphone(String cphone, int start, int pageSize);
+    ObjectSearchResult searchByCphone(String cphone, int start, int pageSize);
 
 
     /**
@@ -79,8 +79,8 @@ public interface ObjectInfoHandler {
      * @param pageSize  需要返回的记录数
      * @return  返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult searchByCreator(String creator, boolean moHuSearch,
-                                              int start, int pageSize);
+    ObjectSearchResult searchByCreator(String creator, boolean moHuSearch,
+                                       int start, int pageSize);
 
     /**
      * 根据人员信息表中的人员姓名进行查询   （外） （李第亮）
@@ -90,8 +90,8 @@ public interface ObjectInfoHandler {
      * @param pageSize  需要返回的记录数
      * @return  返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult searchByName(String name, boolean moHuSearch,
-                                           int start, int pageSize);
+    ObjectSearchResult searchByName(String name, boolean moHuSearch,
+                                    int start, int pageSize);
 
     /**
      * 根据图片进行搜索，涉及特征值对比算法，以及该怎么对比。  （外） （李第亮）
@@ -104,9 +104,9 @@ public interface ObjectInfoHandler {
      * @param pageSize  需要返回的记录数
      * @return 返回搜索所需要的结果封装成的对象，包含搜索id，成功与否标志，记录数，记录信息，照片id
      */
-    public ObjectSearchResult searchByPhotoAndThreshold(String platformId, byte[] photo,
-                                                        float threshold, String feature,
-                                                        long start, long pageSize);
+    ObjectSearchResult searchByPhotoAndThreshold(String platformId, byte[] photo,
+                                                 float threshold, String feature,
+                                                 long start, long pageSize);
 
     /**
      *  根据传进来的图片和人车标志，计算特征值，并且返回  （外） （李第亮）
@@ -114,14 +114,14 @@ public interface ObjectInfoHandler {
      * @param photo  照片byte 数组
      * @return  照片的特征值
      */
-    public String getFeature(String tag, byte[] photo);
+    String getFeature(String tag, byte[] photo);
 
     /**
      * 根据rowkey 返回人员的照片
      * @param rowkey 人员在对象信息库中的唯一标志。
      * @return 图片的byte[] 数组
      */
-    public byte[] getPhotoByKey(String rowkey);
+    byte[] getPhotoByKey(String rowkey);
 
 
 
