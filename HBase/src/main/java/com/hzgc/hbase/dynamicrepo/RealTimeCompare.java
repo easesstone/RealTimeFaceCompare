@@ -57,6 +57,7 @@ public class RealTimeCompare implements Serializable {
             count = option.getCount();
             //设置查询Id
             searchId = UuidUtil.setUuid();
+            imgSimilarityMap = new HashMap<>();
             if (null != searchType) {
                 //查询的对象库是人
                 if (searchType == SearchType.PERSON) {
@@ -98,23 +99,18 @@ public class RealTimeCompare implements Serializable {
                 //通过es查询到的车辆图片id列表
                 List<String> carImageIdList = null;
                 //过滤掉大图后的车辆图片id列表
-                List<String> carImageIdFilterList = null;
-                option.setSearchType(SearchType.PERSON);
+                List<String> carImageIdFilterList;
+                List<String> personUnionCarList = new ArrayList<>();
                 PictureType pictureType;
                 List<CapturedPicture> capturedPictureList = new ArrayList<>();
+                option.setSearchType(SearchType.PERSON);
                 personImageIdList = getImageIdListFromEs(option);
-                //采用java iterator 遍历删除大图图片
-                /*Iterator it = personImageIdList.iterator();
-                while (it.hasNext()) {
-                    String tempImageId = it.next().toString();
-                    if (tempImageId.endsWith("_00")) {
-                        it.remove();
-                    }
-                }*/
+                // TODO: 2017-8-31 添加车辆
                 if (null != personImageIdList && personImageIdList.size() > 0) {
-                    //采用java8 stream进行过滤掉大图
-                    personImageIdFilterList = personImageIdList.stream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
+                    //采用java8stream进行过滤掉大图
+                    personImageIdFilterList = personImageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
                     if (null != personImageIdFilterList && personImageIdList.size() > 0) {
+                        personUnionCarList.addAll(personImageIdFilterList);
                         pictureType = PictureType.PERSON;
                         List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getMultiBatchCaptureMessage(personImageIdFilterList, pictureType.getType());
                         if (null != capturedPicturesPerson) {
@@ -123,14 +119,19 @@ public class RealTimeCompare implements Serializable {
                     }
                 }
                 if (null != carImageIdList && carImageIdList.size() > 0) {
-                    carImageIdFilterList = carImageIdList.stream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
+                    carImageIdFilterList = carImageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
                     if (null != carImageIdFilterList && carImageIdFilterList.size() > 0) {
+                        personUnionCarList.addAll(carImageIdFilterList);
                         pictureType = PictureType.CAR;
                         List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getMultiBatchCaptureMessage(carImageIdFilterList, pictureType.getType());
                         if (null != capturedPicturesPerson) {
                             capturedPictureList.addAll(capturedPicturesPerson);
                         }
                     }
+                }
+                for (int i = 0; i < personUnionCarList.size(); i++) {
+                    String imageId = personUnionCarList.get(i);
+                    imgSimilarityMap.put(imageId, 0.00f);
                 }
                 searchResult = getLastSearchResult(capturedPictureList, sortParams);
             }
@@ -168,9 +169,9 @@ public class RealTimeCompare implements Serializable {
             long filterSpicTime = System.currentTimeMillis();
             //采用java 8
             if (null != imageIdList && imageIdList.size() > 0) {
-                imageIdFilterList = imageIdList.stream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
+                imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
                 //采用普通iterator方法
-            /*Iterator it = personImageIdList.iterator();
+                /*Iterator it = personImageIdList.iterator();
                 while (it.hasNext()) {
                     String tempImageId = it.next().toString();
                     if (tempImageId.endsWith("_00")) {
@@ -228,14 +229,7 @@ public class RealTimeCompare implements Serializable {
                 imageIdList = getImageIdListFromEs(option);
                 //过滤“—00结尾”的大图
                 if (null != imageIdList && imageIdList.size() > 0) {
-                    imageIdFilterList = imageIdList.stream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-                /*Iterator it = personImageIdList.iterator();
-                while (it.hasNext()) {
-                    String tempImageId = it.next().toString();
-                    if (tempImageId.endsWith("_00")) {
-                        it.remove();
-                    }
-                }*/
+                    imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
                     if (null != imageIdFilterList && imageIdFilterList.size() > 0) {
                         //根据imageId找出对应特征加入组成二元组并加入到列表
                         try {
@@ -277,13 +271,11 @@ public class RealTimeCompare implements Serializable {
      * @return 返回满足所有查询条件的图片
      */
     private SearchResult compareByOthers(PictureType pictureType, SearchOption option) {
-        //对阈值重新赋值
-        imgSimilarityMap = new HashMap<>();
         //采用HBase+elasticSearch，根据deviceId、时间参数圈定查询范围,得到一组满足条件的图像id
         imageIdList = getImageIdListFromEs(option);
         //过滤掉大图
         if (null != imageIdList && imageIdList.size() > 0) {
-            List<String> imageIdFilterList = imageIdList.stream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
+            List<String> imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
          /*Iterator it = personImageIdList.iterator();
                 while (it.hasNext()) {
                     String tempImageId = it.next().toString();
@@ -363,7 +355,6 @@ public class RealTimeCompare implements Serializable {
      * @return 阈值过滤、排序、分页后最终返回结果
      */
     private SearchResult lastResult(List<String> imageIdList, List<Float> simList, final float threshold, final int type, String sortParams) {
-        imgSimilarityMap = new HashMap<>();
         //根据阈值对imageIdSimTupRDD进行过滤，返回大于相似度阈值的结果
         List<String> imageIdFilterList = new ArrayList<>();
         List<Float> simFilterList = new ArrayList<>();

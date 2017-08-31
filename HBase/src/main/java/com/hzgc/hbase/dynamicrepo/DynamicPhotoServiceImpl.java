@@ -142,8 +142,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
             Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
             List<Get> gets = new ArrayList<>();
-            for (String imageId : imageIdList) {
-                Get get = new Get(Bytes.toBytes(imageId));
+            for (int i = 0; i < imageIdList.size(); i++) {
+                Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                 get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
                 gets.add(get);
             }
@@ -151,7 +151,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Result[] results = personTable.get(gets);
                     if (results != null) {
-                        for (Result result : results) {
+                        for (int i = 0; i < results.length; i++) {
+                            Result result = results[i];
                             if (result != null) {
                                 float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
                                 feaFloatList.add(featureFloat);
@@ -443,8 +444,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             CapturedPicture capturedPicture;
             try {
                 if (type == PictureType.PERSON.getType()) {
-                    for (String imageId : imageIdList) {
-                        Get get = new Get(Bytes.toBytes(imageId));
+                    for (int i = 0; i < imageIdList.size(); i++) {
+                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
@@ -453,7 +454,8 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     }
                     Result[] results = person.get(gets);
                     if (results != null) {
-                        for (Result result : results) {
+                        for (int i = 0; i < results.length; i++) {
+                            Result result = results[i];
                             capturedPicture = new CapturedPicture();
                             if (result != null) {
                                 String rowKey = Bytes.toString(result.getRow());
