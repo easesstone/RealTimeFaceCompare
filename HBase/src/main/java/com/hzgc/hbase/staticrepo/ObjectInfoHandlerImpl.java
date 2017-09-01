@@ -503,16 +503,17 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 searchResult.setSearchNums(0);
                 searchResult.setPhotoId(null);
             }
+            return searchResult;
         } catch (IOException e) {
             LOG.info("根据rowkey获取对象信息的时候异常............");
             searchResult.setSearchStatus(1);
             e.printStackTrace();
+            putSearchRecordToHBase(null, searchResult, null);
+            return searchResult;
         } finally {
             HBaseUtil.closTable(table);
+            LOG.info("searchByRowkey(pkey + idcard), time: " + (System.currentTimeMillis() - start));
         }
-        putSearchRecordToHBase(null, searchResult, null);
-        LOG.info("searchByRowkey(pkey + idcard), time: " + (System.currentTimeMillis() - start));
-        return searchResult;
     }
 
     @Override
