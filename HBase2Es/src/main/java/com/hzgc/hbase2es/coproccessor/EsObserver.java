@@ -9,12 +9,19 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.UnknownHostException;
 
 public class EsObserver extends BaseRegionObserver implements Serializable {
     private static Logger LOG = Logger.getLogger(EsObserver.class);
     String indexName;
     String typeName;
-
+    static {
+        try {
+            EsClientUtils.initEsClient();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
     private void readConfiguration(CoprocessorEnvironment env) {
         Configuration conf = env.getConfiguration();  // 集群信息
         EsClientUtils.clusterName = conf.get("es_cluster");  // es集群名字
