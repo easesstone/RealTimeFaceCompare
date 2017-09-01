@@ -101,7 +101,7 @@ public class EsDataSuite {
     @Test
     public void testGetObjcetInfo(){
         ObjectInfoHandlerImpl handler = new ObjectInfoHandlerImpl();
-        ObjectSearchResult objectSearchResult = handler.getAllObjectINfo();
+        ObjectSearchResult objectSearchResult = handler.getAllObjectInfo();
         List<java.util.Map<String, Object>> persons = objectSearchResult.getResults();
         for (Map<String, Object> person:objectSearchResult.getResults()){
             System.out.println("updatetime: " + person.get("updatetime"));

@@ -9,19 +9,20 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.UnknownHostException;
 
 public class EsObserver extends BaseRegionObserver implements Serializable {
     private static Logger LOG = Logger.getLogger(EsObserver.class);
     String indexName;
     String typeName;
-
     private void readConfiguration(CoprocessorEnvironment env) {
         Configuration conf = env.getConfiguration();  // 集群信息
         EsClientUtils.clusterName = conf.get("es_cluster");  // es集群名字
         EsClientUtils.nodeHosts = conf.get("es_hosts");    // es 列表,传入字符串，用逗号分隔
         EsClientUtils.nodePort = conf.getInt("es_port", 9300);  // es的端口
         indexName = conf.get("es_index");  // 索引
-        typeName = conf.get("es_type");       // 类型
+        typeName =
+                conf.get("es_type");       // 类型
         LOG.info("the es cluster info :===================== cluser_name:" + EsClientUtils.clusterName
                 + ", cluster_hosts:" + EsClientUtils.nodeHosts + ", cluster_port:" + EsClientUtils.nodePort
                 + ",index:" + indexName + ",type:" + typeName + " ===========================");
