@@ -423,9 +423,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
 
         // 如果有图片的情况下，并且根据图片可以查到大于摸个特征值的数据
-        if (rowKeys.size() > 0){
-            booleanQueryBuilder.must(QueryBuilders.idsQuery((String[]) rowKeys.toArray(new String[rowKeys.size()])));
-        }
+//        if (rowKeys.size() > 0){
+//            booleanQueryBuilder.must(QueryBuilders.idsQuery((String[]) rowKeys.toArray(new String[rowKeys.size()])));
+//        }
 
         // 传入平台ID ，必须是确定的
         if (platformId != null) {
@@ -474,9 +474,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         requestBuilder.setQuery(booleanQueryBuilder);
         // 后续，根据查出来的人员信息，如果有图片，特征值，以及阈值，（则调用算法进行比对，得出相似度比较高的）
         // 由或者多条件查询里面不支持传入图片以及阈值，特征值。
-        ObjectSearchResult objectSearchResult_Tmp = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
-                null, null,
-                start, pageSize, moHuSearch);
         // 对返回结果进行处理
         List<Map<String, Object>> final_persons = objectSearchResult.getResults();
         if (feature != null && threshold > 0  && final_persons.size() > 0){
@@ -540,11 +537,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     }
                 }
             }
+            objectSearchResult.setResults(final_persons);
             objectSearchResult = HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
             return objectSearchResult;
         } else {
             // 只有搜索条件的情况下。
             //处理搜索的数据,根据是否需要分页进行返回
+            ObjectSearchResult objectSearchResult_Tmp = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
+                    null, null,
+                    start, pageSize, moHuSearch);
             putSearchRecordToHBase(platformId, objectSearchResult, null);
             return HBaseUtil.dealWithPaging(objectSearchResult_Tmp, start, pageSize);
         }
