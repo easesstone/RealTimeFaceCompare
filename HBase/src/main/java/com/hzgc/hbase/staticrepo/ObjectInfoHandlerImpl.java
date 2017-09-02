@@ -397,15 +397,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             requestBuilder = ElasticSearchHelper.getEsClient()
                     .prepareSearch(ObjectInfoTable.TABLE_NAME)
                     .setTypes(ObjectInfoTable.PERSON_COLF)
-                    .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                    .setScroll(new TimeValue(300000)).setFrom(start).setSize(pageSize);
+                    .setFrom(start -1).setSize(pageSize);
         } else {
             requestBuilder = ElasticSearchHelper.getEsClient()
                     .prepareSearch(ObjectInfoTable.TABLE_NAME)
                     .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                     .setTypes(ObjectInfoTable.PERSON_COLF)
-                    .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                    .setScroll(new TimeValue(300000)).setFrom(start).setSize(pageSize);
+                    .setFrom(start - 1).setSize(pageSize);
         }
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         //处理以图搜图
@@ -426,7 +424,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
         // 如果有图片的情况下，并且根据图片可以查到大于摸个特征值的数据
         if (rowKeys.size() > 0){
-            booleanQueryBuilder.must(QueryBuilders.idsQuery((String[]) rowKeys.toArray()));
+            booleanQueryBuilder.must(QueryBuilders.idsQuery((String[]) rowKeys.toArray(new String[rowKeys.size()])));
         }
 
         // 传入平台ID ，必须是确定的
@@ -491,12 +489,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     while (it.hasNext()){
                         Map<String, Object> final_person = it.next();
                         String final_rowKey = (String) final_person.get(ObjectInfoTable.ROWKEY);
-                        if (final_rowKey != null && tmp_rowKey != null && !tmp_person.equals(final_person)){
-                            it.remove();
+                        if (final_rowKey != null && tmp_rowKey != null && tmp_person.equals(final_person)){
+                            tmp_person.put(ObjectInfoTable.RELATED, final_person.get(ObjectInfoTable.RELATED));
                         }
                     }
                 }
-                objectSearchResult.setResults(final_persons);
+                objectSearchResult.setResults(tmp_persons);
                 putSearchRecordToHBase(platformId, objectSearchResult, photo);
                 return HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
             } else {
@@ -581,8 +579,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
-                .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setSize(1000);
+                .setFrom(start - 1).setSize(1000);
         return dealWithSearchRequesBuilder(null, requestBuilder, null,
                 null, null,
                 start, pageSize, false);
@@ -642,8 +639,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setFrom(start).setSize(1000);
+                .setFrom(start -1).setSize(1000);
         if (moHuSearch) {
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
         } else {
@@ -661,8 +657,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setFrom(start).setSize(1000);
+                .setFrom(start -1).setSize(1000);
         if (moHuSearch) {
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
         } else {
@@ -677,9 +672,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         long start = System.currentTimeMillis();
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setFetchSource(new String[]{ObjectInfoTable.FEATURE}, null)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setExplain(true).addSort("updatetime", SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(5000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         long start_time = System.currentTimeMillis();
@@ -756,7 +749,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         });
         objectSearchResult.setResults(resultsFinal);  // results
         objectSearchResult.setPhotoId(searchId);   // photoId
-        putSearchRecordToHBase(platformId, objectSearchResult, photo);
         LOG.info("searchByPhotoAndThreshold, time: " + (System.currentTimeMillis() - start_time));
         return objectSearchResult;
 
@@ -815,13 +807,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         byte[] results = null;
         if (searchResult != null) {
             List<Map<String, Object>> persons = searchResult.getResults();
-            for (Map<String, Object> person:persons){
-                Iterator<Map.Entry<String, Object>> it = (Iterator<Map.Entry<String, Object>>) person.entrySet();
-                while (it.hasNext()){
-                    Map.Entry<String, Object> entry = it.next();
-                    String key = entry.getKey();
-                    if (ObjectInfoTable.FEATURE.equals(key)){
-                        it.remove();
+            if (persons != null){
+                for (Map<String, Object> person:persons){
+                    Iterator<Map.Entry<String, Object>> it = person.entrySet().iterator();
+                    while (it.hasNext()){
+                        Map.Entry<String, Object> entry = it.next();
+                        String key = entry.getKey();
+                        if (ObjectInfoTable.FEATURE.equals(key)){
+                            it.remove();
+                        }
                     }
                 }
             }
@@ -844,7 +838,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         if (searchResult != null) {
             Table table = HBaseHelper.getTable(SrecordTable.TABLE_NAME);
-            Put put = new Put(Bytes.toBytes(searchResult.getSearchId()));
+            String srecordRowKey = searchResult.getSearchId();
+            if (srecordRowKey == null){
+                LOG.info("putSearchRecordToHBase, failed:  rowkey cannnot be null.");
+                return;
+            }
+            Put put = new Put(Bytes.toBytes(srecordRowKey));
             put.setDurability(Durability.ASYNC_WAL);
             LOG.info("srecord rowkey is:  " + searchResult.getSearchId());
             put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.SEARCH_STATUS),
@@ -905,30 +904,24 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         SearchResponse response = searchRequestBuilder.get();
         ObjectSearchResult searchResult = new ObjectSearchResult();
         List<Map<String, Object>> results = new ArrayList<>();
-        do {
-            SearchHits hits = response.getHits();
-            SearchHit[] searchHits = hits.getHits();
-            String searchId = UUID.randomUUID().toString().replace("-", "");
-            searchResult.setSearchId(searchId);
-            if (photo == null) {
-                searchResult.setPhotoId(null);
-            } else {
-                searchResult.setPhotoId(searchId);
+        SearchHits hits = response.getHits();
+        SearchHit[] searchHits = hits.getHits();
+        String searchId = UUID.randomUUID().toString().replace("-", "");
+        searchResult.setSearchId(searchId);
+        if (photo == null) {
+            searchResult.setPhotoId(null);
+        } else {
+            searchResult.setPhotoId(searchId);
+        }
+        searchResult.setSearchNums(hits.getTotalHits());
+        if (searchHits.length > 0) {
+            for (SearchHit hit : searchHits) {
+                Map<String, Object> source = hit.getSource();
+                // ES 的文档名，对应着HBase 的rowkey
+                source.put(ObjectInfoTable.ROWKEY, hit.getId());
+                results.add(source);
             }
-            searchResult.setSearchNums(hits.getTotalHits());
-            if (searchHits.length > 0) {
-                for (SearchHit hit : searchHits) {
-                    Map<String, Object> source = hit.getSource();
-                    // ES 的文档名，对应着HBase 的rowkey
-                    source.put(ObjectInfoTable.ROWKEY, hit.getId());
-                    results.add(source);
-                }
-            }
-            response = ElasticSearchHelper.getEsClient().prepareSearchScroll(response.getScrollId())
-                    .setScroll(new TimeValue(300000))
-                    .execute()
-                    .actionGet();
-        } while (response.getHits().getHits().length != 0);
+        }
         searchResult.setSearchStatus(0);
         searchResult.setResults(results);
         // 处理精确查找下，IK 分词器返回多余信息的情况，
