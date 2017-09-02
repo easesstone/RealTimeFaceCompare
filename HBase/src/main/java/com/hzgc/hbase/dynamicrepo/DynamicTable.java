@@ -119,6 +119,10 @@ public class DynamicTable implements Serializable {
      */
     public static final byte[] SEARCHRES_COLUMNFAMILY = Bytes.toBytes("i");
     /**
+     * 查询类型
+     */
+    public static final byte[] SEARCHRES_COLUMN_SEARCHTYPE = Bytes.toBytes("t");
+    /**
      * 查询信息
      */
     public static final byte[] SEARCHRES_COLUMN_SEARCHMESSAGE = Bytes.toBytes("m");
