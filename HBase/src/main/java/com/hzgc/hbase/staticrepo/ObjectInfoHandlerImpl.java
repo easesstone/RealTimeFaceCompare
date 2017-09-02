@@ -503,16 +503,17 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 searchResult.setSearchNums(0);
                 searchResult.setPhotoId(null);
             }
+            return searchResult;
         } catch (IOException e) {
             LOG.info("根据rowkey获取对象信息的时候异常............");
             searchResult.setSearchStatus(1);
             e.printStackTrace();
+            putSearchRecordToHBase(null, searchResult, null);
+            return searchResult;
         } finally {
             HBaseUtil.closTable(table);
+            LOG.info("searchByRowkey(pkey + idcard), time: " + (System.currentTimeMillis() - start));
         }
-        putSearchRecordToHBase(null, searchResult, null);
-        LOG.info("searchByRowkey(pkey + idcard), time: " + (System.currentTimeMillis() - start));
-        return searchResult;
     }
 
     @Override
@@ -649,7 +650,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         String feature_his = (String) personInfo.get(attr);
                         if (feature_his.length() == 2048) {
                             float related = FaceFunction.featureCompare(feature, feature_his);
-                            System.out.println(personInfo.get("id") + ", " + related);
                             if (related > threshold) {
                                 personInfoTmp.put(ObjectInfoTable.RELATED, related);
                                 resultsFinal.add(personInfoTmp);
@@ -734,6 +734,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ObjectOutputStream oout = null;
         byte[] results = null;
         if (searchResult != null) {
+            List<Map<String, Object>> persons = searchResult.getResults();
+            for (Map<String, Object> person:persons){
+                person.remove(ObjectInfoTable.FEATURE);
+            }
             try {
                 oout = new ObjectOutputStream(bout);
                 oout.writeObject(searchResult.getResults());
