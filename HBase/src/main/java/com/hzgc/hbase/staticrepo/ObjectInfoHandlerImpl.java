@@ -33,9 +33,15 @@ import org.elasticsearch.search.sort.SortOrder;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
+    private static ObjectSearchResult objectSearchResult_Stiatic;
     private Random random = new Random();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    static {
+        if (objectSearchResult_Stiatic == null){
+            objectSearchResult_Stiatic = getAllObjectInfo();
+        }
+    }
     public ObjectInfoHandlerImpl() {
         NativeFunction.init();
     }
@@ -381,21 +387,48 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                      List<String> pkeys, String creator, String cphone,
                                                      int start, int pageSize, boolean moHuSearch) {
         SearchRequestBuilder requestBuilder = null;
+        if (start == -1){
+            start = 1;
+        }
+        if (pageSize == -1){
+            pageSize = 100;
+        }
         if (photo != null && feature != null) {
             requestBuilder = ElasticSearchHelper.getEsClient()
                     .prepareSearch(ObjectInfoTable.TABLE_NAME)
                     .setTypes(ObjectInfoTable.PERSON_COLF)
                     .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                    .setScroll(new TimeValue(300000)).setSize(1000);
+                    .setScroll(new TimeValue(300000)).setFrom(start).setSize(pageSize);
         } else {
             requestBuilder = ElasticSearchHelper.getEsClient()
                     .prepareSearch(ObjectInfoTable.TABLE_NAME)
                     .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                     .setTypes(ObjectInfoTable.PERSON_COLF)
                     .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                    .setScroll(new TimeValue(300000)).setSize(1000);
+                    .setScroll(new TimeValue(300000)).setFrom(start).setSize(pageSize);
         }
+        ObjectSearchResult objectSearchResult = new ObjectSearchResult();
+        //处理以图搜图
+        if (feature != null && threshold > 0) {
+            objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId, photo,
+                    threshold, feature, start, pageSize);
+        }
+
+        List<String> rowKeys = new ArrayList<>();
+        List<Map<String, Object>> persons = objectSearchResult.getResults();
+        if (persons != null && persons.size() > 0){
+            for (Map<String, Object> person:persons){
+                rowKeys.add((String) person.get(ObjectInfoTable.ROWKEY));
+            }
+        }
+
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
+
+        // 如果有图片的情况下，并且根据图片可以查到大于摸个特征值的数据
+        if (rowKeys.size() > 0){
+            booleanQueryBuilder.must(QueryBuilders.idsQuery((String[]) rowKeys.toArray()));
+        }
+
         // 传入平台ID ，必须是确定的
         if (platformId != null) {
             booleanQueryBuilder.must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId));
@@ -443,15 +476,40 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         requestBuilder.setQuery(booleanQueryBuilder);
         // 后续，根据查出来的人员信息，如果有图片，特征值，以及阈值，（则调用算法进行比对，得出相似度比较高的）
         // 由或者多条件查询里面不支持传入图片以及阈值，特征值。
-        ObjectSearchResult objectSearchResult = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
+        ObjectSearchResult objectSearchResult_Tmp = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
                 null, null,
                 start, pageSize, moHuSearch);
-        //处理以图搜图
-        if (feature != null && threshold > 0) {
-            objectSearchResult = searchByPhotoAndThreshold(objectSearchResult.getResults(), platformId, photo,
-                    threshold, feature, start, pageSize);
+        // 对返回结果进行处理
+        List<Map<String, Object>> final_persons = objectSearchResult.getResults();
+        List<Map<String, Object>> tmp_persons = objectSearchResult_Tmp.getResults();
+        if (feature != null && threshold > 0  && final_persons.size() > 0){
+            if (tmp_persons.size() > 0){
+                //有图片以及有搜索条件的情况下
+                for (Map<String, Object> tmp_person:tmp_persons){
+                    String tmp_rowKey = (String) tmp_person.get(ObjectInfoTable.ROWKEY);
+                    Iterator<Map<String, Object>> it = final_persons.iterator();
+                    while (it.hasNext()){
+                        Map<String, Object> final_person = it.next();
+                        String final_rowKey = (String) final_person.get(ObjectInfoTable.ROWKEY);
+                        if (final_rowKey != null && tmp_rowKey != null && !tmp_person.equals(final_person)){
+                            it.remove();
+                        }
+                    }
+                }
+                objectSearchResult.setResults(final_persons);
+                putSearchRecordToHBase(platformId, objectSearchResult, photo);
+                return HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
+            } else {
+                // 只有图片的情况下
+                putSearchRecordToHBase(platformId, objectSearchResult, photo);
+                return  HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
+            }
+        } else {
+            // 只有搜索条件的情况下。
+            //处理搜索的数据,根据是否需要分页进行返回
+            putSearchRecordToHBase(platformId, objectSearchResult, null);
+            return HBaseUtil.dealWithPaging(objectSearchResult_Tmp, start, pageSize);
         }
-        return objectSearchResult;
     }
 
     @Override
@@ -585,7 +643,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setSize(1000);
+                .setScroll(new TimeValue(300000)).setFrom(start).setSize(1000);
         if (moHuSearch) {
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
         } else {
@@ -604,7 +662,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setSize(1000);
+                .setScroll(new TimeValue(300000)).setFrom(start).setSize(1000);
         if (moHuSearch) {
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
         } else {
@@ -615,18 +673,41 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 start, pageSize, moHuSearch);
     }
 
-    public ObjectSearchResult getAllObjectInfo() {
+    public static ObjectSearchResult getAllObjectInfo() {
         long start = System.currentTimeMillis();
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setFetchSource(new String[]{ObjectInfoTable.FEATURE}, null)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setExplain(true).addSort("updatetime", SortOrder.DESC)
-                .setScroll(new TimeValue(300000)).setSize(1000);
+                .setScroll(new TimeValue(300000)).setSize(5000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
-        ObjectSearchResult objectSearchResult = dealWithSearchRequesBuilder(true, null, requestBuilder, null,
-                null, null, -1, -1, false);
-        ;
+        long start_time = System.currentTimeMillis();
+        SearchResponse response = requestBuilder.get();
+        ObjectSearchResult objectSearchResult = new ObjectSearchResult();
+        List<Map<String, Object>> results = new ArrayList<>();
+        do {
+            SearchHits hits = response.getHits();
+            SearchHit[] searchHits = hits.getHits();
+            String searchId = UUID.randomUUID().toString().replace("-", "");
+            objectSearchResult.setSearchId(searchId);
+            objectSearchResult.setPhotoId(null);
+            objectSearchResult.setSearchNums(hits.getTotalHits());
+            if (searchHits.length > 0) {
+                for (SearchHit hit : searchHits) {
+                    Map<String, Object> source = hit.getSource();
+                    // ES 的文档名，对应着HBase 的rowkey
+                    source.put(ObjectInfoTable.ROWKEY, hit.getId());
+                    results.add(source);
+                }
+            }
+            response = ElasticSearchHelper.getEsClient().prepareSearchScroll(response.getScrollId())
+                    .setScroll(new TimeValue(300000))
+                    .execute()
+                    .actionGet();
+        } while (response.getHits().getHits().length != 0);
+        objectSearchResult.setSearchStatus(0);
+        objectSearchResult.setResults(results);
         LOG.info("getAllObjectINfo, time: " + (System.currentTimeMillis() - start));
         return objectSearchResult;
     }
@@ -676,7 +757,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         objectSearchResult.setResults(resultsFinal);  // results
         objectSearchResult.setPhotoId(searchId);   // photoId
         putSearchRecordToHBase(platformId, objectSearchResult, photo);
-        HBaseUtil.dealWithPaging(objectSearchResult, (int) start, (int) pageSize);
         LOG.info("searchByPhotoAndThreshold, time: " + (System.currentTimeMillis() - start_time));
         return objectSearchResult;
 
@@ -689,7 +769,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-        return searchByPhotoAndThreshold(getAllObjectInfo().getResults(), platformId,
+        return searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId,
                 photo, threshold, feature, start, pageSize);
     }
 
@@ -736,7 +816,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (searchResult != null) {
             List<Map<String, Object>> persons = searchResult.getResults();
             for (Map<String, Object> person:persons){
-                person.remove(ObjectInfoTable.FEATURE);
+                Iterator<Map.Entry<String, Object>> it = (Iterator<Map.Entry<String, Object>>) person.entrySet();
+                while (it.hasNext()){
+                    Map.Entry<String, Object> entry = it.next();
+                    String key = entry.getKey();
+                    if (ObjectInfoTable.FEATURE.equals(key)){
+                        it.remove();
+                    }
+                }
             }
             try {
                 oout = new ObjectOutputStream(bout);
@@ -847,11 +934,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 处理精确查找下，IK 分词器返回多余信息的情况，
         // 比如只需要小王炸，但是返回了小王炸 和小王炸小以及小王炸大的情况
         dealWithCreatorAndNameInNoMoHuSearch(searchResult, searchType, creatorOrName, moHuSearch);
-        if (!isSkipRecord && photo == null) {
-            putSearchRecordToHBase(paltformID, searchResult, null);
-            //处理搜索的数据,根据是否需要分页进行返回
-            HBaseUtil.dealWithPaging(searchResult, start, pageSize);
-        }
         LOG.info("dealWithSearchRequesBuilder, time: " + (System.currentTimeMillis() - start_time));
         return searchResult;
     }
