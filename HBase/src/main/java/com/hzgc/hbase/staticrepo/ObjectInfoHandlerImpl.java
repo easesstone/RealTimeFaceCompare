@@ -479,29 +479,69 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 start, pageSize, moHuSearch);
         // 对返回结果进行处理
         List<Map<String, Object>> final_persons = objectSearchResult.getResults();
-        List<Map<String, Object>> tmp_persons = objectSearchResult_Tmp.getResults();
         if (feature != null && threshold > 0  && final_persons.size() > 0){
-            if (tmp_persons.size() > 0){
-                //有图片以及有搜索条件的情况下
-                for (Map<String, Object> tmp_person:tmp_persons){
-                    String tmp_rowKey = (String) tmp_person.get(ObjectInfoTable.ROWKEY);
-                    Iterator<Map<String, Object>> it = final_persons.iterator();
-                    while (it.hasNext()){
-                        Map<String, Object> final_person = it.next();
-                        String final_rowKey = (String) final_person.get(ObjectInfoTable.ROWKEY);
-                        if (final_rowKey != null && tmp_rowKey != null && tmp_rowKey.equals(final_rowKey)){
-                            tmp_person.put(ObjectInfoTable.RELATED, final_person.get(ObjectInfoTable.RELATED));
-                        }
+            if (idCard != null){
+                Iterator<Map<String, Object>> it = final_persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String idCard_tmp = (String) person.get(ObjectInfoTable.IDCARD);
+                    if (!idCard.equals(idCard_tmp)){
+                        it.remove();
                     }
                 }
-                objectSearchResult.setResults(tmp_persons);
-                putSearchRecordToHBase(platformId, objectSearchResult, photo);
-                return HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
-            } else {
-                // 只有图片的情况下
-                putSearchRecordToHBase(platformId, objectSearchResult, photo);
-                return  HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
             }
+            if (creator != null){
+                Iterator<Map<String, Object>> it = final_persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR);
+                    if (!creator.equals(creator_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            if (name != null){
+                Iterator<Map<String, Object>> it = final_persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String name_tmp = (String) person.get(ObjectInfoTable.NAME);
+                    if (!name.equals(name_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            if (sex != -1){
+                Iterator<Map<String, Object>> it = final_persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    int sex_tmp = Integer.parseInt((String)person.get(ObjectInfoTable.SEX));
+                    if (sex != sex_tmp){
+                        it.remove();
+                    }
+                }
+            }
+            if (platformId != null){
+                Iterator<Map<String, Object>> it = final_persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String platformId_tmp = (String) person.get(ObjectInfoTable.PLATFORMID);
+                    if (!platformId.equals(platformId_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            if (pkeys != null & pkeys.size() > 0){
+                Iterator<Map<String, Object>> it = final_persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String pkey_tmp = (String) person.get(ObjectInfoTable.PLATFORMID);
+                    if (!pkeys.contains(pkey_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            objectSearchResult = HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
+            return objectSearchResult;
         } else {
             // 只有搜索条件的情况下。
             //处理搜索的数据,根据是否需要分页进行返回
