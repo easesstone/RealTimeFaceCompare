@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static com.hzgc.util.ObjectUtil.byteToObject;
@@ -336,13 +339,14 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return boolean 是否插入成功
      */
     @Override
-    public boolean insertSearchRes(String searchId, Map<String, Float> resList) {
+    public boolean insertSearchRes(String searchId, Map<String, Float> resList, String searchType) {
         if (searchId != null && !resList.isEmpty()) {
             Table searchRes = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
             try {
                 Put put = new Put(Bytes.toBytes(searchId));
                 put.setDurability(Durability.ASYNC_WAL);
                 byte[] searchMessage = objectToByte(resList);
+                put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE, Bytes.toBytes(searchType));
                 put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE, searchMessage);
                 searchRes.put(put);
                 return true;
@@ -366,9 +370,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public Map<String, Float> getSearchRes(String searchId) {
         Map<String, Float> searchMessageMap = new HashMap<>();
-        if (searchID != null) {
+        if (searchId != null) {
             Table searchRes = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
-            Get get = new Get(Bytes.toBytes(searchID));
+            Get get = new Get(Bytes.toBytes(searchId));
             try {
                 Result result = searchRes.get(get);
                 if (result != null) {
@@ -447,7 +451,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             List<Get> gets = new ArrayList<>();
             Map<String, Object> mapEx = new HashMap<>();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
             CapturedPicture capturedPicture;
             try {
                 if (type == PictureType.PERSON.getType()) {
@@ -477,10 +480,10 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     } else {
                         LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                     }
-                } else if (type == PictureType.CAR.getType()){
-                    for (String imageId : imageIdList) {
-                        if (imageId != null) {
-                            Get get = new Get(Bytes.toBytes(imageId));
+                } else if (type == PictureType.CAR.getType()) {
+                    for (int i = 0; i < imageIdList.size(); i++) {
+                        if (imageIdList.get(i) != null) {
+                            Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                             get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
                             get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE);
                             get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP);
@@ -624,9 +627,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
 
             String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
             capturedPicture.setIpcId(ipcId);
+
             String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
             long timeStamp = DateUtil.dateToTimeStamp(time);
             capturedPicture.setTimeStamp(timeStamp);
+
             String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
             capturedPicture.setPlateNumber(plateNumber);
         }
