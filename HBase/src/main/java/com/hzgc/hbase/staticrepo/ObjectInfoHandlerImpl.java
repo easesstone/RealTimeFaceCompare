@@ -489,7 +489,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     while (it.hasNext()){
                         Map<String, Object> final_person = it.next();
                         String final_rowKey = (String) final_person.get(ObjectInfoTable.ROWKEY);
-                        if (final_rowKey != null && tmp_rowKey != null && tmp_person.equals(final_person)){
+                        if (final_rowKey != null && tmp_rowKey != null && tmp_rowKey.equals(final_rowKey)){
                             tmp_person.put(ObjectInfoTable.RELATED, final_person.get(ObjectInfoTable.RELATED));
                         }
                     }
