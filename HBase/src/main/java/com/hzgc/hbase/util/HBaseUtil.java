@@ -24,7 +24,7 @@ public class HBaseUtil {
         }
     }
 
-    public static void dealWithPaging(ObjectSearchResult objectSearchResult, int start, int pageSize){
+    public static ObjectSearchResult dealWithPaging(ObjectSearchResult objectSearchResult, int start, int pageSize){
         // 分页处理
         //处理搜索的数据,根据是否需要分页进行返回
         List<Map<String, Object>> objectResult;
@@ -38,5 +38,6 @@ public class HBaseUtil {
             }
             objectSearchResult.setResults(objectResult);
         }
+        return objectSearchResult;
     }
 }

@@ -4,7 +4,6 @@ import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -106,6 +105,10 @@ public class FtpUtil implements Serializable {
         StringBuilder time = new StringBuilder();
         time = time.append(20).append(year).append("-").append(month).append("-").append(day).append(" ").append(hour).append(":").append(minute).append(":").append(second);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        StringBuilder sj = new StringBuilder();
+        sj = sj.append(hour).append(minute);
+
         Map<String, String> map = new HashMap<>();
         try {
             Date date = sdf.parse(time.toString());
@@ -113,6 +116,7 @@ public class FtpUtil implements Serializable {
             map.put("ipcID", ipcID);
             map.put("time", String.valueOf(timeStamp));
             map.put("mqkey", time.toString());
+            map.put("sj", sj.toString());//sj为动态库同步ES所需字段
         } catch (Exception e) {
             e.printStackTrace();
         }
