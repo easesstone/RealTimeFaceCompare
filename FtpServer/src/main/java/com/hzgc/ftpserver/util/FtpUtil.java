@@ -117,7 +117,7 @@ public class FtpUtil implements Serializable {
             map.put("ipcID", ipcID);
             map.put("time", String.valueOf(timeStamp));
             map.put("mqkey", time.toString());
-            map.put("sj",sj.toString());
+            map.put("sj",sj.toString());//sj为动态库同步ES所需字段
         } catch (Exception e) {
             e.printStackTrace();
         }
