@@ -125,7 +125,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     }
                 }
                 //排序分页
-                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams, searchResult);
+                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
                 if (searchResult != null) {
                     searchResult.setSearchId(searchId);
                 }
@@ -518,7 +518,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             LOG.error("get searchMessageMap null from table_searchRes");
                         }
                         //结果集（capturedPictureList）排序
-                        searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams, searchResult);
+                        searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
                         if (searchResult != null) {
                             searchResult.setSearchId(searchId);
                         }
@@ -618,9 +618,10 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
     }
 
-    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count, String sortParams, SearchResult searchResult) {
+    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count, String sortParams) {
         //结果集（capturedPictureList）排序
         SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
+        SearchResult tempResult = new SearchResult();
         if (null != capturedPictureList && capturedPictureList.size() > 0) {
             ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
             //排序后的结果集分页
@@ -632,12 +633,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 //结束行大于总数
                 subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
             }
-            searchResult.setPictures(subCapturePictureList);
-            searchResult.setTotal(capturedPictureList.size());
-            return searchResult;
+            tempResult.setPictures(subCapturePictureList);
+            tempResult.setTotal(capturedPictureList.size());
+            return tempResult;
         } else {
             LOG.error("capturedPictureList is null");
         }
-        return searchResult;
+        return tempResult;
     }
 }
