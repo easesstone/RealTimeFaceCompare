@@ -1,8 +1,10 @@
 package com.hzgc.hbase.staticreposuite;
 
 import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl;
+import org.junit.Test;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by Administrator on 2017-8-22.
@@ -15,5 +17,11 @@ public class SearchByPkeys {
 //            System.out.println(str);
 //        }
 //        System.out.println(a.size());
+    }
+
+    @Test
+    public void testDemoRegexPattern(){
+        String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
+        System.out.println(Pattern.matches(pattern, "nima-李_0A"));
     }
 }

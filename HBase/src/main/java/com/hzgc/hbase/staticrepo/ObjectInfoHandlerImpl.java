@@ -13,12 +13,10 @@ import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -394,131 +392,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             pageSize = 100;
         }
         if (photo != null && feature != null) {
-            requestBuilder = ElasticSearchHelper.getEsClient()
-                    .prepareSearch(ObjectInfoTable.TABLE_NAME)
-                    .setTypes(ObjectInfoTable.PERSON_COLF)
-                    .setFrom(start -1).setSize(pageSize);
-        } else {
-            requestBuilder = ElasticSearchHelper.getEsClient()
-                    .prepareSearch(ObjectInfoTable.TABLE_NAME)
-                    .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
-                    .setTypes(ObjectInfoTable.PERSON_COLF)
-                    .setFrom(start - 1).setSize(pageSize);
-        }
-        ObjectSearchResult objectSearchResult = new ObjectSearchResult();
-        //处理以图搜图
-        if (feature != null && threshold > 0) {
+            ObjectSearchResult objectSearchResult = new ObjectSearchResult();
             objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId, photo,
                     threshold, feature, start, pageSize);
-        }
-
-        List<String> rowKeys = new ArrayList<>();
-        List<Map<String, Object>> persons = objectSearchResult.getResults();
-        if (persons != null && persons.size() > 0){
-            for (Map<String, Object> person:persons){
-                rowKeys.add((String) person.get(ObjectInfoTable.ROWKEY));
-            }
-        }
-
-        BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
-
-        // 如果有图片的情况下，并且根据图片可以查到大于摸个特征值的数据
-//        if (rowKeys.size() > 0){
-//            booleanQueryBuilder.must(QueryBuilders.idsQuery((String[]) rowKeys.toArray(new String[rowKeys.size()])));
-//        }
-
-        // 传入平台ID ，必须是确定的
-        if (platformId != null) {
-            booleanQueryBuilder.must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId));
-        }
-        // 性别要么是1，要么是0，即要么是男，要么是女
-        if (sex != -1) {
-            booleanQueryBuilder.must(QueryBuilders.termQuery(ObjectInfoTable.SEX, sex));
-        }
-        // 多条件下，输入手机号，只支持精确的手机号
-        if (cphone != null) {
-            booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CPHONE, cphone)
-                    .analyzer("standard"));
-        }
-        // 人员类型，也是精确的lists
-        if (pkeys != null && pkeys.size() > 0) {
-            booleanQueryBuilder.must(QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys));
-        }
-        // 身份证号可以是模糊的
-        if (idCard != null) {
-            if (moHuSearch) {
-                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
-            } else {
-                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
-                        .analyzer("standard"));
-            }
-        }
-        // 名字可以是模糊的
-        if (name != null) {
-            if (moHuSearch) {
-                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN,
-                        PinYinUtil.toHanyuPinyin(name)));
-            } else {
-                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME, name));
-            }
-        }
-        // 创建者姓名可以是模糊的
-        if (creator != null) {
-            if (moHuSearch) {
-                booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN,
-                        PinYinUtil.toHanyuPinyin(creator)));
-            } else {
-                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
-            }
-        }
-        requestBuilder.setQuery(booleanQueryBuilder);
-        // 后续，根据查出来的人员信息，如果有图片，特征值，以及阈值，（则调用算法进行比对，得出相似度比较高的）
-        // 由或者多条件查询里面不支持传入图片以及阈值，特征值。
-        // 对返回结果进行处理
-        List<Map<String, Object>> final_persons = objectSearchResult.getResults();
-        if (feature != null && threshold > 0  && final_persons.size() > 0){
-            if (idCard != null){
-                Iterator<Map<String, Object>> it = final_persons.iterator();
-                while (it.hasNext()){
-                    Map<String, Object> person = it.next();
-                    String idCard_tmp = (String) person.get(ObjectInfoTable.IDCARD);
-                    if (!idCard.equals(idCard_tmp)){
-                        it.remove();
-                    }
-                }
-            }
-            if (creator != null){
-                Iterator<Map<String, Object>> it = final_persons.iterator();
-                while (it.hasNext()){
-                    Map<String, Object> person = it.next();
-                    String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR);
-                    if (!creator.equals(creator_tmp)){
-                        it.remove();
-                    }
-                }
-            }
-            if (name != null){
-                Iterator<Map<String, Object>> it = final_persons.iterator();
-                while (it.hasNext()){
-                    Map<String, Object> person = it.next();
-                    String name_tmp = (String) person.get(ObjectInfoTable.NAME);
-                    if (!name.equals(name_tmp)){
-                        it.remove();
-                    }
-                }
-            }
-            if (sex != -1){
-                Iterator<Map<String, Object>> it = final_persons.iterator();
-                while (it.hasNext()){
-                    Map<String, Object> person = it.next();
-                    int sex_tmp = Integer.parseInt((String)person.get(ObjectInfoTable.SEX));
-                    if (sex != sex_tmp){
-                        it.remove();
-                    }
-                }
-            }
+            List<Map<String, Object>> persons = objectSearchResult.getResults();
             if (platformId != null){
-                Iterator<Map<String, Object>> it = final_persons.iterator();
+                Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()){
                     Map<String, Object> person = it.next();
                     String platformId_tmp = (String) person.get(ObjectInfoTable.PLATFORMID);
@@ -528,26 +407,127 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 }
             }
             if (pkeys != null & pkeys.size() > 0){
-                Iterator<Map<String, Object>> it = final_persons.iterator();
+                Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()){
                     Map<String, Object> person = it.next();
-                    String pkey_tmp = (String) person.get(ObjectInfoTable.PLATFORMID);
+                    String pkey_tmp = (String) person.get(ObjectInfoTable.PKEY);
                     if (!pkeys.contains(pkey_tmp)){
                         it.remove();
                     }
                 }
             }
-            objectSearchResult.setResults(final_persons);
+            if (sex != -1){
+                Iterator<Map<String, Object>> it = persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    int sex_tmp = Integer.parseInt((String)person.get(ObjectInfoTable.SEX));
+                    if (sex != sex_tmp){
+                        it.remove();
+                    }
+                }
+            }
+            if (idCard != null){
+                Iterator<Map<String, Object>> it = persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String idCard_tmp = (String) person.get(ObjectInfoTable.IDCARD);
+                    if (!Pattern.matches("\\d{0,18}" + name + "\\d{0,18}", idCard_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            if (creator != null){
+                Iterator<Map<String, Object>> it = persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR);
+                    String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}" + creator
+                            + "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
+                    if (!Pattern.matches(pattern, creator_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            if (name != null){
+                Iterator<Map<String, Object>> it = persons.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> person = it.next();
+                    String name_tmp = (String) person.get(ObjectInfoTable.NAME);
+                    String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}" + name
+                            + "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
+                    if (!Pattern.matches(pattern, name_tmp)){
+                        it.remove();
+                    }
+                }
+            }
+            objectSearchResult.setResults(persons);
             objectSearchResult = HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
+            putSearchRecordToHBase(platformId, objectSearchResult, photo);
             return objectSearchResult;
         } else {
+            requestBuilder = ElasticSearchHelper.getEsClient()
+                    .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                    .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
+                    .setTypes(ObjectInfoTable.PERSON_COLF)
+                    .setFrom(start - 1).setSize(pageSize);
+            BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
+
+            // 传入平台ID ，必须是确定的
+            if (platformId != null) {
+                booleanQueryBuilder.must(QueryBuilders.termQuery(ObjectInfoTable.PLATFORMID, platformId));
+            }
+            // 性别要么是1，要么是0，即要么是男，要么是女
+            if (sex != -1) {
+                booleanQueryBuilder.must(QueryBuilders.termQuery(ObjectInfoTable.SEX, sex));
+            }
+            // 多条件下，输入手机号，只支持精确的手机号
+            if (cphone != null) {
+                booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CPHONE, cphone)
+                        .analyzer("standard"));
+            }
+            // 人员类型，也是精确的lists
+            if (pkeys != null && pkeys.size() > 0) {
+                booleanQueryBuilder.must(QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys));
+            }
+            // 身份证号可以是模糊的
+            if (idCard != null) {
+                if (moHuSearch) {
+                    booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.IDCARD, idCard));
+                } else {
+                    booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.IDCARD, idCard)
+                            .analyzer("standard"));
+                }
+            }
+            // 名字可以是模糊的
+            if (name != null) {
+                if (moHuSearch) {
+                    booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN,
+                            PinYinUtil.toHanyuPinyin(name)));
+                } else {
+                    booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME, name));
+                }
+            }
+            // 创建者姓名可以是模糊的
+            if (creator != null) {
+                if (moHuSearch) {
+                    booleanQueryBuilder.must(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN,
+                            PinYinUtil.toHanyuPinyin(creator)));
+                } else {
+                    booleanQueryBuilder.must(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
+                }
+            }
+            requestBuilder.setQuery(booleanQueryBuilder);
+            // 后续，根据查出来的人员信息，如果有图片，特征值，以及阈值，（则调用算法进行比对，得出相似度比较高的）
+            // 由或者多条件查询里面不支持传入图片以及阈值，特征值。
+            // 对返回结果进行处理
             // 只有搜索条件的情况下。
             //处理搜索的数据,根据是否需要分页进行返回
             ObjectSearchResult objectSearchResult_Tmp = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
                     null, null,
                     start, pageSize, moHuSearch);
-            putSearchRecordToHBase(platformId, objectSearchResult, null);
-            return HBaseUtil.dealWithPaging(objectSearchResult_Tmp, start, pageSize);
+            ObjectSearchResult tmp = HBaseUtil.dealWithPaging(objectSearchResult_Tmp, start, pageSize);
+            putSearchRecordToHBase(platformId, tmp, null);
+            return tmp;
         }
     }
 
@@ -862,7 +842,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             try {
                 oout = new ObjectOutputStream(bout);
-                oout.writeObject(searchResult.getResults());
+                oout.writeObject(new ArrayList(searchResult.getResults()));
                 results = bout.toByteArray();
             } catch (IOException e) {
                 e.printStackTrace();
