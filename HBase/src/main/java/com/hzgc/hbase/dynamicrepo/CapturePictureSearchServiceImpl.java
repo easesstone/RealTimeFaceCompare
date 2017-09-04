@@ -96,13 +96,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                     setCapturedPicture_person(capturedPicture, resultPerson, mapEx);
                                     capturedPictureList.add(capturedPicture);
                                 } else {
-                                    LOG.info("resultCapture is null");
+                                    LOG.info("get Result from table_person is null!");
                                 }
                             }
                         } else {
-                            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                            LOG.error("get Results form table_person is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
                         }
-                    } else {
+                    } else if (searchType.equals("CAR")) {
                         Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
                         Result[] results = carTable.get(gets);
                         if (null != results && results.length > 0) {
@@ -116,16 +116,16 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                     setCapturedPicture_car(capturedPicture, resultCar, mapEx);
                                     capturedPictureList.add(capturedPicture);
                                 } else {
-                                    LOG.info("resultCapture is null");
+                                    LOG.info("get Result form table_car is null!");
                                 }
                             }
                         } else {
-                            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                            LOG.error("get Results form table_car is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
                         }
                     }
                 }
                 //排序分页
-                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
+                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams, searchResult);
                 if (searchResult != null) {
                     searchResult.setSearchId(searchId);
                 }
@@ -378,13 +378,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                 setCapturedPicture_person(capturedPicture, result, mapEx);
                                 capturedPictureList.add(capturedPicture);
                             } else {
-                                LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                                LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                             }
                         }
                     } else {
-                        LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                        LOG.error("get Result[] form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                     }
-                } else {
+                } else if (type == PictureType.CAR.getType()) {
                     for (String imageId : imageIdList) {
                         Get get = new Get(Bytes.toBytes(imageId));
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
@@ -403,16 +403,16 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                 setCapturedPicture_person(capturedPicture, result, mapEx);
                                 capturedPictureList.add(capturedPicture);
                             } else {
-                                LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                                LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                             }
                         }
                     } else {
-                        LOG.error("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                        LOG.error("get Result[] form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
             } finally {
                 HBaseUtil.closTable(person);
                 HBaseUtil.closTable(car);
@@ -432,6 +432,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public SearchResult getCaptureHistory(String searchId, int offset, int count, String sortParams) {
+        SearchResult searchResult = new SearchResult();
         if (null != searchId && !searchId.equals("")) {
             List<CapturedPicture> capturedPictureList = new ArrayList<>();
             Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
@@ -441,18 +442,15 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 if (result != null) {
                     byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                     String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
-                    LinkedHashMap<String, Float> searchMessageMap;
-                    searchMessageMap = (LinkedHashMap<String, Float>) ObjectUtil.byteToObject(searchMessage);
+                    LinkedHashMap<String, Float> searchMessageMap = (LinkedHashMap<String, Float>) ObjectUtil.byteToObject(searchMessage);
                     if (searchType.equals("mix")) {
                         if (!searchMessageMap.isEmpty()) {
                             //取出imageId
                             List<String> imageIdList = new ArrayList<>(searchMessageMap.keySet());
                             String split = "sp";
                             int splitIndex = imageIdList.indexOf(split);
-                            List<String> personImgList;
-                            personImgList = imageIdList.subList(0, splitIndex);
-                            List<String> carImgList;
-                            carImgList = imageIdList.subList(splitIndex + 1, imageIdList.size());
+                            List<String> personImgList = imageIdList.subList(0, splitIndex);
+                            List<String> carImgList = imageIdList.subList(splitIndex + 1, imageIdList.size());
                             List<Get> gets = new ArrayList<>();
                             if (null != personImgList && personImgList.size() > 0) {
                                 for (String aPersonImgList : personImgList) {
@@ -475,13 +473,16 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                             setCapturedPicture_person(capturedPicture, resultPerson, mapEx);
                                             capturedPictureList.add(capturedPicture);
                                         } else {
-                                            LOG.info("resultCapture is null");
+                                            LOG.info("get Result form table_person is null!");
                                         }
                                     }
                                 } else {
-                                    LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                                    LOG.error("get Results form table_person is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
                                 }
+                            } else {
+                                LOG.info("the person list is null");
                             }
+
                             if (null != carImgList && carImgList.size() > 0) {
                                 for (String aCarImgList : carImgList) {
                                     Get carGet = new Get(Bytes.toBytes(aCarImgList));
@@ -504,38 +505,38 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                             setCapturedPicture_car(capturedPicture, resultPerson, mapEx);
                                             capturedPictureList.add(capturedPicture);
                                         } else {
-                                            LOG.info("resultCapture is null");
+                                            LOG.info("get Result form table_car is null!");
                                         }
                                     }
                                 } else {
-                                    LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                                    LOG.error("get Results form table_car is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
                                 }
                             } else {
                                 LOG.info("the car list is null");
                             }
                         } else {
-                            LOG.info("get searchMessageMap null from table searchRes");
+                            LOG.error("get searchMessageMap null from table_searchRes");
                         }
                         //结果集（capturedPictureList）排序
-                        SearchResult searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
+                        searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams, searchResult);
                         if (searchResult != null) {
                             searchResult.setSearchId(searchId);
                         }
                         return searchResult;
                     }
                 } else {
-                    LOG.error("get Result form table_searchRes is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                    LOG.error("get Result form table_searchRes is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                LOG.error("get data by searchId from table_searchRes failed! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                LOG.error("get data by searchId from table_searchRes failed! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
             } finally {
                 HBaseUtil.closTable(searchResTable);
             }
         } else {
-            LOG.info("searchId is null");
+            LOG.info("searchId is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
         }
-        return null;
+        return searchResult;
     }
 
     private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
@@ -617,10 +618,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
     }
 
-    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count, String sortParams) {
+    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count, String sortParams, SearchResult searchResult) {
         //结果集（capturedPictureList）排序
         SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
-        SearchResult tempResult = new SearchResult();
         if (null != capturedPictureList && capturedPictureList.size() > 0) {
             ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
             //排序后的结果集分页
@@ -632,12 +632,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 //结束行大于总数
                 subCapturePictureList = capturedPictureList.subList(offset, capturedPictureList.size());
             }
-            tempResult.setPictures(subCapturePictureList);
-            tempResult.setTotal(capturedPictureList.size());
-            return tempResult;
+            searchResult.setPictures(subCapturePictureList);
+            searchResult.setTotal(capturedPictureList.size());
+            return searchResult;
         } else {
-            LOG.info("capturedPictureList is null");
+            LOG.error("capturedPictureList is null");
         }
-        return null;
+        return searchResult;
     }
 }
