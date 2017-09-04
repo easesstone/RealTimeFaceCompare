@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
-            <artifactId>hbase</artifactId>
+            <artifactId>elasticsearch</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>

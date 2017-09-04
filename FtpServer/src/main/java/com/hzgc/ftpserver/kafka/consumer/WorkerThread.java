@@ -1,8 +1,8 @@
 package com.hzgc.ftpserver.kafka.consumer;
 
+import com.hzgc.ftpserver.util.DynamicTable;
+import com.hzgc.ftpserver.util.ElasticSearchHelper;
 import com.hzgc.ftpserver.util.FtpUtil;
-import com.hzgc.hbase.dynamicrepo.DynamicTable;
-import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Durability;
