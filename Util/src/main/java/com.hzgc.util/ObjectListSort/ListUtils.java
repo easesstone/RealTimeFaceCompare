@@ -107,7 +107,6 @@ public class ListUtils {
         if (sortNameArr.length != typeArr.length) {
             throw new RuntimeException("属性数组元素个数和升降序数组元素个数不相等");
         }
-        //System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");//防止出现Comparison method violates its general contract
         if (list.size() > 1) {
             Collections.sort(list, new Comparator<CapturedPicture>() {
                 public int compare(CapturedPicture a, CapturedPicture b) {
@@ -125,7 +124,7 @@ public class ListUtils {
                         for (int i = 0; i < sortNameArr.length; i++) {
                             ret = ListUtils.compareObject(sortNameArr[i], typeArr[i], a, b);
                             if (0 != ret) {
-                                break;
+                                break;//如果两个数据根据某个字段相等，则根据下一个字段进行比较
                             }
                         }
                     } catch (Exception e) {
