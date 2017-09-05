@@ -33,8 +33,9 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
+
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
-    private static ObjectSearchResult objectSearchResult_Stiatic;
+    private static final bjectSearchResult_Stiatic;
     private Random random = new Random();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -215,34 +216,35 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public int updateObjectInfo(Map<String, Object> person) {
-        //在内存中修改
-        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
-        Iterator<Map<String,Object>> iterator = listmap.iterator();
-        Map<String,Object> smap = null;
-        while (iterator.hasNext()){
-            smap = iterator.next();
-            if ((smap.get(ObjectInfoTable.ROWKEY)).equals(person.get(ObjectInfoTable.ROWKEY))){
-                iterator.remove();
-                smap.putAll(person);
-            }
-        }
-        listmap.add(smap);
-        objectSearchResult_Stiatic.setResults(listmap);
+        long start = System.currentTimeMillis();
         if (person == null || person.size() == 0) {
+            LOG.info("updateObjectInfo, the person cannot be null.");
             return 1;
         }
-        long start = System.currentTimeMillis();
-        // 获取table 对象，通过封装HBaseHelper 来获取
-        Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         String id = (String) person.get(ObjectInfoTable.ROWKEY);
         if (id == null) {
+            LOG.info("updateObjectInfo, rowKey cannot be null.");
             return 1;
         }
+
+        //修改加载到内存中的数据......
+        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
+        Iterator<Map<String,Object>> iterator = listmap.iterator();
+        while (iterator.hasNext()){
+            String tmp_rowKey = (String) iterator.next().get(ObjectInfoTable.ROWKEY);
+            if (tmp_rowKey != null && tmp_rowKey.equals(person.get(ObjectInfoTable.ROWKEY))){
+                iterator.remove();
+            }
+        }
+        objectSearchResult_Stiatic.setResults(listmap);
+
+        // 获取table 对象，通过封装HBaseHelper 来获取
+        Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
         Get get = new Get(Bytes.toBytes(id));
-        Result result_tmp = null;
+        Result result_tmp;
         String originIdCard = "";
         String originPKey = "";
         try {
@@ -272,12 +274,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes((String) person.get(field)));
             }
         }
+
         Map<String,Object> dataToEs;
         dataToEs = person;
         dataToEs.remove(ObjectInfoTable.PHOTO);
         UpdateResponse updateResponse = ElasticSearchHelper.getEsClient()
                 .prepareUpdate(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,id)
                 .setDoc(dataToEs).get();
+
+
         Date date = new Date();
         String dateString = format.format(date);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -402,15 +407,16 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.ROWKEY));
                 table.delete(delete);
             }
+            return 0;
         } catch (IOException e) {
             e.printStackTrace();
             LOG.error("updateObjectInfo, failed!");
+            return 1;
         } finally {
             //关闭表连接
             HBaseUtil.closTable(table);
+            LOG.info("function[updateObjectInfo], include idcard and pkey, the time：" + (System.currentTimeMillis() - start));
         }
-        LOG.info("function[updateObjectInfo], include idcard and pkey, the time：" + (System.currentTimeMillis() - start));
-        return 0;
     }
 
     @Override
