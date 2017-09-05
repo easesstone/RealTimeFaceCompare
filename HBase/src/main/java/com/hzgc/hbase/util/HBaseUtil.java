@@ -29,7 +29,6 @@ public class HBaseUtil {
         //处理搜索的数据,根据是否需要分页进行返回
         List<Map<String, Object>> objectResult;
         List<Map<String, Object>> objectMap = objectSearchResult.getResults();
-        LOG.info("处理requestBuilder时，objectMap的size为 :  " + objectMap.size());
         if (objectMap != null && start != -1 && pageSize != -1 && start <= objectMap.size()){
             if ((start + pageSize - 1) > objectMap.size()){
                 objectResult = objectMap.subList(start - 1, objectMap.size());
