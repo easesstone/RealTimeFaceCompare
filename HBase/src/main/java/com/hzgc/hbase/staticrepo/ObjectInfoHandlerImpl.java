@@ -44,7 +44,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
     }
     public ObjectInfoHandlerImpl() {
-      //  NativeFunction.init();
+        NativeFunction.init();
     }
 
     @Override
@@ -232,8 +232,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         listmap.add(smap);
 
         objectSearchResult_Stiatic.setResults(listmap);
-//        listmap = null;
-//        smap = null;
+        listmap = null;
+        smap = null;
         if (person == null || person.size() == 0) {
             return 1;
         }
