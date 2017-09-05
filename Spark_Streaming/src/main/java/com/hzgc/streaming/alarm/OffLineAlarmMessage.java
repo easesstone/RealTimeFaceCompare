@@ -23,12 +23,18 @@ public class OffLineAlarmMessage implements Serializable {
     private String updateTime;
 
     /**
+     * 告警推送时间
+     */
+    private String alarmTime;
+
+    /**
      * 构造函数
      **/
-    public OffLineAlarmMessage(String staticID, String alarmType, String updateTime) {
+    public OffLineAlarmMessage(String staticID, String alarmType, String updateTime, String alarmTime) {
         this.staticID = staticID;
         this.alarmType = alarmType;
         this.updateTime = updateTime;
+        this.alarmTime = alarmTime;
     }
 
     public OffLineAlarmMessage() {
@@ -61,5 +67,11 @@ public class OffLineAlarmMessage implements Serializable {
         this.alarmType = alarmType;
     }
 
+    public String getAlarmTime() {
+        return alarmTime;
+    }
 
+    public void setAlarmTime(String alarmTime) {
+        this.alarmTime = alarmTime;
+    }
 }

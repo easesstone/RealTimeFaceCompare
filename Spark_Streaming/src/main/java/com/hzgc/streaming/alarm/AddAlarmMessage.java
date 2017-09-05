@@ -23,16 +23,23 @@ public class AddAlarmMessage implements Serializable {
     private String dynamicDeviceID;
 
     /**
+     * 告警推送时间
+     */
+    private String alarmTime;
+
+    /**
      * 类构造函数
      *
      * @param alarmType
      * @param dynamicID
      * @param dynamicDeviceID
+     * @param alarmTime
      */
-    public AddAlarmMessage(String alarmType, String dynamicID, String dynamicDeviceID) {
+    public AddAlarmMessage(String alarmType, String dynamicID, String dynamicDeviceID, String alarmTime) {
         this.alarmType = alarmType;
         this.dynamicID = dynamicID;
         this.dynamicDeviceID = dynamicDeviceID;
+        this.alarmTime = alarmTime;
     }
 
     public AddAlarmMessage() {
@@ -63,5 +70,13 @@ public class AddAlarmMessage implements Serializable {
 
     public void setDynamicDeviceID(String dynamicDeviceID) {
         this.dynamicDeviceID = dynamicDeviceID;
+    }
+
+    public String getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(String alarmTime) {
+        this.alarmTime = alarmTime;
     }
 }

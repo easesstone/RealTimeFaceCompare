@@ -1,12 +1,15 @@
 package com.hzgc.streaming.job
 
+import java.text.SimpleDateFormat
 import java.util
+import java.util.Date
 import com.google.gson.Gson
 import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.rocketmq.util.RocketMQProducer
 import com.hzgc.streaming.alarm.OffLineAlarmMessage
 import com.hzgc.streaming.util.{FilterUtils, PropertiesUtils, Utils}
+import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 import scala.collection.JavaConverters
 
@@ -47,13 +50,17 @@ object FaceOffLineAlarmJob {
           filter(filter => FilterUtils.dayFilterFun(filter._5.toString, filter._4))
         //将离线告警信息推送到MQ
         filterResult.foreach(filterResultElem => {
+          val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+          val dateStr = df.format(new Date());
           val rocketMQProducer = RocketMQProducer.getInstance()
           val offLineAlarmMessage = new OffLineAlarmMessage()
           val gson = new Gson()
           offLineAlarmMessage.setAlarmType(DeviceTable.OFFLINE.toString)
           offLineAlarmMessage.setStaticID(filterResultElem._1)
           offLineAlarmMessage.setUpdateTime(filterResultElem._3)
+          offLineAlarmMessage.setAlarmTime(dateStr)
           val alarmStr = gson.toJson(offLineAlarmMessage)
+          println(alarmStr)
           //离线告警信息推送的时候，平台id为对象类型字符串的前4个字节。
           val platID = filterResultElem._2.substring(0, 4)
           rocketMQProducer.send(platID, "alarm_" + DeviceTable.OFFLINE.toString, filterResultElem._1, alarmStr.getBytes(), null);
