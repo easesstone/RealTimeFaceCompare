@@ -32,11 +32,13 @@ curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
             "properties": {
                 "name" : {
                     "type" : "text",
-                    "analyzer" : "ik_max_word"
+                    "analyzer" : "ik_max_word",
+                    "fielddata" : true
                 },
                 "idcard" : {
                     "type" : "text",
-                    "analyzer": "trigrams"
+                    "analyzer": "trigrams",
+                    "fielddata" : true
                 },
                 "sex" : {
                     "type" : "long",

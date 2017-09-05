@@ -45,6 +45,9 @@ public class PersonRepo2EsObserver extends EsObserver {
                 }
             }
         }
+        if (EsClientUtils.client == null) {
+            EsClientUtils.initEsClient();
+        }
         ElasticSearchBulkOperator.addUpdateBuilderToBulk(EsClientUtils.client.prepareUpdate(indexName,
                 typeName, indexId).setDocAsUpsert(true).setDoc(infoJson));
     }

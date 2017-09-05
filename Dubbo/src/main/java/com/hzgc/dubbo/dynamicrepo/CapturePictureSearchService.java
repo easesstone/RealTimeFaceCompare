@@ -1,5 +1,6 @@
 package com.hzgc.dubbo.dynamicrepo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,4 +43,25 @@ public interface CapturePictureSearchService {
      * @return CapturedPicture    动态库对象
      */
     CapturedPicture getCaptureMessage(String imageId, int type);
+
+    /**
+     * 批量获取图片
+     *
+     * @param imageIdList 图片Id列表
+     * @param type        类型
+     * @return 图片列表
+     */
+    List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
+
+    /**
+     * 查询某个摄像头照片历史所有图片，包括人和车
+     *
+     * @param searchId   搜索的 id（rowkey）
+     * @param offset     从第几条开始
+     * @param count      条数
+     * @param sortParams 排序参数
+     * @return SearchResult对象
+     */
+    SearchResult getCaptureHistory(String searchId, int offset, int count, String sortParams);
+
 }

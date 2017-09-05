@@ -64,7 +64,7 @@ public interface DynamicPhotoService {
      * @param resList  查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
-    boolean insertSearchRes(String searchId, Map<String, Float> resList);
+    boolean insertSearchRes(String searchId, Map<String, Float> resList, String searchType);
 
     /**
      * 根据动态库查询ID获取查询结果 （内）（刘思阳）
