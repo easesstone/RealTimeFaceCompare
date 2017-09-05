@@ -93,12 +93,10 @@ public class RealTimeCompare implements Serializable {
                 }
             } else {//searchType 为空，则同时返回人、车
                 PictureType pictureType;
-
                 //通过es查询到的人脸图片id列表
                 List<String> personImageIdList;
                 option.setSearchType(SearchType.PERSON);
                 personImageIdList = getImageIdListFromEs(option);
-
                 //通过es查询到的车辆图片id列表
                 List<String> carImageIdList = null;
                /* option.setSearchType(SearchType.CAR);

@@ -437,107 +437,115 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             List<CapturedPicture> capturedPictureList = new ArrayList<>();
             Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
             Get get = new Get(Bytes.toBytes(searchId));
+            Result result = null;
             try {
-                Result result = searchResTable.get(get);
-                if (result != null) {
-                    byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-                    String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
-                    LinkedHashMap<String, Float> searchMessageMap = (LinkedHashMap<String, Float>) ObjectUtil.byteToObject(searchMessage);
-                    if (searchType.equals("mix")) {
-                        if (!searchMessageMap.isEmpty()) {
-                            //取出imageId
-                            List<String> imageIdList = new ArrayList<>(searchMessageMap.keySet());
-                            String split = "sp";
-                            int splitIndex = imageIdList.indexOf(split);
-                            List<String> personImgList = imageIdList.subList(0, splitIndex);
-                            List<String> carImgList = imageIdList.subList(splitIndex + 1, imageIdList.size());
-                            List<Get> gets = new ArrayList<>();
-                            if (null != personImgList && personImgList.size() > 0) {
-                                for (String aPersonImgList : personImgList) {
-                                    Get personGet = new Get(Bytes.toBytes(aPersonImgList));
-                                    get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
-                                    get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
-                                    get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
-                                    get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA);
-                                    gets.add(personGet);
-                                }
-                                Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-                                Result[] results = personTable.get(gets);
-                                if (null != results && results.length > 0) {
-                                    for (Result resultPerson : results) {
-                                        CapturedPicture capturedPicture = new CapturedPicture();
-                                        if (null != resultPerson) {
-                                            String imageId = Bytes.toString(resultPerson.getRow());
-                                            capturedPicture.setId(imageId);
-                                            Map<String, Object> mapEx = new HashMap<>();
-                                            setCapturedPicture_person(capturedPicture, resultPerson, mapEx);
-                                            capturedPictureList.add(capturedPicture);
-                                        } else {
-                                            LOG.info("get Result form table_person is null!");
-                                        }
-                                    }
-                                } else {
-                                    LOG.error("get Results form table_person is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
-                                }
-                            } else {
-                                LOG.info("the person list is null");
-                            }
-
-                            if (null != carImgList && carImgList.size() > 0) {
-                                for (String aCarImgList : carImgList) {
-                                    Get carGet = new Get(Bytes.toBytes(aCarImgList));
-                                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
-                                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP);
-                                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE);
-                                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA);
-                                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM);
-                                    gets.add(carGet);
-                                }
-                                Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-                                Result[] results = carTable.get(gets);
-                                if (null != results && results.length > 0) {
-                                    for (Result resultPerson : results) {
-                                        CapturedPicture capturedPicture = new CapturedPicture();
-                                        if (null != resultPerson) {
-                                            String imageId = Bytes.toString(resultPerson.getRow());
-                                            capturedPicture.setId(imageId);
-                                            Map<String, Object> mapEx = new HashMap<>();
-                                            setCapturedPicture_car(capturedPicture, resultPerson, mapEx);
-                                            capturedPictureList.add(capturedPicture);
-                                        } else {
-                                            LOG.info("get Result form table_car is null!");
-                                        }
-                                    }
-                                } else {
-                                    LOG.error("get Results form table_car is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
-                                }
-                            } else {
-                                LOG.info("the car list is null");
-                            }
-                        } else {
-                            LOG.error("get searchMessageMap null from table_searchRes");
-                        }
-                        //结果集（capturedPictureList）排序
-                        searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
-                        if (searchResult != null) {
-                            searchResult.setSearchId(searchId);
-                        }
-                        return searchResult;
-                    }
-                } else {
-                    LOG.error("get Result form table_searchRes is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
-                }
+                result = searchResTable.get(get);
+                HBaseUtil.closTable(searchResTable);
             } catch (IOException e) {
                 e.printStackTrace();
-                LOG.error("get data by searchId from table_searchRes failed! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
-            } finally {
-                HBaseUtil.closTable(searchResTable);
+                LOG.info("no result get by searchId[" + searchId + "]");
+            }
+            if (result != null) {
+                byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
+                String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
+                LinkedHashMap<String, Float> searchMessageMap = (LinkedHashMap<String, Float>) ObjectUtil.byteToObject(searchMessage);
+                if (searchType.equals("mix")) {
+                    if (!searchMessageMap.isEmpty()) {
+                        //取出imageId
+                        List<String> imageIdList = new ArrayList<>(searchMessageMap.keySet());
+                        String split = "sp";
+                        int splitIndex = imageIdList.indexOf(split);
+                        List<String> personImgList = imageIdList.subList(0, splitIndex);
+                        List<String> carImgList = imageIdList.subList(splitIndex + 1, imageIdList.size());
+                        List<Get> getsPerson = new ArrayList<>();
+                        for (int i = 0, len = personImgList.size(); i < len; i++) {
+                            Get personGet = new Get(Bytes.toBytes(personImgList.get(i)));
+                            get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
+                            get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
+                            get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
+                            get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA);
+                            getsPerson.add(personGet);
+                        }
+                        Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+                        Result[] resultsPerson = new Result[personImgList.size()];
+                        try {
+                            resultsPerson = personTable.get(getsPerson);
+                            HBaseUtil.closTable(personTable);
+                        } catch (IOException e) {
+                            LOG.info("no results gets form person table");
+                        }
+                        if (null != resultsPerson && resultsPerson.length > 0) {
+                            for (Result resultPerson : resultsPerson) {
+                                CapturedPicture capturedPicture = new CapturedPicture();
+                                if (null != resultPerson) {
+                                    String imageId = Bytes.toString(resultPerson.getRow());
+                                    capturedPicture.setId(imageId);
+                                    Map<String, Object> mapEx = new HashMap<>();
+                                    setCapturedPicture_person(capturedPicture, resultPerson, mapEx);
+                                    capturedPictureList.add(capturedPicture);
+                                } else {
+                                    LOG.info("get Result form table_person is null!");
+                                }
+                            }
+                        } else {
+                            LOG.error("get Results form table_person is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
+                        }
+                        List<Get> getsCar = new ArrayList<>();
+                        for (int i = 0, len = carImgList.size(); i < len; i++) {
+                            Get carGet = new Get(Bytes.toBytes(carImgList.get(i)));
+                            carGet.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
+                            carGet.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP);
+                            carGet.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE);
+                            carGet.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA);
+                            carGet.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM);
+                            getsCar.add(carGet);
+                        }
+                        Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+                        Result[] resultsCar = new Result[carImgList.size()];
+                        try {
+                            resultsCar = carTable.get(getsCar);
+                            HBaseUtil.closTable(carTable);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (null != resultsCar && resultsCar.length > 0) {
+                            for (Result resultPerson : resultsCar) {
+                                CapturedPicture capturedPicture = new CapturedPicture();
+                                if (null != resultPerson) {
+                                    String imageId = Bytes.toString(resultPerson.getRow());
+                                    capturedPicture.setId(imageId);
+                                    Map<String, Object> mapEx = new HashMap<>();
+                                    setCapturedPicture_car(capturedPicture, resultPerson, mapEx);
+                                    capturedPictureList.add(capturedPicture);
+                                } else {
+                                    LOG.info("get Result form table_car is null!");
+                                }
+                            }
+                        } else {
+                            LOG.error("get Results form table_car is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
+                        }
+                    } else {
+                        LOG.info("the car list is null");
+                    }
+                } else {
+                    LOG.error("get searchMessageMap null from table_searchRes");
+                }
+                //结果集（capturedPictureList）排序
+                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
+                if (searchResult != null) {
+                    searchResult.setSearchId(searchId);
+                } else {
+                    LOG.info("searchResult is null get by method DynamicPhotoServiceImpl.sortAndSplit()");
+                }
+            } else {
+                LOG.info("get searchMessageMap null from table_searchRes");
             }
         } else {
-            LOG.info("searchId is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
+            LOG.info("searchId is null");
         }
         return searchResult;
     }
+
 
     private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
         if (result != null) {
