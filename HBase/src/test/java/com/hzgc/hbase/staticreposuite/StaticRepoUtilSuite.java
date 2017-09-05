@@ -24,7 +24,7 @@ public class StaticRepoUtilSuite {
         Map<String, Object> person = new HashMap<String, Object>();
 //        person.put("id","1111111111jkh11111111");
         person.put("name", "化满天");
-        person.put("idcard", "1111111111jkh11111111");
+        person.put("idcard", "1111111111jkh11111");
         person.put("sex", "1");
 //       try {
 //            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
@@ -51,10 +51,10 @@ public class StaticRepoUtilSuite {
     @Test
     public void testUpdateObjectInfo(){
         Map<String, Object> person = new HashMap<String, Object>();
-        person.put("id", "nihaome1112344dadafdfeawdafa33");
-        person.put("platformid","nihao112344");
+        person.put("id", "1234561111111111jkh11111");
+        //      person.put("platformid","1234");
 //        person.put("name", "小王炸炸");
-        person.put("idcard", "dadafdfeawdafa3");
+        person.put("idcard", "1111111111jkh11111");
 //        person.put("sex", "0");
 //        try {
 //            person.put("photo", Image2Byte2Image.image2byte("E:\\1.jpg"));
@@ -63,7 +63,7 @@ public class StaticRepoUtilSuite {
 //        }
 //        person.put("pkey", "123456");
 //        person.put("reason", "赌博+暴力倾向");
-//        person.put("creator", "羊驼神兽");
+        person.put("creator", "草泥马111");
 //        person.put("feature", "123455555555");
 
         int flag = new ObjectInfoHandlerImpl().updateObjectInfo(person);

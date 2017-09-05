@@ -44,12 +44,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
     }
     public ObjectInfoHandlerImpl() {
-        NativeFunction.init();
+      //  NativeFunction.init();
     }
 
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> person) {
-
         long start = System.currentTimeMillis();
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
@@ -222,18 +221,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         //在内存中修改
         List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
         Iterator<Map<String,Object>> iterator = listmap.iterator();
-        Map<String,Object> smap = new HashMap<>();
+        Map<String,Object> smap = null;
         while (iterator.hasNext()){
             smap = iterator.next();
             if ((smap.get(ObjectInfoTable.ROWKEY)).equals(person.get(ObjectInfoTable.ROWKEY))){
-                smap.putAll(person);
                 iterator.remove();
-                listmap.add(smap);
+                smap.putAll(person);
             }
         }
+        listmap.add(smap);
+
         objectSearchResult_Stiatic.setResults(listmap);
-        listmap = null;
-        smap = null;
+//        listmap = null;
+//        smap = null;
         if (person == null || person.size() == 0) {
             return 1;
         }
@@ -247,6 +247,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
+        Get get = new Get(Bytes.toBytes(id));
+        Result result_tmp = null;
+        String originIdCard = "";
+        String originPKey = "";
+        try {
+            result_tmp = table.get(get);
+            originIdCard = Bytes.toString(result_tmp.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.IDCARD)));
+            originPKey = Bytes.toString(result_tmp.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.PKEY)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Put put = new Put(Bytes.toBytes(id));
         put.setDurability(Durability.ASYNC_WAL);
         for (String field : fieldlist) {
@@ -279,8 +292,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         try {
             table.put(put);
             LOG.info("function[updateObjectInfo], not include IDCard and pkey, the time：" + (System.currentTimeMillis() - start));
-            if (fieldlist.contains(ObjectInfoTable.IDCARD) || fieldlist.contains(ObjectInfoTable.PKEY)) {
-                Get get = new Get(Bytes.toBytes(id));
+            if ((fieldlist.contains(ObjectInfoTable.IDCARD) && !person.get(ObjectInfoTable.IDCARD).equals(originIdCard))
+                    || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey)))   {
                 Result result = table.get(get);
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));
@@ -484,8 +497,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         if (photo != null && feature != null) {
             ObjectSearchResult objectSearchResult = new ObjectSearchResult();
-            objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId, photo,
-                    threshold, feature, start, pageSize);
+//            objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId, photo,
+//                    threshold, feature, start, pageSize);
             List<Map<String, Object>> persons = objectSearchResult.getResults();
             if (platformId != null){
                 Iterator<Map<String, Object>> it = persons.iterator();
@@ -873,8 +886,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-        return searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId,
-                photo, threshold, feature, start, pageSize);
+//        return searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId,
+//                photo, threshold, feature, start, pageSize);
+        return null;
     }
 
     @Override
