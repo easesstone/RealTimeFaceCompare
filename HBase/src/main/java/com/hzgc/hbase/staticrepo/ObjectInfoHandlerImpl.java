@@ -497,8 +497,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         if (photo != null && feature != null) {
             ObjectSearchResult objectSearchResult = new ObjectSearchResult();
-//            objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId, photo,
-//                    threshold, feature, start, pageSize);
+            objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId, photo,
+                    threshold, feature, start, pageSize);
             List<Map<String, Object>> persons = objectSearchResult.getResults();
             if (platformId != null){
                 Iterator<Map<String, Object>> it = persons.iterator();
@@ -886,9 +886,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-//        return searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId,
-//                photo, threshold, feature, start, pageSize);
-        return null;
+        return searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(), platformId,
+                photo, threshold, feature, start, pageSize);
     }
 
     @Override
