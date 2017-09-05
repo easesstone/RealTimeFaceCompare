@@ -89,4 +89,5 @@ public class RecognizeAlarmMessage implements Serializable {
     public void setAlarmTime(String alarmTime) {
         this.alarmTime = alarmTime;
     }
+
 }

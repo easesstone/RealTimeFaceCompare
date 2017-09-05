@@ -118,6 +118,7 @@ object FaceRecognizeAlarmJob {
       }
     }).filter(filter => filter != null)
 
+
     /**
       * 进行告警推送，识别时间更新操作
       */

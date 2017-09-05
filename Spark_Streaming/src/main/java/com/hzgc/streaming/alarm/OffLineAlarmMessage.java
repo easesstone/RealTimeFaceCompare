@@ -74,4 +74,5 @@ public class OffLineAlarmMessage implements Serializable {
     public void setAlarmTime(String alarmTime) {
         this.alarmTime = alarmTime;
     }
+
 }

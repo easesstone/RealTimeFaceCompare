@@ -85,6 +85,7 @@ object FaceAddAlarmJob {
       }
     }).filter(filter => filter != null)
 
+
     /**
       * 进行告警推送
       * (dynamicID,deviceID,platID,(dynamicID,deviceID,platID,staticID,objType))
