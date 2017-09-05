@@ -227,7 +227,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
         }
         listmap.add(smap);
-
         objectSearchResult_Stiatic.setResults(listmap);
         if (person == null || person.size() == 0) {
             return 1;
@@ -288,7 +287,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             table.put(put);
             LOG.info("function[updateObjectInfo], not include IDCard and pkey, the time：" + (System.currentTimeMillis() - start));
             if ((fieldlist.contains(ObjectInfoTable.IDCARD) && !person.get(ObjectInfoTable.IDCARD).equals(originIdCard))
-                    || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey)))   {
+                    || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey))){
                 Result result = table.get(get);
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));

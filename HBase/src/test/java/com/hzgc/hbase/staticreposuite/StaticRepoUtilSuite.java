@@ -63,7 +63,7 @@ public class StaticRepoUtilSuite {
 //        }
 //        person.put("pkey", "123456");
 //        person.put("reason", "赌博+暴力倾向");
-        person.put("creator", "草泥马111");
+        person.put("creator", "nihao");
 //        person.put("feature", "123455555555");
 
         int flag = new ObjectInfoHandlerImpl().updateObjectInfo(person);
