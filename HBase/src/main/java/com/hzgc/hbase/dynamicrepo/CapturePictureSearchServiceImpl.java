@@ -440,6 +440,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             Result result = null;
             try {
                 result = searchResTable.get(get);
+                HBaseUtil.closTable(searchResTable);
             } catch (IOException e) {
                 e.printStackTrace();
                 LOG.info("no result get by searchId[" + searchId + "]");
@@ -469,6 +470,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Result[] resultsPerson = new Result[personImgList.size()];
                         try {
                             resultsPerson = personTable.get(getsPerson);
+                            HBaseUtil.closTable(personTable);
                         } catch (IOException e) {
                             LOG.info("no results gets form person table");
                         }
@@ -502,6 +504,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Result[] resultsCar = new Result[carImgList.size()];
                         try {
                             resultsCar = carTable.get(getsCar);
+                            HBaseUtil.closTable(carTable);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
