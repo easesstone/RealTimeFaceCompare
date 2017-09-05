@@ -19,8 +19,11 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.*;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -91,6 +94,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.PLATFORMID), Bytes.toBytes(platformId));
+        //在ES中执行数据同步插入操作
+        Map<String,Object> dataToEs;
+        dataToEs = person;
+        dataToEs.remove(ObjectInfoTable.PHOTO);
+        //同步到内存
+        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
+        listmap.add(dataToEs);
+        objectSearchResult_Stiatic.setResults(listmap);
+        objectSearchResult_Stiatic.setSearchNums(objectSearchResult_Stiatic.getSearchNums() + 1);
+        IndexResponse indexResponse = ElasticSearchHelper.getEsClient()
+                .prepareIndex(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,rowkey)
+                .setSource(dataToEs).get();
         // 执行Put 操作，往表格里面添加一行数据
         try {
             puts.add(put);
@@ -121,12 +136,29 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Delete> deletes = new ArrayList<>();
         Delete delete;
+        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
         for (String rowkey : rowkeys) {
+            //删除内存中rowkey
+            Iterator<Map<String,Object>> iterator = listmap.iterator();
+            Map<String,Object> smap = new HashMap<>();
+            while (iterator.hasNext()){
+                smap = iterator.next();
+                String id = (String) smap.get(rowkey);
+                if (rowkey.equals(id)){
+                    iterator.remove();
+                    objectSearchResult_Stiatic.setSearchNums(objectSearchResult_Stiatic.getSearchNums() - 1);
+                }
+            }
             LOG.info("delete object info, the rowkey is: " + rowkey);
             delete = new Delete(Bytes.toBytes(rowkey));
             delete.setDurability(Durability.ASYNC_WAL);
             deletes.add(delete);
+            //在ES中执行同步删除操作
+            DeleteResponse deleteResponse = ElasticSearchHelper.getEsClient()
+                    .prepareDelete(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,rowkey)
+                    .get();
         }
+        objectSearchResult_Stiatic.setResults(listmap);
         Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
         put.setDurability(Durability.ASYNC_WAL);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -183,6 +215,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public int updateObjectInfo(Map<String, Object> person) {
+        //在内存中修改
+        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
+        Iterator<Map<String,Object>> iterator = listmap.iterator();
+        Map<String,Object> smap = null;
+        while (iterator.hasNext()){
+            smap = iterator.next();
+            if ((smap.get(ObjectInfoTable.ROWKEY)).equals(person.get(ObjectInfoTable.ROWKEY))){
+                iterator.remove();
+                smap.putAll(person);
+            }
+        }
+        listmap.add(smap);
+        objectSearchResult_Stiatic.setResults(listmap);
         if (person == null || person.size() == 0) {
             return 1;
         }
@@ -196,6 +241,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Set<String> fieldset = person.keySet();
         List<String> fieldlist = new ArrayList<>();
         fieldlist.addAll(fieldset);
+        Get get = new Get(Bytes.toBytes(id));
+        Result result_tmp = null;
+        String originIdCard = "";
+        String originPKey = "";
+        try {
+            result_tmp = table.get(get);
+            originIdCard = Bytes.toString(result_tmp.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.IDCARD)));
+            originPKey = Bytes.toString(result_tmp.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.PKEY)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Put put = new Put(Bytes.toBytes(id));
         put.setDurability(Durability.ASYNC_WAL);
         for (String field : fieldlist) {
@@ -214,21 +272,57 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes((String) person.get(field)));
             }
         }
+        Map<String,Object> dataToEs;
+        dataToEs = person;
+        dataToEs.remove(ObjectInfoTable.PHOTO);
+        UpdateResponse updateResponse = ElasticSearchHelper.getEsClient()
+                .prepareUpdate(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,id)
+                .setDoc(dataToEs).get();
         Date date = new Date();
         String dateString = format.format(date);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
+        Map<String,Object> map = new HashMap<>();
         try {
             table.put(put);
             LOG.info("function[updateObjectInfo], not include IDCard and pkey, the time：" + (System.currentTimeMillis() - start));
-            if (fieldlist.contains(ObjectInfoTable.IDCARD) || fieldlist.contains(ObjectInfoTable.PKEY)) {
-                Get get = new Get(Bytes.toBytes(id));
+            if ((fieldlist.contains(ObjectInfoTable.IDCARD) && !person.get(ObjectInfoTable.IDCARD).equals(originIdCard))
+                    || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey))){
                 Result result = table.get(get);
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));
                 String pKey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
                 String newRowKey = pKey + idCard;
+                //新的rowkey返回到ES中
+                map.put(ObjectInfoTable.IDCARD,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.IDCARD))));
+                map.put(ObjectInfoTable.PKEY,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.PKEY))));
+                map.put(ObjectInfoTable.PLATFORMID,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.PLATFORMID))));
+                map.put(ObjectInfoTable.TAG,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.TAG))));
+                map.put(ObjectInfoTable.NAME,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.NAME))));
+                map.put(ObjectInfoTable.SEX,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.SEX))));
+                map.put(ObjectInfoTable.FEATURE,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.FEATURE))));
+                map.put(ObjectInfoTable.REASON, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.REASON))));
+                map.put(ObjectInfoTable.CREATOR,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.CREATOR))));
+                map.put(ObjectInfoTable.CPHONE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.CPHONE))));
+                map.put(ObjectInfoTable.CREATETIME,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.CREATETIME))));
+                map.put(ObjectInfoTable.UPDATETIME,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.UPDATETIME))));
+                IndexResponse indexResponse = ElasticSearchHelper.getEsClient()
+                        .prepareIndex(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,newRowKey)
+                        .setSource(map).get();
+                //将数据存放到HBase
                 Put put1 = new Put(Bytes.toBytes(newRowKey));
                 put1.setDurability(Durability.ASYNC_WAL);
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PLATFORMID),
@@ -270,6 +364,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put1.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD), Bytes.toBytes(idCard));
                 table.put(put1);
+                //将ES中的原数据删除
+                DeleteResponse deleteResponse = ElasticSearchHelper.getEsClient()
+                        .prepareDelete(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,id).get();
+                //将HBase的原数据删除
                 Delete delete = new Delete(Bytes.toBytes(id));
                 delete.setDurability(Durability.ASYNC_WAL);
                 delete.addColumns(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
