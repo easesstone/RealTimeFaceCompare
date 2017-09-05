@@ -35,7 +35,7 @@ import org.elasticsearch.search.sort.SortOrder;
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
-    private static final bjectSearchResult_Stiatic;
+    private static  ObjectSearchResult objectSearchResult_Stiatic;
     private Random random = new Random();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
