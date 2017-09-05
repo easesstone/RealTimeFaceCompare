@@ -71,10 +71,9 @@ public class WorkerThread implements Runnable, Serializable {
                     Map<String, String> map = FtpUtil.getRowKeyMessage(consumerRecord.key());
                     String ipcID = map.get("ipcID");
                     long timestamp = Long.valueOf(map.get("time"));
-                    Date date = new Date(timestamp);
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_ipcID), Bytes.toBytes(ipcID));
-                    put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_time), Bytes.toBytes(dateFormat.format(date)));
+                    put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_time), Bytes.toBytes(dateFormat.format(timestamp)));
                     picTable.put(put);
                     LOG.info(Thread.currentThread().getName() + " [topic:" + consumerRecord.topic() +
                             ", offset:" + consumerRecord.offset() +
@@ -84,7 +83,7 @@ public class WorkerThread implements Runnable, Serializable {
                     //将ipcID与time同步到ES中
                     Map<String, String> mapES = new HashMap<>();
                     mapES.put("s", ipcID);
-                    mapES.put("t", dateFormat.format(date));
+                    mapES.put("t", dateFormat.format(timestamp));
                     mapES.put("sj", map.get("sj"));
                     ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
                             consumerRecord.key()).setSource(mapES).get();
