@@ -102,12 +102,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
         listmap.add(dataToEs);
         objectSearchResult_Stiatic.setResults(listmap);
-        listmap = null;
         objectSearchResult_Stiatic.setSearchNums(objectSearchResult_Stiatic.getSearchNums() + 1);
         IndexResponse indexResponse = ElasticSearchHelper.getEsClient()
                 .prepareIndex(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,rowkey)
                 .setSource(dataToEs).get();
-        dataToEs = null;
         // 执行Put 操作，往表格里面添加一行数据
         try {
             puts.add(put);
@@ -161,7 +159,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     .get();
         }
         objectSearchResult_Stiatic.setResults(listmap);
-        listmap = null;
         Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
         put.setDurability(Durability.ASYNC_WAL);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -232,8 +229,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         listmap.add(smap);
 
         objectSearchResult_Stiatic.setResults(listmap);
-        listmap = null;
-        smap = null;
         if (person == null || person.size() == 0) {
             return 1;
         }
