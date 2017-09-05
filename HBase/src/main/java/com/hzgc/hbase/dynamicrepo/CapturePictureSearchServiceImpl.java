@@ -400,7 +400,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                 capturedPicture.setId(rowKey);
                                 capturedPicture.setSmallImage(imageData);
                                 Map<String, Object> mapEx = new HashMap<>();
-                                setCapturedPicture_person(capturedPicture, result, mapEx);
+                                setCapturedPicture_car(capturedPicture, result, mapEx);
                                 capturedPictureList.add(capturedPicture);
                             } else {
                                 LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
