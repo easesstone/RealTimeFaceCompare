@@ -1,6 +1,9 @@
 package com.hzgc.streaming.job
 
+import java.text.SimpleDateFormat
 import java.util
+import java.util.Date
+
 import com.google.gson.Gson
 import com.hzgc.ftpserver.util.FtpUtil
 import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
@@ -13,6 +16,7 @@ import kafka.serializer.{DefaultDecoder, StringDecoder}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Durations, StreamingContext}
+
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
 
@@ -51,71 +55,63 @@ object FaceAddAlarmJob {
           val addWarnRule = alarmRule.get(DeviceTable.ADDED)
           if (addWarnRule != null && !addWarnRule.isEmpty) {
             val addIt = addWarnRule.keySet().iterator()
-            var addObjTypeList = ArrayBuffer[String]()
             val resultL = new util.ArrayList[String]()
             var setSim = 0
             while (addIt.hasNext) {
               val addKey = addIt.next()
-              addObjTypeList += addKey
               setSim = addWarnRule.get(addKey)
             }
-            var listResult = totalList.filter(listFilter => addWarnRule.containsKey(listFilter.split(separator)(1)))
-            listResult.foreach(listResultElem => {
-              resultL.add(gdPair._1 + separator + gdPair._2 + separator + platID + separator + setSim + separator + gdPair._3 + separator + listResultElem)
+            totalList.foreach(listResultElem => {
+              val listResultElemArr = listResultElem.split(separator)
+              if (addWarnRule.containsKey(listResultElemArr(1))) {
+                val simResult = FaceFunction.featureCompare(gdPair._3, listResultElemArr(2))
+                if (simResult > setSim) {
+                  resultL.add(listResultElem.substring(0, listResultElem.lastIndexOf(separator)))
+                }
+              }
             })
             (gdPair._1, gdPair._2, platID, JavaConverters.asScalaBufferConverter(resultL).asScala)
           } else {
-            println("Grab face photo equipment not dispatched newly increased  type alarm rules！")
+            println("The device [" + gdPair._2 + "] not dispatched added the type of alarm rules！")
             (null)
           }
         } else {
-          println("Grab face photo equipment not dispatched alarm rules！")
+          println("The device [" + gdPair._2 + "] not dispatched alarm rules！")
           (null)
         }
       } else {
-        println("The device for grabbing face photos does not bind the platform！")
+        println("The device [" + gdPair._2 + "] not bind the plat！")
         (null)
       }
     }).filter(filter => filter != null)
-    val computeResult = filterResult.map(eachList => {
-      val computeList = new util.ArrayList[String]()
-      eachList._4.foreach(elem => {
-        val elemArray = elem.split(separator)
-        val setSim = elem.split(separator)(3)
-        val simResult = FaceFunction.featureCompare(elemArray(4), elemArray(7))
-        var computeStr = ""
-        if (simResult > setSim.toFloat) {
-          computeStr = elemArray(0) + separator + elemArray(1) + separator + elemArray(2) + separator +
-            elemArray(3) + separator + elemArray(5) + separator + elemArray(6) + separator + simResult
-        } else {
-          computeStr = null
-        }
-        computeList.add(computeStr)
-      })
-      (eachList._1, eachList._2, eachList._3, JavaConverters.asScalaBufferConverter(computeList).asScala)
-    }).map(computeResultList => (computeResultList._1, computeResultList._2, computeResultList._3, computeResultList._4.filter(computeResultListF => computeResultListF != null)))
+
+
     /**
       * 进行告警推送
+      * (dynamicID,deviceID,platID,(dynamicID,deviceID,platID,staticID,objType))
       */
-    computeResult.foreachRDD(rdd => {
+    filterResult.foreachRDD(rdd => {
       rdd.foreachPartition(pResult => {
         val gson = new Gson()
         val addAlarmMessage = new AddAlarmMessage()
         val rocketMQProducer = RocketMQProducer.getInstance()
         pResult.foreach(rddElem => {
           if (rddElem._4.size == 0 || rddElem._4 == null) {
+            val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            val dateStr = df.format(new Date());
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
             addAlarmMessage.setDynamicDeviceID(rddElem._2)
             addAlarmMessage.setDynamicID(rddElem._1)
+            addAlarmMessage.setAlarmTime(dateStr)
             val strgson = gson.toJson(addAlarmMessage)
             rocketMQProducer.send(rddElem._3, "alarm_" + DeviceTable.ADDED.toString, rddElem._1, strgson.getBytes(), null)
+
           }
         })
       })
     })
     ssc.start()
     ssc.awaitTermination()
-
   }
 
 

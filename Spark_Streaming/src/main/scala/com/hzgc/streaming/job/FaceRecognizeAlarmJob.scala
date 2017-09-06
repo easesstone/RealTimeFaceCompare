@@ -1,6 +1,9 @@
 package com.hzgc.streaming.job
 
+import java.text.SimpleDateFormat
 import java.util
+import java.util.Date
+
 import com.google.gson.Gson
 import com.hzgc.ftpserver.util.FtpUtil
 import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
@@ -13,6 +16,7 @@ import kafka.serializer.{DefaultDecoder, StringDecoder}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Durations, StreamingContext}
+
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
 
@@ -31,6 +35,7 @@ object FaceRecognizeAlarmJob {
     val properties = PropertiesUtils.getProperties
     val appName = properties.getProperty("job.recognizeAlarm.appName")
     val master = properties.getProperty("job.recognizeAlarm.master")
+    val itemNum = properties.getProperty("job.recognizeAlarm.items.num").toInt
     val timeInterval = Durations.seconds(properties.getProperty("job.recognizeAlarm.timeInterval").toLong)
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     val ssc = new StreamingContext(conf, timeInterval)
@@ -57,118 +62,116 @@ object FaceRecognizeAlarmJob {
           if (recognizeWarnRule != null && !recognizeWarnRule.isEmpty) {
             val offLineWarnRule = alarmRule.get(DeviceTable.OFFLINE)
             val recognizeIt = recognizeWarnRule.keySet().iterator()
-            var recognizeObjTypeList = ArrayBuffer[String]()
             val resultList = new util.ArrayList[String]()
             var setSim = 0
             while (recognizeIt.hasNext) {
               val recognizeKey = recognizeIt.next()
-              recognizeObjTypeList += recognizeKey
               setSim = recognizeWarnRule.get(recognizeKey)
             }
-            val listResult = totalList.filter(listFilter => FilterUtils.rangeFilterFun(recognizeObjTypeList.toArray, listFilter.split(separator)(1)))
             if (offLineWarnRule != null && !offLineWarnRule.isEmpty) {
-              var offLineObjTypeList = ""
+              val offLineObjTypeList = new StringBuffer()
               val offLineIt = offLineWarnRule.keySet().iterator()
               var setdDays = 0
               while (offLineIt.hasNext) {
                 val offLineKey = offLineIt.next()
-                offLineObjTypeList = offLineObjTypeList + "_" + offLineKey
+                offLineObjTypeList.append("_").append(offLineKey)
                 setdDays = offLineWarnRule.get(offLineKey)
               }
-              listResult.foreach(staticStoreListElem => {
-                resultList.add(gdPair._1 + separator + gdPair._2 + separator + platID + separator + setSim + separator + offLineObjTypeList.substring(1) + separator + setdDays + separator + gdPair._3 + separator + staticStoreListElem)
+              totalList.foreach(staticStoreListElem => {
+                val staticStoreListElemArr = staticStoreListElem.split(separator)
+                if (recognizeWarnRule.containsKey(staticStoreListElemArr(1))) {
+                  val simResult = FaceFunction.featureCompare(gdPair._3, staticStoreListElemArr(2))
+                  if (simResult > setSim) {
+                    //(dynamicID,deviceID,platID,offLineObjTypeList,setdDays,staticID,staticObj,simResult)
+                    val compStr = new StringBuilder()
+                    compStr.append(gdPair._1).append(separator).append( gdPair._2).append(separator).append( platID).append(separator).append(offLineObjTypeList.toString.substring(1)).append(separator).append( setdDays).append(separator).append(staticStoreListElem.substring(0, staticStoreListElem.lastIndexOf(separator))).append(separator).append(simResult)
+                    resultList.add(compStr.toString())
+                  }
+                }
               })
             } else {
-              println("Grab face photo equipment not dispatched off-line type alarm rules！")
-              listResult.foreach(staticStoreListElem => {
-                resultList.add(gdPair._1 + separator + gdPair._2 + separator + platID + separator + setSim + separator + null + separator + null + separator + gdPair._3 + separator + staticStoreListElem)
+              totalList.foreach(staticStoreListElem => {
+                val staticStoreListElemArr = staticStoreListElem.split(separator)
+                if (recognizeWarnRule.containsKey(staticStoreListElemArr(1))) {
+                  val simResult = FaceFunction.featureCompare(gdPair._3, staticStoreListElemArr(2))
+                  if (simResult > setSim) {
+                    val compStr = new StringBuilder()
+                    compStr.append(gdPair._1).append(separator).append( gdPair._2).append(separator).append( platID).append(separator).append(null.toString).append(separator).append(null.toString).append(separator).append(staticStoreListElem.substring(0, staticStoreListElem.lastIndexOf(separator))).append(separator).append(simResult)
+                    resultList.add(compStr.toString())
+                  }
+                }
               })
+              println("The device [" + gdPair._2 + "] not dispatched offLine type of alarm rules！")
             }
             (JavaConverters.asScalaBufferConverter(resultList).asScala)
           } else {
-            println("Grab face photo equipment not dispatched to identify the type of alarm rules！")
+            println("The device [" + gdPair._2 + "] not dispatched to recognize the type of alarm rules！")
             (null)
           }
         } else {
-          println("Grab face photo equipment not dispatched alarm rules！")
+          println("The device [" + gdPair._2 + "] not dispatched alarm rules！")
           (null)
         }
       } else {
-        println("The device for grabbing face photos does not bind the platform！")
+        println("The device [" + gdPair._2 + "] not bind the plat！")
         (null)
       }
     }).filter(filter => filter != null)
-    val computeResult = filterResult.map(eachList => {
-      val computeList = new util.ArrayList[String]()
-      eachList.foreach(elem => {
-        /**
-          * 处理数据格式：(dynamicID,deviceID,platID,setSim,offLineObjTypeList,setdDays,dynamicFeatureStr,staticId,objType,staticFeatureStr)
-          */
-        val elemArray = elem.split(separator)
-        val setSim = elem.split(separator)(3)
-        val simResult = FaceFunction.featureCompare(elemArray(6), elemArray(9))
-        var computeStr = ""
-        if (simResult > setSim.toFloat) {
-          computeStr = elemArray(0) + separator + elemArray(1) + separator + elemArray(2) + separator +
-            elemArray(3) + separator + elemArray(4) + separator + elemArray(5) + separator +
-            elemArray(7) + separator + elemArray(8) + separator + simResult
-        } else {
-          computeStr = null
-        }
-        computeList.add(computeStr)
-      })
-      (JavaConverters.asScalaBufferConverter(computeList).asScala)
-    }).map(computeResultList => computeResultList.filter(computeResultListF => computeResultListF != null)).filter(fil => fil.size != 0)
+
 
     /**
       * 进行告警推送，识别时间更新操作
       */
-    computeResult.foreachRDD(rdd => {
+    filterResult.foreachRDD(rdd => {
       rdd.foreachPartition(pResult => {
         val rocketMQProducer = RocketMQProducer.getInstance()
         val gson = new Gson()
         val recognizeAlarmMessage = new RecognizeAlarmMessage()
         val timeUpdateInstance = ObjectInfoInnerHandlerImpl.getInstance()
         pResult.foreach(rddElem => {
-          /**
-            * 处理数据格式：(dynamicID,deviceID,platID,setSim,offLineObjTypeList,setdDays,staticId,objType,simResult)
-            */
-          var dynamicID = ""
-          var deviceID = ""
-          var platID = ""
-          val items = ArrayBuffer[Item]()
-          val timeUpdateItems = ArrayBuffer[String]()
-          rddElem.foreach(rddElemStr => {
-            val item = new Item()
-            val recognizeAlarmStr = rddElemStr.split(separator)
-            val offLineObjTypeList = recognizeAlarmStr(4)
-            val objType = recognizeAlarmStr(7)
-            dynamicID = recognizeAlarmStr(0)
-            deviceID = recognizeAlarmStr(1)
-            platID = recognizeAlarmStr(2)
-            /**
-              * 识别时间更新
-              * 将符合更新条件的数据加入list里面
-              */
-            if (offLineObjTypeList != null && offLineObjTypeList.length > 0) {
-              val offLineObjTypeListArr = recognizeAlarmStr(4).split("_")
-              if (FilterUtils.rangeFilterFun(offLineObjTypeListArr, objType)) {
-                timeUpdateItems += recognizeAlarmStr(6)
+          //(dynamicID,deviceID,platID,offLineObjTypeList,setdDays,staticID,staticObj,simResult)
+          if (rddElem != null && rddElem.size > 0) {
+            var dynamicID = ""
+            var deviceID = ""
+            var platID = ""
+            val items = ArrayBuffer[Item]()
+            val timeUpdateItems = ArrayBuffer[String]()
+            rddElem.foreach(rddElemStr => {
+              val item = new Item()
+              val recognizeAlarmStr = rddElemStr.split(separator)
+              val offLineObjTypeList = recognizeAlarmStr(3)
+              val objType = recognizeAlarmStr(6)
+              dynamicID = recognizeAlarmStr(0)
+              deviceID = recognizeAlarmStr(1)
+              platID = recognizeAlarmStr(2)
+              /**
+                * 识别时间更新
+                * 将符合更新条件的数据加入list里面
+                */
+              if (offLineObjTypeList != null && offLineObjTypeList.length > 0) {
+                if (FilterUtils.rangeFilterFun(offLineObjTypeList.split("_"), objType)) {
+                  timeUpdateItems += recognizeAlarmStr(5)
+                }
               }
+              item.setStaticID(recognizeAlarmStr(5))
+              item.setSimilarity(recognizeAlarmStr(7))
+              items += item
+            })
+            val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            val dateStr = df.format(new Date());
+            recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
+            recognizeAlarmMessage.setDynamicDeviceID(deviceID)
+            recognizeAlarmMessage.setDynamicID(dynamicID)
+            recognizeAlarmMessage.setAlarmTime(dateStr)
+            //对每一条告警消息识别到的静态信息库照片按照相似度进行排序（降序）
+            val itemsSortWith = items.sortWith { case (caseItem1, caseItem2) => caseItem1.getSimilarity > caseItem2.getSimilarity }.take(itemNum)
+            recognizeAlarmMessage.setItems(itemsSortWith.toArray)
+            val recognizeAlarmResult = gson.toJson(recognizeAlarmMessage)
+            if (!timeUpdateItems.isEmpty && timeUpdateItems != null) {
+              timeUpdateInstance.updateObjectInfoTime(Utils.arrayBuffer2javaList(timeUpdateItems.toArray))
             }
-            item.setStaticID(recognizeAlarmStr(6))
-            item.setSimilarity(recognizeAlarmStr(8))
-            items += item
-          })
-          recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
-          recognizeAlarmMessage.setDynamicDeviceID(deviceID)
-          recognizeAlarmMessage.setDynamicID(dynamicID)
-          recognizeAlarmMessage.setItems(items.toArray)
-          val recognizeAlarmResult = gson.toJson(recognizeAlarmMessage)
-          if (!timeUpdateItems.isEmpty && timeUpdateItems != null) {
-            timeUpdateInstance.updateObjectInfoTime(Utils.arrayBuffer2javaList(timeUpdateItems.toArray))
+            rocketMQProducer.send(platID, "alarm_" + DeviceTable.IDENTIFY.toString, dynamicID, recognizeAlarmResult.getBytes(), null)
           }
-          rocketMQProducer.send(platID, "alarm_" + DeviceTable.IDENTIFY.toString, dynamicID, recognizeAlarmResult.getBytes(), null)
         })
       })
     })

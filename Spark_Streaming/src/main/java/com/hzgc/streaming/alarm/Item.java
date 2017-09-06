@@ -46,4 +46,5 @@ public class Item implements Serializable {
     public void setSimilarity(String similarity) {
         this.similarity = similarity;
     }
+
 }
