@@ -161,52 +161,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public CapturedPicture getCaptureMessage(String imageId, int type) {
-        boolean param = false;
-        switch (type) {
-            case 0:
-                if (PictureType.PERSON.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 1:
-                if (PictureType.CAR.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 2:
-                if (PictureType.SMALL_PERSON.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 3:
-                if (PictureType.SMALL_CAR.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 4:
-                if (PictureType.BIG_PERSON.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 5:
-                if (PictureType.BIG_CAR.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 6:
-                if (PictureType.MESSAGE_PERSON.getType() == type) {
-                    param = true;
-                }
-                break;
-            case 7:
-                if (PictureType.MESSAGE_CAR.getType() == type) {
-                    param = true;
-                }
-                break;
-        }
-
         CapturedPicture capturedPicture = new CapturedPicture();
-        if (null != imageId && param) {
+        if (null != imageId) {
             capturedPicture.setId(imageId);
             String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
             StringBuilder bigImageRowKey = new StringBuilder();
@@ -336,9 +292,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         HBaseUtil.closTable(car);
                     }
                     break;
+                default:
+                    LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage param is error.");
             }
         } else {
-            LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage param is empty.");
+            LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage imageId is empty.");
         }
         return capturedPicture;
     }
