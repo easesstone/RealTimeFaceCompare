@@ -19,11 +19,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.*;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -35,15 +32,10 @@ import org.elasticsearch.search.sort.SortOrder;
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
-    private static final bjectSearchResult_Stiatic;
     private Random random = new Random();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static Map<String, Map<String, Object>> BASE_LIBRARY = getAllObjectInfo();
 
-    static {
-        if (objectSearchResult_Stiatic == null){
-            objectSearchResult_Stiatic = getAllObjectInfo();
-        }
-    }
     public ObjectInfoHandlerImpl() {
         NativeFunction.init();
     }
@@ -96,17 +88,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.PLATFORMID), Bytes.toBytes(platformId));
         //在ES中执行数据同步插入操作
-        Map<String,Object> dataToEs;
-        dataToEs = person;
-        dataToEs.remove(ObjectInfoTable.PHOTO);
+        person.remove(ObjectInfoTable.PHOTO);
         //同步到内存
-        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
-        listmap.add(dataToEs);
-        objectSearchResult_Stiatic.setResults(listmap);
-        objectSearchResult_Stiatic.setSearchNums(objectSearchResult_Stiatic.getSearchNums() + 1);
-        IndexResponse indexResponse = ElasticSearchHelper.getEsClient()
-                .prepareIndex(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,rowkey)
-                .setSource(dataToEs).get();
+        person.put(ObjectInfoTable.ROWKEY, rowkey);
+        person.putIfAbsent(ObjectInfoTable.PLATFORMID, platformId);
+        BASE_LIBRARY.put(rowkey, person);
+        ElasticSearchHelper.getEsClient()
+                .prepareIndex(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF, rowkey)
+                .setSource(person).get();
         // 执行Put 操作，往表格里面添加一行数据
         try {
             puts.add(put);
@@ -136,35 +125,23 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         long start = System.currentTimeMillis();
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Delete> deletes = new ArrayList<>();
-        Delete delete;
-        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
         for (String rowkey : rowkeys) {
             //删除内存中rowkey
-            Iterator<Map<String,Object>> iterator = listmap.iterator();
-            Map<String,Object> smap = new HashMap<>();
-            while (iterator.hasNext()){
-                smap = iterator.next();
-                String id = (String) smap.get(rowkey);
-                if (rowkey.equals(id)){
-                    iterator.remove();
-                    objectSearchResult_Stiatic.setSearchNums(objectSearchResult_Stiatic.getSearchNums() - 1);
-                }
-            }
+            BASE_LIBRARY.remove(rowkey);
             LOG.info("delete object info, the rowkey is: " + rowkey);
-            delete = new Delete(Bytes.toBytes(rowkey));
+            Delete delete = new Delete(Bytes.toBytes(rowkey));
             delete.setDurability(Durability.ASYNC_WAL);
             deletes.add(delete);
             //在ES中执行同步删除操作
-            DeleteResponse deleteResponse = ElasticSearchHelper.getEsClient()
-                    .prepareDelete(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,rowkey)
+            ElasticSearchHelper.getEsClient()
+                    .prepareDelete(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF, rowkey)
                     .get();
         }
-        objectSearchResult_Stiatic.setResults(listmap);
         Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
         put.setDurability(Durability.ASYNC_WAL);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
-                Bytes.toBytes(getTotalNums(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF) - 1));
+                Bytes.toBytes(getTotalNums(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF) - rowkeys.size()));
         // 执行删除操作
         try {
             table.delete(deletes);
@@ -218,25 +195,25 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public int updateObjectInfo(Map<String, Object> person) {
         long start = System.currentTimeMillis();
         if (person == null || person.size() == 0) {
-            LOG.info("updateObjectInfo, the person cannot be null.");
+            LOG.info("updateObjectInfo, the person cannot be null");
             return 1;
         }
         String id = (String) person.get(ObjectInfoTable.ROWKEY);
         if (id == null) {
-            LOG.info("updateObjectInfo, rowKey cannot be null.");
+            LOG.info("updateObjectInfo, rowKey cannot be null");
             return 1;
         }
 
         //修改加载到内存中的数据......
-        List<Map<String,Object>> listmap = objectSearchResult_Stiatic.getResults();
-        Iterator<Map<String,Object>> iterator = listmap.iterator();
-        while (iterator.hasNext()){
-            String tmp_rowKey = (String) iterator.next().get(ObjectInfoTable.ROWKEY);
-            if (tmp_rowKey != null && tmp_rowKey.equals(person.get(ObjectInfoTable.ROWKEY))){
-                iterator.remove();
-            }
+        Map<String, Object> tempMap = BASE_LIBRARY.get(person.get(ObjectInfoTable.ROWKEY));
+        if (tempMap == null) {
+            LOG.info("the person not exists in base library");
+            return 1;
         }
-        objectSearchResult_Stiatic.setResults(listmap);
+        tempMap.putAll(person);
+        String tempRowKey = tempMap.get(ObjectInfoTable.PKEY) + (String) tempMap.get(ObjectInfoTable.IDCARD);
+        tempMap.put(ObjectInfoTable.ROWKEY, tempRowKey);
+        BASE_LIBRARY.put(tempRowKey, tempMap);
 
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
@@ -275,11 +252,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
         }
 
-        Map<String,Object> dataToEs;
-        dataToEs = person;
+        Map<String, Object> dataToEs = new HashMap<>();
+        dataToEs.putAll(person);
         dataToEs.remove(ObjectInfoTable.PHOTO);
-        UpdateResponse updateResponse = ElasticSearchHelper.getEsClient()
-                .prepareUpdate(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,id)
+
+        ElasticSearchHelper.getEsClient()
+                .prepareUpdate(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF, id)
                 .setDoc(dataToEs).get();
 
 
@@ -287,12 +265,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         String dateString = format.format(date);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
-        Map<String,Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         try {
             table.put(put);
             LOG.info("function[updateObjectInfo], not include IDCard and pkey, the time：" + (System.currentTimeMillis() - start));
             if ((fieldlist.contains(ObjectInfoTable.IDCARD) && !person.get(ObjectInfoTable.IDCARD).equals(originIdCard))
-                    || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey))){
+                    || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey))) {
                 Result result = table.get(get);
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));
@@ -300,32 +278,33 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
                 String newRowKey = pKey + idCard;
                 //新的rowkey返回到ES中
-                map.put(ObjectInfoTable.IDCARD,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.IDCARD, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD))));
-                map.put(ObjectInfoTable.PKEY,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.PKEY, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PKEY))));
-                map.put(ObjectInfoTable.PLATFORMID,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.PLATFORMID, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PLATFORMID))));
-                map.put(ObjectInfoTable.TAG,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.TAG, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.TAG))));
-                map.put(ObjectInfoTable.NAME,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.NAME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.NAME))));
-                map.put(ObjectInfoTable.SEX,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.SEX, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.SEX))));
-                map.put(ObjectInfoTable.FEATURE,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.FEATURE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.FEATURE))));
                 map.put(ObjectInfoTable.REASON, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.REASON))));
-                map.put(ObjectInfoTable.CREATOR,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.CREATOR, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.CREATOR))));
                 map.put(ObjectInfoTable.CPHONE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.CPHONE))));
-                map.put(ObjectInfoTable.CREATETIME,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.CREATETIME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.CREATETIME))));
-                map.put(ObjectInfoTable.UPDATETIME,Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                map.put(ObjectInfoTable.UPDATETIME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.UPDATETIME))));
-                IndexResponse indexResponse = ElasticSearchHelper.getEsClient()
-                        .prepareIndex(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,newRowKey)
+
+                ElasticSearchHelper.getEsClient()
+                        .prepareIndex(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF, newRowKey)
                         .setSource(map).get();
                 //将数据存放到HBase
                 Put put1 = new Put(Bytes.toBytes(newRowKey));
@@ -370,8 +349,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.IDCARD), Bytes.toBytes(idCard));
                 table.put(put1);
                 //将ES中的原数据删除
-                DeleteResponse deleteResponse = ElasticSearchHelper.getEsClient()
-                        .prepareDelete(ObjectInfoTable.TABLE_NAME,ObjectInfoTable.PERSON_COLF,id).get();
+                ElasticSearchHelper.getEsClient()
+                        .prepareDelete(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF, id).get();
                 //将HBase的原数据删除
                 Delete delete = new Delete(Bytes.toBytes(id));
                 delete.setDurability(Durability.ASYNC_WAL);
@@ -489,76 +468,84 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                      List<String> pkeys, String creator, String cphone,
                                                      int start, int pageSize, boolean moHuSearch) {
         SearchRequestBuilder requestBuilder;
-        if (start == -1){
+        if (start == -1) {
             start = 1;
         }
-        if (pageSize == -1){
+        if (pageSize == -1) {
             pageSize = 100;
         }
         if (photo != null && feature != null) {
-            ObjectSearchResult objectSearchResult = searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(),
-                    threshold, feature);
+            ObjectSearchResult objectSearchResult = searchByPhotoAndThreshold(threshold, feature);
             List<Map<String, Object>> persons = objectSearchResult.getResults();
-            if (platformId != null){
+            if (platformId != null) {
                 Iterator<Map<String, Object>> it = persons.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String platformId_tmp = (String) person.get(ObjectInfoTable.PLATFORMID);
-                    if (!platformId.equals(platformId_tmp)){
+                    if (!platformId.equals(platformId_tmp)) {
                         it.remove();
                     }
                 }
             }
-            if (pkeys != null && pkeys.size() > 0){
+            if (pkeys != null && pkeys.size() > 0) {
                 Iterator<Map<String, Object>> it = persons.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String pkey_tmp = (String) person.get(ObjectInfoTable.PKEY);
-                    if (!pkeys.contains(pkey_tmp)){
+                    if (!pkeys.contains(pkey_tmp)) {
                         it.remove();
                     }
                 }
             }
-            if (sex != -1){
+            if (sex != -1) {
                 Iterator<Map<String, Object>> it = persons.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map<String, Object> person = it.next();
-                    int sex_tmp = Integer.parseInt((String)person.get(ObjectInfoTable.SEX));
-                    if (sex != sex_tmp){
+                    int sex_tmp = Integer.parseInt((String) person.get(ObjectInfoTable.SEX));
+                    if (sex != sex_tmp) {
                         it.remove();
                     }
                 }
             }
-            if (idCard != null){
+            if (idCard != null) {
                 Iterator<Map<String, Object>> it = persons.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String idCard_tmp = (String) person.get(ObjectInfoTable.IDCARD);
-                    if (!Pattern.matches("\\d{0,18}" + name + "\\d{0,18}", idCard_tmp)){
+                    if (idCard.length() == 0 || idCard_tmp == null || idCard_tmp.length() == 0) {
+                        continue;
+                    }
+                    if (!Pattern.matches("\\d{0,18}" + idCard + "\\d{0,18}", idCard_tmp)) {
                         it.remove();
                     }
                 }
             }
-            if (creator != null){
+            if (creator != null) {
                 Iterator<Map<String, Object>> it = persons.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR);
+                    if (creator_tmp == null || creator_tmp.length() == 0 || creator.length() == 0) {
+                        continue;
+                    }
                     String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}" + creator
                             + "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
-                    if (!Pattern.matches(pattern, creator_tmp)){
+                    if (!Pattern.matches(pattern, creator_tmp)) {
                         it.remove();
                     }
                 }
             }
-            if (name != null){
+            if (name != null) {
                 Iterator<Map<String, Object>> it = persons.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String name_tmp = (String) person.get(ObjectInfoTable.NAME);
+                    if (name.length() == 0 || name_tmp == null || name_tmp.length() == 0) {
+                        continue;
+                    }
                     String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}" + name
                             + "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
-                    if (!Pattern.matches(pattern, name_tmp)){
+                    if (!Pattern.matches(pattern, name_tmp)) {
                         it.remove();
                     }
                 }
@@ -575,7 +562,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .addSort(ObjectInfoTable.NAME, SortOrder.DESC)
-                .addSort(ObjectInfoTable.IDCARD,SortOrder.DESC)
+                .addSort(ObjectInfoTable.IDCARD, SortOrder.DESC)
                 .addSort(ObjectInfoTable.UPDATETIME, SortOrder.DESC)
                 .setFrom(start - 1).setSize(pageSize);
         BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery();
@@ -707,7 +694,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .setQuery(QueryBuilders.termQuery(ObjectInfoTable.CPHONE, cphone))
                 .addSort(ObjectInfoTable.NAME, SortOrder.DESC)
-                .addSort(ObjectInfoTable.IDCARD,SortOrder.DESC)
+                .addSort(ObjectInfoTable.IDCARD, SortOrder.DESC)
                 .addSort(ObjectInfoTable.UPDATETIME, SortOrder.DESC)
                 .setFrom(start - 1).setSize(1000);
         return dealWithSearchRequesBuilder(null, requestBuilder, null,
@@ -770,9 +757,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .addSort(ObjectInfoTable.NAME, SortOrder.DESC)
-                .addSort(ObjectInfoTable.IDCARD,SortOrder.DESC)
+                .addSort(ObjectInfoTable.IDCARD, SortOrder.DESC)
                 .addSort(ObjectInfoTable.UPDATETIME, SortOrder.DESC)
-                .setFrom(start -1).setSize(1000);
+                .setFrom(start - 1).setSize(1000);
         if (moHuSearch) {
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator)));
         } else {
@@ -791,9 +778,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setFetchSource(null, new String[]{ObjectInfoTable.FEATURE})
                 .setTypes(ObjectInfoTable.PERSON_COLF)
                 .addSort(ObjectInfoTable.NAME, SortOrder.DESC)
-                .addSort(ObjectInfoTable.IDCARD,SortOrder.DESC)
+                .addSort(ObjectInfoTable.IDCARD, SortOrder.DESC)
                 .addSort(ObjectInfoTable.UPDATETIME, SortOrder.DESC)
-                .setFrom(start -1).setSize(1000);
+                .setFrom(start - 1).setSize(1000);
         if (moHuSearch) {
             requestBuilder.setQuery(QueryBuilders.matchQuery(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name)));
         } else {
@@ -804,32 +791,24 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 start, pageSize, moHuSearch);
     }
 
-    public static ObjectSearchResult getAllObjectInfo() {
+    private static Map<String, Map<String, Object>> getAllObjectInfo() {
         long start = System.currentTimeMillis();
         Client client = ElasticSearchHelper.getEsClient();
         SearchRequestBuilder requestBuilder = client.prepareSearch(ObjectInfoTable.TABLE_NAME)
                 .setTypes(ObjectInfoTable.PERSON_COLF)
-                .addSort(ObjectInfoTable.UPDATETIME, SortOrder.DESC)
-                .addSort(ObjectInfoTable.NAME, SortOrder.DESC)
-                .addSort(ObjectInfoTable.IDCARD,SortOrder.DESC)
                 .setScroll(new TimeValue(300000)).setSize(5000);
         requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         SearchResponse response = requestBuilder.get();
-        ObjectSearchResult objectSearchResult = new ObjectSearchResult();
-        List<Map<String, Object>> results = new ArrayList<>();
+        Map<String, Map<String, Object>> results = new HashMap<>();
         do {
             SearchHits hits = response.getHits();
             SearchHit[] searchHits = hits.getHits();
-            String searchId = UUID.randomUUID().toString().replace("-", "");
-            objectSearchResult.setSearchId(searchId);
-            objectSearchResult.setPhotoId(null);
-            objectSearchResult.setSearchNums(hits.getTotalHits());
             if (searchHits.length > 0) {
                 for (SearchHit hit : searchHits) {
                     Map<String, Object> source = hit.getSource();
-                    // ES 的文档名，对应着HBase 的rowkey
                     source.put(ObjectInfoTable.ROWKEY, hit.getId());
-                    results.add(source);
+                    // ES 的文档名，对应着HBase 的rowkey
+                    results.put(hit.getId(), source);
                 }
             }
             response = ElasticSearchHelper.getEsClient().prepareSearchScroll(response.getScrollId())
@@ -837,32 +816,25 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     .execute()
                     .actionGet();
         } while (response.getHits().getHits().length != 0);
-        objectSearchResult.setSearchStatus(0);
-        objectSearchResult.setResults(results);
         LOG.info("getAllObjectINfo, time: " + (System.currentTimeMillis() - start));
-        return objectSearchResult;
+        return results;
     }
 
-    private ObjectSearchResult searchByPhotoAndThreshold(List<Map<String, Object>> personInfoList,
-                                                         float threshold,
-                                                         String feature) {
+    private ObjectSearchResult searchByPhotoAndThreshold(float threshold, String feature) {
         long start_time = System.currentTimeMillis();
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
         if (feature.length() == 2048) {
-            for (Map<String, Object> personInfo : personInfoList) {
-                Map<String, Object> personInfoTmp = new HashMap<>();
-                personInfoTmp.putAll(personInfo);
-                Set<String> attributes = personInfo.keySet();
-                for (String attr : attributes) {
-                    if ("feature".equals(attr)) {
-                        String feature_his = (String) personInfo.get(attr);
-                        if (feature_his != null && feature_his.length() == 2048) {
-                            float related = FaceFunction.featureCompare(feature, feature_his);
-                            if (related > threshold) {
-                                personInfoTmp.put(ObjectInfoTable.RELATED, related);
-                                resultsFinal.add(personInfoTmp);
-                            }
-                        }
+            Set<String> tempSet = BASE_LIBRARY.keySet();
+            for (String rk : tempSet) {
+                String histFeature = (String) BASE_LIBRARY.get(rk).get(ObjectInfoTable.FEATURE);
+                if (histFeature != null && histFeature.length() == 2048) {
+                    float sim = FaceFunction.featureCompare(feature, histFeature);
+                    boolean pp = sim > threshold;
+                    if (pp) {
+                        Map<String, Object> temMap = new HashMap<>();
+                        temMap.putAll(BASE_LIBRARY.get(rk));
+                        temMap.put(ObjectInfoTable.RELATED, sim);
+                        resultsFinal.add(temMap);
                     }
                 }
             }
@@ -873,13 +845,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         objectSearchResult.setSearchStatus(0);  // status
         objectSearchResult.setSearchNums(resultsFinal.size());   // results nums
         // 按照相似度从大小排序
-        resultsFinal.sort(new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                float relate01 = (float) o1.get(ObjectInfoTable.RELATED);
-                float relate02 = (float) o2.get(ObjectInfoTable.RELATED);
-                return Float.compare(relate02, relate01);
-            }
+        resultsFinal.sort((o1, o2) -> {
+            float relate01 = (float) o1.get(ObjectInfoTable.RELATED);
+            float relate02 = (float) o2.get(ObjectInfoTable.RELATED);
+            return Float.compare(relate02, relate01);
         });
         objectSearchResult.setResults(resultsFinal);  // results
         objectSearchResult.setPhotoId(searchId);   // photoId
@@ -895,7 +864,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                         String feature,
                                                         long start,
                                                         long pageSize) {
-        return searchByPhotoAndThreshold(objectSearchResult_Stiatic.getResults(),threshold, feature);
+        return searchByPhotoAndThreshold(threshold, feature);
     }
 
     @Override
@@ -938,13 +907,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         byte[] results = null;
         if (searchResult != null) {
             List<Map<String, Object>> persons = searchResult.getResults();
-            if (persons != null){
-                for (Map<String, Object> person:persons){
+            if (persons != null) {
+                for (Map<String, Object> person : persons) {
                     Iterator<Map.Entry<String, Object>> it = person.entrySet().iterator();
-                    while (it.hasNext()){
+                    while (it.hasNext()) {
                         Map.Entry<String, Object> entry = it.next();
                         String key = entry.getKey();
-                        if (ObjectInfoTable.FEATURE.equals(key)){
+                        if (ObjectInfoTable.FEATURE.equals(key)) {
                             it.remove();
                         }
                     }
@@ -970,7 +939,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (searchResult != null) {
             Table table = HBaseHelper.getTable(SrecordTable.TABLE_NAME);
             String srecordRowKey = searchResult.getSearchId();
-            if (srecordRowKey == null){
+            if (srecordRowKey == null) {
                 LOG.info("putSearchRecordToHBase, failed:  rowkey cannnot be null.");
                 return;
             }

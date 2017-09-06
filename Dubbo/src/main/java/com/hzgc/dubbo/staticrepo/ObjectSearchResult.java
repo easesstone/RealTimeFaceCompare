@@ -14,16 +14,6 @@ public class ObjectSearchResult implements Serializable {
     public ObjectSearchResult() {
     }
 
-    public ObjectSearchResult(String searchId, int searchStatus,
-                              String photoId, long searchNums,
-                              List<Map<String, Object>> results) {
-        this.searchId = searchId;
-        this.searchStatus = searchStatus;
-        this.photoId = photoId;
-        this.searchNums = searchNums;
-        this.results = results;
-    }
-
     public String getSearchId() {
         return searchId;
     }

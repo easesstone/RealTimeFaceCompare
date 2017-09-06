@@ -26,16 +26,15 @@ import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable{
 
     private static Logger LOG = Logger.getLogger(ObjectInfoInnerHandlerImpl.class);
-    private ObjectInfoInnerHandlerImpl(){}
     private static ObjectInfoInnerHandlerImpl instance;
     private static long totalNums = getTotalNums();
     private static List<String> totalList = null;
 
-    static {
+    private ObjectInfoInnerHandlerImpl(){
         ElasticSearchHelper.getEsClient();
     }
 
-    public synchronized List<String> getTotalList() {
+    public List<String> getTotalList() {
         if (totalList == null || totalNumIsChange()) {
             System.out.println("start load static info repo...");
             totalList = searchByPkeys();
@@ -48,7 +47,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
 
     // 对外接口，用于判断HBase 中的静态信息库数据量是否有改变,true 表示有变化
     // false 表示没有变化
-    private synchronized boolean totalNumIsChange(){
+    private boolean totalNumIsChange(){
         long newTotalNums = getTotalNums();
         if (totalNums == newTotalNums){
             System.out.println("totalNums is not change, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
@@ -71,13 +70,13 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return instance;
     }
     // 类内部使用方法
-    private static synchronized void setTotalNums(long newToalNums){
+    private static void setTotalNums(long newToalNums){
         totalNums = newToalNums;
         System.out.println("set new number successfull, new number is:" + totalNums);
     }
 
     // 类内部使用方法
-    public static synchronized long getTotalNums(){
+    public static long getTotalNums(){
         Get get = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         try {
@@ -91,7 +90,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
     }
 
     //查询所有的数据，返回其中的rowkey 和 feature
-    public synchronized List<String> searchByPkeys() {
+    public List<String> searchByPkeys() {
         List<String> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
@@ -121,7 +120,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
 
     // 根据pkey 的List 来进行返回符合条件的数据，
     @Override
-    public synchronized List<String> searchByPkeys(List<String> pkeys) {
+    public List<String> searchByPkeys(List<String> pkeys) {
         if (pkeys == null){
             return null;
         }
@@ -177,7 +176,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public synchronized List<String> searchByPkeysUpdateTime(){
+    public List<String> searchByPkeysUpdateTime(){
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = matchAllQuery();
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -214,7 +213,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public synchronized  List<String> searchByPkeysUpdateTime(List<String> pkeys){
+    public  List<String> searchByPkeysUpdateTime(List<String> pkeys){
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys);
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -252,7 +251,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
     }
 
 
-    public synchronized int updateObjectInfoTime(List<String> rowkeys) {
+    public int updateObjectInfoTime(List<String> rowkeys) {
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Put> puts = new ArrayList<>();
