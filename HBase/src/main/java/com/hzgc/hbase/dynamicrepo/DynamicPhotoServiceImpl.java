@@ -141,7 +141,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
             List<Get> gets = new ArrayList<>();
-            for (int i = 0; i < imageIdList.size(); i++) {
+            for (int i = 0, len = imageIdList.size(); i < len; i++) {
                 if (imageIdList.get(i) != null) {
                     Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                     get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
@@ -153,9 +153,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Result[] results = personTable.get(gets);
                     if (results != null) {
-                        for (int i = 0; i < results.length; i++) {
-                            if (results[i] != null) {
-                                float[] featureFloat = FaceFunction.byteArr2floatArr(results[i].getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
+                        for (Result result : results) {
+                            if (result != null) {
+                                float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA));
                                 feaFloatList.add(featureFloat);
                             } else {
                                 feaFloatList.add(null);
@@ -175,9 +175,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 try {
                     Result[] results = carTable.get(gets);
                     if (results != null) {
-                        for (int i = 0; i < results.length; i++) {
-                            if (results[i] != null) {
-                                float[] featureFloat = FaceFunction.byteArr2floatArr(results[i].getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA));
+                        for (Result result : results) {
+                            if (result != null) {
+                                float[] featureFloat = FaceFunction.byteArr2floatArr(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA));
                                 feaFloatList.add(featureFloat);
                             } else {
                                 feaFloatList.add(null);
@@ -218,8 +218,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             lstBatchImageId.add(imageIdList);
         } else {
             lstBatchImageId = new ArrayList<>(parallel);
+            List<String> lst = null;
             for (int i = 0; i < parallel; i++) {
-                List<String> lst = new ArrayList<>();
+                lst = new ArrayList<>();
                 lstBatchImageId.add(lst);
             }
             lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
@@ -257,23 +258,25 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         }
         List<float[]> feaList = new ArrayList<>();
         // Look for any exception
-        for (Future f : futures) {
-            try {
+        try {
+            for (Future f : futures) {
+
                 if (f.get() != null) {
                     feaList.addAll((List<float[]>) f.get());
                 }
-            } catch (InterruptedException e) {
-                try {
-                    Thread.currentThread().interrupt();
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
             }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
         return feaList;
     }
+
 
     /**
      * 将上传的图片、rowKey、特征值插入upFea特征库 （彭聪）
@@ -445,7 +448,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
 
             if (type == PictureType.PERSON.getType()) {
                 Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-                for (int i = 0; i < imageIdList.size(); i++) {
+                for (int i = 0, len = imageIdList.size(); i < len; i++) {
                     if (imageIdList.get(i) != null) {
                         Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
@@ -463,13 +466,13 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     LOG.info(e.getMessage());
                 }
                 if (results != null) {
-                    for (Result result : results) {
+                    for (int i = 0; i < results.length; i++) {
                         capturedPicture = new CapturedPicture();
-                        if (result != null) {
-                            String rowKey = Bytes.toString(result.getRow());
+                        if (results[i] != null) {
+                            String rowKey = Bytes.toString(results[i].getRow());
                             capturedPicture.setId(rowKey);
                             try {
-                                setCapturedPicture_person(capturedPicture, result, mapEx);
+                                setCapturedPicture_person(capturedPicture, results[i], mapEx);
                             } catch (ParseException e) {
                                 LOG.info("Parse mapEx failed by setCapturedPicture_person");
                             }
@@ -483,7 +486,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 }
             } else if (type == PictureType.CAR.getType()) {
                 Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
-                for (int i = 0; i < imageIdList.size(); i++) {
+                for (int i = 0, len = imageIdList.size(); i < len; i++) {
                     if (imageIdList.get(i) != null) {
                         Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
@@ -544,8 +547,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             lstBatchImageId.add(imageIdList);
         } else {
             lstBatchImageId = new ArrayList<>(parallel);
+            List<String> lst;
             for (int i = 0; i < parallel; i++) {
-                List<String> lst = new ArrayList<>();
+                lst = new ArrayList<>();
                 lstBatchImageId.add(lst);
             }
             //将rowKey list 平均分成多个sublist
@@ -582,22 +586,22 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             }
         }
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        for (Future f : futures) {
-            try {
+        try {
+            for (Future f : futures) {
                 if (null != f.get()) {
                     capturedPictureList.addAll((List<CapturedPicture>) f.get());
                 } else {
                     LOG.info("capturePicture get by futureTask is null");
                 }
-            } catch (InterruptedException e) {
-                try {
-                    Thread.currentThread().interrupt();
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
             }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
         return capturedPictureList;
     }
