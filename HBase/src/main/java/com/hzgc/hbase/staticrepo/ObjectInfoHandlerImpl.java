@@ -99,12 +99,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 执行Put 操作，往表格里面添加一行数据
         try {
             puts.add(put);
+            //总记录数加1，用于标志HBase 数据库中的数据有变动
             Put putOfTNums = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
             putOfTNums.setDurability(Durability.ASYNC_WAL);
+            Get getOfTNums = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            Result resultTNums = objectinfo.get(getOfTNums);
+            long tatalNums = Bytes.toLong(resultTNums.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS)));
             putOfTNums.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                     Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
-                    Bytes.toBytes(getTotalNums(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF) + 1));
+                    Bytes.toBytes(tatalNums + 1));
             puts.add(putOfTNums);
+
             objectinfo.put(puts);
             LOG.info("Add a single record to success!");
             return 0;
@@ -137,13 +143,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     .prepareDelete(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF, rowkey)
                     .get();
         }
-        Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
-        put.setDurability(Durability.ASYNC_WAL);
-        put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
-                Bytes.toBytes(getTotalNums(ObjectInfoTable.TABLE_NAME, ObjectInfoTable.PERSON_COLF) - rowkeys.size()));
         // 执行删除操作
         try {
+            //总记录数减1，用于标志HBase 数据库中的数据有变动
+            Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            put.setDurability(Durability.ASYNC_WAL);
+            Get getOfTNums = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            Result resultTNums = table.get(getOfTNums);
+            long tatalNums = Bytes.toLong(resultTNums.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS)));
+            put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                    Bytes.toBytes(tatalNums - 1));
             table.delete(deletes);
             table.put(put);
             LOG.info("object info delete successed!");
@@ -268,6 +279,21 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Map<String, Object> map = new HashMap<>();
         try {
             table.put(put);
+
+            //总记录数加1，用于标志HBase 数据库中的数据有变动
+            //获取当前条数
+            Get getOfTNums = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            Result resultTNums = table.get(getOfTNums);
+            long tatalNums = Bytes.toLong(resultTNums.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS)));
+            //更新当前条数
+            Put putOfTNums = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            putOfTNums.setDurability(Durability.ASYNC_WAL);
+            putOfTNums.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                    Bytes.toBytes(tatalNums + 1));
+            table.put(putOfTNums);
+
             LOG.info("function[updateObjectInfo], not include IDCard and pkey, the time：" + (System.currentTimeMillis() - start));
             if ((fieldlist.contains(ObjectInfoTable.IDCARD) && !person.get(ObjectInfoTable.IDCARD).equals(originIdCard))
                     || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey))) {

@@ -1,9 +1,13 @@
 package com.hzgc.hbase2es.table;
 
+import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.hbase2es.util.HBaseHelper;
 import com.hzgc.util.FileUtil;
 import com.hzgc.util.IOUtil;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -95,6 +99,10 @@ public class CreateStaticRepoTable {
                 HBaseHelper.createTableWithCoprocessor(tableName, coproccessorName, coproccessorPath, mapOfOberserverArgs,
                         Integer.parseInt(maxVersion), colfams);
             }
+            Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+            Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+            put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                    Bytes.toBytes(0L));
             LOG.info("====================== create table " + tableName + "success.. ==================");
         } catch (IOException e) {
             e.printStackTrace();
