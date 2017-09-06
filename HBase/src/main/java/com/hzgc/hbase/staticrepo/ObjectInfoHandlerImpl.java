@@ -636,7 +636,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
      */
     @Override
     public ObjectSearchResult searchByRowkey(String rowkey) {
-        long start = System.currentTimeMillis();
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Get get = new Get(Bytes.toBytes(rowkey));
         Result result;
@@ -680,7 +679,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             return searchResult;
         } finally {
             HBaseUtil.closTable(table);
-            LOG.info("searchByRowkey(pkey + idcard), time: " + (System.currentTimeMillis() - start));
         }
     }
 
