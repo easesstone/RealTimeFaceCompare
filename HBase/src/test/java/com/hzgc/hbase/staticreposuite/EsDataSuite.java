@@ -103,4 +103,8 @@ public class EsDataSuite {
 //        ObjectInfoHandlerImpl handler = new ObjectInfoHandlerImpl();
 //        Map<String, Map<String, Object>> objectSearchResult = ObjectInfoHandlerImpl.getAllObjectInfo();
 //    }
+    @Test
+    public void testConn(){
+        System.out.println("".length());
+    }
 }

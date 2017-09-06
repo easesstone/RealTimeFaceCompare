@@ -477,7 +477,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (photo != null && feature != null) {
             ObjectSearchResult objectSearchResult = searchByPhotoAndThreshold(threshold, feature);
             List<Map<String, Object>> persons = objectSearchResult.getResults();
-            if (platformId != null) {
+            if (platformId != null  && platformId.length() > 0) {
                 Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()) {
                     Map<String, Object> person = it.next();
@@ -501,51 +501,49 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()) {
                     Map<String, Object> person = it.next();
-                    int sex_tmp = Integer.parseInt((String) person.get(ObjectInfoTable.SEX));
+                    String sex_str = (String) person.get(ObjectInfoTable.SEX);
+                    int sex_tmp = -1;
+                    if (sex_str !=null && sex_str.length() > 0){
+                        sex_tmp = Integer.parseInt(sex_str);
+                    }
                     if (sex != sex_tmp) {
                         it.remove();
                     }
                 }
             }
-            if (idCard != null) {
+            if (idCard != null && idCard.length() > 0) {
                 Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String idCard_tmp = (String) person.get(ObjectInfoTable.IDCARD);
-                    if (idCard.length() == 0 || idCard_tmp == null || idCard_tmp.length() == 0) {
-                        continue;
-                    }
-                    if (!Pattern.matches("\\d{0,18}" + idCard + "\\d{0,18}", idCard_tmp)) {
+                    if (idCard_tmp == null || idCard_tmp.length() == 0
+                        || !Pattern.matches("\\d{0,18}" + idCard + "\\d{0,18}", idCard_tmp)) {
                         it.remove();
                     }
                 }
             }
-            if (creator != null) {
+            if (creator != null && creator.length() > 0) {
                 Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR);
-                    if (creator_tmp == null || creator_tmp.length() == 0 || creator.length() == 0) {
-                        continue;
-                    }
                     String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}" + creator
                             + "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
-                    if (!Pattern.matches(pattern, creator_tmp)) {
+                    if (creator_tmp == null || creator_tmp.length() == 0
+                        || !Pattern.matches(pattern, creator_tmp)) {
                         it.remove();
                     }
                 }
             }
-            if (name != null) {
+            if (name != null && name.length() > 0 ) {
                 Iterator<Map<String, Object>> it = persons.iterator();
                 while (it.hasNext()) {
                     Map<String, Object> person = it.next();
                     String name_tmp = (String) person.get(ObjectInfoTable.NAME);
-                    if (name.length() == 0 || name_tmp == null || name_tmp.length() == 0) {
-                        continue;
-                    }
                     String pattern = "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}" + name
                             + "[-_A-Za-z0-9\\u4e00-\\u9fa5]{0,30}";
-                    if (!Pattern.matches(pattern, name_tmp)) {
+                    if (name_tmp == null || name_tmp.length() == 0
+                        || !Pattern.matches(pattern, name_tmp)) {
                         it.remove();
                     }
                 }
