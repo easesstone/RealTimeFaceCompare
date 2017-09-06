@@ -549,6 +549,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 }
             }
             objectSearchResult.setResults(persons);
+            objectSearchResult.setSearchNums(persons.size());
             objectSearchResult = HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
             putSearchRecordToHBase(platformId, objectSearchResult, photo);
             return objectSearchResult;
