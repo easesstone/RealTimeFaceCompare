@@ -52,8 +52,8 @@ done
 ##循环遍历文件，把数据导入到Es 中
 echo "$(date "+%Y-%m-%d %H:%M:%S ") -------------------------------------------------------------"
 echo "$(date "+%Y-%m-%d %H:%M:%S ") bulk data to the es.........................................."
-for file in $(ls JSON_SPILIT_PATH);do
-    curl curl 172.18.18.100:9200/_bulk?pretty --data-binary @${JSON_SPILIT_PATH}/${file}
+for file in $(ls $JSON_SPILIT_PATH);do
+    curl 172.18.18.100:9200/_bulk?pretty --data-binary @${JSON_SPILIT_PATH}/${file}
 done
 
 

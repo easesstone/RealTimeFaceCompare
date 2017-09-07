@@ -26,16 +26,23 @@ import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable{
 
     private static Logger LOG = Logger.getLogger(ObjectInfoInnerHandlerImpl.class);
-    private ObjectInfoInnerHandlerImpl(){}
     private static ObjectInfoInnerHandlerImpl instance;
     private static long totalNums = getTotalNums();
-    private static List<String> totalList = null;
+    private static List<String[]> totalList = null;
 
-    static {
+    /**
+     * 接口实现使用单例模式
+     */
+    private ObjectInfoInnerHandlerImpl(){
         ElasticSearchHelper.getEsClient();
     }
 
-    public synchronized List<String> getTotalList() {
+    /**
+     * 获取内存中底库数据
+     *
+     * @return 返回底库
+     */
+    public List<String[]> getTotalList() {
         if (totalList == null || totalNumIsChange()) {
             System.out.println("start load static info repo...");
             totalList = searchByPkeys();
@@ -46,9 +53,12 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         }
     }
 
-    // 对外接口，用于判断HBase 中的静态信息库数据量是否有改变,true 表示有变化
-    // false 表示没有变化
-    private synchronized boolean totalNumIsChange(){
+    /**
+     * 用于判断HBase 中的静态信息库数据量是否有改变
+     *
+     * @return true表示有变化,false 表示没有变化
+     */
+    private boolean totalNumIsChange(){
         long newTotalNums = getTotalNums();
         if (totalNums == newTotalNums){
             System.out.println("totalNums is not change, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
@@ -60,6 +70,11 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         }
     }
 
+    /**
+     * 获取对象的唯一方法
+     *
+     * @return 返回实例化对象
+     */
     public static ObjectInfoInnerHandlerImpl getInstance() {
         if (instance == null) {
             synchronized (ObjectInfoInnerHandlerImpl.class) {
@@ -70,14 +85,23 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         }
         return instance;
     }
-    // 类内部使用方法
-    private static synchronized void setTotalNums(long newToalNums){
+
+    /**
+     * 设置当前底库总数
+     *
+     * @param newToalNums 底库中最新总数信息
+     */
+    private static void setTotalNums(long newToalNums){
         totalNums = newToalNums;
-        System.out.println("set new number successfull, new number is:" + totalNums);
+        LOG.info("set new number successfull, new number is:" + totalNums);
     }
 
-    // 类内部使用方法
-    public static synchronized long getTotalNums(){
+    /**
+     * 获取底库中最新总数信息
+     *
+     * @return 最新总数信息
+     */
+    private static long getTotalNums(){
         Get get = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         try {
@@ -90,9 +114,13 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         }
     }
 
-    //查询所有的数据，返回其中的rowkey 和 feature
-    public synchronized List<String> searchByPkeys() {
-        List<String> findResult = new ArrayList<>();
+    /**
+     * 查询所有的数据
+     *
+     * @return 返回其中的rowkey,pkey,feature
+     */
+    private List<String[]> searchByPkeys() {
+        List<String[]> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
         try {
@@ -106,7 +134,10 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                 if (null != feature && feature.length == 2048) {
                     //将人员类型rowkey和特征值进行拼接
                     String feature_str = new String(feature, "ISO8859-1");
-                    String result1 = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + feature_str;
+                    String[] result1 = new String[3];
+                    result1[0] = rowKey;
+                    result1[1] = pkey;
+                    result1[2] = feature_str;
                     //将结果添加到集合中
                     findResult.add(result1);
                 }
@@ -119,9 +150,14 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    // 根据pkey 的List 来进行返回符合条件的数据，
+    /**
+     * 根据pkey的List来进行返回符合条件的数据
+     *
+     * @param pkeys 人员类型keys列表
+     * @return 符合条件的List
+     */
     @Override
-    public synchronized List<String> searchByPkeys(List<String> pkeys) {
+    public List<String[]> searchByPkeys(List<String> pkeys) {
         if (pkeys == null){
             return null;
         }
@@ -130,7 +166,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         //构造搜索对象
         SearchResponse searchResponse;
         //定义一个List用来存在查询得到的结果
-        List<String> findResult = new ArrayList<>();
+        List<String[]> findResult = new ArrayList<>();
         //设置搜索条件
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(ObjectInfoTable.TABLE_NAME)
@@ -141,9 +177,9 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                 .setExplain(true);
         while (it.hasNext()) {
             //取出遍历的值
-            String a = (String) it.next();
+            String pkey = (String) it.next();
             //根据遍历得到的人员类型进行精确查询
-            requestBuilder.setQuery(QueryBuilders.termQuery(ObjectInfoTable.PKEY, a));
+            requestBuilder.setQuery(QueryBuilders.termQuery(ObjectInfoTable.PKEY, pkey));
             //通过requestBuilder的get方法执行查询任务
             searchResponse = requestBuilder.get();
             do {
@@ -151,7 +187,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                 SearchHits hits = searchResponse.getHits();
                 //输出某个人员类型对应的记录条数
                 SearchHit[] searchHits = hits.getHits();
-                System.out.println("pkey为：" + a + "时，查询得到的记录数为：" + hits.getTotalHits());
+                System.out.println("pkey为：" + pkey + "时，查询得到的记录数为：" + hits.getTotalHits());
                 if (searchHits.length > 0) {
                     for (SearchHit hit : searchHits) {
                         //得到每个人员类型对应的rowkey
@@ -162,7 +198,10 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                         //当有特征值时，才将结果返回
                         if (null != feature) {
                             //将人员类型、rowkey和特征值进行拼接
-                            String result = id + "ZHONGXIAN" + a + "ZHONGXIAN" + feature;
+                            String[] result = new String[3];
+                            result[0] = id;
+                            result[1] = pkey;
+                            result[2] = feature;
                             //将结果添加到集合中
                             findResult.add(result);
                         }
@@ -177,7 +216,12 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public synchronized List<String> searchByPkeysUpdateTime(){
+    /**
+     * 获取底库中所有信息的最近一次出现时间
+     *
+     * @return 返回符合条件的数据
+     */
+    public List<String> searchByPkeysUpdateTime(){
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = matchAllQuery();
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -214,7 +258,13 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-    public synchronized  List<String> searchByPkeysUpdateTime(List<String> pkeys){
+    /**
+     * 获取底库中包含在此List中的人员信息及最新出现时间
+     *
+     * @param pkeys 对象类型列表
+     * @return 返回符合条件的数据
+     */
+    public  List<String> searchByPkeysUpdateTime(List<String> pkeys){
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys);
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -251,14 +301,23 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         return findResult;
     }
 
-
-    public synchronized int updateObjectInfoTime(List<String> rowkeys) {
+    /**
+     * 更新此List中的人员最新出现时间
+     *
+     * @param rowkeys 对象类型列表
+     * @return 0成功,1失败
+     */
+    public int updateObjectInfoTime(List<String> rowkeys) {
+        if (rowkeys == null || rowkeys.size() <= 0) {
+            return 0;
+        }
         // 获取table 对象，通过封装HBaseHelper 来获取
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Put> puts = new ArrayList<>();
         try {
            for(int i = 0;i < rowkeys.size(); i++){
                Put put = new Put(Bytes.toBytes(rowkeys.get(i)));
+               put.setDurability(Durability.ASYNC_WAL);
                // 获取系统当前时间
                Date date = new Date();
                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -280,6 +339,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
             e.printStackTrace();
             return 1;
         } finally {
+            LOG.info("offline alarm time is updated successfully");
             HBaseUtil.closTable(table);
         }
     }
