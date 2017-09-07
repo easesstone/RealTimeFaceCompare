@@ -18,7 +18,7 @@ public class RealTimeCompare implements Serializable {
     private Logger LOG = Logger.getLogger(RealTimeCompare.class);
     private byte[] image;// 图片的二进制数据
     private String imageId;//图片 id ,优先使用图片流数组
-    private float threshold = Float.MIN_VALUE;//阈值
+    private float threshold;//阈值
     private String sortParams;//排序参数
     private int offset;//分页查询开始行
     private int count;//分页查询条数
@@ -140,11 +140,8 @@ public class RealTimeCompare implements Serializable {
                 }
                 searchResult = sortAndSplit(capturedPictureList, sortParams);
                 searchResult.setSearchId(searchId);
-                Map<String, Float> imgSimMap = new LinkedHashMap<>();
-                for (int i = 0, len = personAddCarList.size(); i < len; i++) {
-                    imgSimMap.put(personAddCarList.get(i), 0.00f);
-                }
-
+                Map<String, Float> imgSimMap;
+                imgSimMap = setDefaultSimilarity(personAddCarList);
                 boolean flag = dynamicPhotoService.insertSearchRes(searchId, imgSimMap, "mix");
                 if (flag) {
                     LOG.info("The search history of: [" + searchId + "] saved successful");
@@ -157,6 +154,24 @@ public class RealTimeCompare implements Serializable {
             searchResult = null;
         }
         return searchResult;
+    }
+
+    /**
+     * 设置默认相似度为0.00f
+     *
+     * @param imageIdList
+     * @return
+     */
+    private Map<String, Float> setDefaultSimilarity(List<String> imageIdList) {
+        Map<String, Float> imgSimMap = new HashMap<>();
+        if (null != imageIdList) {
+            for (int i = 0, len = imageIdList.size(); i < len; i++) {
+                imgSimMap.put(imageIdList.get(i), 0.00f);
+            }
+        } else {
+            LOG.info("imageIdList is null");
+        }
+        return imgSimMap;
     }
 
     /**
@@ -290,6 +305,15 @@ public class RealTimeCompare implements Serializable {
         if (null != imageIdList && imageIdList.size() > 0) {
             //过滤掉大图
             List<String> imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
+            Map<String, Float> imgSimMap;
+            imgSimMap = setDefaultSimilarity(imageIdFilterList);
+            //保存到Hbase
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, imgSimMap, inType);
+            if (flag) {
+                LOG.info("The search history of: [" + searchId + "] saved successful");
+            } else {
+                LOG.error("The search history of: [" + searchId + "] saved failure");
+            }
             if (null != imageIdFilterList && imageIdFilterList.size() > 0) {
                 capturedPictureList = dynamicPhotoService.getMultiBatchCaptureMessage(imageIdFilterList, pictureType.getType());
                 searchResult = sortAndSplit(capturedPictureList, sortParams);
