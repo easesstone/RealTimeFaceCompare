@@ -9,5 +9,5 @@ public interface ObjectInfoInnerHandler {
      * @param pkeys 人员类型keys 列表
      * @return  rowkey 和 pkey 以及feature 的String 拼装List
      */
-    public List<String> searchByPkeys(List<String> pkeys);
+    public List<String[]> searchByPkeys(List<String> pkeys);
 }
