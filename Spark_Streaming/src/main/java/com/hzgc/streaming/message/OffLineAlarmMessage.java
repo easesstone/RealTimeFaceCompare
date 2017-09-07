@@ -1,4 +1,4 @@
-package com.hzgc.streaming.alarm;
+package com.hzgc.streaming.message;
 
 import java.io.Serializable;
 

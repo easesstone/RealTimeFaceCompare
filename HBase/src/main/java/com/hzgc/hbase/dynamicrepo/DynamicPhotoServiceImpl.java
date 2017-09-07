@@ -105,7 +105,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                         LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.getFeature.");
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
                     LOG.error("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getFeature");
                 } finally {
                     HBaseUtil.closTable(personTable);
@@ -120,7 +119,6 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                         LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getFeature.");
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
                     LOG.error("get feature by imageId from table_car failed! used method DynamicPhotoServiceImpl.getFeature");
                 } finally {
                     HBaseUtil.closTable(carTable);
@@ -143,7 +141,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
             List<Get> gets = new ArrayList<>();
-            for (int i = 0; i < imageIdList.size(); i++) {
+            for (int i = 0, len = imageIdList.size(); i < len; i++) {
                 if (imageIdList.get(i) != null) {
                     Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                     get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
@@ -168,8 +166,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                         LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    LOG.error("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getBatchFeature");
+                    LOG.info("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getBatchFeature");
                 } finally {
                     HBaseUtil.closTable(personTable);
                 }
@@ -184,15 +181,15 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                                 feaFloatList.add(featureFloat);
                             } else {
                                 feaFloatList.add(null);
-                                LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                                LOG.info("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                             }
                         }
                     } else {
-                        LOG.error("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                        LOG.info("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LOG.error("get feature by imageId from table_car failed! used method DynamicPhotoServiceImpl.getBatchFeature");
+                    LOG.info("get feature by imageId from table_car failed! used method DynamicPhotoServiceImpl.getBatchFeature");
                 } finally {
                     HBaseUtil.closTable(carTable);
                 }
@@ -215,22 +212,22 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
         int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         LOG.info("当前线程数：" + parallel);
-        List<float[]> feaList = new ArrayList<>();
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
             lstBatchImageId = new ArrayList<>(1);
             lstBatchImageId.add(imageIdList);
         } else {
             lstBatchImageId = new ArrayList<>(parallel);
+            List<String> lst = null;
             for (int i = 0; i < parallel; i++) {
-                List<String> lst = new ArrayList<>();
+                lst = new ArrayList<>();
                 lstBatchImageId.add(lst);
             }
             lstBatchImageId = ListSplitUtil.averageAssign(imageIdList, parallel);
         }
         List<Future<List<float[]>>> futures = new ArrayList<>(parallel);
         ThreadFactoryBuilder builder = new ThreadFactoryBuilder();
-        builder.setNameFormat("ParallelBatchGet");
+        builder.setNameFormat("ParallelBatchFeature");
         ThreadFactory factory = builder.build();
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchImageId.size(), factory);
 
@@ -259,25 +256,27 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 e1.printStackTrace();
             }
         }
-
+        List<float[]> feaList = new ArrayList<>();
         // Look for any exception
-        for (Future f : futures) {
-            try {
+        try {
+            for (Future f : futures) {
+
                 if (f.get() != null) {
                     feaList.addAll((List<float[]>) f.get());
                 }
-            } catch (InterruptedException e) {
-                try {
-                    Thread.currentThread().interrupt();
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
             }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
         return feaList;
     }
+
 
     /**
      * 将上传的图片、rowKey、特征值插入upFea特征库 （彭聪）
@@ -449,7 +448,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
 
             if (type == PictureType.PERSON.getType()) {
                 Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-                for (int i = 0; i < imageIdList.size(); i++) {
+                for (int i = 0, len = imageIdList.size(); i < len; i++) {
                     if (imageIdList.get(i) != null) {
                         Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
@@ -467,13 +466,13 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     LOG.info(e.getMessage());
                 }
                 if (results != null) {
-                    for (Result result : results) {
+                    for (int i = 0; i < results.length; i++) {
                         capturedPicture = new CapturedPicture();
-                        if (result != null) {
-                            String rowKey = Bytes.toString(result.getRow());
+                        if (results[i] != null) {
+                            String rowKey = Bytes.toString(results[i].getRow());
                             capturedPicture.setId(rowKey);
                             try {
-                                setCapturedPicture_person(capturedPicture, result, mapEx);
+                                setCapturedPicture_person(capturedPicture, results[i], mapEx);
                             } catch (ParseException e) {
                                 LOG.info("Parse mapEx failed by setCapturedPicture_person");
                             }
@@ -487,7 +486,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 }
             } else if (type == PictureType.CAR.getType()) {
                 Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
-                for (int i = 0; i < imageIdList.size(); i++) {
+                for (int i = 0, len = imageIdList.size(); i < len; i++) {
                     if (imageIdList.get(i) != null) {
                         Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
@@ -542,15 +541,15 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
         int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         LOG.info("当前线程数：" + parallel);
-        List<CapturedPicture> capturedPictureList = new ArrayList<>();
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
             lstBatchImageId = new ArrayList<>(1);
             lstBatchImageId.add(imageIdList);
         } else {
             lstBatchImageId = new ArrayList<>(parallel);
+            List<String> lst;
             for (int i = 0; i < parallel; i++) {
-                List<String> lst = new ArrayList<>();
+                lst = new ArrayList<>();
                 lstBatchImageId.add(lst);
             }
             //将rowKey list 平均分成多个sublist
@@ -558,7 +557,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         }
         List<Future<List<CapturedPicture>>> futures = new ArrayList<>(parallel);
         ThreadFactoryBuilder builder = new ThreadFactoryBuilder();
-        builder.setNameFormat("ParallelBatchQuery");
+        builder.setNameFormat("ParallelBatchCapture");
         ThreadFactory factory = builder.build();
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchImageId.size(), factory);
 
@@ -586,22 +585,23 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 e1.printStackTrace();
             }
         }
-        for (Future f : futures) {
-            try {
+        List<CapturedPicture> capturedPictureList = new ArrayList<>();
+        try {
+            for (Future f : futures) {
                 if (null != f.get()) {
                     capturedPictureList.addAll((List<CapturedPicture>) f.get());
                 } else {
                     LOG.info("capturePicture get by futureTask is null");
                 }
-            } catch (InterruptedException e) {
-                try {
-                    Thread.currentThread().interrupt();
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
             }
+        } catch (InterruptedException e) {
+            try {
+                Thread.currentThread().interrupt();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
         return capturedPictureList;
     }

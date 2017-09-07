@@ -1,17 +1,35 @@
 package com.hzgc.streaming.util;
 
-import java.io.Serializable;
+import com.hzgc.util.FileUtil;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-/**
- * 转换工具类（刘善彬）（内 to 刘善彬）
- */
-public class Utils implements Serializable {
+public class StreamingUtils {
+    public static Integer getSimilarity(Map<String, Integer> map) {
+        for (String key : map.keySet()) {
+            if (map.get(key) != null) {
+                return map.get(key);
+            }
+        }
+        return null;
+    }
+
+    public static Properties getProperties() {
+        Properties ps = new Properties();
+        try {
+            InputStream is = new FileInputStream(FileUtil.loadResourceFile("sparkJob.properties"));
+            ps.load(is);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return ps;
+    }
+
     /**
      * 字节数组转化为字符串
      *
@@ -72,8 +90,4 @@ public class Utils implements Serializable {
         }
         return null;
     }
-
-
-
-
 }
