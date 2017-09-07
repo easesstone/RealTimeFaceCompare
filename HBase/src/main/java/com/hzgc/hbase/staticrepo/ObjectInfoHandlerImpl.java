@@ -278,7 +278,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         Map<String, Object> map = new HashMap<>();
         try {
             table.put(put);
-
             //总记录数加1，用于标志HBase 数据库中的数据有变动
             //获取当前条数
             Get getOfTNums = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
@@ -297,14 +296,25 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             if ((fieldlist.contains(ObjectInfoTable.IDCARD) && !person.get(ObjectInfoTable.IDCARD).equals(originIdCard))
                     || (fieldlist.contains(ObjectInfoTable.PKEY) && !person.get(ObjectInfoTable.PKEY).equals(originPKey))) {
                 Result result = table.get(get);
+
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));
                 String pKey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
+                //传过来的IDCard
+                String personIdCard = (String) person.get(ObjectInfoTable.IDCARD);
+                if ((personIdCard != null && !"".equals(personIdCard))){
+                    idCard = personIdCard;
+                }
+                String personPkey =  (String) person.get(ObjectInfoTable.PKEY);
+                if ((personPkey != null && !"".equals(personPkey))){
+                    pKey = personIdCard;
+                }
                 String newRowKey = pKey + idCard;
 
                 // 移除内存中原先数据，然后添加更新之后的数据。
                 Map<String, Object> mapInMemery = BASE_LIBRARY.get(id);
+                mapInMemery.put(ObjectInfoTable.ROWKEY, newRowKey);
                 BASE_LIBRARY.remove(id);
                 BASE_LIBRARY.put(newRowKey, mapInMemery);
 
