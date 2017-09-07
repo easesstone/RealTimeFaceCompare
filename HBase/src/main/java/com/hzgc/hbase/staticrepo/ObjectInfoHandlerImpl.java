@@ -32,6 +32,7 @@ import org.elasticsearch.search.sort.SortOrder;
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
+
     private Random random = new Random();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Map<String, Map<String, Object>> BASE_LIBRARY = getAllObjectInfo();
