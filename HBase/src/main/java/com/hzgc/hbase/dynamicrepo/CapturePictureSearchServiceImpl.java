@@ -74,7 +74,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     //取出similarity
                     List<Float> similarityList = new ArrayList<>(searchMessageMap.values());
                     List<Get> gets = new ArrayList<>();
-                    for (int i = 0; i < imageIdList.size(); i++) {
+                    for (int i = 0, len = imageIdList.size(); i < len; i++) {
                         Get imageIdGet = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
@@ -318,8 +318,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             CapturedPicture capturedPicture;
             try {
                 if (type == PictureType.PERSON.getType()) {
-                    for (String anImageIdList : imageIdList) {
-                        Get get = new Get(Bytes.toBytes(anImageIdList));
+                    for (int i = 0, len = imageIdList.size(); i < len; i++) {
+                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
                         gets.add(get);
                     }
@@ -343,8 +343,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         LOG.error("get Result[] form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                     }
                 } else if (type == PictureType.CAR.getType()) {
-                    for (String imageId : imageIdList) {
-                        Get get = new Get(Bytes.toBytes(imageId));
+                    for (int i = 0, len = imageIdList.size(); i < len; i++) {
+                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
                         gets.add(get);
                     }
@@ -433,13 +433,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             LOG.info("no results gets form person table");
                         }
                         if (null != resultsPerson && resultsPerson.length > 0) {
-                            for (Result resultPerson : resultsPerson) {
+                            for (Result aResultsPerson : resultsPerson) {
                                 CapturedPicture capturedPicture = new CapturedPicture();
-                                if (null != resultPerson) {
-                                    String imageId = Bytes.toString(resultPerson.getRow());
+                                if (null != aResultsPerson) {
+                                    String imageId = Bytes.toString(aResultsPerson.getRow());
                                     capturedPicture.setId(imageId);
                                     Map<String, Object> mapEx = new HashMap<>();
-                                    setCapturedPicture_person(capturedPicture, resultPerson, mapEx);
+                                    setCapturedPicture_person(capturedPicture, aResultsPerson, mapEx);
                                     capturedPictureList.add(capturedPicture);
                                 } else {
                                     LOG.info("get Result form table_person is null!");
@@ -467,13 +467,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             e.printStackTrace();
                         }
                         if (null != resultsCar && resultsCar.length > 0) {
-                            for (Result resultPerson : resultsCar) {
+                            for (Result aResultsCar : resultsCar) {
                                 CapturedPicture capturedPicture = new CapturedPicture();
-                                if (null != resultPerson) {
-                                    String imageId = Bytes.toString(resultPerson.getRow());
+                                if (null != aResultsCar) {
+                                    String imageId = Bytes.toString(aResultsCar.getRow());
                                     capturedPicture.setId(imageId);
                                     Map<String, Object> mapEx = new HashMap<>();
-                                    setCapturedPicture_car(capturedPicture, resultPerson, mapEx);
+                                    setCapturedPicture_car(capturedPicture, aResultsCar, mapEx);
                                     capturedPictureList.add(capturedPicture);
                                 } else {
                                     LOG.info("get Result form table_car is null!");

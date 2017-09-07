@@ -141,7 +141,7 @@ public class RealTimeCompare implements Serializable {
                 searchResult = sortAndSplit(capturedPictureList, sortParams);
                 searchResult.setSearchId(searchId);
                 Map<String, Float> imgSimMap = new LinkedHashMap<>();
-                for (int i = 0; i < personAddCarList.size(); i++) {
+                for (int i = 0, len = personAddCarList.size(); i < len; i++) {
                     imgSimMap.put(personAddCarList.get(i), 0.00f);
                 }
 
@@ -336,7 +336,7 @@ public class RealTimeCompare implements Serializable {
         simList = new ArrayList<>();
         float similarity;
         //对两个特征进行比对
-        for (int i = 0; i < feaFloatList.size(); i++) {
+        for (int i = 0, len = feaFloatList.size(); i < len; i++) {
             float[] feaFloat = feaFloatList.get(i);
             if (null != feaFloat && feaFloat.length == 512) {
                 similarity = FaceFunction.featureCompare(searchFea, feaFloat);
@@ -365,7 +365,7 @@ public class RealTimeCompare implements Serializable {
         List<String> imageIdFilterList = new ArrayList<>();
         List<Float> simFilterList = new ArrayList<>();
         HashMap<String, Float> imgSimilarityMap = new HashMap<>();
-        for (int i = 0; i < imageIdList.size(); i++) {
+        for (int i = 0, len = imageIdList.size(); i < len; i++) {
             if (simList.get(i) > threshold) {
                 imageIdFilterList.add(imageIdList.get(i));
                 simFilterList.add(simList.get(i));
@@ -393,8 +393,9 @@ public class RealTimeCompare implements Serializable {
 
     private List<CapturedPicture> setSimilaritys(List<CapturedPicture> capturedPictureList, List<String> imageIdFilterList, List<Float> simFilterList) {
         List<CapturedPicture> capturedPictureListTemp = new ArrayList<>();
-        for (int i = 0; i < imageIdFilterList.size(); i++) {
-            CapturedPicture capturedPicture = capturedPictureList.get(i);
+        CapturedPicture capturedPicture;
+        for (int i = 0, len = imageIdFilterList.size(); i < len; i++) {
+            capturedPicture = capturedPictureList.get(i);
             capturedPicture.setSimilarity(simFilterList.get(i));
             capturedPictureListTemp.add(capturedPicture);
         }
