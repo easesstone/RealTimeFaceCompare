@@ -4,12 +4,13 @@ import com.hzgc.util.FileUtil;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class StreamingUtils {
+public class StreamingUtils implements Serializable {
     public static Integer getSimilarity(Map<String, Integer> map) {
         for (String key : map.keySet()) {
             if (map.get(key) != null) {
@@ -70,6 +71,7 @@ public class StreamingUtils {
      * @return 距当前时间的天数
      */
     public static String timeTransition(String updateTime) {
+
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             //更新时间
@@ -87,7 +89,18 @@ public class StreamingUtils {
 
         } catch (ParseException e) {
             System.out.println(e.toString());
+
         }
         return null;
+    }
+
+    public static List<String> getOffLineArarmObjType(Map map) {
+        List<String> list = new ArrayList<String>();
+        for (Object s : map.keySet()) {
+            if (map.get(s) != null && map.get(s).toString().length() > 0) {
+                list.add(s.toString());
+            }
+        }
+        return list;
     }
 }
