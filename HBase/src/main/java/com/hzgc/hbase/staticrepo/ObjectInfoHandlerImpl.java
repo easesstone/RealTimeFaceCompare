@@ -263,8 +263,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
         }
 
+        Date date = new Date();
+        String dateString = format.format(date);
+
         Map<String, Object> dataToEs = new HashMap<>();
         dataToEs.putAll(person);
+        dataToEs.put(ObjectInfoTable.UPDATETIME, dateString);
         dataToEs.remove(ObjectInfoTable.PHOTO);
 
         ElasticSearchHelper.getEsClient()
@@ -272,8 +276,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 .setDoc(dataToEs).get();
 
 
-        Date date = new Date();
-        String dateString = format.format(date);
         put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                 Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
         Map<String, Object> map = new HashMap<>();

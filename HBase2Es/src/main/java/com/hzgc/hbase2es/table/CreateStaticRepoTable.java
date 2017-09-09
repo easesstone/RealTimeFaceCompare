@@ -41,12 +41,14 @@ public class CreateStaticRepoTable {
             } else {
                 HBaseHelper.createTable(tableName, Integer.parseInt(maxVersion), colfams);
             }
-            Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-            Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
-            put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
-                    Bytes.toBytes(0L));
-            table.put(put);
-            LOG.info("====================== create table " + tableName + "success.. ==================");
+            if (HBaseHelper.getHBaseConnection().getAdmin().tableExists(TableName.valueOf(tableName))) {
+                Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+                Put put = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+                put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                        Bytes.toBytes(0L));
+                table.put(put);
+                LOG.info("====================== create table " + tableName + "success.. ==================");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

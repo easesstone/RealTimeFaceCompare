@@ -38,7 +38,9 @@ public class CreateSrecordTable {
             }else {
                 HBaseHelper.createTable(tableName, Integer.parseInt(maxVersion), colfams);
             }
-            LOG.info("create table " + tableName + "success..");
+            if (HBaseHelper.getHBaseConnection().getAdmin().tableExists(TableName.valueOf(tableName))) {
+                LOG.info("create table " + tableName + "success..");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
