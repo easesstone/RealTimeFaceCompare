@@ -123,7 +123,7 @@
 
         <!-- Spark_Streming 模块conf文件-->
         <fileSet>
-            <directory>../Spark_Streming/src/main/resources/</directory>
+            <directory>../Spark_Streaming/src/main/resources/</directory>
             <includes>
                 <include>**</include>
             </includes>

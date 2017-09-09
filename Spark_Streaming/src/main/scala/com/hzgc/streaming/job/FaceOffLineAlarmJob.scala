@@ -41,12 +41,14 @@ object FaceOffLineAlarmJob {
           val days = StreamingUtils.getSimilarity(objRole)
           (splitResultElem._1, splitResultElem._2, splitResultElem._3, days)
         })
-        val filterResult = getDays.map(getDaysElem => (getDaysElem._1, getDaysElem._2, getDaysElem._3, StreamingUtils.timeTransition(getDaysElem._3), getDaysElem._4)).filter(f => f._4 != null).
+        val filterResult = getDays.filter(getFilter => getFilter._3 != null).
+          map(getDaysElem => (getDaysElem._1, getDaysElem._2, getDaysElem._3, StreamingUtils.timeTransition(getDaysElem._3), getDaysElem._4)).
+          filter(ff => ff._4 != null).
           filter(filter => filter._4 > filter._5.toString)
         //将离线告警信息推送到MQ
         filterResult.foreach(filterResultElem => {
-          val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-          val dateStr = df.format(new Date());
+          val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+          val dateStr = df.format(new Date())
           val rocketMQProducer = RocketMQProducer.getInstance()
           val offLineAlarmMessage = new OffLineAlarmMessage()
           val gson = new Gson()
