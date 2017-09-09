@@ -82,7 +82,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA);
                         gets.add(imageIdGet);
                     }
-                    if (searchType.equals("PERSON")) {
+                    if (searchType.equals(DynamicTable.PERSON_TYPE)) {
                         Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
                         Result[] results = personTable.get(gets);
                         if (null != results && results.length > 0) {
@@ -102,7 +102,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         } else {
                             LOG.error("get Results form table_person is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
                         }
-                    } else if (searchType.equals("CAR")) {
+                    } else if (searchType.equals(DynamicTable.CAR_TYPE)) {
                         Table carTable = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
                         Result[] results = carTable.get(gets);
                         if (null != results && results.length > 0) {
@@ -391,7 +391,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public SearchResult getCaptureHistory(String searchId, int offset, int count, String sortParams) {
         SearchResult searchResult = new SearchResult();
-        if (null != searchId && !searchId.equals("")) {
+        if (null != searchId && !"".equals(searchId)) {
             List<CapturedPicture> capturedPictureList = new ArrayList<>();
             Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
             Get get = new Get(Bytes.toBytes(searchId));
@@ -407,11 +407,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
                 LinkedHashMap<String, Float> searchMessageMap = (LinkedHashMap<String, Float>) ObjectUtil.byteToObject(searchMessage);
-                if (searchType.equals("mix")) {
+                if (DynamicTable.MIX_TYPE.equals(searchType)) {
                     if (!searchMessageMap.isEmpty()) {
                         //取出imageId
                         List<String> imageIdList = new ArrayList<>(searchMessageMap.keySet());
-                        String split = "sp";
+                        String split = DynamicTable.SPLIT_STR;
                         int splitIndex = imageIdList.indexOf(split);
                         List<String> personImgList = imageIdList.subList(0, splitIndex);
                         List<String> carImgList = imageIdList.subList(splitIndex + 1, imageIdList.size());

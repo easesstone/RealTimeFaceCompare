@@ -58,7 +58,7 @@ public class RealTimeCompare implements Serializable {
                 //查询的对象库是人
                 if (searchType == SearchType.PERSON) {
                     PictureType pictureType = PictureType.PERSON;
-                    inType = "PERSON";
+                    inType = DynamicTable.PERSON_TYPE;
                     //上传的参数中有图
                     if (null != image && image.length > 0) {
                         searchResult = compareByImage(pictureType, option);
@@ -75,7 +75,7 @@ public class RealTimeCompare implements Serializable {
                 //查询的对象库是车
                 else if (searchType == SearchType.CAR) {
                     PictureType pictureType = PictureType.CAR;
-                    inType = "CAR";
+                    inType = DynamicTable.CAR_TYPE;
                     //上传的参数中有图
                     if (null != image && image.length > 0) {
                         searchResult = compareByImage(pictureType, option);
@@ -142,7 +142,7 @@ public class RealTimeCompare implements Serializable {
                 searchResult.setSearchId(searchId);
                 Map<String, Float> imgSimMap;
                 imgSimMap = setDefaultSimilarity(personAddCarList);
-                boolean flag = dynamicPhotoService.insertSearchRes(searchId, imgSimMap, "mix");
+                boolean flag = dynamicPhotoService.insertSearchRes(searchId, imgSimMap, DynamicTable.MIX_TYPE);
                 if (flag) {
                     LOG.info("The search history of: [" + searchId + "] saved successful");
                 } else {
