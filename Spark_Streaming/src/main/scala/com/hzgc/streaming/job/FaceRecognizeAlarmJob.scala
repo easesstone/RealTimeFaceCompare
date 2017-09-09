@@ -68,13 +68,13 @@ object FaceRecognizeAlarmJob {
               }
             })
           } else {
-            println("This device does not bind to recognize the alarm rule, which is not calculated by default")
+            println("This device [" + ipcID + "] does not bind to recognize the alarm rule, which is not calculated by default")
           }
         } else {
-          println("This device does not bind the alarm rules and is not calculated by default")
+          println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
         }
       } else {
-        println("This device does not have a binding platform ID, which is not calculated by default")
+        println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
       }
       val finalResult = filterResult.sortWith(_.sim > _.sim).take(itemNum)
       val updateTimeList = new util.ArrayList[String]()
