@@ -103,11 +103,11 @@ public class HBaseHelper implements Serializable {
                                                    Map<String, String> mapOfOberserverArgs,
                                                    int maxVersion, String... colfams) {
         return createTableWithCoprocessor(tableName, observerName, path,
-                mapOfOberserverArgs, maxVersion, 105120000, colfams);
+                mapOfOberserverArgs, maxVersion, Integer.MAX_VALUE, colfams);
     }
 
     public static Table createTable(String tableName, int maxVersion, String... colfams) {
-        return createTable(tableName, maxVersion, 105120000, colfams);
+        return createTable(tableName, maxVersion, Integer.MAX_VALUE, colfams);
     }
 
     public static Table createTable(String tableName, int maxVersion, int timeToLive, String... colfams) {

@@ -11,6 +11,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.log4j.Logger;
+import org.elasticsearch.action.index.IndexResponse;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -75,8 +76,8 @@ public class WorkerThread implements Runnable, Serializable {
                     put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column_time), Bytes.toBytes(dateFormat.format(timestamp)));
                     picTable.put(put);
                     LOG.info(Thread.currentThread().getName() + " [topic:" + consumerRecord.topic() +
-                            ", offset:" + consumerRecord.offset() +
                             ", key:" + consumerRecord.key() +
+                            ", offset:" + consumerRecord.offset() +
                             ", partition:" + consumerRecord.partition() +
                             "]");
                     //将ipcID与time同步到ES中
@@ -84,8 +85,11 @@ public class WorkerThread implements Runnable, Serializable {
                     mapES.put("s", ipcID);
                     mapES.put("t", dateFormat.format(timestamp));
                     mapES.put("sj", map.get("sj"));
-                    ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
+                    IndexResponse indexResponse =ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
                             consumerRecord.key()).setSource(mapES).get();
+                    LOG.info(Thread.currentThread().getName() + "[topic:" + consumerRecord.topic() +
+                            ", key:" + consumerRecord.key() +
+                            ", index to ES status: " + indexResponse.status() + "]");
                 }
             }
         } catch (Exception e) {

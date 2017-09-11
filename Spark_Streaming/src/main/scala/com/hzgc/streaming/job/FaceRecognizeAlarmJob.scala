@@ -20,6 +20,9 @@ import org.apache.spark.streaming.{Durations, StreamingContext}
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * 人脸识别告警实时计算任务
+  */
 object FaceRecognizeAlarmJob {
 
   case class Json(staticID: String,
@@ -65,15 +68,15 @@ object FaceRecognizeAlarmJob {
               }
             })
           } else {
-            println("This device does not bind to identify the alarm rule, which is not calculated by default")
+            println("This device [" + ipcID + "] does not bind to recognize the alarm rule, which is not calculated by default")
           }
         } else {
-          println("This device does not bind the alarm rules and is not calculated by default")
+          println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
         }
       } else {
-        println("This device does not have a binding platform ID, which is not calculated by default")
+        println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
       }
-      val finalResult = filterResult.sortWith(_.sim > _.sim).take(20)
+      val finalResult = filterResult.sortWith(_.sim > _.sim).take(itemNum)
       val updateTimeList = new util.ArrayList[String]()
       if (alarmRule != null && platID != null) {
         val offLineWarnRule = alarmRule.get(DeviceTable.OFFLINE)
@@ -98,7 +101,7 @@ object FaceRecognizeAlarmJob {
           val recognizeAlarmMessage = new RecognizeAlarmMessage()
           val items = new ArrayBuffer[Item]()
           val dateStr = df.format(new Date())
-          recognizeAlarmMessage.setAlarmTime(DeviceTable.IDENTIFY.toString)
+          recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
           recognizeAlarmMessage.setDynamicDeviceID(result._2)
           recognizeAlarmMessage.setDynamicID(result._1)
           recognizeAlarmMessage.setAlarmTime(dateStr)
