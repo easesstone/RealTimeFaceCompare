@@ -80,16 +80,18 @@ public class WorkerThread implements Runnable, Serializable {
                             ", offset:" + consumerRecord.offset() +
                             ", partition:" + consumerRecord.partition() +
                             "]");
-                    //将ipcID与time同步到ES中
-                    Map<String, String> mapES = new HashMap<>();
-                    mapES.put("s", ipcID);
-                    mapES.put("t", dateFormat.format(timestamp));
-                    mapES.put("sj", map.get("sj"));
-                    IndexResponse indexResponse =ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
-                            consumerRecord.key()).setSource(mapES).get();
-                    LOG.info(Thread.currentThread().getName() + "[topic:" + consumerRecord.topic() +
-                            ", key:" + consumerRecord.key() +
-                            ", index to ES status: " + indexResponse.status() + "]");
+                    //将ipcID与time同步到ES中(只有人脸图信息同步到ES中)
+                    if (consumerRecord.topic().equals("face")){
+                        Map<String, String> mapES = new HashMap<>();
+                        mapES.put("s", ipcID);
+                        mapES.put("t", dateFormat.format(timestamp));
+                        mapES.put("sj", map.get("sj"));
+                        IndexResponse indexResponse =ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
+                                consumerRecord.key()).setSource(mapES).get();
+                        LOG.info(Thread.currentThread().getName() + "[topic:" + consumerRecord.topic() +
+                                ", key:" + consumerRecord.key() +
+                                ", index to ES status: " + indexResponse.status() + "]");
+                    }
                 }
             }
         } catch (Exception e) {
