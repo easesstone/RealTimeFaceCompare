@@ -15,14 +15,15 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public boolean bindDevice(String platformId, String ipcID, String notes) {
+        String ipcIDTrim = ipcID.trim();
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
-        if (StringUtil.strIsRight(ipcID) && StringUtil.strIsRight(platformId)) {
+        if (StringUtil.strIsRight(ipcIDTrim) && StringUtil.strIsRight(platformId)) {
             try {
-                Put put = new Put(Bytes.toBytes(ipcID));
+                Put put = new Put(Bytes.toBytes(ipcIDTrim));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.PLAT_ID, Bytes.toBytes(platformId));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.NOTES, Bytes.toBytes(notes));
                 table.put(put);
-                LOG.info("Put data[" + ipcID + ", " + platformId + "] successful");
+                LOG.info("Put data[" + ipcIDTrim + ", " + platformId + "] successful");
                 return true;
             } catch (Exception e) {
                 LOG.error("Current bind is failed!");
@@ -38,13 +39,14 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public boolean unbindDevice(String platformId, String ipcID) {
+        String ipcIDTrim = ipcID.trim();
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
-        if (StringUtil.strIsRight(platformId) && StringUtil.strIsRight(ipcID)) {
+        if (StringUtil.strIsRight(platformId) && StringUtil.strIsRight(ipcIDTrim)) {
             try {
-                Delete delete = new Delete(Bytes.toBytes(ipcID));
+                Delete delete = new Delete(Bytes.toBytes(ipcIDTrim));
                 delete.addColumn(DeviceTable.CF_DEVICE, DeviceTable.PLAT_ID);
                 table.delete(delete);
-                LOG.info("Unbind device:" + ipcID + " and " + platformId + " successful");
+                LOG.info("Unbind device:" + ipcIDTrim + " and " + platformId + " successful");
                 return true;
             } catch (Exception e) {
                 LOG.error("Current unbind is failed!");
@@ -60,13 +62,14 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public boolean renameNotes(String notes, String ipcID) {
+        String ipcIDTrim = ipcID.trim();
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
-        if (StringUtil.strIsRight(ipcID)) {
+        if (StringUtil.strIsRight(ipcIDTrim)) {
             try {
-                Put put = new Put(Bytes.toBytes(ipcID));
+                Put put = new Put(Bytes.toBytes(ipcIDTrim));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.NOTES, Bytes.toBytes(notes));
                 table.put(put);
-                LOG.info("Rename " + ipcID + "'s notes successful!");
+                LOG.info("Rename " + ipcIDTrim + "'s notes successful!");
                 return true;
             } catch (Exception e) {
                 LOG.error("Current renameNotes is failed!");
