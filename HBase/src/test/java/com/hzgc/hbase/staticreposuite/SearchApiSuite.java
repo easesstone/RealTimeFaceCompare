@@ -15,14 +15,25 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class SearchApiSuite {
     @Test
@@ -102,4 +113,145 @@ public class SearchApiSuite {
 //        new ObjectInfoInnerHandlerImpl().updateObjectInfoTimeDemo(getAllRowKeyOfStaticRepo());
     }
 
+
+    @Test
+    public void testGetAllRowkeyFromHbase(){
+        List<String[]> findResult = new ArrayList<>();
+        Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+        Scan scan = new Scan();
+        try {
+            ResultScanner resultScanner = objectinfo.getScanner(scan);
+            for (Result result : resultScanner) {
+                String rowKey = Bytes.toString(result.getRow());
+                String pkey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.PKEY)));
+                byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.FEATURE));
+                if (null != feature && feature.length == 2048) {
+                    //将人员类型rowkey和特征值进行拼接
+                    String feature_str = new String(feature, "ISO8859-1");
+                    String[] result1 = new String[3];
+                    result1[0] = rowKey;
+                    result1[1] = pkey;
+                    result1[2] = feature_str;
+                    //将结果添加到集合中
+                    findResult.add(result1);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            HBaseUtil.closTable(objectinfo);
+        }
+//        return findResult;
+    }
+
+    @Test
+    public void testGetAllRowKeyFromES(){
+        List<String> findResult = new ArrayList<>();
+        QueryBuilder qb = matchAllQuery();
+        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
+                .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setTypes(ObjectInfoTable.PERSON_COLF)
+                .setQuery(qb)
+//                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
+                .setScroll(new TimeValue(60000))
+                .setSize(50000);
+        SearchResponse searchResponse = requestBuilder.get();
+        ArrayList<Future<List<String>>> results = new ArrayList<>();
+        ExecutorService pool = Executors.newFixedThreadPool(10);
+        do {
+            synchronized (pool)
+            {
+                Future<List<String>> result = pool.submit(new EsDataGetter(searchResponse));
+                results.add(result);
+            }
+            searchResponse = ElasticSearchHelper.getEsClient().prepareSearchScroll(searchResponse.getScrollId())
+                    .setScroll(new TimeValue(60000))
+                    .execute()
+                    .actionGet();
+        } while (searchResponse.getHits().getHits().length != 0);
+        List<String> finalResults = new ArrayList<>();
+        try
+        {
+            for (Future<List<String>> result : results)
+            {
+                List<String> rd = result.get();
+                finalResults.addAll(rd);
+            }
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println(finalResults.size());
+    }
+    @Test
+    public void testGetAllRowKeyFromESDemo(){
+        QueryBuilder qb = matchAllQuery();
+        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
+                .prepareSearch(ObjectInfoTable.TABLE_NAME)
+                .setTypes(ObjectInfoTable.PERSON_COLF)
+                .setFetchSource(new String[]{"sex"}, null)
+                .setQuery(qb);
+        SearchResponse searchResponse = requestBuilder.get();
+        long totalRecord = searchResponse.getHits().getTotalHits();
+        long totalPages = (totalRecord % 5000 == 0)? (totalRecord / 5000):(totalRecord / 5000 + 1);
+
+        ArrayList<Future<List<String>>> results = new ArrayList<>();
+        ExecutorService pool = Executors.newFixedThreadPool(20);
+        for (long i = 0; i < totalPages; i++){
+            requestBuilder.setFetchSource(new String[]{"pkey", "updatetime", "feature"}, null)
+                    .setFrom((int) i * 5000).setSize(5000);
+            searchResponse = requestBuilder.get();
+            synchronized (pool)
+            {
+                Future<List<String>> result = pool.submit(new EsDataGetter(searchResponse));
+                results.add(result);
+            }
+        }
+        List<String> finalResults = new ArrayList<>();
+        try
+        {
+            for (Future<List<String>> result : results)
+            {
+                List<String> rd = result.get();
+                finalResults.addAll(rd);
+            }
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println(finalResults.size());
+    }
+}
+
+class EsDataGetter implements Callable<List<String>>{
+    private SearchResponse searchResponse;
+    public EsDataGetter(SearchResponse searchResponse){
+        this.searchResponse = searchResponse;
+    }
+
+    @Override
+    public List<String> call() throws Exception {
+        SearchHits hits = searchResponse.getHits();
+        SearchHit[] searchHits = hits.getHits();
+        List<String> findResult = new ArrayList<>();
+        if (searchHits.length > 0) {
+            for (SearchHit hit : searchHits) {
+                //得到每个人员类型对应的rowkey
+                String id = hit.getId();
+                //得到每个人员类型对应的特征值
+                Map<String, Object> sourceList = hit.getSource();
+                String updatetime = (String) sourceList.get("updatetime");
+                String pkey = (String)sourceList.get("pkey");
+                //将人员类型、rowkey和特征值进行拼接
+                String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
+                //将结果添加到集合中
+                findResult.add(result);
+            }
+        }
+        return findResult;
+    }
 }
