@@ -111,34 +111,36 @@ public class KafkaSTOR extends AbstractCommand {
                 is = dataConnection.getDataInputStream();
                 value = FtpUtil.inputStreamCacher(is);
                 byte[] photBytes = value.toByteArray();
-                String key;
+                String key = FtpUtil.transformNameToKey(fileName);
                 ProducerOverFtp kafkaProducer = kafkaContext.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = kafkaContext.getProducerRocketMQ();
                 //parsing JSON files
-                if (file.getName().contains(".json")) {
-                    key = FtpUtil.transformNameToKey(fileName);
-                    kafkaProducer.sendKafkaMessage(ProducerOverFtp.getJson(), key, photBytes);
-                } else if (fileName.contains(".jpg")) {
-                    key = FtpUtil.transformNameToKey(fileName);
-                    //it is picture
-                    if (FtpUtil.pickPicture(fileName) == 0) {
-                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getPicture(), key, photBytes);
-                    } else if (FtpUtil.pickPicture(fileName) > 0) {
-                        int faceNum = FtpUtil.pickPicture(fileName);
-                        String faceKey = FtpUtil.faceKey(faceNum, key);
-                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFace(), faceKey, photBytes);
-                        Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceKey);
-                        SendResult tempResult = rocketMQProducer.
-                                send(parseKey.get("ipcID"),parseKey.get("mqkey"), photBytes);
+                if (key.contains("unknown")) {
+                    LOG.error(key + ": unknown ipcID, Not send to Kafka!");
+                } else {
+                    if (file.getName().contains(".json")) {
+                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getJson(), key, photBytes);
+                    } else if (fileName.contains(".jpg")) {
+                        //it is picture
+                        if (FtpUtil.pickPicture(fileName) == 0) {
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getPicture(), key, photBytes);
+                        } else if (FtpUtil.pickPicture(fileName) > 0) {
+                            int faceNum = FtpUtil.pickPicture(fileName);
+                            String faceKey = FtpUtil.faceKey(faceNum, key);
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFace(), faceKey, photBytes);
+                            Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceKey);
+                            SendResult tempResult = rocketMQProducer.
+                                    send(parseKey.get("ipcID"), parseKey.get("mqkey"), photBytes);
 
-                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
-                                parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
-                        float[] feature = FaceFunction.featureExtract(photBytes);
-                        if (feature != null && feature.length == 512) {
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), faceKey, FaceFunction.floatArray2ByteArray(feature));
+                            rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
+                                    parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
+                            float[] feature = FaceFunction.featureExtract(photBytes);
+                            if (feature != null && feature.length == 512) {
+                                kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), faceKey, FaceFunction.floatArray2ByteArray(feature));
+                            }
+                        } else {
+                            LOG.info("Contains illegal file[" + file.getName() + "], write to local default");
                         }
-                    } else {
-                        LOG.info("Contains illegal file[" + file.getName() + "], write to local default");
                     }
                 }
                 // attempt to close the output stream so that errors in
