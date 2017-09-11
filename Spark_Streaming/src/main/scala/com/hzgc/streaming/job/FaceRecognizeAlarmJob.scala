@@ -58,11 +58,10 @@ object FaceRecognizeAlarmJob {
         if (alarmRule != null && !alarmRule.isEmpty) {
           val recognizeWarnRule = alarmRule.get(DeviceTable.IDENTIFY)
           if (recognizeWarnRule != null && !recognizeWarnRule.isEmpty) {
-            val setSim = StreamingUtils.getSimilarity(recognizeWarnRule)
             totalList.foreach(record => {
               if (recognizeWarnRule.containsKey(record(1))) {
                 val threshold = FaceFunction.featureCompare(record(2), message._2)
-                if (threshold > setSim) {
+                if (threshold > recognizeWarnRule.get(record(1))) {
                   filterResult += Json(record(0), record(1), threshold)
                 }
               }

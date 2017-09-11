@@ -155,4 +155,4 @@ $LIB_DIR/kafka-clients-0.10.0.0.jar \
 --files $CONF_DIR/es-config.properties,\
 $CONF_DIR/sparkJob.properties,\
 $CONF_DIR/rocketmq.properties \
-$LIB_DIR/streaming-1.0.jar > LOG_FILE 2>&1 &
+$LIB_DIR/streaming-1.0.jar > $LOG_FILE 2>&1 &
