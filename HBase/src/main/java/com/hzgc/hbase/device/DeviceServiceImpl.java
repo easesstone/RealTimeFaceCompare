@@ -15,9 +15,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public boolean bindDevice(String platformId, String ipcID, String notes) {
-        String ipcIDTrim = ipcID.trim();
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
-        if (StringUtil.strIsRight(ipcIDTrim) && StringUtil.strIsRight(platformId)) {
+        if (StringUtil.strIsRight(ipcID) && StringUtil.strIsRight(platformId)) {
+            String ipcIDTrim = ipcID.trim();
             try {
                 Put put = new Put(Bytes.toBytes(ipcIDTrim));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.PLAT_ID, Bytes.toBytes(platformId));
@@ -39,9 +39,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public boolean unbindDevice(String platformId, String ipcID) {
-        String ipcIDTrim = ipcID.trim();
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
-        if (StringUtil.strIsRight(platformId) && StringUtil.strIsRight(ipcIDTrim)) {
+        if (StringUtil.strIsRight(platformId) && StringUtil.strIsRight(ipcID)) {
+            String ipcIDTrim = ipcID.trim();
             try {
                 Delete delete = new Delete(Bytes.toBytes(ipcIDTrim));
                 delete.addColumn(DeviceTable.CF_DEVICE, DeviceTable.PLAT_ID);
@@ -62,9 +62,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public boolean renameNotes(String notes, String ipcID) {
-        String ipcIDTrim = ipcID.trim();
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
-        if (StringUtil.strIsRight(ipcIDTrim)) {
+        if (StringUtil.strIsRight(ipcID)) {
+            String ipcIDTrim = ipcID.trim();
             try {
                 Put put = new Put(Bytes.toBytes(ipcIDTrim));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.NOTES, Bytes.toBytes(notes));
