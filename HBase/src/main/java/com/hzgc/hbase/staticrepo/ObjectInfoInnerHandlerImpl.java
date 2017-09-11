@@ -15,7 +15,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -123,6 +122,8 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         List<String[]> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
+        scan.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.FEATURE));
+        scan.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PKEY));
         try {
             ResultScanner resultScanner = objectinfo.getScanner(scan);
             for (Result result : resultScanner) {
