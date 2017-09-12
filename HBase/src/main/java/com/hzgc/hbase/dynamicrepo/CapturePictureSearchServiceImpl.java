@@ -22,13 +22,12 @@ import java.util.*;
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
-    //private static JavaSparkContext jsc;
+   /* private static SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
+    private static transient JavaSparkContext jsc = new JavaSparkContext(conf);*/
 
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
-        /*SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
-        jsc = new JavaSparkContext(conf);*/
     }
 
     /**
@@ -480,13 +479,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                 }
                             }
                         } else {
-                            LOG.error("get Results form table_car is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
+                            LOG.info("get Results from table_car is null! used method CapturePictureSearchServiceImpl.getCaptureHistory.");
                         }
                     } else {
                         LOG.info("the car list is null");
                     }
                 } else {
-                    LOG.error("get searchMessageMap null from table_searchRes");
+                    LOG.info("get searchMessageMap null from table_searchRes");
                 }
                 //结果集（capturedPictureList）排序
                 searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);

@@ -119,7 +119,7 @@ public class RealTimeCompare implements Serializable {
                     LOG.info("no person image get from es");
                 }
                 //添加分割符
-                personAddCarList.add("sp");
+                personAddCarList.add(DynamicTable.SPLIT_STR);
                 if (null != carImageIdList && carImageIdList.size() > 0) {
                     List<String> carImageIdFilterList;
                     carImageIdFilterList = carImageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
@@ -140,8 +140,10 @@ public class RealTimeCompare implements Serializable {
                 }
                 searchResult = sortAndSplit(capturedPictureList, sortParams);
                 searchResult.setSearchId(searchId);
-                Map<String, Float> imgSimMap;
-                imgSimMap = setDefaultSimilarity(personAddCarList);
+                Map<String, Float> imgSimMap = new LinkedHashMap<>();
+                for (int i = 0; i < personAddCarList.size(); i++) {
+                    imgSimMap.put(personAddCarList.get(i), 0.00f);
+                }
                 boolean flag = dynamicPhotoService.insertSearchRes(searchId, imgSimMap, DynamicTable.MIX_TYPE);
                 if (flag) {
                     LOG.info("The search history of: [" + searchId + "] saved successful");
