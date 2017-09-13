@@ -176,7 +176,7 @@ public class WarnRuleServiceImpl implements WarnRuleService {
                     deviceDelete.addColumn(DeviceTable.CF_DEVICE, DeviceTable.WARN);
                     deviceDelList.add(deviceDelete);
                     reply.put(ipc, true);
-
+                    LOG.info("release the rule binding, the device ID is:" + ipc);
                 }
                 Get offlineGet = new Get(DeviceTable.OFFLINERK);
                 Result offlineResult = deviceTable.get(offlineGet);

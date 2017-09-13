@@ -17,12 +17,13 @@ public class DeviceServiceImpl implements DeviceService {
     public boolean bindDevice(String platformId, String ipcID, String notes) {
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
         if (StringUtil.strIsRight(ipcID) && StringUtil.strIsRight(platformId)) {
+            String ipcIDTrim = ipcID.trim();
             try {
-                Put put = new Put(Bytes.toBytes(ipcID));
+                Put put = new Put(Bytes.toBytes(ipcIDTrim));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.PLAT_ID, Bytes.toBytes(platformId));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.NOTES, Bytes.toBytes(notes));
                 table.put(put);
-                LOG.info("Put data[" + ipcID + ", " + platformId + "] successful");
+                LOG.info("Put data[" + ipcIDTrim + ", " + platformId + "] successful");
                 return true;
             } catch (Exception e) {
                 LOG.error("Current bind is failed!");
@@ -40,11 +41,12 @@ public class DeviceServiceImpl implements DeviceService {
     public boolean unbindDevice(String platformId, String ipcID) {
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
         if (StringUtil.strIsRight(platformId) && StringUtil.strIsRight(ipcID)) {
+            String ipcIDTrim = ipcID.trim();
             try {
-                Delete delete = new Delete(Bytes.toBytes(ipcID));
+                Delete delete = new Delete(Bytes.toBytes(ipcIDTrim));
                 delete.addColumn(DeviceTable.CF_DEVICE, DeviceTable.PLAT_ID);
                 table.delete(delete);
-                LOG.info("Unbind device:" + ipcID + " and " + platformId + " successful");
+                LOG.info("Unbind device:" + ipcIDTrim + " and " + platformId + " successful");
                 return true;
             } catch (Exception e) {
                 LOG.error("Current unbind is failed!");
@@ -62,11 +64,12 @@ public class DeviceServiceImpl implements DeviceService {
     public boolean renameNotes(String notes, String ipcID) {
         Table table = HBaseHelper.getTable(DeviceTable.TABLE_DEVICE);
         if (StringUtil.strIsRight(ipcID)) {
+            String ipcIDTrim = ipcID.trim();
             try {
-                Put put = new Put(Bytes.toBytes(ipcID));
+                Put put = new Put(Bytes.toBytes(ipcIDTrim));
                 put.addColumn(DeviceTable.CF_DEVICE, DeviceTable.NOTES, Bytes.toBytes(notes));
                 table.put(put);
-                LOG.info("Rename " + ipcID + "'s notes successful!");
+                LOG.info("Rename " + ipcIDTrim + "'s notes successful!");
                 return true;
             } catch (Exception e) {
                 LOG.error("Current renameNotes is failed!");
