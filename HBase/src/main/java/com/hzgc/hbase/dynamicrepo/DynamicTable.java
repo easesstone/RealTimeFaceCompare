@@ -122,22 +122,7 @@ public class DynamicTable implements Serializable {
      * 查询类型
      */
     public static final byte[] SEARCHRES_COLUMN_SEARCHTYPE = Bytes.toBytes("t");
-    /**
-     * 只有人脸图
-     */
-    public static final String PERSON_TYPE = "PERSON";
-    /**
-     * 只有车辆图
-     */
-    public static final String CAR_TYPE = "CAR";
-    /**
-     * 同时包含人脸和车辆
-     */
-    public static final String MIX_TYPE = "MIX";
-    /**
-     * 用于划分人车
-     */
-    public static final String SPLIT_STR = "SP";
+
     /**
      * 查询信息
      */

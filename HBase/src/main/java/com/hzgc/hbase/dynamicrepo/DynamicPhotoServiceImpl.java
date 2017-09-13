@@ -210,7 +210,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
-        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 10;
         LOG.info("当前线程数：" + parallel);
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
@@ -331,19 +331,18 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * 将查询ID、查询相关信息插入查询结果库 （内）（刘思阳）
      * 表名：searchRes
      *
-     * @param searchId 查询ID（rowKey）
-     * @param resList  查询信息（返回图片ID、相识度）
+     * @param searchId            查询ID（rowKey）
+     * @param capturedPictureList 查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
     @Override
-    public boolean insertSearchRes(String searchId, Map<String, Float> resList, String searchType) {
-        if (searchId != null && !resList.isEmpty()) {
+    public boolean insertSearchRes(String searchId, List<CapturedPicture> capturedPictureList) {
+        if (searchId != null && !capturedPictureList.isEmpty()) {
             Table searchRes = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
             try {
                 Put put = new Put(Bytes.toBytes(searchId));
                 put.setDurability(Durability.ASYNC_WAL);
-                byte[] searchMessage = objectToByte(resList);
-                put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE, Bytes.toBytes(searchType));
+                byte[] searchMessage = objectToByte(capturedPictureList);
                 put.addColumn(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE, searchMessage);
                 searchRes.put(put);
                 return true;
@@ -539,7 +538,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
-        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 10;
         LOG.info("当前线程数：" + parallel);
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
