@@ -5,8 +5,6 @@ import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.DateUtil;
-import com.hzgc.util.ObjectListSort.ListUtils;
-import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
@@ -60,27 +58,33 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public SearchResult getSearchResult(String searchId, int offset, int count, String sortParams) {
         SearchResult searchResult = new SearchResult();
-        List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
-        Get get = new Get(Bytes.toBytes(searchId));
-        try {
-            Result result = searchResTable.get(get);
+        if (null != searchId && !"".equals(searchId)) {
+            List<CapturedPicture> capturedPictureList;
+            Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
+            Get get = new Get(Bytes.toBytes(searchId));
+            Result result = null;
+            try {
+                result = searchResTable.get(get);
+                HBaseUtil.closTable(searchResTable);
+            } catch (IOException e) {
+                e.printStackTrace();
+                LOG.info("no result get by searchId[" + searchId + "]");
+            }
             if (result != null) {
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 capturedPictureList = (List<CapturedPicture>) ObjectUtil.byteToObject(searchMessage);
-                //排序分页
-                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
+                //结果集（capturedPictureList）分页返回
+                searchResult = sortAndSplit(capturedPictureList, offset, count);
                 if (searchResult != null) {
                     searchResult.setSearchId(searchId);
+                } else {
+                    LOG.info("searchResult is null get by method DynamicPhotoServiceImpl.sortAndSplit()");
                 }
             } else {
-                LOG.error("get Result form table_searchRes is null! used method CapturePictureSearchServiceImpl.getSearchResult.");
+                LOG.info("get searchMessageMap null from table_searchRes");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOG.error("get data by searchId from table_searchRes failed! used method CapturePictureSearchServiceImpl.getSearchResult.");
-        } finally {
-            HBaseUtil.closTable(searchResTable);
+        } else {
+            LOG.info("searchId is null");
         }
         return searchResult;
     }
@@ -321,49 +325,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         return capturedPictureList;
     }
 
-    /**
-     * 查询某个摄像头照片历史所有图片，包括人和车
-     *
-     * @param searchId   搜索的 id（rowkey）
-     * @param offset     从第几条开始
-     * @param count      条数
-     * @param sortParams 排序参数
-     * @return SearchResult对象
-     */
-    @Override
-    public SearchResult getCaptureHistory(String searchId, int offset, int count, String sortParams) {
-        SearchResult searchResult = new SearchResult();
-        if (null != searchId && !"".equals(searchId)) {
-            List<CapturedPicture> capturedPictureList = new ArrayList<>();
-            Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
-            Get get = new Get(Bytes.toBytes(searchId));
-            Result result = null;
-            try {
-                result = searchResTable.get(get);
-                HBaseUtil.closTable(searchResTable);
-            } catch (IOException e) {
-                e.printStackTrace();
-                LOG.info("no result get by searchId[" + searchId + "]");
-            }
-            if (result != null) {
-                byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
-                capturedPictureList = (List<CapturedPicture>) ObjectUtil.byteToObject(searchMessage);
-                //结果集（capturedPictureList）排序
-                searchResult = sortAndSplit(capturedPictureList, offset, count, sortParams);
-                if (searchResult != null) {
-                    searchResult.setSearchId(searchId);
-                } else {
-                    LOG.info("searchResult is null get by method DynamicPhotoServiceImpl.sortAndSplit()");
-                }
-            } else {
-                LOG.info("get searchMessageMap null from table_searchRes");
-            }
-        } else {
-            LOG.info("searchId is null");
-        }
-        return searchResult;
-    }
-
     private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
         if (result != null) {
             byte[] smallImage = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
@@ -443,12 +404,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
     }
 
-    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count, String sortParams) {
+    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count) {
         //结果集（capturedPictureList）排序
-        SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
+        //SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
         SearchResult tempResult = new SearchResult();
         if (null != capturedPictureList && capturedPictureList.size() > 0) {
-            ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
+            //ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
             //排序后的结果集分页
             List<CapturedPicture> subCapturePictureList;
             if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
