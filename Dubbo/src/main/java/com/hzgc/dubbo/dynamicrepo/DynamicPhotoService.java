@@ -60,11 +60,11 @@ public interface DynamicPhotoService {
      * 将查询ID、查询相关信息插入查询结果库 （内）（刘思阳）
      * 表名：searchRes
      *
-     * @param searchId 查询ID（rowKey）
-     * @param resList  查询信息（返回图片ID、相识度）
+     * @param searchId            查询ID（rowKey）
+     * @param capturedPictureList 查询信息（返回图片ID、相识度）
      * @return boolean 是否插入成功
      */
-    boolean insertSearchRes(String searchId, Map<String, Float> resList, String searchType);
+    boolean insertSearchRes(String searchId, List<CapturedPicture> capturedPictureList);
 
     /**
      * 根据动态库查询ID获取查询结果 （内）（刘思阳）
