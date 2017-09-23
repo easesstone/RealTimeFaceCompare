@@ -29,6 +29,7 @@ public class RealTimeCompare implements Serializable {
     private List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
     private List<Float> simList;//相似度列表，保存比对后的相似度
     private List<CapturedPicture> capturedPictureList;//图片对象列表
+    private String insertType;
 
     public RealTimeCompare() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
@@ -55,7 +56,8 @@ public class RealTimeCompare implements Serializable {
             if (null != searchType) {
                 //查询的对象库是人
                 if (searchType == SearchType.PERSON) {
-                    PictureType pictureType = PictureType.PERSON;
+                    insertType = DynamicTable.PERSON_TYPE;
+                    PictureType pictureType = PictureType.SMALL_PERSON;
                     //上传的参数中有图
                     if (null != image && image.length > 0) {
                         searchResult = compareByImage(pictureType, option);
@@ -71,7 +73,8 @@ public class RealTimeCompare implements Serializable {
                 }
                 //查询的对象库是车
                 else if (searchType == SearchType.CAR) {
-                    PictureType pictureType = PictureType.CAR;
+                    insertType = DynamicTable.CAR_TYPE;
+                    PictureType pictureType = PictureType.SMALL_CAR;
                     //上传的参数中有图
                     if (null != image && image.length > 0) {
                         searchResult = compareByImage(pictureType, option);
@@ -87,11 +90,12 @@ public class RealTimeCompare implements Serializable {
                 }
             } else {
                 //searchType 为空，则同时返回人、车
-                SearchResult searchResultTemp = new SearchResult();
+                insertType = DynamicTable.MIX_TYPE;
                 PictureType pictureType;
                 List<String> personImageIdList;
                 option.setSearchType(SearchType.PERSON);
                 personImageIdList = getImageIdListFromEs(option);
+
                 //通过es查询到的车辆图片id列表
                 List<String> carImageIdList = null;
                /* option.setSearchType(SearchType.CAR);
@@ -100,7 +104,7 @@ public class RealTimeCompare implements Serializable {
                 capturedPictureList = new ArrayList<>();//用于同时保存人车图片对象
                 if (null != personImageIdList && personImageIdList.size() > 0) {
                     personAddCarList.addAll(personImageIdList);
-                    pictureType = PictureType.PERSON;
+                    pictureType = PictureType.SMALL_PERSON;
                     List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getMultiBatchCaptureMessage(personImageIdList, pictureType.getType());
                     if (null != capturedPicturesPerson) {
                         capturedPictureList.addAll(capturedPicturesPerson);
@@ -112,7 +116,7 @@ public class RealTimeCompare implements Serializable {
                 }
                 if (null != carImageIdList && carImageIdList.size() > 0) {
                     personAddCarList.addAll(carImageIdList);
-                    pictureType = PictureType.CAR;
+                    pictureType = PictureType.SMALL_CAR;
                     List<CapturedPicture> capturedPicturesCar = dynamicPhotoService.getMultiBatchCaptureMessage(carImageIdList, pictureType.getType());
                     if (null != capturedPicturesCar) {
                         capturedPictureList.addAll(capturedPicturesCar);
@@ -175,6 +179,11 @@ public class RealTimeCompare implements Serializable {
                 LOG.info("特征比对数量：" + feaFloatList.size() + " ,时间消耗：" + (System.currentTimeMillis() - compareTime));
                 //根据阈值对计算结果进行过滤，并进行排序分页等操作
                 searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
+                // TODO: 2017-9-20  
+                List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                //读取imageData并返回结果
+                List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, pictureType.getType());
+                searchResult.setPictures(FullCapturePictureList);
             } else {
                 LOG.info("the imageIdList is null");
             }
@@ -211,6 +220,11 @@ public class RealTimeCompare implements Serializable {
                         simList = featureCompare(searchFea, feaFloatList);
                         if (null != simList && simList.size() > 0) {
                             searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
+                            List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                            // TODO: 2017-9-20  
+                            //读取imageData并返回结果
+                            List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, pictureType.getType());
+                            searchResult.setPictures(FullCapturePictureList);
                         } else {
                             LOG.info("simList is null");
                         }
@@ -240,6 +254,11 @@ public class RealTimeCompare implements Serializable {
         if (null != imageIdList && imageIdList.size() > 0) {
             capturedPictureList = dynamicPhotoService.getMultiBatchCaptureMessage(imageIdList, pictureType.getType());
             searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+            // TODO: 2017-9-20  
+            List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+            //读取imageData并返回结果
+            List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, pictureType.getType());
+            searchResult.setPictures(FullCapturePictureList);
         } else {
             LOG.info("no image find in es by method getImageIdListFromEs");
         }
@@ -264,7 +283,7 @@ public class RealTimeCompare implements Serializable {
      * @param pictureType 图片类型（人、车）
      * @return 图片id及其特征所组成的二元组列表
      */
-    private List<float[]> getFeaByImageId(List<String> imageIdList, final PictureType pictureType) {
+    private List<float[]> getFeaByImageId(List<String> imageIdList, PictureType pictureType) {
         return dynamicPhotoService.getMultiBatchFeature(imageIdList, pictureType);
     }
 
@@ -358,7 +377,7 @@ public class RealTimeCompare implements Serializable {
     }
 
     /**
-     * 根据阈值过滤后的imageIdList批量查询数据对象分组排
+     * 根据阈值过滤后的imageIdList批量查询数据对象分组排序
      *
      * @param capturedPictures 根据阈值过滤之后的对象列表
      * @return 最终查询结果
@@ -371,7 +390,7 @@ public class RealTimeCompare implements Serializable {
             capturedPicturesSorted = sortByParams(capturedPictures, sortParams);
             LOG.info("对" + capturedPictures.size() + "张图片对象进行排序时间消耗：" + (System.currentTimeMillis() - sortTime));
             //保存到Hbase
-            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPicturesSorted);
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPicturesSorted, insertType);
             if (flag) {
                 LOG.info("The search history of: [" + searchId + "] saved successful");
             } else {

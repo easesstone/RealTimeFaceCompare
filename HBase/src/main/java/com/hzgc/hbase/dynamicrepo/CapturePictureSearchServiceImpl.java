@@ -62,6 +62,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             List<CapturedPicture> capturedPictureList;
             Table searchResTable = HBaseHelper.getTable(DynamicTable.TABLE_SEARCHRES);
             Get get = new Get(Bytes.toBytes(searchId));
+            searchResult.setSearchId(searchId);
             Result result = null;
             try {
                 result = searchResTable.get(get);
@@ -71,14 +72,35 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 LOG.info("no result get by searchId[" + searchId + "]");
             }
             if (result != null) {
+                String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 capturedPictureList = (List<CapturedPicture>) ObjectUtil.byteToObject(searchMessage);
-                //结果集（capturedPictureList）分页返回
-                searchResult = sortAndSplit(capturedPictureList, offset, count);
-                if (searchResult != null) {
-                    searchResult.setSearchId(searchId);
+                DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
+                if (searchType.equals(DynamicTable.PERSON_TYPE)) {
+                    //结果集（capturedPictureList）分页返回
+                    searchResult = sortAndSplit(capturedPictureList, offset, count);
+                    //读取imageData并返回结果
+                    List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                    int type = PictureType.SMALL_PERSON.getType();
+                    List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, type);
+                    searchResult.setPictures(FullCapturePictureList);
+                } else if (searchType.equals(DynamicTable.CAR_TYPE)) {
+                    //结果集（capturedPictureList）分页返回
+                    searchResult = sortAndSplit(capturedPictureList, offset, count);
+                    //读取imageData并返回结果
+                    List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                    int type = PictureType.SMALL_CAR.getType();
+                    List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, type);
+                    searchResult.setPictures(FullCapturePictureList);
                 } else {
-                    LOG.info("searchResult is null get by method DynamicPhotoServiceImpl.sortAndSplit()");
+                    searchResult = sortAndSplit(capturedPictureList, offset, count);
+                    List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                    List<CapturedPicture> FullCapturePictureList = new ArrayList<>();
+                    for (CapturedPicture capturedPicture : capturedPictureRes) {
+                        capturedPicture = dynamicPhotoService.getImageData(capturedPicture);
+                        FullCapturePictureList.add(capturedPicture);
+                    }
+                    searchResult.setPictures(FullCapturePictureList);
                 }
             } else {
                 LOG.info("get searchMessageMap null from table_searchRes");
@@ -258,68 +280,75 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     public List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type) {
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
         if (imageIdList != null) {
-            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
             List<Get> gets = new ArrayList<>();
             CapturedPicture capturedPicture;
-            try {
-                if (type == PictureType.PERSON.getType()) {
-                    for (int i = 0, len = imageIdList.size(); i < len; i++) {
-                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
-                        get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-                        gets.add(get);
-                    }
-                    Result[] results = person.get(gets);
-                    if (results != null) {
-                        for (Result result : results) {
-                            capturedPicture = new CapturedPicture();
-                            if (result != null) {
-                                String rowKey = Bytes.toString(result.getRow());
-                                capturedPicture.setId(rowKey);
-                                byte[] imageData = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-                                capturedPicture.setSmallImage(imageData);
-                                Map<String, Object> mapEx = new HashMap<>();
-                                setCapturedPicture_person(capturedPicture, result, mapEx);
-                                capturedPictureList.add(capturedPicture);
-                            } else {
-                                LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                            }
-                        }
-                    } else {
-                        LOG.error("get Result[] form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                    }
-                } else if (type == PictureType.CAR.getType()) {
-                    for (int i = 0, len = imageIdList.size(); i < len; i++) {
-                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
-                        get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-                        gets.add(get);
-                    }
-                    Result[] results = car.get(gets);
-                    if (results != null) {
-                        for (Result result : results) {
-                            capturedPicture = new CapturedPicture();
-                            if (result != null) {
-                                String rowKey = Bytes.toString(result.getRow());
-                                byte[] imageData = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-                                capturedPicture.setId(rowKey);
-                                capturedPicture.setSmallImage(imageData);
-                                Map<String, Object> mapEx = new HashMap<>();
-                                setCapturedPicture_car(capturedPicture, result, mapEx);
-                                capturedPictureList.add(capturedPicture);
-                            } else {
-                                LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                            }
-                        }
-                    } else {
-                        LOG.error("get Result[] form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                    }
+            if (type == PictureType.SMALL_PERSON.getType()) {
+                Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+                for (String anImageIdList : imageIdList) {
+                    Get get = new Get(Bytes.toBytes(anImageIdList));
+                    get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+                    gets.add(get);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                LOG.error("get List<CapturedPicture> by List<rowKey> from table_person or table_car failed! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-            } finally {
-                HBaseUtil.closTable(person);
-                HBaseUtil.closTable(car);
+                Result[] results = new Result[imageIdList.size()];
+                try {
+                    results = person.get(gets);
+                    HBaseUtil.closTable(person);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (results != null) {
+                    for (Result result : results) {
+                        capturedPicture = new CapturedPicture();
+                        if (result != null) {
+                            String rowKey = Bytes.toString(result.getRow());
+                            capturedPicture.setId(rowKey);
+                            byte[] imageData = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
+                            capturedPicture.setSmallImage(imageData);
+                            Map<String, Object> mapEx = new HashMap<>();
+                            setCapturedPicture_person(capturedPicture, result, mapEx);
+                            capturedPictureList.add(capturedPicture);
+                        } else {
+                            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                        }
+                    }
+                } else {
+                    LOG.error("get Result[] form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                }
+            } else if (type == PictureType.SMALL_CAR.getType()) {
+                Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+                for (String anImageIdList : imageIdList) {
+                    Get get = new Get(Bytes.toBytes(anImageIdList));
+                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
+                    gets.add(get);
+                }
+                Result[] results = new Result[imageIdList.size()];
+                try {
+                    results = car.get(gets);
+                    HBaseUtil.closTable(car);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (results != null) {
+                    for (Result result : results) {
+                        capturedPicture = new CapturedPicture();
+                        if (result != null) {
+                            String rowKey = Bytes.toString(result.getRow());
+                            byte[] imageData = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
+                            capturedPicture.setId(rowKey);
+                            capturedPicture.setSmallImage(imageData);
+                            Map<String, Object> mapEx = new HashMap<>();
+                            setCapturedPicture_car(capturedPicture, result, mapEx);
+                            capturedPictureList.add(capturedPicture);
+                        } else {
+                            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                        }
+                    }
+                } else {
+                    LOG.error("get Result[] form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                }
+
+            } else {
+                LOG.info("the type is error");
             }
         }
         return capturedPictureList;
@@ -404,13 +433,21 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
     }
 
+    /**
+     * 排序分页
+     *
+     * @param capturedPictureList 图片对象列表
+     * @param offset              起始值
+     * @param count               总条数
+     * @return 返回分页排序后的结果
+     */
     private SearchResult sortAndSplit(List<CapturedPicture> capturedPictureList, int offset, int count) {
         //结果集（capturedPictureList）排序
         //SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
         SearchResult tempResult = new SearchResult();
         if (null != capturedPictureList && capturedPictureList.size() > 0) {
-            //ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());
-            //排序后的结果集分页
+           /* 保存记录时已经排好序，分页返回时不需要排序
+            ListUtils.sort(capturedPictureList, sortParam.getSortNameArr(), sortParam.getIsAscArr());*/
             List<CapturedPicture> subCapturePictureList;
             if (offset > -1 && capturedPictureList.size() > (offset + count - 1)) {
                 //结束行小于总数
@@ -427,4 +464,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
         return tempResult;
     }
+
+
 }
