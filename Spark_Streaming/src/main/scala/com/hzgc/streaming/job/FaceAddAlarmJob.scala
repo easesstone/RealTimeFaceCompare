@@ -52,7 +52,7 @@ object FaceAddAlarmJob {
       val filterResult = new ArrayBuffer[Json]()
       if (platID != null && platID.length > 0) {
         if (alarmRule != null && !alarmRule.isEmpty) {
-          val addWarnRule = alarmRule.get(DeviceTable.IDENTIFY)
+          val addWarnRule = alarmRule.get(DeviceTable.ADDED)
           if (addWarnRule != null && !addWarnRule.isEmpty) {
             totalList.foreach(record => {
               if (addWarnRule.containsKey(record(1))) {
@@ -62,18 +62,21 @@ object FaceAddAlarmJob {
                 }
               }
             })
+            val finalResult = filterResult.sortWith(_.sim > _.sim).take(3)
+            (message._1, ipcID, platID, finalResult)
           } else {
             println("This device [" + ipcID + "] does not bind to added the alarm rule, which is not calculated by default")
+            (message._1, ipcID, null, filterResult)
           }
         } else {
           println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
+          (message._1, ipcID, null, filterResult)
         }
       } else {
         println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
+        (message._1, ipcID, null, filterResult)
       }
-      val finalResult = filterResult.sortWith(_.sim > _.sim).take(3)
-      (message._1, ipcID, platID, finalResult)
-    })
+    }).filter(jsonResultFilter => jsonResultFilter._3 != null)
 
     jsonResult.foreachRDD(resultRDD => {
       resultRDD.foreachPartition(parRDD => {
@@ -89,6 +92,7 @@ object FaceAddAlarmJob {
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
             addAlarmMessage.setDynamicID(result._1)
             addAlarmMessage.setDynamicDeviceID(result._2)
+            println("新增告警信息：" + gson.toJson(addAlarmMessage))
             rocketMQProducer.send(result._3,
               "alarm_" + DeviceTable.ADDED.toString,
               result._1,
