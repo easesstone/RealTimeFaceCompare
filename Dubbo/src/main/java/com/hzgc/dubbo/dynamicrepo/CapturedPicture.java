@@ -28,7 +28,7 @@ public class CapturedPicture implements Serializable {
     /**
      * 图片的相似度
      */
-    private float similarity;
+    private Float similarity;
     /**
      * 图片的附加信息，扩展预留
      */
@@ -83,11 +83,11 @@ public class CapturedPicture implements Serializable {
         this.description = description;
     }
 
-    public float getSimilarity() {
+    public Float getSimilarity() {
         return similarity;
     }
 
-    public void setSimilarity(float similarity) {
+    public void setSimilarity(Float similarity) {
         this.similarity = similarity;
     }
 
