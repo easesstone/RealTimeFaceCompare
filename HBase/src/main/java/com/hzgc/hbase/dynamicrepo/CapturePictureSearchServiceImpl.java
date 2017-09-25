@@ -308,11 +308,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             setCapturedPicture_person(capturedPicture, result, mapEx);
                             capturedPictureList.add(capturedPicture);
                         } else {
-                            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                         }
                     }
                 } else {
-                    LOG.error("get Result[] form table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                    LOG.error("get Result[] from table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                 }
             } else if (type == PictureType.SMALL_CAR.getType()) {
                 Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
@@ -340,11 +340,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             setCapturedPicture_car(capturedPicture, result, mapEx);
                             capturedPictureList.add(capturedPicture);
                         } else {
-                            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                         }
                     }
                 } else {
-                    LOG.error("get Result[] form table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                    LOG.error("get Result[] from table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                 }
 
             } else {
@@ -357,9 +357,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
         if (result != null) {
             byte[] smallImage = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-            capturedPicture.setSmallImage(smallImage);
+            if (smallImage != null){
+                capturedPicture.setSmallImage(smallImage);
+            }else {
+                LOG.error("get smallImage is null!");
+            }
         } else {
-            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_person.");
+            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_person.");
         }
     }
 
@@ -379,25 +383,33 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             long timeStamp = DateUtil.dateToTimeStamp(time);
             capturedPicture.setTimeStamp(timeStamp);
         } else {
-            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_person.");
+            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_person.");
         }
     }
 
     private void setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
         if (bigImageResult != null) {
             byte[] bigImage = bigImageResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-            capturedPicture.setBigImage(bigImage);
+            if (bigImage != null){
+                capturedPicture.setBigImage(bigImage);
+            }else {
+                LOG.error("get bigImage is null!");
+            }
         } else {
-            LOG.error("get Result form table_person is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_person.");
+            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_person.");
         }
     }
 
     private void setSmallImageToCapturedPicture_car(CapturedPicture capturedPicture, Result result) {
         if (result != null) {
             byte[] smallImage = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-            capturedPicture.setSmallImage(smallImage);
+            if (smallImage != null){
+                capturedPicture.setSmallImage(smallImage);
+            }else {
+                LOG.error("get smallImage is null!");
+            }
         } else {
-            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_car.");
+            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_car.");
         }
     }
 
@@ -420,16 +432,20 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
             capturedPicture.setPlateNumber(plateNumber);
         } else {
-            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_car.");
+            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_car.");
         }
     }
 
     private void setBigImageToCapturedPicture_car(CapturedPicture capturedPicture, Result bigImageResult) {
         if (bigImageResult != null) {
             byte[] bigImage = bigImageResult.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-            capturedPicture.setBigImage(bigImage);
+            if (bigImage != null){
+                capturedPicture.setBigImage(bigImage);
+            }else {
+                LOG.error("get bigImage is null!");
+            }
         } else {
-            LOG.error("get Result form table_car is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_car.");
+            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_car.");
         }
     }
 
