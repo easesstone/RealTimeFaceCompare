@@ -77,6 +77,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         Bytes.toBytes((String) person.get(field)));
             }
+            if (ObjectInfoTable.NAME.equals(field)){
+                person.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
+            if (ObjectInfoTable.CREATOR.equals(field)){
+                person.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
         }
         // 给表格添加两个时间的字段，一个是创建时间，一个是更新时间
         Date date = new Date();
@@ -261,6 +267,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         Bytes.toBytes((String) person.get(field)));
             }
+            if (ObjectInfoTable.NAME.equals(field)){
+                person.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
+            if (ObjectInfoTable.CREATOR.equals(field)){
+                person.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
         }
 
         Date date = new Date();
@@ -311,7 +323,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 }
                 String personPkey =  (String) person.get(ObjectInfoTable.PKEY);
                 if ((personPkey != null && !"".equals(personPkey))){
-                    pKey = personIdCard;
+                    pKey = personPkey;
                 }
                 String newRowKey = pKey + idCard;
 
@@ -322,6 +334,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 BASE_LIBRARY.put(newRowKey, mapInMemery);
 
                 //新的rowkey返回到ES中
+                String name = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.NAME)));
+                String creator = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.CREATETIME)));
+                map.put(ObjectInfoTable.NAME, name);
+                map.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name));
+                map.put(ObjectInfoTable.CREATOR, creator);
+                map.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator));
+
                 map.put(ObjectInfoTable.IDCARD, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD))));
                 map.put(ObjectInfoTable.PKEY, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -330,16 +351,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.PLATFORMID))));
                 map.put(ObjectInfoTable.TAG, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.TAG))));
-                map.put(ObjectInfoTable.NAME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.NAME))));
                 map.put(ObjectInfoTable.SEX, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.SEX))));
                 map.put(ObjectInfoTable.FEATURE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.FEATURE))));
                 map.put(ObjectInfoTable.REASON, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.REASON))));
-                map.put(ObjectInfoTable.CREATOR, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.CREATOR))));
                 map.put(ObjectInfoTable.CPHONE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.CPHONE))));
                 map.put(ObjectInfoTable.CREATETIME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
