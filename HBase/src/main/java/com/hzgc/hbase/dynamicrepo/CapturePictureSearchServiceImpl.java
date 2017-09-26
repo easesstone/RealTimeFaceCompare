@@ -360,7 +360,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             if (smallImage != null){
                 capturedPicture.setSmallImage(smallImage);
             }else {
-                LOG.error("get smallImage is null!");
+                LOG.warn("get smallImage is null!");
             }
         } else {
             LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_person.");
@@ -393,7 +393,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             if (bigImage != null){
                 capturedPicture.setBigImage(bigImage);
             }else {
-                LOG.error("get bigImage is null!");
+                LOG.warn("get bigImage is null!");
             }
         } else {
             LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_person.");
@@ -406,7 +406,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             if (smallImage != null){
                 capturedPicture.setSmallImage(smallImage);
             }else {
-                LOG.error("get smallImage is null!");
+                LOG.warn("get smallImage is null!");
             }
         } else {
             LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_car.");
@@ -442,7 +442,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             if (bigImage != null){
                 capturedPicture.setBigImage(bigImage);
             }else {
-                LOG.error("get bigImage is null!");
+                LOG.warn("get bigImage is null!");
             }
         } else {
             LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_car.");
