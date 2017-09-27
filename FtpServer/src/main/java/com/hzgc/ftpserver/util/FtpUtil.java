@@ -123,4 +123,64 @@ public class FtpUtil implements Serializable {
         }
         return map;
     }
+
+    /**
+     * 通过rowKey解析到照片存储路径
+     * @param rowKey rowKey
+     * @return fileName 照片存储路径
+     */
+    public static String key2pictureFileName(String rowKey) {
+        String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
+        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
+        String year = timeStr.substring(0, 2);
+        String month = timeStr.substring(2, 4);
+        String day = timeStr.substring(4, 6);
+        String hour = timeStr.substring(6, 8);
+        String minute = timeStr.substring(8, 10);
+        //String second = timeStr.substring(10, 12);
+
+        StringBuilder fileName = new StringBuilder();
+        fileName = fileName.append("/opt/ftpserver/").append(ipcId).
+                append("/20").append(year).append("/").append(month).append("/").append(day).
+                append("/").append(hour).append("/").append(minute).append("/").append(rowKey).append(".jpg");
+        //TODO:"/opt/ftpserver/"将从配置文件读取
+        return fileName.toString();
+    }
+
+    /**
+     * 通过rowKey解析到Json文件存储路径
+     * @param rowKey rowKey
+     * @return fileName Json文件存储路径
+     */
+    public static String key2jsonFileName(String rowKey) {
+        String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
+
+        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
+        String year = timeStr.substring(0, 2);
+        String month = timeStr.substring(2, 4);
+        String day = timeStr.substring(4, 6);
+        String hour = timeStr.substring(6, 8);
+        String minute = timeStr.substring(8, 10);
+        //String second = timeStr.substring(10, 12);
+
+        int type = Integer.parseInt(rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length()));
+
+        StringBuilder fileName = new StringBuilder();
+        if (type == 0) {
+            fileName = fileName.append("/opt/ftpserver/").append(ipcId).
+                    append("/20").append(year).append("/").append(month).append("/").append(day).
+                    append("/").append(hour).append("/").append(minute).append("/").append(rowKey).append(".json");
+        } else if (type > 0) {
+            //StringBuilder key = new StringBuilder();
+            //key = key.append(rowKey.substring(0, rowKey.lastIndexOf("_"))).append("_00");
+            rowKey = rowKey.substring(0, rowKey.lastIndexOf("_") + 1) + "00";
+            fileName = fileName.append("/opt/ftpserver/").append(ipcId).
+                    append("/20").append(year).append("/").append(month).append("/").append(day).
+                    append("/").append(hour).append("/").append(minute).append("/").append(rowKey).append(".json");
+            //TODO:"/opt/ftpserver/"将从配置文件读取
+        } else {
+            LOG.warn("rowkey format error" + rowKey);
+        }
+        return fileName.toString();
+    }
 }
