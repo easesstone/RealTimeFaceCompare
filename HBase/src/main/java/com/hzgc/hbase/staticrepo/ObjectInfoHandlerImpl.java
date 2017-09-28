@@ -77,6 +77,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         Bytes.toBytes((String) person.get(field)));
             }
+            if (ObjectInfoTable.NAME.equals(field)){
+                person.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
+            if (ObjectInfoTable.CREATOR.equals(field)){
+                person.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
         }
         // 给表格添加两个时间的字段，一个是创建时间，一个是更新时间
         Date date = new Date();
@@ -261,6 +267,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(field),
                         Bytes.toBytes((String) person.get(field)));
             }
+            if (ObjectInfoTable.NAME.equals(field)){
+                person.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
+            if (ObjectInfoTable.CREATOR.equals(field)){
+                person.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin((String) person.get(field)));
+            }
         }
 
         Date date = new Date();
@@ -311,7 +323,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 }
                 String personPkey =  (String) person.get(ObjectInfoTable.PKEY);
                 if ((personPkey != null && !"".equals(personPkey))){
-                    pKey = personIdCard;
+                    pKey = personPkey;
                 }
                 String newRowKey = pKey + idCard;
 
@@ -322,6 +334,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 BASE_LIBRARY.put(newRowKey, mapInMemery);
 
                 //新的rowkey返回到ES中
+                String name = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.NAME)));
+                String creator = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.CREATOR)));
+                map.put(ObjectInfoTable.NAME, name);
+                map.put(ObjectInfoTable.NAME_PIN, PinYinUtil.toHanyuPinyin(name));
+                map.put(ObjectInfoTable.CREATOR, creator);
+                map.put(ObjectInfoTable.CREATOR_PIN, PinYinUtil.toHanyuPinyin(creator));
+
                 map.put(ObjectInfoTable.IDCARD, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD))));
                 map.put(ObjectInfoTable.PKEY, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -330,16 +351,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Bytes.toBytes(ObjectInfoTable.PLATFORMID))));
                 map.put(ObjectInfoTable.TAG, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.TAG))));
-                map.put(ObjectInfoTable.NAME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.NAME))));
                 map.put(ObjectInfoTable.SEX, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.SEX))));
                 map.put(ObjectInfoTable.FEATURE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.FEATURE))));
                 map.put(ObjectInfoTable.REASON, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.REASON))));
-                map.put(ObjectInfoTable.CREATOR, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.CREATOR))));
                 map.put(ObjectInfoTable.CPHONE, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.CPHONE))));
                 map.put(ObjectInfoTable.CREATETIME, Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -659,6 +676,25 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ObjectSearchResult objectSearchResult_Tmp = dealWithSearchRequesBuilder(platformId, requestBuilder, photo,
                 null, null,
                 start, pageSize, moHuSearch);
+
+        List<Map<String,Object>> tempList = objectSearchResult_Tmp.getResults();
+        Iterator<Map<String, Object>> it = tempList.iterator();
+        while (it.hasNext()){
+            Map<String, Object> person = it.next();
+            String name_tmp = (String) person.get(ObjectInfoTable.NAME );
+            String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR);
+            if (name != null && !"".equals(name)){
+                if (name_tmp == null || "".equals(name_tmp) || (!name_tmp.contains(name))){
+                    it.remove();
+                }
+            }
+            if (creator != null && !"".equals(creator)){
+                if (creator_tmp == null || "".equals(creator_tmp) || (!creator_tmp.contains(creator))){
+                    it.remove();
+                }
+            }
+        }
+
         ObjectSearchResult tmp = HBaseUtil.dealWithPaging(objectSearchResult_Tmp, start, pageSize);
         putSearchRecordToHBase(platformId, tmp, null);
         return tmp;
@@ -802,9 +838,21 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.CREATOR, creator));
         }
-        return dealWithSearchRequesBuilder(null, requestBuilder, null,
+        ObjectSearchResult searchResult = dealWithSearchRequesBuilder(null, requestBuilder, null,
                 ObjectInfoTable.CREATOR, creator,
                 start, pageSize, moHuSearch);
+        List<Map<String,Object>> tempList = searchResult.getResults();
+        Iterator<Map<String, Object>> it = tempList.iterator();
+        while (it.hasNext()){
+            Map<String, Object> person = it.next();
+            String creator_tmp = (String) person.get(ObjectInfoTable.CREATOR );
+            if (creator != null && !"".equals(creator)){
+                if (creator_tmp == null || "".equals(creator_tmp) || (!creator_tmp.contains(creator))){
+                    it.remove();
+                }
+            }
+        }
+        return searchResult;
     }
 
     @Override
@@ -823,9 +871,22 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } else {
             requestBuilder.setQuery(QueryBuilders.matchPhraseQuery(ObjectInfoTable.NAME, name));
         }
-        return dealWithSearchRequesBuilder(null, requestBuilder, null,
+        ObjectSearchResult searchResult = dealWithSearchRequesBuilder(null, requestBuilder, null,
                 ObjectInfoTable.NAME, name,
                 start, pageSize, moHuSearch);
+        List<Map<String,Object>> tempList = searchResult.getResults();
+        Iterator<Map<String, Object>> it = tempList.iterator();
+        while (it.hasNext()){
+            Map<String, Object> person = it.next();
+            String name_tmp = (String) person.get(ObjectInfoTable.NAME );
+            if (name != null && !"".equals(name)){
+                if (name_tmp == null || "".equals(name_tmp) || (!name_tmp.contains(name))){
+                    it.remove();
+                }
+            }
+        }
+
+        return searchResult;
     }
 
     private static Map<String, Map<String, Object>> getAllObjectInfo() {
@@ -1060,7 +1121,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         searchResult.setResults(results);
         // 处理精确查找下，IK 分词器返回多余信息的情况，
         // 比如只需要小王炸，但是返回了小王炸 和小王炸小以及小王炸大的情况
-        dealWithCreatorAndNameInNoMoHuSearch(searchResult, searchType, creatorOrName, moHuSearch);
         LOG.info("dealWithSearchRequesBuilder, time: " + (System.currentTimeMillis() - start_time));
         return searchResult;
     }
