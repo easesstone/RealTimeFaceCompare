@@ -13,7 +13,7 @@ public class FaceFunction {
      * @param imageData 将图片转为字节数组传入
      * @return 输出float[]形式的特征值
      */
-    public static float[] featureExtract(byte[] imageData) {
+    public synchronized static float[] featureExtract(byte[] imageData) {
         float[] feature = null;
         BufferedImage faceImage;
         try {
@@ -47,7 +47,7 @@ public class FaceFunction {
      * @param imagePath 传入图片的绝对路径
      * @return 返回float[]形式的特征值
      */
-    public static float[] featureExtract(String imagePath) {
+    public synchronized static float[] featureExtract(String imagePath) {
         float[] feature = null;
         File imageFile;
         ByteArrayInputStream bais = null;

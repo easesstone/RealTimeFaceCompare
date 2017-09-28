@@ -98,7 +98,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     if (result != null) {
                         feature = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_FEA);
                     } else {
-                        LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.getFeature.");
+                        LOG.error("get Result from table_person is null! used method DynamicPhotoServiceImpl.getFeature.");
                     }
                 } catch (IOException e) {
                     LOG.error("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getFeature");
@@ -112,7 +112,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     if (result != null) {
                         feature = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_FEA);
                     } else {
-                        LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getFeature.");
+                        LOG.error("get Result from table_car is null! used method DynamicPhotoServiceImpl.getFeature.");
                     }
                 } catch (IOException e) {
                     LOG.error("get feature by imageId from table_car failed! used method DynamicPhotoServiceImpl.getFeature");
@@ -155,11 +155,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                                 feaFloatList.add(featureFloat);
                             } else {
                                 feaFloatList.add(null);
-                                LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                                LOG.error("get Result from table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                             }
                         }
                     } else {
-                        LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                        LOG.error("get Result[] from table_person is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                     }
                 } catch (IOException e) {
                     LOG.info("get feature by imageId from table_person failed! used method DynamicPhotoServiceImpl.getBatchFeature");
@@ -177,11 +177,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                                 feaFloatList.add(featureFloat);
                             } else {
                                 feaFloatList.add(null);
-                                LOG.info("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                                LOG.info("get Result from table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                             }
                         }
                     } else {
-                        LOG.info("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
+                        LOG.info("get Result[] from table_car is null! used method DynamicPhotoServiceImpl.getBatchFeature.");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -372,7 +372,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                     searchMessageMap = (Map<String, Float>) byteToObject(searchMessage);
                 } else {
-                    LOG.error("get Result form table_searchRes is null! used method DynamicPhotoServiceImpl.getSearchRes.");
+                    LOG.error("get Result from table_searchRes is null! used method DynamicPhotoServiceImpl.getSearchRes.");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -475,11 +475,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                             }
                             capturedPictureList.add(capturedPicture);
                         } else {
-                            LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                            LOG.error("get Result from table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                         }
                     }
                 } else {
-                    LOG.error("get Result[] form table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                    LOG.error("get Result[] from table_person is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                 }
             } else if (type == PictureType.SMALL_CAR.getType()) {
                 Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
@@ -516,11 +516,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                             }
                             capturedPictureList.add(capturedPicture);
                         } else {
-                            LOG.error("get Result form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                            LOG.error("get Result from table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                         }
                     }
                 } else {
-                    LOG.error("get Result[] form table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
+                    LOG.error("get Result[] from table_car is null! used method DynamicPhotoServiceImpl.getBatchCaptureMessage.");
                 }
             }
         }
@@ -620,7 +620,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             long timeStamp = DateUtil.dateToTimeStamp(time);
             capturedPicture.setTimeStamp(timeStamp);
         } else {
-            LOG.error("get Result form table_person is null! used method DynamicPhotoServiceImpl.setCapturedPicture_person.");
+            LOG.error("get Result from table_person is null! used method DynamicPhotoServiceImpl.setCapturedPicture_person.");
         }
     }
 
@@ -709,11 +709,11 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                         byte[] imageData = results[i].getValue(family, qualifier);
                         capturedPictureTemp.setSmallImage(imageData);
                     } else {
-                        LOG.error("get Result form table is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                        LOG.error("get Result from table is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
                     }
                 }
             } else {
-                LOG.error("get Result[] form table is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
+                LOG.error("get Result[] from table is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
             }
         } else {
             LOG.info("imageIdList is null");
