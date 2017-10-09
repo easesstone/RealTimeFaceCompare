@@ -360,33 +360,6 @@ public class WarnRuleServiceImpl implements WarnRuleService {
         }
     }
 
-    /**
-     * 向参数objectType对应的数据类型中添加成员（内部方法）
-     */
-    private static void addMembers(Map<String, Map<String, Map<Integer, String>>> objType, WarnRule rule, String ipcID) {
-        //假如objType中的键（对象类型）所指向的值为空
-        if (objType.get(rule.getObjectType()) == null) {
-            Map<String, Map<Integer, String>> ipcMap = new HashMap<>();
-            Map<Integer, String> warnMap = new HashMap<>();
-            // 一层套一层，依次在objType中存入传入规则rule中的：
-            // 告警类型（code），设备ID（ipcID）到相对应的对象类型（ObjectType）
-            warnMap.put(rule.getCode(), "");
-            ipcMap.put(ipcID, warnMap);
-            objType.put(rule.getObjectType(), ipcMap);
-        } else {
-            //假如objType中的键（对象类型）所指向的值非空，将objType的键所指向的值赋给ipcMap对象
-            Map<String, Map<Integer, String>> ipcMap = objType.get(rule.getObjectType());
-            //若ipcMap中有ipcID的键，则在ipcMap已有的ipcID键中传入规则rule中的：告警类型（code）
-            if (ipcMap.containsKey(ipcID)) {
-                ipcMap.get(ipcID).put(rule.getCode(), "");
-            } else {
-                //若ipcMap中没有ipcID的键，则依次传入规则rule中的：告警类型（code）、设备ID（ipcID）
-                Map<Integer, String> warnMap = new HashMap<>();
-                warnMap.put(rule.getCode(), "");
-                ipcMap.put(ipcID, warnMap);
-            }
-        }
-    }
 
     /**
      * 解析离线告警（内部方法）
