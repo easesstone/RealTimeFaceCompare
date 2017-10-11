@@ -33,9 +33,9 @@ public class KafkaOverFtpServer extends ClusterOverFtp {
         KafkaFileSystemFactory kafkaFileSystemFactory = new KafkaFileSystemFactory();
         serverFactory.setFileSystem(kafkaFileSystemFactory);
         log.info("Set kafka file system factory is successful, " + kafkaFileSystemFactory.getClass());
-        // TODO: 2017-10-9  
+        //set connection config
         KafkaConnectionConfigFactory connectionConfigFactory = new KafkaConnectionConfigFactory();
-        System.out.println(connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
+        log.info("the maxLogins is :" + connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
         serverFactory.setConnectionConfig(connectionConfigFactory.createUDConnectionConfig());
         log.info("Set user defined connection config file is successful, " + connectionConfigFactory.getClass());
         FtpServer server = serverFactory.createServer();
