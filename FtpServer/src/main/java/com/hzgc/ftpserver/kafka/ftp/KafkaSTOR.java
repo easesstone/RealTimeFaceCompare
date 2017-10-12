@@ -31,7 +31,6 @@ public class KafkaSTOR extends AbstractCommand {
             kafkaContext = (KafkaFtpServerContext) context;
         }
         try {
-
             // argument check
             String fileName = request.getArgument();
             if (fileName == null) {
@@ -129,6 +128,7 @@ public class KafkaSTOR extends AbstractCommand {
                             String faceKey = FtpUtil.faceKey(faceNum, key);
                             kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFace(), faceKey, photBytes);
                             Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceKey);
+                            // TODO: 2017-10-12
                             SendResult tempResult = rocketMQProducer.
                                     send(parseKey.get("ipcID"), parseKey.get("mqkey"), photBytes);
 
