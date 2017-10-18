@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 多线程
@@ -25,11 +24,11 @@ public class RealTimeCompare implements Serializable {
     private String searchId;//查询Id 由UUID生成
     private DynamicPhotoService dynamicPhotoService;
     private List<String> imageIdList;//用于保存筛选出来的一组一个图片的id
-    private List<String> imageIdFilterList;//过滤大图后的图片Id列表
     private SearchResult searchResult;//查询结果，最终的返回值
     private List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
     private List<Float> simList;//相似度列表，保存比对后的相似度
     private List<CapturedPicture> capturedPictureList;//图片对象列表
+    private String insertType;
 
     public RealTimeCompare() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
@@ -56,7 +55,8 @@ public class RealTimeCompare implements Serializable {
             if (null != searchType) {
                 //查询的对象库是人
                 if (searchType == SearchType.PERSON) {
-                    PictureType pictureType = PictureType.PERSON;
+                    insertType = DynamicTable.PERSON_TYPE;
+                    PictureType pictureType = PictureType.SMALL_PERSON;
                     //上传的参数中有图
                     if (null != image && image.length > 0) {
                         searchResult = compareByImage(pictureType, option);
@@ -72,7 +72,8 @@ public class RealTimeCompare implements Serializable {
                 }
                 //查询的对象库是车
                 else if (searchType == SearchType.CAR) {
-                    PictureType pictureType = PictureType.CAR;
+                    insertType = DynamicTable.CAR_TYPE;
+                    PictureType pictureType = PictureType.SMALL_CAR;
                     //上传的参数中有图
                     if (null != image && image.length > 0) {
                         searchResult = compareByImage(pictureType, option);
@@ -86,86 +87,63 @@ public class RealTimeCompare implements Serializable {
                         }
                     }
                 }
-            } else {//searchType 为空，则同时返回人、车
+            } else {
+                //searchType 为空，则同时返回人、车
+                insertType = DynamicTable.MIX_TYPE;
                 PictureType pictureType;
                 List<String> personImageIdList;
                 option.setSearchType(SearchType.PERSON);
                 personImageIdList = getImageIdListFromEs(option);
+
                 //通过es查询到的车辆图片id列表
                 List<String> carImageIdList = null;
+                /**
+                 * 摄像头同时支持人脸和车辆抓拍时解除下面注释，从车辆动态库中获取抓拍图片
+                 */
                /* option.setSearchType(SearchType.CAR);
                 carImageIdList = getImageIdListFromEs(option);*/
                 List<String> personAddCarList = new ArrayList<>();//用于同时保存人车图片id
                 capturedPictureList = new ArrayList<>();//用于同时保存人车图片对象
                 if (null != personImageIdList && personImageIdList.size() > 0) {
-                    List<String> personImageIdFilterList;
-                    personImageIdFilterList = personImageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-                    if (null != personImageIdFilterList && personImageIdList.size() > 0) {
-                        personAddCarList.addAll(personImageIdFilterList);
-                        pictureType = PictureType.PERSON;
-                        List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getMultiBatchCaptureMessage(personImageIdFilterList, pictureType.getType());
-                        if (null != capturedPicturesPerson) {
-                            capturedPictureList.addAll(capturedPicturesPerson);
-                        } else {
-                            LOG.info("get person capturedPicture null");
-                        }
+                    personAddCarList.addAll(personImageIdList);
+                    pictureType = PictureType.SMALL_PERSON;
+                    List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getMultiBatchCaptureMessage(personImageIdList, pictureType.getType());
+                    if (null != capturedPicturesPerson) {
+                        capturedPictureList.addAll(capturedPicturesPerson);
                     } else {
-                        LOG.info("no face image in person table");
+                        LOG.info("get person capturedPicture null");
                     }
                 } else {
                     LOG.info("no person image get from es");
                 }
-                //添加分割符
                 if (null != carImageIdList && carImageIdList.size() > 0) {
-                    List<String> carImageIdFilterList;
-                    carImageIdFilterList = carImageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-                    if (null != carImageIdFilterList && carImageIdFilterList.size() > 0) {
-                        personAddCarList.addAll(carImageIdFilterList);
-                        pictureType = PictureType.CAR;
-                        List<CapturedPicture> capturedPicturesCar = dynamicPhotoService.getMultiBatchCaptureMessage(carImageIdFilterList, pictureType.getType());
-                        if (null != capturedPicturesCar) {
-                            capturedPictureList.addAll(capturedPicturesCar);
-                        } else {
-                            LOG.info("get car capturedPicture null");
-                        }
+                    personAddCarList.addAll(carImageIdList);
+                    pictureType = PictureType.SMALL_CAR;
+                    List<CapturedPicture> capturedPicturesCar = dynamicPhotoService.getMultiBatchCaptureMessage(carImageIdList, pictureType.getType());
+                    if (null != capturedPicturesCar) {
+                        capturedPictureList.addAll(capturedPicturesCar);
                     } else {
-                        LOG.info("no small car image in person table");
+                        LOG.info("get car capturedPicture null");
                     }
                 } else {
                     LOG.info("no image of car get from es");
                 }
-                boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictureList);
-                if (flag) {
-                    LOG.info("The search history of: [" + searchId + "] saved successful");
-                } else {
-                    LOG.info("The search history of: [" + searchId + "] saved failure");
+                searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+                List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                //读取imageData并返回结果
+                List<CapturedPicture> FullCapturePictureList = new ArrayList<>(count);
+                for (CapturedPicture capturedPicture : capturedPictureRes) {
+                    FullCapturePictureList.add(dynamicPhotoService.getImageData(capturedPicture));
                 }
-                searchResult = sortAndSplit(capturedPictureList, sortParams);
-                searchResult.setSearchId(searchId);
+                searchResult.setPictures(FullCapturePictureList);
             }
         } else {
             LOG.error("search parameter option is null");
-            searchResult = null;
+            searchResult.setSearchId(null);
+            searchResult.setPictures(null);
+            searchResult.setTotal(0);
         }
         return searchResult;
-    }
-
-    /**
-     * 设置默认相似度为0.00f
-     *
-     * @param imageIdList
-     * @return
-     */
-    private Map<String, Float> setDefaultSimilarity(List<String> imageIdList) {
-        Map<String, Float> imgSimMap = new HashMap<>();
-        if (null != imageIdList) {
-            for (int i = 0, len = imageIdList.size(); i < len; i++) {
-                imgSimMap.put(imageIdList.get(i), 0.00f);
-            }
-        } else {
-            LOG.info("imageIdList is null");
-        }
-        return imgSimMap;
     }
 
     /**
@@ -177,49 +155,34 @@ public class RealTimeCompare implements Serializable {
      */
     private SearchResult compareByImage(PictureType pictureType, SearchOption option) {
         //对上传的图片提取特征
-        long feaExtrTime = System.currentTimeMillis();
         float[] searchFea = FaceFunction.featureExtract(image);
-        System.out.println("特征提取的时间消耗：" + (System.currentTimeMillis() - feaExtrTime));
         if (null != searchFea && searchFea.length == 512) {
             //将图片特征插入到特征库
-            long featureSaveTime = System.currentTimeMillis();
             boolean insertStatus = dynamicPhotoService.upPictureInsert(pictureType, searchId, searchFea, image);
-            LOG.info("特征插入到HBase时间消耗：" + (System.currentTimeMillis() - featureSaveTime));
             if (insertStatus) {
                 LOG.info("feature[" + searchId + "]insert into HBase successful");
             } else {
                 LOG.error("feature[" + searchId + "] insert into HBase failed");
             }
             //采用HBase+elasticSearch，根据deviceId、时间参数圈定查询范围,得到一组满足条件的图像id
-            long esTime = System.currentTimeMillis();
             imageIdList = getImageIdListFromEs(option);
-            LOG.info("从es中筛选图片Id的数量" + imageIdList.size() + " ,时间消耗：" + (System.currentTimeMillis() - esTime));
-            long filterSpicTime = System.currentTimeMillis();
-            //采用java 8
             if (null != imageIdList && imageIdList.size() > 0) {
-                imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-                LOG.info("过滤出小图的数量：" + imageIdFilterList.size() + " ,时间消耗：" + (System.currentTimeMillis() - filterSpicTime));
-                if (null != imageIdFilterList && imageIdFilterList.size() > 0) {
-                    //根据imageId找出对应特征加入组成二元组并加入到列表
-                    try {
-                        long getFeaTime = System.currentTimeMillis();
-                        feaFloatList = getFeaByImageId(imageIdFilterList, pictureType);
-                        LOG.info("从HBase中获取特征的数量：" + feaFloatList.size() + ",时间消耗：" + (System.currentTimeMillis() - getFeaTime));
-                    } catch (Exception e) {
-                        LOG.error("get float[] feature failed by getFeaByImageId method");
-                    }
-                    long compareTime = System.currentTimeMillis();
-                    if (null != feaFloatList && feaFloatList.size() > 0) {
-                        simList = featureCompare(searchFea, feaFloatList);
-                    } else {
-                        LOG.info("feaFloatList is null");
-                    }
-                    LOG.info("特征比对数量：" + feaFloatList.size() + " ,时间消耗：" + (System.currentTimeMillis() - compareTime));
-                    //根据阈值对计算结果进行过滤，并进行排序分页等操作
-                    searchResult = lastResult(imageIdFilterList, simList, threshold, pictureType.getType(), sortParams);
-                } else {
-                    LOG.info("imageIdFilterList is null");
+                try {
+                    feaFloatList = getFeaByImageId(imageIdList, pictureType);
+                } catch (Exception e) {
+                    LOG.error("get float[] feature failed by getFeaByImageId method");
                 }
+                if (null != feaFloatList && feaFloatList.size() > 0) {
+                    simList = featureCompare(searchFea, feaFloatList);
+                } else {
+                    LOG.info("feaFloatList is null");
+                }
+                //根据阈值对计算结果进行过滤，并进行排序分页等操作
+                searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
+                List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                //读取imageData并返回结果
+                List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, pictureType.getType());
+                searchResult.setPictures(FullCapturePictureList);
             } else {
                 LOG.info("the imageIdList is null");
             }
@@ -245,28 +208,26 @@ public class RealTimeCompare implements Serializable {
                 //从es中获取数据
                 imageIdList = getImageIdListFromEs(option);
                 if (null != imageIdList && imageIdList.size() > 0) {
-                    //过滤“—00结尾”的大图
-                    imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-                    if (null != imageIdFilterList && imageIdFilterList.size() > 0) {
-                        try {
-                            //根据imageId找出对应特征加入组成二元组并加入到列表
-                            feaFloatList = getFeaByImageId(imageIdFilterList, pictureType);
-                        } catch (Exception e) {
-                            LOG.error("Failed to get feature by imageId", e);
-                        }
-                        if (null != feaFloatList && feaFloatList.size() > 0) {
-                            //对特征进行比对
-                            simList = featureCompare(searchFea, feaFloatList);
-                            if (null != simList && simList.size() > 0) {
-                                searchResult = lastResult(imageIdFilterList, simList, threshold, pictureType.getType(), sortParams);
-                            } else {
-                                LOG.info("simList is null");
-                            }
+                    try {
+                        //根据imageId找出对应特征加入组成二元组并加入到列表
+                        feaFloatList = getFeaByImageId(imageIdList, pictureType);
+                    } catch (Exception e) {
+                        LOG.error("Failed to get feature by imageId", e);
+                    }
+                    if (null != feaFloatList && feaFloatList.size() > 0) {
+                        //对特征进行比对
+                        simList = featureCompare(searchFea, feaFloatList);
+                        if (null != simList && simList.size() > 0) {
+                            searchResult = lastResult(imageIdList, simList, threshold, pictureType.getType(), sortParams);
+                            List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+                            //读取imageData并返回结果
+                            List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, pictureType.getType());
+                            searchResult.setPictures(FullCapturePictureList);
                         } else {
-                            LOG.error("all the feature of imageIdList is null");
+                            LOG.info("simList is null");
                         }
                     } else {
-                        LOG.info("imageIdFilterList is null");
+                        LOG.error("all the feature of imageIdList is null");
                     }
                 } else {
                     LOG.info("the imageIdList is null");
@@ -289,23 +250,12 @@ public class RealTimeCompare implements Serializable {
         //采用HBase+elasticSearch，根据deviceId、时间参数圈定查询范围,得到一组满足条件的图像id
         imageIdList = getImageIdListFromEs(option);
         if (null != imageIdList && imageIdList.size() > 0) {
-            //过滤掉大图
-            List<String> imageIdFilterList = imageIdList.parallelStream().filter(id -> !id.endsWith("_00")).collect(Collectors.toList());
-            if (null != imageIdFilterList && imageIdFilterList.size() > 0) {
-                capturedPictureList = dynamicPhotoService.getMultiBatchCaptureMessage(imageIdFilterList, pictureType.getType());
-                searchResult = sortAndSplit(capturedPictureList, sortParams);
-            } else {
-                LOG.info("no small image find");
-            }
-            /*Map<String, Float> imgSimMap;
-            imgSimMap = setDefaultSimilarity(imageIdFilterList);*/
-            //保存到Hbase
-            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictureList);
-            if (flag) {
-                LOG.info("The search history of: [" + searchId + "] saved successful");
-            } else {
-                LOG.error("The search history of: [" + searchId + "] saved failure");
-            }
+            capturedPictureList = dynamicPhotoService.getMultiBatchCaptureMessage(imageIdList, pictureType.getType());
+            searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+            List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
+            //读取imageData并返回结果
+            List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, pictureType.getType());
+            searchResult.setPictures(FullCapturePictureList);
         } else {
             LOG.info("no image find in es by method getImageIdListFromEs");
         }
@@ -330,9 +280,8 @@ public class RealTimeCompare implements Serializable {
      * @param pictureType 图片类型（人、车）
      * @return 图片id及其特征所组成的二元组列表
      */
-    private List<float[]> getFeaByImageId(List<String> imageIdList, final PictureType pictureType) {
-        feaFloatList = dynamicPhotoService.getMultiBatchFeature(imageIdList, pictureType);
-        return feaFloatList;
+    private List<float[]> getFeaByImageId(List<String> imageIdList, PictureType pictureType) {
+        return dynamicPhotoService.getMultiBatchFeature(imageIdList, pictureType);
     }
 
     /**
@@ -352,8 +301,7 @@ public class RealTimeCompare implements Serializable {
                 similarity = FaceFunction.featureCompare(searchFea, feaFloat);
                 simList.add(similarity);
             } else {
-                similarity = 0.00f;
-                simList.add(similarity);
+                simList.add(0.00f);
             }
         }
         return simList;
@@ -369,38 +317,47 @@ public class RealTimeCompare implements Serializable {
      * @return 阈值过滤、排序、分页后最终返回结果
      */
     private SearchResult lastResult(List<String> imageIdList, List<Float> simList, final float threshold, final int type, String sortParams) {
-        SearchResult searchResultLast;
-        long thresholdTime = System.currentTimeMillis();
-        //根据阈值对imageIdSimTupRDD进行过滤，返回大于相似度阈值的结果
         List<String> imageIdFilterList = new ArrayList<>();
         List<Float> simFilterList = new ArrayList<>();
-        HashMap<String, Float> imgSimilarityMap = new HashMap<>();
         for (int i = 0, len = imageIdList.size(); i < len; i++) {
             if (simList.get(i) > threshold) {
                 imageIdFilterList.add(imageIdList.get(i));
                 simFilterList.add(simList.get(i));
-                imgSimilarityMap.put(imageIdList.get(i), simList.get(i));
             }
         }
-        LOG.info("根据相似度过滤imageId的数量：" + imgSimilarityMap.size() + " ,时间消耗：" + (System.currentTimeMillis() - thresholdTime));
-        long getMultiBatchCaptureMessageTime = System.currentTimeMillis();
         //多线程批量读取
         capturedPictureList = dynamicPhotoService.getMultiBatchCaptureMessage(imageIdFilterList, type);
-        List<CapturedPicture> capturedPictureListTemp = setSimilaritys(capturedPictureList, imageIdFilterList, simFilterList);
-        long saveSearchTime = System.currentTimeMillis();
-        //保存到Hbase
-        boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictureListTemp);
-        LOG.info("保存查询结果时间消耗：" + (System.currentTimeMillis() - saveSearchTime));
-        if (flag) {
-            LOG.info("The search history of: [" + searchId + "] saved successful");
-        } else {
-            LOG.error("The search history of: [" + searchId + "] saved failure");
-        }
-        LOG.info("根据ImageId多线程批量获取图片对象的数量：" + capturedPictureListTemp.size() + " ,时间消耗：" + (System.currentTimeMillis() - getMultiBatchCaptureMessageTime));
-        searchResultLast = sortAndSplit(capturedPictureListTemp, sortParams);
-        return searchResultLast;
+        capturedPictureList = setSimilaritys(capturedPictureList, imageIdFilterList, simFilterList);
+        searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+        return searchResult;
     }
 
+    /**
+     * 设置默认相似度为0.00f
+     *
+     * @param imageIdList 图片ID列表
+     * @return 图片和相似度map
+     */
+    private Map<String, Float> setDefaultSimilarity(List<String> imageIdList) {
+        Map<String, Float> imgSimMap = new HashMap<>();
+        if (null != imageIdList) {
+            for (int i = 0, len = imageIdList.size(); i < len; i++) {
+                imgSimMap.put(imageIdList.get(i), 0.00f);
+            }
+        } else {
+            LOG.info("imageIdList is null");
+        }
+        return imgSimMap;
+    }
+
+    /**
+     * 为图片对象设置相似度
+     *
+     * @param capturedPictureList 图片对象
+     * @param imageIdFilterList   图片列表
+     * @param simFilterList       相似度列表
+     * @return 图片对象
+     */
     private List<CapturedPicture> setSimilaritys(List<CapturedPicture> capturedPictureList, List<String> imageIdFilterList, List<Float> simFilterList) {
         List<CapturedPicture> capturedPictureListTemp = new ArrayList<>();
         CapturedPicture capturedPicture;
@@ -413,21 +370,23 @@ public class RealTimeCompare implements Serializable {
     }
 
     /**
-     * 根据阈值过滤后的imageIdList批量查询数据对象分组排
+     * 根据阈值过滤后的imageIdList批量查询数据对象分组排序
      *
      * @param capturedPictures 根据阈值过滤之后的对象列表
      * @return 最终查询结果
      */
-    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictures, String sortParams) {
+    private SearchResult sortAndSplit(List<CapturedPicture> capturedPictures, String sortParams, int offset, int count) {
         SearchResult searchResultTemp = new SearchResult();
-        List<CapturedPicture> capturedPicturesLast;
+        List<CapturedPicture> capturedPicturesSorted;
         if (null != capturedPictures && capturedPictures.size() > 0) {
-            long sortTime = System.currentTimeMillis();
-            capturedPicturesLast = sortByParams(capturedPictures, sortParams);
-            LOG.info("对" + capturedPictures.size() + "张图片对象进行排序时间消耗：" + (System.currentTimeMillis() - sortTime));
-            long splitTime = System.currentTimeMillis();
-            List<CapturedPicture> subCapturedPictures = pageSplit(capturedPicturesLast, offset, count);
-            LOG.info("分页返回" + subCapturedPictures.size() + "时间消耗：" + (System.currentTimeMillis() - splitTime));
+            capturedPicturesSorted = sortByParams(capturedPictures, sortParams);
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPicturesSorted, insertType);
+            if (flag) {
+                LOG.info("The search history of: [" + searchId + "] saved successful");
+            } else {
+                LOG.error("The search history of: [" + searchId + "] saved failure");
+            }
+            List<CapturedPicture> subCapturedPictures = pageSplit(capturedPicturesSorted, offset, count);
             searchResultTemp = new SearchResult();
             searchResultTemp.setPictures(subCapturedPictures);
             searchResultTemp.setSearchId(searchId);
@@ -449,7 +408,6 @@ public class RealTimeCompare implements Serializable {
         //对排序参数进行读取和预处理
         SortParam sortParam = ListUtils.getOrderStringBySort(sortParams);
         if (null != sortParams && sortParams.length() > 0) {
-            //根据自定义的排序方法进行排序
             ListUtils.sort(capturedPictures, sortParam.getSortNameArr(), sortParam.getIsAscArr());
         } else {
             LOG.info("sortParams is null!");
