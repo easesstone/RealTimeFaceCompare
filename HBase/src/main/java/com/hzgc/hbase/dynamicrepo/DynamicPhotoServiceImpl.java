@@ -137,6 +137,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @param type        查询类型
      * @return 特征值列表
      */
+    @Override
     public List<float[]> getBatchFeature(List<String> imageIdList, PictureType type) {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
@@ -210,7 +211,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public List<float[]> getMultiBatchFeature(List<String> imageIdList, PictureType type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*2 = 10 （线程池数量）
-        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 10;
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         LOG.info("当前线程数：" + parallel);
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
@@ -241,7 +242,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         // Wait for all the tasks to finish
         try {
             boolean stillRunning = !executor.awaitTermination(
-                    6000000, TimeUnit.MILLISECONDS);
+                    10000, TimeUnit.MILLISECONDS);
             if (stillRunning) {
                 try {
                     executor.shutdownNow();
@@ -394,6 +395,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @param type    图片类型，人/车
      * @return CapturedPicture
      */
+    @Override
     public CapturedPicture getCaptureMessage(String imageId, int type) {
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId) {
@@ -538,7 +540,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     @Override
     public List<CapturedPicture> getMultiBatchCaptureMessage(List<String> imageIdList, int type) {
         //一般线程数设置为 （cpu（核数）+1）*线程处理时间，四核cpu （4+1）*5 = 20 （线程池数量）
-        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 10;
+        int parallel = (Runtime.getRuntime().availableProcessors() + 1) * 2;
         LOG.info("当前线程数：" + parallel);
         List<List<String>> lstBatchImageId;
         if (imageIdList.size() < parallel) {
@@ -569,7 +571,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         // Wait for all the tasks to finish
         try {
             boolean stillRunning = !executor.awaitTermination(
-                    6000000, TimeUnit.MILLISECONDS);
+                    10000, TimeUnit.MILLISECONDS);
             if (stillRunning) {
                 try {
                     executor.shutdownNow();
@@ -647,7 +649,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     }
 }
 
-//调用接口类，实现Callable接口（彭聪）
+/**
+ * 调用接口类，实现Callable接口（彭聪）
+ */
 class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, Serializable {
     private List<String> keys;
     private int type;
@@ -657,6 +661,7 @@ class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, S
         this.type = searchType;
     }
 
+    @Override
     public List<CapturedPicture> call() throws Exception {
         DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
         return dynamicPhotoService.getBatchCaptureMessage(keys, type);
@@ -664,7 +669,9 @@ class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, S
 
 }
 
-//调用接口类，实现Callable接口（彭聪）
+/**
+ * 调用接口类，实现Callable接口（彭聪）
+ */
 class BatchFeaCallable implements Callable<List<float[]>>, Serializable {
     private List<String> keys;
     private PictureType type;
@@ -674,6 +681,7 @@ class BatchFeaCallable implements Callable<List<float[]>>, Serializable {
         this.type = pictureType;
     }
 
+    @Override
     public List<float[]> call() throws Exception {
         DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
         return dynamicPhotoService.getBatchFeature(keys, type);

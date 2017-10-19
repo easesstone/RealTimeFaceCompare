@@ -2,6 +2,7 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.ftpserver.ClusterOverFtp;
 import com.hzgc.ftpserver.local.LocalPropertiesUserManagerFactory;
+import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.listener.ListenerFactory;
@@ -23,6 +24,11 @@ public class KafkaOverFtpServer extends ClusterOverFtp {
         log.info("Add listner, name:default, class:" + serverFactory.getListener("default").getClass());
         // set customer user manager
         LocalPropertiesUserManagerFactory userManagerFactory = new LocalPropertiesUserManagerFactory();
+        try {
+            userManagerFactory.setFile(FileUtil.loadResourceFile("users.properties"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         serverFactory.setUserManager(userManagerFactory.createUserManager());
         log.info("Set customer user manager factory is successful, " + userManagerFactory.getClass());
         //set customer cmd factory
@@ -35,8 +41,8 @@ public class KafkaOverFtpServer extends ClusterOverFtp {
         log.info("Set kafka file system factory is successful, " + kafkaFileSystemFactory.getClass());
         // set connection config
         KafkaConnectionConfigFactory connectionConfigFactory = new KafkaConnectionConfigFactory();
-        log.info("the maxLogins is :" + connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
-        serverFactory.setConnectionConfig(connectionConfigFactory.createUDConnectionConfig());
+        log.info("the maxLogins is :" + connectionConfigFactory.createConnectionConfig().getMaxLogins());
+        serverFactory.setConnectionConfig(connectionConfigFactory.createConnectionConfig());
         log.info("Set user defined connection config file is successful, " + connectionConfigFactory.getClass());
         FtpServer server = serverFactory.createServer();
         try {

@@ -2,6 +2,7 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.ftpserver.kafka.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.local.LocalIODataConnection;
+import com.hzgc.ftpserver.local.LocalSTOR;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
@@ -120,6 +121,7 @@ public class KafkaSTOR extends AbstractCommand {
                 } else {
                     if (file.getName().contains(".json")) {
                         kafkaProducer.sendKafkaMessage(ProducerOverFtp.getJson(), key, photBytes);
+
                     } else if (fileName.contains(".jpg")) {
                         //it is picture
                         if (FtpUtil.pickPicture(fileName) == 0) {

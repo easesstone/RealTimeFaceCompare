@@ -18,6 +18,7 @@ public class LocalPropertiesUserManagerFactory implements UserManagerFactory, Se
 
     private PasswordEncryptor passwordEncryptor = new Md5PasswordEncryptor();
 
+    @Override
     public UserManager createUserManager() {
         if (userDataURL != null) {
             return new LocalPropertiesUserManager(passwordEncryptor, userDataURL,
