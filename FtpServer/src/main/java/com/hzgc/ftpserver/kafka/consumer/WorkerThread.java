@@ -52,6 +52,7 @@ public class WorkerThread implements Runnable, Serializable {
         LOG.info("Create [" + Thread.currentThread().getName() + "] of PicWorkerThreads success");
     }
 
+    @Override
     public void run() {
         send();
     }
