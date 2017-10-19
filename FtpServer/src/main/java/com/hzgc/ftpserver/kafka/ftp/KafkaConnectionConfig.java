@@ -2,10 +2,10 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import org.apache.ftpserver.ConnectionConfig;
 
-/**
- * Created by Administrator on 2017-10-9.
- */
-public class KafkaConnectionConfig implements ConnectionConfig {
+import java.io.Serializable;
+
+
+public class KafkaConnectionConfig implements ConnectionConfig, Serializable {
     private int maxLogins = 10;
 
     private boolean anonymousLoginEnabled = true;

@@ -96,4 +96,5 @@ public class KafkaFtpServerFactory extends FtpServerFactory implements Serializa
     public void setConnectionConfig(final ConnectionConfig connectionConfig) {
         kafkaFtpServerContext.setConnectionConfig(connectionConfig);
     }
+
 }

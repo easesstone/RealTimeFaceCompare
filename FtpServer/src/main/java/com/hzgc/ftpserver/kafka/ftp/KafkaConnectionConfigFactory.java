@@ -2,12 +2,12 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.ConnectionConfig;
-import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.impl.DefaultConnectionConfig;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Optional;
 
 /**
  * Created by Administrator on 2017-10-9.
@@ -31,30 +31,19 @@ public class KafkaConnectionConfigFactory {
      * @return The {@link ConnectionConfig} instance
      */
     public ConnectionConfig createConnectionConfig() {
-        return new DefaultConnectionConfig(anonymousLoginEnabled,
-                loginFailureDelay, maxLogins, maxAnonymousLogins,
-                maxLoginFailures, maxThreads);
-    }
-
-    ConnectionConfig createUDConnectionConfig() {
-        FtpServerFactory factory = new FtpServerFactory();
         Properties props = new Properties();
         try {
             props.load(new FileInputStream(FileUtil.loadResourceFile("users.properties")));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int maxLogins = Integer.parseInt(props.getProperty("admin.maxloginnumber"));
-        boolean anonymousLoginEnabled = Boolean.parseBoolean(props.getProperty("anonymous.enableflag"));
-        int maxAnonymousLogins = Integer.parseInt(props.getProperty("anonymous.maxloginnumber"));
-        int maxLoginFailures = Integer.parseInt(props.getProperty("maxLoginFailures"));
-        int loginFailureDelay = Integer.parseInt(props.getProperty("loginFailureDelay"));
-        int maxThreads = Integer.parseInt(props.getProperty("maxThreads"));
-
-        factory.setConnectionConfig(new KafkaConnectionConfig(anonymousLoginEnabled,
+        int maxLogins = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.admin.maxloginnumber"));
+        boolean anonymousLoginEnabled = Boolean.parseBoolean(props.getProperty("com.hzgc.ftpserver.user.anonymous.enableflag"));
+        int maxAnonymousLogins = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.anonymous.maxloginnumber"));
+        //另外三个参数在配置文件中没有配置，此处采用默认设置
+        return new DefaultConnectionConfig(anonymousLoginEnabled,
                 loginFailureDelay, maxLogins, maxAnonymousLogins,
-                maxLoginFailures, maxThreads));
-        return factory.getConnectionConfig();
+                maxLoginFailures, maxThreads);
     }
 
     /**

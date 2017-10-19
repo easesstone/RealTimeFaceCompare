@@ -38,6 +38,7 @@ public class ConsumerHandlerThread implements Runnable, Serializable {
         this.tableName = propers.getProperty("table_name");
     }
 
+    @Override
     public void run() {
         int workerNum = Integer.parseInt(propers.getProperty("workerNum"));
         long getTimeOut = Long.parseLong(propers.getProperty("getTimeOut"));
