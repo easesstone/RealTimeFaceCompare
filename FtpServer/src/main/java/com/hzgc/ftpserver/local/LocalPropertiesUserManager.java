@@ -328,34 +328,31 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
             UsernamePasswordAuthentication upauth = (UsernamePasswordAuthentication) authentication;
 
             String user = upauth.getUsername();
-            System.out.println("the user is:"+user);
             String password = upauth.getPassword();
-            System.out.println("the password is:"+password);
 
             if (user == null) {
-                System.out.println("user is null");
+                LOG.info("user is null");
                 throw new AuthenticationFailedException("Authentication failed");
             }
 
             if (password == null) {
-                System.out.println("password is null");
+                LOG.info("password is null");
                 password = "";
             }
 
             String storedPassword = userDataProp.getProperty(PREFIX + user
                     + '.' + ATTR_PASSWORD);
-            System.out.println("the storedPassword is:"+storedPassword);
 
             if (storedPassword == null) {
                 // user does not exist
-                System.out.println("storedPassword is null");
+                LOG.info("storedPassword is null");
                 throw new AuthenticationFailedException("Authentication failed");
             }
 
             if (getPasswordEncryptor().matches(password, storedPassword)) {
                 return getUserByName(user);
             } else {
-                System.out.println("password not match storedPassword");
+               LOG.info("password not match storedPassword");
                 throw new AuthenticationFailedException("Authentication failed");
             }
 
@@ -363,7 +360,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
             if (doesExist("anonymous")) {
                 return getUserByName("anonymous");
             } else {
-                System.out.println("anonymous is not exist");
+                LOG.info("anonymous is not exist");
                 throw new AuthenticationFailedException("Authentication failed");
             }
         } else {

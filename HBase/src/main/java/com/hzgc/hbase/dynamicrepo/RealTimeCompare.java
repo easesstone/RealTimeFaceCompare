@@ -137,12 +137,14 @@ public class RealTimeCompare implements Serializable {
 
                 //通过es查询到的车辆图片id列表
                 List<String> carImageIdList = null;
-                /**
+                /*
                  * 摄像头同时支持人脸和车辆抓拍时解除下面注释，从车辆动态库中获取抓拍图片
                  */
                /* option.setSearchType(SearchType.CAR);
                 carImageIdList = getImageIdListFromEs(option);*/
-                /*用于同时保存人车图片id*/
+                /*
+                * 用于同时保存人车图片id
+                */
                 List<String> personAddCarList = new ArrayList<>();
                 /*用于同时保存人车图片对象*/
                 capturedPictureList = new ArrayList<>();

@@ -2,6 +2,8 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.ConnectionConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.util.Properties;
  * Created by Administrator on 2017-10-9.
  */
 public class KafkaConnectionConfigFactory {
+    private final Logger LOG = LoggerFactory.getLogger(KafkaConnectionConfigFactory.class);
     private int maxLogins = 10;
 
     private boolean anonymousLoginEnabled = true;
@@ -36,11 +39,17 @@ public class KafkaConnectionConfigFactory {
             e.printStackTrace();
         }
         int maxLogins = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.admin.maxloginnumber"));
+        LOG.info("com.hzgc.ftpserver.user.admin.maxloginnumber: "+maxLogins);
         boolean anonymousLoginEnabled = Boolean.parseBoolean(props.getProperty("com.hzgc.ftpserver.user.anonymous.enableflag"));
+        LOG.info("com.hzgc.ftpserver.user.anonymous.enableflag: "+anonymousLoginEnabled);
         int maxAnonymousLogins = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.anonymous.maxloginnumber"));
+        LOG.info("com.hzgc.ftpserver.user.anonymous.maxloginnumber: "+maxAnonymousLogins);
         int maxLoginFailures = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxLoginFailures"));
+        LOG.info("com.hzgc.ftpserver.user.maxLoginFailures: "+maxLoginFailures);
         int loginFailureDelay = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.loginFailureDelay"));
+        LOG.info("com.hzgc.ftpserver.user.loginFailureDelay: "+loginFailureDelay);
         int maxThreads = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxThreads"));
+        LOG.info("com.hzgc.ftpserver.user.maxThreads: "+maxThreads);
         //另外三个参数在配置文件中没有配置，此处采用默认设置
         return new KafkaConnectionConfig(anonymousLoginEnabled,
                 loginFailureDelay, maxLogins, maxAnonymousLogins,
