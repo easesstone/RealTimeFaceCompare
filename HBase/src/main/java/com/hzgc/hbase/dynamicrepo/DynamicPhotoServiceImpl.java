@@ -655,7 +655,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return 返回包含图片数据的图片对象
      */
     @Override
-    public List<CapturedPicture> getFullImageData(List<CapturedPicture> capturedPictures, int type) {
+    public List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type) {
         if (null != capturedPictures && capturedPictures.size() > 0) {
             Table table;
             byte[] family;
@@ -685,18 +685,18 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return 返回包含图片数据的图片对象
      */
     private List<CapturedPicture> getBatchImageData(List<CapturedPicture> capturedPictures, Table table, byte[] family, byte[] qualifier) {
-        List<String> CurrentImageIdList = new ArrayList<>();
+        List<String> currentImageIdList = new ArrayList<>();
         for (CapturedPicture capturedPicture : capturedPictures) {
-            CurrentImageIdList.add(capturedPicture.getId());
+            currentImageIdList.add(capturedPicture.getId());
         }
-        if (CurrentImageIdList.size() > 0) {
+        if (currentImageIdList.size() > 0) {
             List<Get> gets = new ArrayList<>();
-            for (String anImageIdList : CurrentImageIdList) {
+            for (String anImageIdList : currentImageIdList) {
                 Get get = new Get(Bytes.toBytes(anImageIdList));
                 get.addColumn(family, qualifier);
                 gets.add(get);
             }
-            Result[] results = new Result[CurrentImageIdList.size()];
+            Result[] results = new Result[currentImageIdList.size()];
             try {
                 results = table.get(gets);
                 HBaseUtil.closTable(table);

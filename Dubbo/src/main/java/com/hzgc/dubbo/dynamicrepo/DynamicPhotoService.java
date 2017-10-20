@@ -109,7 +109,7 @@ public interface DynamicPhotoService {
      * @param type
      * @return
      */
-    List<CapturedPicture> getFullImageData(List<CapturedPicture> capturedPictures, int type);
+    List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type);
 
     /**
      * 返回单张图片数据流
