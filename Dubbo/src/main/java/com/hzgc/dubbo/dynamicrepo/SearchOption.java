@@ -38,7 +38,7 @@ public class SearchOption implements Serializable {
      */
     private String platformId;
     /**
-     * 开始日期
+     * 开始日期f
      */
     private Date startDate;
     /**

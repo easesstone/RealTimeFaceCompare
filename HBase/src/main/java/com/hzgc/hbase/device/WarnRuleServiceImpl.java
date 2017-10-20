@@ -257,6 +257,7 @@ public class WarnRuleServiceImpl implements WarnRuleService {
     /**
      * objectTypeHasRule(String objectType)的子方法 （外）（赵喆）
      */
+    @Override
     public int deleteObjectTypeOfRules(String objectType, List<String> ipcIDs) {
         return 0;
     }

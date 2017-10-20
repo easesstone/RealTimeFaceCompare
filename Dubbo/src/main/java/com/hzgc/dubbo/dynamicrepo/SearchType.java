@@ -7,6 +7,10 @@ import java.io.Serializable;
  */
 public enum SearchType implements Serializable {
     /**
+     * 默认人车同时查询
+     */
+    DEFAULT,
+    /**
      * 搜索类型为人
      */
     PERSON,

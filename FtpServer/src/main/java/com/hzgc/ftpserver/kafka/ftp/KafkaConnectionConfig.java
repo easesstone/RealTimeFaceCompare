@@ -2,10 +2,10 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import org.apache.ftpserver.ConnectionConfig;
 
-/**
- * Created by Administrator on 2017-10-9.
- */
-public class KafkaConnectionConfig implements ConnectionConfig {
+import java.io.Serializable;
+
+
+public class KafkaConnectionConfig implements ConnectionConfig, Serializable {
     private int maxLogins = 10;
 
     private boolean anonymousLoginEnabled = true;
@@ -30,26 +30,32 @@ public class KafkaConnectionConfig implements ConnectionConfig {
         this.maxThreads = maxThreads;
     }
 
+    @Override
     public int getLoginFailureDelay() {
         return loginFailureDelay;
     }
 
+    @Override
     public int getMaxAnonymousLogins() {
         return maxAnonymousLogins;
     }
 
+    @Override
     public int getMaxLoginFailures() {
         return maxLoginFailures;
     }
 
+    @Override
     public int getMaxLogins() {
         return maxLogins;
     }
 
+    @Override
     public boolean isAnonymousLoginEnabled() {
         return anonymousLoginEnabled;
     }
 
+    @Override
     public int getMaxThreads() {
         return maxThreads;
     }

@@ -53,4 +53,5 @@ public interface CapturePictureSearchService {
      */
     List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
 
+
 }

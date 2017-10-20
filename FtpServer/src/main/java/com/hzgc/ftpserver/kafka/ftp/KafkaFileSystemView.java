@@ -54,6 +54,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
         currDir = "/";
     }
 
+    @Override
     public FtpFile getHomeDirectory() {
         return new KafkaFtpFile("/", new File(rootDir), user);
     }
@@ -61,6 +62,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Get the current directory.
      */
+    @Override
     public FtpFile getWorkingDirectory() {
         FtpFile fileObj = null;
         if (currDir.equals("/")) {
@@ -76,6 +78,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Get file object.
      */
+    @Override
     public FtpFile getFile(String file) {
 
         // get actual file object
@@ -91,6 +94,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Change directory.
      */
+    @Override
     public boolean changeWorkingDirectory(String dir) {
 
         // not a directory - return false
@@ -114,6 +118,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Is the file content random accessible?
      */
+    @Override
     public boolean isRandomAccessible() {
         return true;
     }
@@ -121,6 +126,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Dispose file system view - does nothing.
      */
+    @Override
     public void dispose() {
     }
 }

@@ -84,25 +84,25 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                     //读取imageData并返回结果
                     List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
                     int type = PictureType.SMALL_PERSON.getType();
-                    List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, type);
-                    searchResult.setPictures(FullCapturePictureList);
+                    List<CapturedPicture> fullCapturePictureList = dynamicPhotoService.getImageData(capturedPictureRes, type);
+                    searchResult.setPictures(fullCapturePictureList);
                 } else if (searchType.equals(DynamicTable.CAR_TYPE)) {
                     //结果集（capturedPictureList）分页返回
                     searchResult = sortAndSplit(capturedPictureList, offset, count);
                     //读取imageData并返回结果
                     List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
                     int type = PictureType.SMALL_CAR.getType();
-                    List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, type);
-                    searchResult.setPictures(FullCapturePictureList);
+                    List<CapturedPicture> fullCapturePictureList = dynamicPhotoService.getImageData(capturedPictureRes, type);
+                    searchResult.setPictures(fullCapturePictureList);
                 } else {
                     searchResult = sortAndSplit(capturedPictureList, offset, count);
                     List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
-                    List<CapturedPicture> FullCapturePictureList = new ArrayList<>();
+                    List<CapturedPicture> fullCapturePictureList = new ArrayList<>();
                     for (CapturedPicture capturedPicture : capturedPictureRes) {
                         capturedPicture = dynamicPhotoService.getImageData(capturedPicture);
-                        FullCapturePictureList.add(capturedPicture);
+                        fullCapturePictureList.add(capturedPicture);
                     }
-                    searchResult.setPictures(FullCapturePictureList);
+                    searchResult.setPictures(fullCapturePictureList);
                 }
             } else {
                 LOG.info("get searchMessageMap null from table_searchRes");
@@ -123,7 +123,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     public Map<String, String> getSearchFilterParams(int type) {
         return null;
     }
-
     /**
      * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *

@@ -50,7 +50,6 @@ public class FilterByRowkey {
      */
     public List<String> filterByPlateNumber(SearchOption option, Scan scan) {
         List<String> rowKeyList = new ArrayList<>();
-
         if (option.getPlateNumber() == null) {
             String plateNumber = option.getPlateNumber();
             Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
@@ -198,6 +197,137 @@ public class FilterByRowkey {
                 .setScroll(new TimeValue(60000))
                 .setExplain(true)
                 .setSize(5000);
+    }
+
+    public SearchResult getRowKey_tmp(SearchOption option) {
+        SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder_tmp(option);
+        int count = option.getCount();
+        return dealWithSearchRequestBuilder_tmp(searchRequestBuilder, count);
+    }
+
+    private SearchRequestBuilder getSearchRequestBuilder_tmp(SearchOption option) {
+        // 传过来为空，返回空
+        if (option == null) {
+            return null;
+        }
+        // 获取搜索类型，搜索类型要么是人，要么是车，不可以为空，为空不处理
+        SearchType searchType = option.getSearchType();
+        // 搜索类型为空，则返回空。
+        if (searchType == null) {
+            return null;
+        }
+
+
+        // es 中的索引，
+        String index = "";
+        // es 中类型
+        String type = "";
+        // 最终封装成的boolQueryBuilder 对象。
+        BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
+
+        int offset = option.getOffset();
+        LOG.info("offset is:" + offset);
+        int count = option.getCount();
+        LOG.info("count is:" + count);
+
+
+        // 搜索类型为车的情况下
+        if (SearchType.PERSON.equals(searchType)) {
+            // 获取设备ID
+            List<String> deviceId = option.getDeviceIds();
+            // 起始时间
+            Date startTime = option.getStartDate();
+            // 结束时间
+            Date endTime = option.getEndDate();
+            // 时间段
+            List<TimeInterval> timeIntervals = option.getIntervals();
+            // 设备ID 的的boolQueryBuilder
+            BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
+            // 格式化时间
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            // 设备ID 存在的时候的处理
+            if (deviceId != null) {
+                if (deviceId != null) {
+                    Iterator it = deviceId.iterator();
+                    while (it.hasNext()) {
+                        String t = (String) it.next();
+                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery("s", t).analyzer("standard"));
+                    }
+                    totalBQ.must(devicdIdBQ);
+                }
+            }
+            // 开始时间和结束时间存在的时候的处理
+            if (startTime != null && endTime != null) {
+                String start = dateFormat.format(startTime);
+                String end = dateFormat.format(endTime);
+                totalBQ.must(QueryBuilders.rangeQuery("t").gte(start).lte(end));
+            }
+            //TimeIntervals 时间段的封装类
+            TimeInterval timeInterval;
+            // 时间段的BoolQueryBuilder
+            BoolQueryBuilder timeInQB = QueryBuilders.boolQuery();
+            // 对时间段的处理
+            if (timeIntervals != null) {
+                Iterator<TimeInterval> timeInIt = timeIntervals.iterator();
+                while (timeInIt.hasNext()) {
+                    timeInterval = timeInIt.next();
+                    int start_sj = timeInterval.getStart();
+                    start_sj = start_sj / 60 + start_sj % 60;
+                    int end_sj = timeInterval.getEnd();
+                    end_sj = end_sj / 60 + end_sj % 60;
+                    timeInQB.should(QueryBuilders.rangeQuery("sj").gte(start_sj).lte(end_sj));
+                    totalBQ.must(timeInQB);
+                }
+            }
+            index = DynamicTable.DYNAMIC_INDEX;
+            type = DynamicTable.PERSON_INDEX_TYPE;
+        } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
+
+        }
+        LOG.info("================================================");
+        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
+                .prepareSearch(index)
+                .setFetchSource(new String[]{"sj"}, null)
+                .setTypes(type)
+                .setFrom(offset)
+                .setSize(100)
+                .addSort("t", SortOrder.DESC);
+        return requestBuilder.setQuery(totalBQ);
+    }
+
+    private SearchResult dealWithSearchRequestBuilder_tmp(SearchRequestBuilder searchRequestBuilder, int count) {
+        // requestBuilder 为空，则返回空
+        if (searchRequestBuilder == null) {
+            return null;
+        }
+        // 通过SearchRequestBuilder 获取response 对象。
+        SearchResponse searchResponse = searchRequestBuilder.get();
+        // 最终要返回的值
+        SearchResult result = new SearchResult();
+        // 滚动查询
+        SearchHits searchHits = searchResponse.getHits();
+        result.setTotal((int) searchHits.getTotalHits());
+        SearchHit[] hits = searchHits.getHits();
+        List<CapturedPicture> persons = new ArrayList<>();
+        CapturedPicture capturePicture = null;
+        int i = 0;
+        if (hits.length > 0) {
+            for (SearchHit hit : hits) {
+                capturePicture = new CapturedPicture();
+                String rowKey = hit.getId();
+                if (rowKey.endsWith("_00")) {
+                    continue;
+                }
+                capturePicture.setId(rowKey);
+                persons.add(capturePicture);
+                i++;
+                if (i == count) {
+                    break;
+                }
+            }
+        }
+        result.setPictures(persons);
+        return result;
     }
 
     // 内部方法,处理SearchRequestBuilder

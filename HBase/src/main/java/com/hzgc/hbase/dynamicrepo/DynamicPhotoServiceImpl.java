@@ -133,6 +133,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @param type        查询类型
      * @return 特征值列表
      */
+    @Override
     public List<float[]> getBatchFeature(List<String> imageIdList, PictureType type) {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
@@ -237,7 +238,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         // Wait for all the tasks to finish
         try {
             boolean stillRunning = !executor.awaitTermination(
-                    6000000, TimeUnit.MILLISECONDS);
+                    10000, TimeUnit.MILLISECONDS);
             if (stillRunning) {
                 try {
                     executor.shutdownNow();
@@ -391,6 +392,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @param type    图片类型，人/车
      * @return CapturedPicture
      */
+    @Override
     public CapturedPicture getCaptureMessage(String imageId, int type) {
         CapturedPicture capturedPicture = new CapturedPicture();
         if (null != imageId) {
@@ -568,7 +570,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         // Wait for all the tasks to finish
         try {
             boolean stillRunning = !executor.awaitTermination(
-                    6000000, TimeUnit.MILLISECONDS);
+                    10000, TimeUnit.MILLISECONDS);
             if (stillRunning) {
                 try {
                     executor.shutdownNow();
@@ -653,7 +655,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return 返回包含图片数据的图片对象
      */
     @Override
-    public List<CapturedPicture> getFullImageData(List<CapturedPicture> capturedPictures, int type) {
+    public List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type) {
         if (null != capturedPictures && capturedPictures.size() > 0) {
             Table table;
             byte[] family;
@@ -683,18 +685,18 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return 返回包含图片数据的图片对象
      */
     private List<CapturedPicture> getBatchImageData(List<CapturedPicture> capturedPictures, Table table, byte[] family, byte[] qualifier) {
-        List<String> CurrentImageIdList = new ArrayList<>();
+        List<String> currentImageIdList = new ArrayList<>();
         for (CapturedPicture capturedPicture : capturedPictures) {
-            CurrentImageIdList.add(capturedPicture.getId());
+            currentImageIdList.add(capturedPicture.getId());
         }
-        if (CurrentImageIdList.size() > 0) {
+        if (currentImageIdList.size() > 0) {
             List<Get> gets = new ArrayList<>();
-            for (String anImageIdList : CurrentImageIdList) {
+            for (String anImageIdList : currentImageIdList) {
                 Get get = new Get(Bytes.toBytes(anImageIdList));
                 get.addColumn(family, qualifier);
                 gets.add(get);
             }
-            Result[] results = new Result[CurrentImageIdList.size()];
+            Result[] results = new Result[currentImageIdList.size()];
             try {
                 results = table.get(gets);
                 HBaseUtil.closTable(table);
@@ -761,7 +763,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
     }
 }
 
-//调用接口类，实现Callable接口（彭聪）
+/**
+ * 调用接口类，实现Callable接口（彭聪）
+ */
 class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, Serializable {
     private List<String> keys;
     private int type;
@@ -771,6 +775,7 @@ class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, S
         this.type = picType;
     }
 
+    @Override
     public List<CapturedPicture> call() throws Exception {
         DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
         return dynamicPhotoService.getBatchCaptureMessage(keys, type);
@@ -778,7 +783,9 @@ class BatchCapturedPictureCallable implements Callable<List<CapturedPicture>>, S
 
 }
 
-//调用接口类，实现Callable接口（彭聪）
+/**
+ * 调用接口类，实现Callable接口（彭聪）
+ */
 class BatchFeaCallable implements Callable<List<float[]>>, Serializable {
     private List<String> keys;
     private PictureType type;
@@ -788,6 +795,7 @@ class BatchFeaCallable implements Callable<List<float[]>>, Serializable {
         this.type = pictureType;
     }
 
+    @Override
     public List<float[]> call() throws Exception {
         DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
         return dynamicPhotoService.getBatchFeature(keys, type);
