@@ -29,3 +29,5 @@ HBase/src/main/resources/consumer.xml
 HBase/src/main/resources/provider.xml
 HBase/src/test/java/com/hzgc/hbase/consumer/
 /HBase/src/main/resources/
+*.properties
+*.xml
