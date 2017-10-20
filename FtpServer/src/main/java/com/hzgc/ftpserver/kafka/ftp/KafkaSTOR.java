@@ -24,6 +24,7 @@ import java.util.Map;
 public class KafkaSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(KafkaSTOR.class);
 
+    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
