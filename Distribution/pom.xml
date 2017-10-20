@@ -5,7 +5,7 @@
     <parent>
         <artifactId>rlsb</artifactId>
         <groupId>com.hzgc</groupId>
-        <version>1.0</version>
+        <version>1.5.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,42 +16,37 @@
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>ftp</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>hbase</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>jni</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hzgc</groupId>
-            <artifactId>kafka</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>rocketmq</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>streaming</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>hbase2es</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 
