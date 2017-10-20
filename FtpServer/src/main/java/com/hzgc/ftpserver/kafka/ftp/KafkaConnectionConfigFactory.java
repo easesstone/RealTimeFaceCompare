@@ -2,12 +2,10 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.ConnectionConfig;
-import org.apache.ftpserver.impl.DefaultConnectionConfig;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.Optional;
 
 /**
  * Created by Administrator on 2017-10-9.
@@ -40,8 +38,11 @@ public class KafkaConnectionConfigFactory {
         int maxLogins = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.admin.maxloginnumber"));
         boolean anonymousLoginEnabled = Boolean.parseBoolean(props.getProperty("com.hzgc.ftpserver.user.anonymous.enableflag"));
         int maxAnonymousLogins = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.anonymous.maxloginnumber"));
+        int maxLoginFailures = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxLoginFailures"));
+        int loginFailureDelay = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.loginFailureDelay"));
+        int maxThreads = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxThreads"));
         //另外三个参数在配置文件中没有配置，此处采用默认设置
-        return new DefaultConnectionConfig(anonymousLoginEnabled,
+        return new KafkaConnectionConfig(anonymousLoginEnabled,
                 loginFailureDelay, maxLogins, maxAnonymousLogins,
                 maxLoginFailures, maxThreads);
     }
