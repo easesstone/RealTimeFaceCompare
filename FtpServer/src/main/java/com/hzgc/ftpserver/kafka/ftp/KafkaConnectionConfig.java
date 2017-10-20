@@ -30,26 +30,32 @@ public class KafkaConnectionConfig implements ConnectionConfig, Serializable {
         this.maxThreads = maxThreads;
     }
 
+    @Override
     public int getLoginFailureDelay() {
         return loginFailureDelay;
     }
 
+    @Override
     public int getMaxAnonymousLogins() {
         return maxAnonymousLogins;
     }
 
+    @Override
     public int getMaxLoginFailures() {
         return maxLoginFailures;
     }
 
+    @Override
     public int getMaxLogins() {
         return maxLogins;
     }
 
+    @Override
     public boolean isAnonymousLoginEnabled() {
         return anonymousLoginEnabled;
     }
 
+    @Override
     public int getMaxThreads() {
         return maxThreads;
     }
