@@ -52,6 +52,7 @@ public class WorkerThread implements Runnable, Serializable {
         LOG.info("Create [" + Thread.currentThread().getName() + "] of PicWorkerThreads success");
     }
 
+    @Override
     public void run() {
         send();
     }
@@ -63,7 +64,6 @@ public class WorkerThread implements Runnable, Serializable {
             }
             while (true) {
                 ConsumerRecord<String, byte[]> consumerRecord = buffer.take();
-                picTable = hbaseConn.getTable(TableName.valueOf(tableName));
                 if (null != columnFamily && null != column_pic && null != consumerRecord) {
                     Put put = new Put(Bytes.toBytes(consumerRecord.key()));
                     put.setDurability(Durability.SYNC_WAL);
@@ -81,12 +81,12 @@ public class WorkerThread implements Runnable, Serializable {
                             ", partition:" + consumerRecord.partition() +
                             "]");
                     //将ipcID与time同步到ES中(只有人脸图信息同步到ES中)
-                    if (consumerRecord.topic().equals("face")){
-                        Map<String, String> mapES = new HashMap<>();
+                    if ("face".equals(consumerRecord.topic())) {
+                        Map<String, String> mapES = new HashMap<>(3);
                         mapES.put("s", ipcID);
                         mapES.put("t", dateFormat.format(timestamp));
                         mapES.put("sj", map.get("sj"));
-                        IndexResponse indexResponse =ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
+                        IndexResponse indexResponse = ElasticSearchHelper.getEsClient().prepareIndex(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE,
                                 consumerRecord.key()).setSource(mapES).get();
                         LOG.info(Thread.currentThread().getName() + "[topic:" + consumerRecord.topic() +
                                 ", key:" + consumerRecord.key() +
