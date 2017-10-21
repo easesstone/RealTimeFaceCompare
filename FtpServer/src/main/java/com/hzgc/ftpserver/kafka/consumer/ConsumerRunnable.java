@@ -16,6 +16,7 @@ public class ConsumerRunnable implements Runnable, Serializable {
         consumer.subscribe(Arrays.asList(StringUtils.split(topic, ",")));
     }
 
+    @Override
     public void run() {
 
     }

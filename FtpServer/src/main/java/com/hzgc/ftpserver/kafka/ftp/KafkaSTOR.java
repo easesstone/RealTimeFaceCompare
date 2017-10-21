@@ -2,6 +2,7 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.ftpserver.kafka.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.local.LocalIODataConnection;
+import com.hzgc.ftpserver.local.LocalSTOR;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class KafkaSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(KafkaSTOR.class);
 
+    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
@@ -31,7 +33,6 @@ public class KafkaSTOR extends AbstractCommand {
             kafkaContext = (KafkaFtpServerContext) context;
         }
         try {
-
             // argument check
             String fileName = request.getArgument();
             if (fileName == null) {
@@ -120,6 +121,7 @@ public class KafkaSTOR extends AbstractCommand {
                 } else {
                     if (file.getName().contains(".json")) {
                         kafkaProducer.sendKafkaMessage(ProducerOverFtp.getJson(), key, photBytes);
+
                     } else if (fileName.contains(".jpg")) {
                         //it is picture
                         if (FtpUtil.pickPicture(fileName) == 0) {
@@ -129,6 +131,7 @@ public class KafkaSTOR extends AbstractCommand {
                             String faceKey = FtpUtil.faceKey(faceNum, key);
                             kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFace(), faceKey, photBytes);
                             Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceKey);
+                            // TODO: 2017-10-12
                             SendResult tempResult = rocketMQProducer.
                                     send(parseKey.get("ipcID"), parseKey.get("mqkey"), photBytes);
 
@@ -136,7 +139,9 @@ public class KafkaSTOR extends AbstractCommand {
                                     parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
                             float[] feature = FaceFunction.featureExtract(photBytes);
                             if (feature != null && feature.length == 512) {
-                                kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), faceKey, FaceFunction.floatArray2ByteArray(feature));
+                                kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(),
+                                        faceKey, 
+                                        FaceFunction.floatArray2string(feature).getBytes());
                             }
                         } else {
                             LOG.info("Contains illegal file[" + file.getName() + "], write to local default");

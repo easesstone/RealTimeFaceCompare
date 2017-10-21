@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 public class KafkaOverFtpServer extends ClusterOverFtp {
     private static Logger log = Logger.getLogger(KafkaOverFtpServer.class);
 
+    @Override
     public void startFtpServer() {
         KafkaFtpServerFactory serverFactory = new KafkaFtpServerFactory();
         log.info("Create " + KafkaFtpServerFactory.class + " successful");
@@ -39,13 +40,17 @@ public class KafkaOverFtpServer extends ClusterOverFtp {
         KafkaFileSystemFactory kafkaFileSystemFactory = new KafkaFileSystemFactory();
         serverFactory.setFileSystem(kafkaFileSystemFactory);
         log.info("Set kafka file system factory is successful, " + kafkaFileSystemFactory.getClass());
+        // set connection config
+        KafkaConnectionConfigFactory connectionConfigFactory = new KafkaConnectionConfigFactory();
+        log.info("the maxLogins is :" + connectionConfigFactory.createConnectionConfig().getMaxLogins());
+        serverFactory.setConnectionConfig(connectionConfigFactory.createConnectionConfig());
+        log.info("Set user defined connection config file is successful, " + connectionConfigFactory.getClass());
         FtpServer server = serverFactory.createServer();
         try {
             server.start();
         } catch (FtpException e) {
             e.printStackTrace();
         }
-
     }
 
     public static void main(String args[]) throws Exception {

@@ -39,6 +39,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         this.user = user;
     }
 
+    @Override
     public String getAbsolutePath() {
 
         // strip the last '/' if necessary
@@ -51,6 +52,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return fullName;
     }
 
+    @Override
     public String getName() {
 
         // root - the short name will be '/'
@@ -73,50 +75,62 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return shortName;
     }
 
+    @Override
     public boolean isHidden() {
         return file.isHidden();
     }
 
+    @Override
     public boolean isDirectory() {
         return file.isDirectory();
     }
 
+    @Override
     public boolean isFile() {
         return file.isFile();
     }
 
+    @Override
     public boolean doesExist() {
         return file.exists();
     }
 
+    @Override
     public long getSize() {
         return file.length();
     }
 
+    @Override
     public String getOwnerName() {
         return "user";
     }
 
+    @Override
     public String getGroupName() {
         return "group";
     }
 
+    @Override
     public int getLinkCount() {
         return file.isDirectory() ? 3 : 1;
     }
 
+    @Override
     public long getLastModified() {
         return file.lastModified();
     }
 
+    @Override
     public boolean setLastModified(long time) {
         return file.setLastModified(time);
     }
 
+    @Override
     public boolean isReadable() {
         return file.canRead();
     }
 
+    @Override
     public boolean isWritable() {
         LOG.debug("Checking authorization for " + getAbsolutePath());
         if (user.authorize(new WriteRequest(getAbsolutePath())) == null) {
@@ -134,6 +148,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return true;
     }
 
+    @Override
     public boolean isRemovable() {
 
         // root cannot be deleted
@@ -161,6 +176,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return parentObject.isWritable();
     }
 
+    @Override
     public boolean delete() {
         boolean retVal = false;
         if (isRemovable()) {
@@ -169,6 +185,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return retVal;
     }
 
+    @Override
     public boolean move(final FtpFile dest) {
         boolean retVal = false;
         if (dest.isWritable() && isReadable()) {
@@ -186,6 +203,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return retVal;
     }
 
+    @Override
     public boolean mkdir() {
         //manual settings so that it does not create files
         boolean retVal = true;
@@ -199,6 +217,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return file;
     }
 
+    @Override
     public List<FtpFile> listFiles() {
 
         // is a directory
@@ -214,6 +233,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
 
         // make sure the files are returned in order
         Arrays.sort(files, new Comparator<File>() {
+            @Override
             public int compare(File f1, File f2) {
                 return f1.getName().compareTo(f2.getName());
             }
@@ -236,6 +256,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         return Collections.unmodifiableList(Arrays.asList(virtualFiles));
     }
 
+    @Override
     public OutputStream createOutputStream(final long offset)
             throws IOException {
 
@@ -260,6 +281,7 @@ public class KafkaFtpFile implements FtpFile, Serializable {
         };
     }
 
+    @Override
     public InputStream createInputStream(final long offset) throws IOException {
 
         // permission check
