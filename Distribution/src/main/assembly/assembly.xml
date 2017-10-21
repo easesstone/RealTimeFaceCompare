@@ -97,17 +97,6 @@
             </includes>
             <outputDirectory>\lib</outputDirectory>
         </fileSet>
-        <!-- Kafka 模块conf文件-->
-        <fileSet>
-            <directory>../Kafka/src/main/resources/</directory>
-            <includes>
-                <include>**</include>
-            </includes>
-            <excludes>
-                <exclude>spring-context.xml</exclude>
-            </excludes>
-            <outputDirectory>\conf</outputDirectory>
-        </fileSet>
 
         <!-- RocketMQ 模块conf文件-->
         <fileSet>
@@ -141,7 +130,6 @@
                 <include>com.hzgc:ftp</include>
                 <include>com.hzgc:hbase</include>
                 <include>com.hzgc:jni</include>
-                <include>com.hzgc:kafka</include>
                 <include>com.hzgc:rocketmq</include>
                 <include>com.hzgc:streaming</include>
                 <include>com.hzgc:util</include>
