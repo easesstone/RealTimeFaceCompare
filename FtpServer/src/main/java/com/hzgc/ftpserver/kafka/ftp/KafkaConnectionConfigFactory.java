@@ -7,9 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-/**
- * Created by Administrator on 2017-10-9.
- */
 public class KafkaConnectionConfigFactory {
     private int maxLogins = 10;
 
@@ -41,7 +38,6 @@ public class KafkaConnectionConfigFactory {
         int maxLoginFailures = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxLoginFailures"));
         int loginFailureDelay = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.loginFailureDelay"));
         int maxThreads = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxThreads"));
-        //另外三个参数在配置文件中没有配置，此处采用默认设置
         return new KafkaConnectionConfig(anonymousLoginEnabled,
                 loginFailureDelay, maxLogins, maxAnonymousLogins,
                 maxLoginFailures, maxThreads);
