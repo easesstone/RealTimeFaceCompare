@@ -5,10 +5,9 @@
     <parent>
         <artifactId>rlsb</artifactId>
         <groupId>com.hzgc</groupId>
-        <version>1.0</version>
+        <version>1.5.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>bigdata-api</artifactId>
 
     <properties>
@@ -49,7 +48,7 @@
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
-            <version>1.0</version>
+            <version>1.5.0</version>
         </dependency>
     </dependencies>
 

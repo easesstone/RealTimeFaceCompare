@@ -139,7 +139,9 @@ public class KafkaSTOR extends AbstractCommand {
                                     parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
                             float[] feature = FaceFunction.featureExtract(photBytes);
                             if (feature != null && feature.length == 512) {
-                                kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), faceKey, FaceFunction.floatArray2ByteArray(feature));
+                                kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(),
+                                        faceKey, 
+                                        FaceFunction.floatArray2string(feature).getBytes());
                             }
                         } else {
                             LOG.info("Contains illegal file[" + file.getName() + "], write to local default");

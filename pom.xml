@@ -7,17 +7,17 @@
     <groupId>com.hzgc</groupId>
     <artifactId>rlsb</artifactId>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>1.5.0</version>
     <modules>
         <module>FtpServer</module>
         <module>HBase</module>
         <module>Dubbo</module>
-        <module>Kafka</module>
         <module>Spark_Streaming</module>
         <module>RocketMQ</module>
         <module>Distribution</module>
         <module>JNI</module>
         <module>HBase2Es</module>
+        <module>UDF</module>
         <module>Util</module>
         <!--<module>ElasticSearch</module>-->
     </modules>
@@ -32,14 +32,15 @@
         <junit.version>4.12</junit.version>
         <kafka.version>0.10.0.0</kafka.version>
         <mina.version>2.0.7</mina.version>
-        <ftplet.version>1.1.1</ftplet.version>
-        <spark.version>1.5.1</spark.version>
+        <ftplet.version>1.0.6</ftplet.version>
+        <spark.version>2.2.0</spark.version>
+        <spark_kafka.verson>1.6.2</spark_kafka.verson>
         <spring.version>4.1.1.RELEASE</spring.version>
         <zookeeper.version>3.5.1-alpha</zookeeper.version>
         <dubbo.version>2.8.4a</dubbo.version>
         <rocketmq.version>4.1.0-incubating</rocketmq.version>
         <zkclient.version>0.10</zkclient.version>
-        <scala.version>2.10.4</scala.version>
+        <scala.version>2.11.8</scala.version>
     </properties>
 
     <dependencyManagement>

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>rlsb</artifactId>
         <groupId>com.hzgc</groupId>
-        <version>1.0</version>
+        <version>1.5.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>hbase</artifactId>
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
@@ -43,35 +43,12 @@
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>jni</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hzgc</groupId>
-            <artifactId>kafka</artifactId>
-            <version>1.0</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
-            <version>${spark.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.jetty.orbit</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.10</artifactId>
-            <version>${spark.version}</version>
-            <scope>compile</scope>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
     <build>
