@@ -15,19 +15,59 @@ import java.util.*;
  */
 public class RealTimeCompare implements Serializable {
     private Logger LOG = Logger.getLogger(RealTimeCompare.class);
-    private byte[] image;// 图片的二进制数据
-    private String imageId;//图片 id ,优先使用图片流数组
-    private float threshold;//阈值
-    private String sortParams;//排序参数
-    private int offset;//分页查询开始行
-    private int count;//分页查询条数
-    private String searchId;//查询Id 由UUID生成
+    /**
+     * 图片的二进制数据
+     */
+    private byte[] image;
+    /**
+     * 图片 id ,优先使用图片流数组
+     */
+    private String imageId;
+    /**
+     * 阈值
+     */
+    private float threshold;
+    /**
+     * 排序参数
+     */
+    private String sortParams;
+    /**
+     * 分页查询开始行
+     */
+    private int offset;
+    /**
+     * 分页查询条数
+     */
+    private int count;
+    /**
+     * 查询Id 由UUID生成
+     */
+    private String searchId;
+    /**
+     * 用于保存筛选出来的一组一个图片的id
+     */
+    private List<String> imageIdList;
+    /**
+     * 过滤大图后的图片Id列表
+     */
+    private List<String> imageIdFilterList;
+    /**
+     * 查询结果，最终的返回值
+     */
+    private SearchResult searchResult;
+    /**
+     * 特征列表，根据rowKeyList批量查询到的特征
+     */
+    private List<float[]> feaFloatList;
+    /**
+     * 相似度列表，保存比对后的相似度
+     */
+    private List<Float> simList;
+    /**
+     * 图片对象列表
+     */
+    private List<CapturedPicture> capturedPictureList;
     private DynamicPhotoService dynamicPhotoService;
-    private List<String> imageIdList;//用于保存筛选出来的一组一个图片的id
-    private SearchResult searchResult;//查询结果，最终的返回值
-    private List<float[]> feaFloatList;//特征列表，根据rowKeyList批量查询到的特征
-    private List<Float> simList;//相似度列表，保存比对后的相似度
-    private List<CapturedPicture> capturedPictureList;//图片对象列表
     private String insertType;
 
     public RealTimeCompare() {
@@ -102,8 +142,10 @@ public class RealTimeCompare implements Serializable {
                  */
                /* option.setSearchType(SearchType.CAR);
                 carImageIdList = getImageIdListFromEs(option);*/
-                List<String> personAddCarList = new ArrayList<>();//用于同时保存人车图片id
-                capturedPictureList = new ArrayList<>();//用于同时保存人车图片对象
+                /*用于同时保存人车图片id*/
+                List<String> personAddCarList = new ArrayList<>();
+                /*用于同时保存人车图片对象*/
+                capturedPictureList = new ArrayList<>();
                 if (null != personImageIdList && personImageIdList.size() > 0) {
                     personAddCarList.addAll(personImageIdList);
                     pictureType = PictureType.SMALL_PERSON;

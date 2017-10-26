@@ -26,6 +26,7 @@ public class PicConsumerHandlerGroup implements ConsumerGroup {
         }
     }
 
+    @Override
     public void execute() {
         for (ConsumerHandlerThread thread : consumerHandler) {
             LOG.info("Start-up the thread is PicConsumerHandlerThread");
