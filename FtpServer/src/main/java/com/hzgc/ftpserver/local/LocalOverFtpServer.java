@@ -4,17 +4,23 @@ import com.hzgc.ftpserver.ClusterOverFtp;
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
+import org.apache.ftpserver.command.Command;
+import org.apache.ftpserver.command.CommandFactory;
+import org.apache.ftpserver.command.impl.DefaultCommandFactory;
+import org.apache.ftpserver.command.impl.SITE_STAT;
 import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.impl.FtpIoSession;
+import org.apache.ftpserver.impl.FtpServerContext;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.log4j.Logger;
 
 public class LocalOverFtpServer extends ClusterOverFtp {
-    private Logger log = Logger.getLogger(LocalOverFtpServer.class);
+    private static Logger log = Logger.getLogger(LocalOverFtpServer.class);
 
     @Override
     public void startFtpServer() {
-        FtpServerFactory serverFactory = new FtpServerFactory();
-        log.info("Create " + FtpServerFactory.class + " successful");
+        LocalFtpServerFactory serverFactory = new LocalFtpServerFactory();
+        log.info("Create " + LocalFtpServerFactory.class + " successful");
         ListenerFactory listenerFactory = new ListenerFactory();
         log.info("Create " + ListenerFactory.class + " successful");
         //set the port of the listener
@@ -40,6 +46,11 @@ public class LocalOverFtpServer extends ClusterOverFtp {
         LocalFileSystemFactory localFileSystemFactory = new LocalFileSystemFactory();
         serverFactory.setFileSystem(localFileSystemFactory);
         log.info("Set customer file system factory is successful, " + localFileSystemFactory.getClass());
+        // TODO: 2017-10-9
+        LocalConnectionConfigFactory connectionConfigFactory = new LocalConnectionConfigFactory();
+        System.out.println(connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
+        serverFactory.setConnectionConfig(connectionConfigFactory.createUDConnectionConfig());
+        log.info("Set user defined connection config file is successful, " + connectionConfigFactory.getClass());
         FtpServer server = serverFactory.createServer();
         try {
             server.start();

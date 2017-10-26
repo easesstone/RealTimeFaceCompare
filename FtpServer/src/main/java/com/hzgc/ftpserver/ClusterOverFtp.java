@@ -3,6 +3,7 @@ package com.hzgc.ftpserver;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.DataConnectionConfigurationFactory;
+import org.apache.ftpserver.FtpServer;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;

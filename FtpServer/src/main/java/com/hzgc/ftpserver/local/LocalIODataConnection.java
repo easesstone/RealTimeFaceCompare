@@ -91,7 +91,6 @@ public class LocalIODataConnection implements DataConnection, Serializable {
      * @seeorg.apache.com.hzgc.ftpserver.FtpDataConnection2#transferFromClient(java.io.
      * OutputStream)
      */
-    @Override
     public final long transferFromClient(FtpSession session,
                                          final OutputStream out) throws IOException {
         TransferRateRequest transferRateRequest = new TransferRateRequest();
@@ -134,7 +133,6 @@ public class LocalIODataConnection implements DataConnection, Serializable {
      * org.apache.com.hzgc.ftpserver.FtpDataConnection2#transferToClient(java.io.InputStream
      * )
      */
-    @Override
     public final long transferToClient(FtpSession session, final InputStream in)
             throws IOException {
         TransferRateRequest transferRateRequest = new TransferRateRequest();
@@ -160,7 +158,6 @@ public class LocalIODataConnection implements DataConnection, Serializable {
      * org.apache.com.hzgc.ftpserver.FtpDataConnection2#transferToClient(java.lang.String
      * )
      */
-    @Override
     public final void transferToClient(FtpSession session, final String str)
             throws IOException {
         OutputStream out = getDataOutputStream();
@@ -304,6 +301,7 @@ public class LocalIODataConnection implements DataConnection, Serializable {
      */
     protected void notifyObserver() {
         session.updateLastAccessTime();
+
         // TODO this has been moved from AbstractConnection, do we need to keep
         // it?
         // serverContext.getConnectionManager().updateConnection(this);
