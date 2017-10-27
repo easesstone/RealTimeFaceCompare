@@ -3,7 +3,14 @@ package com.hzgc.jni;
 import java.io.Serializable;
 
 public class NativeFunction implements Serializable {
-    public static native float[] feature_extract(int[] data, int width, int height);
+    /**
+     * @param faceAttr 人脸属性
+     * @param data
+     * @param width    图片宽度
+     * @param height   图片高度
+     * @return int 0:success 1：failure
+     */
+    public static native int feature_extract(FaceAttr faceAttr, int[] data, int width, int height);
 
     public static native void init();
 
