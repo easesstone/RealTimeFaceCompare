@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 public class LocalOverFtpServer extends ClusterOverFtp {
     private Logger log = Logger.getLogger(LocalOverFtpServer.class);
 
+    @Override
     public void startFtpServer() {
         FtpServerFactory serverFactory = new FtpServerFactory();
         log.info("Create " + FtpServerFactory.class + " successful");

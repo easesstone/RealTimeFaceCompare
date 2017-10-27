@@ -19,6 +19,7 @@ public class LocalSTOR extends AbstractCommand {
     /**
      * Execute command.
      */
+    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
@@ -110,7 +111,7 @@ public class LocalSTOR extends AbstractCommand {
                 ByteArrayInputStream bais = null;
                 long transSz;
                 //parsing JSON files
-                if (file.getName().contains(".json")) {
+                if (file.getName().contains(".jpg")) {
                     InputStream is = dataConnection.getDataInputStream();
                     baos = FtpUtil.inputStreamCacher(is);
                     bais = new ByteArrayInputStream(baos.toByteArray());

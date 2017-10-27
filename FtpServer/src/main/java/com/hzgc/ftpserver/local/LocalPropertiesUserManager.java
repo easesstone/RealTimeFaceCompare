@@ -12,6 +12,7 @@ import org.apache.ftpserver.util.IoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sound.midi.Soundbank;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -63,8 +64,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
                     }
                 } else {
                     // try loading it from the classpath
-                    LOG
-                            .info("File not found on file system, try loading from classpath");
+                    LOG.info("File not found on file system, try loading from classpath");
 
                     InputStream is = getClass().getClassLoader()
                             .getResourceAsStream(userDataFile.getPath());
@@ -133,6 +133,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
         return userDataFile;
     }
 
+    @Override
     public synchronized void save(User usr) throws FtpException {
         // null value check
         if (usr.getName() == null) {
@@ -212,6 +213,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
         }
     }
 
+    @Override
     public void delete(String usrName) throws FtpException {
         // remove entries from properties
         String thisPrefix = PREFIX + usrName + '.';
@@ -250,6 +252,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
         return password;
     }
 
+    @Override
     public String[] getAllUserNames() {
         // get all user names
         String suffix = '.' + ATTR_HOME;
@@ -271,6 +274,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
         return ulst.toArray(new String[0]);
     }
 
+    @Override
     public User getUserByName(String userName) {
         if (!doesExist(userName)) {
             return null;
@@ -311,38 +315,47 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
         return user;
     }
 
+    @Override
     public boolean doesExist(String name) {
         String key = PREFIX + name + '.' + ATTR_HOME;
         return userDataProp.containsKey(key);
     }
 
+    @Override
     public User authenticate(Authentication authentication)
             throws AuthenticationFailedException {
         if (authentication instanceof UsernamePasswordAuthentication) {
             UsernamePasswordAuthentication upauth = (UsernamePasswordAuthentication) authentication;
 
             String user = upauth.getUsername();
+            System.out.println("the user is:"+user);
             String password = upauth.getPassword();
+            System.out.println("the password is:"+password);
 
             if (user == null) {
+                System.out.println("user is null");
                 throw new AuthenticationFailedException("Authentication failed");
             }
 
             if (password == null) {
+                System.out.println("password is null");
                 password = "";
             }
 
             String storedPassword = userDataProp.getProperty(PREFIX + user
                     + '.' + ATTR_PASSWORD);
+            System.out.println("the storedPassword is:"+storedPassword);
 
             if (storedPassword == null) {
                 // user does not exist
+                System.out.println("storedPassword is null");
                 throw new AuthenticationFailedException("Authentication failed");
             }
 
             if (getPasswordEncryptor().matches(password, storedPassword)) {
                 return getUserByName(user);
             } else {
+                System.out.println("password not match storedPassword");
                 throw new AuthenticationFailedException("Authentication failed");
             }
 
@@ -350,6 +363,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
             if (doesExist("anonymous")) {
                 return getUserByName("anonymous");
             } else {
+                System.out.println("anonymous is not exist");
                 throw new AuthenticationFailedException("Authentication failed");
             }
         } else {
