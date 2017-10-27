@@ -1,6 +1,5 @@
 package com.hzgc.ftpserver.local;
 
-import com.hzgc.ftpserver.kafka.ftp.KafkaFileSystemView;
 import org.apache.ftpserver.ftplet.FileSystemFactory;
 import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;
@@ -35,7 +34,6 @@ public class LocalFileSystemFactory implements FileSystemFactory, Serializable {
         this.caseInsensitive = caseInsensitive;
     }
 
-    @Override
     public FileSystemView createFileSystemView(User user) throws FtpException {
         synchronized (user) {
             // create home if does not exist
@@ -53,7 +51,7 @@ public class LocalFileSystemFactory implements FileSystemFactory, Serializable {
                 }
             }
 
-            FileSystemView fsView = new KafkaFileSystemView(user,
+            FileSystemView fsView = new LocalFileSystemView(user,
                     caseInsensitive);
             return fsView;
         }

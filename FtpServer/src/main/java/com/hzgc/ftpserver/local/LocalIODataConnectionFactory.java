@@ -48,7 +48,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
      * Close data socket.
      * This method must be idempotent as we might call it multiple times during disconnect.
      */
-    @Override
     public synchronized void closeDataConnection() {
 
         // close client socket if any
@@ -87,7 +86,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Port command.
      */
-    @Override
     public synchronized void initActiveDataConnection(
             final InetSocketAddress address) {
 
@@ -118,7 +116,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Initiate a data connection in passive mode (server listening).
      */
-    @Override
     public synchronized InetSocketAddress initPassiveDataConnection()
             throws DataConnectionException {
         LOG.info("Initiating passive data connection");
@@ -200,7 +197,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
      *
      * @see org.apache.com.hzgc.ftpserver.FtpDataConnectionFactory2#getInetAddress()
      */
-    @Override
     public InetAddress getInetAddress() {
         return address;
     }
@@ -210,7 +206,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
      *
      * @see org.apache.com.hzgc.ftpserver.FtpDataConnectionFactory2#getPort()
      */
-    @Override
     public int getPort() {
         return port;
     }
@@ -220,7 +215,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
      *
      * @see org.apache.com.hzgc.ftpserver.FtpDataConnectionFactory2#openConnection()
      */
-    @Override
     public DataConnection openConnection() throws Exception {
         return new LocalIODataConnection(createDataSocket(), session, this);
     }
@@ -368,7 +362,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
      *
      * @see org.apache.com.hzgc.ftpserver.DataConnectionFactory#isSecure()
      */
-    @Override
     public boolean isSecure() {
         return secure;
     }
@@ -376,7 +369,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Set the security protocol.
      */
-    @Override
     public void setSecure(final boolean secure) {
         this.secure = secure;
     }
@@ -386,7 +378,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
      *
      * @see org.apache.com.hzgc.ftpserver.DataConnectionFactory#isZipMode()
      */
-    @Override
     public boolean isZipMode() {
         return isZip;
     }
@@ -394,7 +385,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Set zip mode.
      */
-    @Override
     public void setZipMode(final boolean zip) {
         isZip = zip;
     }
@@ -402,7 +392,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Check the data connection idle status.
      */
-    @Override
     public synchronized boolean isTimeout(final long currTime) {
 
         // data connection not requested - not a timeout
@@ -429,7 +418,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Dispose data connection - close all the sockets.
      */
-    @Override
     public void dispose() {
         closeDataConnection();
     }
@@ -437,7 +425,6 @@ public class LocalIODataConnectionFactory implements ServerDataConnectionFactory
     /**
      * Sets the server's control address.
      */
-    @Override
     public void setServerControlAddress(final InetAddress serverControlAddress) {
         this.serverControlAddress = serverControlAddress;
     }

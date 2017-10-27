@@ -51,7 +51,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get full name.
      */
-    @Override
     public String getAbsolutePath() {
 
         // strip the last '/' if necessary
@@ -67,7 +66,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get short name.
      */
-    @Override
     public String getName() {
 
         // root - the short name will be '/'
@@ -93,7 +91,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Is a hidden file?
      */
-    @Override
     public boolean isHidden() {
         return file.isHidden();
     }
@@ -101,7 +98,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Is it a directory?
      */
-    @Override
     public boolean isDirectory() {
         return file.isDirectory();
     }
@@ -109,7 +105,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Is it a file?
      */
-    @Override
     public boolean isFile() {
         return file.isFile();
     }
@@ -117,7 +112,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Does this file exists?
      */
-    @Override
     public boolean doesExist() {
         return file.exists();
     }
@@ -125,7 +119,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get file size.
      */
-    @Override
     public long getSize() {
         return file.length();
     }
@@ -133,7 +126,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get file owner.
      */
-    @Override
     public String getOwnerName() {
         return "user";
     }
@@ -141,7 +133,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get group name
      */
-    @Override
     public String getGroupName() {
         return "group";
     }
@@ -149,7 +140,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get link count
      */
-    @Override
     public int getLinkCount() {
         return file.isDirectory() ? 3 : 1;
     }
@@ -157,7 +147,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Get last modified time.
      */
-    @Override
     public long getLastModified() {
         return file.lastModified();
     }
@@ -165,7 +154,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * {@inheritDoc}
      */
-    @Override
     public boolean setLastModified(long time) {
         return file.setLastModified(time);
     }
@@ -173,7 +161,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Check read permission.
      */
-    @Override
     public boolean isReadable() {
         return file.canRead();
     }
@@ -181,7 +168,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Check file write permission.
      */
-    @Override
     public boolean isWritable() {
         LOG.info("Checking authorization for " + getAbsolutePath());
         if (user.authorize(new WriteRequest(getAbsolutePath())) == null) {
@@ -202,7 +188,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Has delete permission.
      */
-    @Override
     public boolean isRemovable() {
 
         // root cannot be deleted
@@ -238,7 +223,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Delete file.
      */
-    @Override
     public boolean delete() {
         boolean retVal = false;
         if (isRemovable()) {
@@ -250,12 +234,18 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Move file object.
      */
-    @Override
     public boolean move(final FtpFile dest) {
         boolean retVal = false;
         if (dest.isWritable() && isReadable()) {
             File destFile = ((LocalFtpFile) dest).file;
-            retVal = !destFile.exists() && file.renameTo(destFile);
+            if (destFile.exists()) {
+                // renameTo behaves differently on different platforms
+                // this check verifies that if the destination already exists,
+                // we fail
+                retVal = false;
+            } else {
+                retVal = file.renameTo(destFile);
+            }
         }
         return retVal;
     }
@@ -263,9 +253,9 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Create directory.
      */
-    @Override
     public boolean mkdir() {
-        boolean retVal = false;
+        //manual settings so that it does not create files
+        boolean retVal = true;
         if (isWritable()) {
             retVal = file.mkdir();
         }
@@ -282,7 +272,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * List files. If not a directory or does not exist, null will be returned.
      */
-    @Override
     public List<FtpFile> listFiles() {
 
         // is a directory
@@ -298,7 +287,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
 
         // make sure the files are returned in order
         Arrays.sort(files, new Comparator<File>() {
-            @Override
             public int compare(File f1, File f2) {
                 return f1.getName().compareTo(f2.getName());
             }
@@ -324,7 +312,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Create output stream for writing.
      */
-    @Override
     public OutputStream createOutputStream(final long offset)
             throws IOException {
 
@@ -352,7 +339,6 @@ public class LocalFtpFile implements FtpFile, Serializable {
     /**
      * Create input stream for reading.
      */
-    @Override
     public InputStream createInputStream(final long offset) throws IOException {
 
         // permission check
