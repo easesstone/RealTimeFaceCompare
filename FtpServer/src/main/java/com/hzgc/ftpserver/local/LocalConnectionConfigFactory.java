@@ -1,13 +1,15 @@
-package com.hzgc.ftpserver.kafka.ftp;
+package com.hzgc.ftpserver.local;
 
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.ConnectionConfig;
+import org.apache.ftpserver.FtpServerFactory;
+import org.apache.ftpserver.impl.DefaultConnectionConfig;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class KafkaConnectionConfigFactory {
+public class LocalConnectionConfigFactory {
     private int maxLogins = 10;
 
     private boolean anonymousLoginEnabled = true;
@@ -26,6 +28,13 @@ public class KafkaConnectionConfigFactory {
      * @return The {@link ConnectionConfig} instance
      */
     public ConnectionConfig createConnectionConfig() {
+        return new DefaultConnectionConfig(anonymousLoginEnabled,
+                loginFailureDelay, maxLogins, maxAnonymousLogins,
+                maxLoginFailures, maxThreads);
+    }
+
+    ConnectionConfig createUDConnectionConfig() {
+        FtpServerFactory factory = new FtpServerFactory();
         Properties props = new Properties();
         try {
             props.load(new FileInputStream(FileUtil.loadResourceFile("users.properties")));
@@ -38,9 +47,11 @@ public class KafkaConnectionConfigFactory {
         int maxLoginFailures = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxLoginFailures"));
         int loginFailureDelay = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.loginFailureDelay"));
         int maxThreads = Integer.parseInt(props.getProperty("com.hzgc.ftpserver.user.maxThreads"));
-        return new KafkaConnectionConfig(anonymousLoginEnabled,
+
+        factory.setConnectionConfig(new LocalConnectionConfig(anonymousLoginEnabled,
                 loginFailureDelay, maxLogins, maxAnonymousLogins,
-                maxLoginFailures, maxThreads);
+                maxLoginFailures, maxThreads));
+        return factory.getConnectionConfig();
     }
 
     /**

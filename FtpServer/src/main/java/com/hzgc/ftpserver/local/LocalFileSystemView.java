@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.kafka.ftp;
+package com.hzgc.ftpserver.local;
 
 import org.apache.ftpserver.filesystem.nativefs.impl.NativeFtpFile;
 import org.apache.ftpserver.ftplet.FileSystemView;
@@ -10,9 +10,8 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.Serializable;
 
-
-public class KafkaFileSystemView implements FileSystemView, Serializable {
-    private final Logger LOG = Logger.getLogger(KafkaFileSystemView.class);
+public class LocalFileSystemView implements FileSystemView, Serializable {
+    private final Logger LOG = Logger.getLogger(LocalFileSystemView.class);
 
     private String rootDir;
 
@@ -22,11 +21,11 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
 
     private boolean caseInsensitive = false;
 
-    protected KafkaFileSystemView(User user) throws FtpException {
+    protected LocalFileSystemView(User user) throws FtpException {
         this(user, false);
     }
 
-    public KafkaFileSystemView(User user, boolean caseInsensitive)
+    public LocalFileSystemView(User user, boolean caseInsensitive)
             throws FtpException {
         if (user == null) {
             throw new IllegalArgumentException("user can not be null");
@@ -40,7 +39,7 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
 
         // add last '/' if necessary
         String rootDir = user.getHomeDirectory();
-        rootDir = KafkaFtpFile.normalizeSeparateChar(rootDir);
+        rootDir = LocalFtpFile.normalizeSeparateChar(rootDir);
         if (!rootDir.endsWith("/")) {
             rootDir += '/';
         }
@@ -54,22 +53,20 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
         currDir = "/";
     }
 
-    @Override
     public FtpFile getHomeDirectory() {
-        return new KafkaFtpFile("/", new File(rootDir), user);
+        return new LocalFtpFile("/", new File(rootDir), user);
     }
 
     /**
      * Get the current directory.
      */
-    @Override
     public FtpFile getWorkingDirectory() {
         FtpFile fileObj = null;
         if (currDir.equals("/")) {
-            fileObj = new KafkaFtpFile("/", new File(rootDir), user);
+            fileObj = new LocalFtpFile("/", new File(rootDir), user);
         } else {
             File file = new File(rootDir, currDir.substring(1));
-            fileObj = new KafkaFtpFile(currDir, file, user);
+            fileObj = new LocalFtpFile(currDir, file, user);
 
         }
         return fileObj;
@@ -78,7 +75,6 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Get file object.
      */
-    @Override
     public FtpFile getFile(String file) {
 
         // get actual file object
@@ -88,13 +84,12 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
 
         // strip the root directory and return
         String userFileName = physicalName.substring(rootDir.length() - 1);
-        return new KafkaFtpFile(userFileName, fileObj, user);
+        return new LocalFtpFile(userFileName, fileObj, user);
     }
 
     /**
      * Change directory.
      */
-    @Override
     public boolean changeWorkingDirectory(String dir) {
 
         // not a directory - return false
@@ -118,7 +113,6 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Is the file content random accessible?
      */
-    @Override
     public boolean isRandomAccessible() {
         return true;
     }
@@ -126,7 +120,6 @@ public class KafkaFileSystemView implements FileSystemView, Serializable {
     /**
      * Dispose file system view - does nothing.
      */
-    @Override
     public void dispose() {
     }
 }

@@ -1,11 +1,11 @@
-package com.hzgc.ftpserver.kafka.ftp;
+package com.hzgc.ftpserver.local;
 
 import org.apache.ftpserver.ConnectionConfig;
 
 import java.io.Serializable;
 
 
-public class KafkaConnectionConfig implements ConnectionConfig, Serializable {
+public class LocalConnectionConfig implements ConnectionConfig, Serializable {
     private int maxLogins = 10;
 
     private boolean anonymousLoginEnabled = true;
@@ -19,7 +19,7 @@ public class KafkaConnectionConfig implements ConnectionConfig, Serializable {
     private int maxThreads = 0;
 
 
-    public KafkaConnectionConfig(boolean anonymousLoginEnabled,
+    public LocalConnectionConfig(boolean anonymousLoginEnabled,
                                  int loginFailureDelay, int maxLogins, int maxAnonymousLogins,
                                  int maxLoginFailures, int maxThreads) {
         this.anonymousLoginEnabled = anonymousLoginEnabled;
@@ -30,32 +30,26 @@ public class KafkaConnectionConfig implements ConnectionConfig, Serializable {
         this.maxThreads = maxThreads;
     }
 
-    @Override
     public int getLoginFailureDelay() {
         return loginFailureDelay;
     }
 
-    @Override
     public int getMaxAnonymousLogins() {
         return maxAnonymousLogins;
     }
 
-    @Override
     public int getMaxLoginFailures() {
         return maxLoginFailures;
     }
 
-    @Override
     public int getMaxLogins() {
         return maxLogins;
     }
 
-    @Override
     public boolean isAnonymousLoginEnabled() {
         return anonymousLoginEnabled;
     }
 
-    @Override
     public int getMaxThreads() {
         return maxThreads;
     }

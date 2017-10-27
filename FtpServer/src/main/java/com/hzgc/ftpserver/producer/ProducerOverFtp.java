@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.kafka.producer;
+package com.hzgc.ftpserver.producer;
 
 
 import com.hzgc.util.FileUtil;
