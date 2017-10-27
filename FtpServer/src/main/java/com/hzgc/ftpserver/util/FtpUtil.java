@@ -227,13 +227,16 @@ public class FtpUtil implements Serializable {
         int ftpServerPort = 0;
         String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
         Properties properties = new Properties();
+        InputStream in = null;
         try {
-            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+            in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
             properties.load(in);
             ftpServerPort = Integer.parseInt(properties.getProperty("port"));
             ftpServerIP = properties.getProperty(hostName);
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            IoUtils.close(in);
         }
 
         filePath = filePath.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).

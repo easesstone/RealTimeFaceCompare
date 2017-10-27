@@ -63,8 +63,7 @@ public class LocalPropertiesUserManager extends AbstractUserManager implements S
                     }
                 } else {
                     // try loading it from the classpath
-                    LOG
-                            .info("File not found on file system, try loading from classpath");
+                    LOG.info("File not found on file system, try loading from classpath");
 
                     InputStream is = getClass().getClassLoader()
                             .getResourceAsStream(userDataFile.getPath());
