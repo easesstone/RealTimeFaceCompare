@@ -1,4 +1,4 @@
-package com.hzgc.dubbo.feature;
+package com.hzgc.jni;
 
 public interface FaceExtract {
     /**
@@ -7,5 +7,5 @@ public interface FaceExtract {
      * @param imageBytes 图片的字节数组
      * @return float[] 特征值:长度为2048的float[]数组
      */
-    float[] featureExtract(byte[] imageBytes);
+    FaceAttr featureExtract(byte[] imageBytes);
 }
