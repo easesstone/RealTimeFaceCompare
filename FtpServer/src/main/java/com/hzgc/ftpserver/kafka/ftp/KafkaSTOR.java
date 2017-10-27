@@ -137,7 +137,7 @@ public class KafkaSTOR extends AbstractCommand {
 
                             rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
                                     parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
-                            float[] feature = FaceFunction.featureExtract(photBytes);
+                            float[] feature = FaceFunction.featureExtract(photBytes).getFeature();
                             if (feature != null && feature.length == 512) {
                                 kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(),
                                         faceKey, 

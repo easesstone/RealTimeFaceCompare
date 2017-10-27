@@ -1,6 +1,5 @@
 package com.hzgc.jni;
 
-import com.hzgc.dubbo.feature.FaceExtract;
 import org.apache.log4j.Logger;
 
 public class FaceExtractImpl implements FaceExtract {
@@ -17,10 +16,10 @@ public class FaceExtractImpl implements FaceExtract {
     }
 
     @Override
-    public float[] featureExtract(byte[] imageBytes) {
+    public FaceAttr featureExtract(byte[] imageBytes) {
         if (imageBytes != null && imageBytes.length > 0) {
             return FaceFunction.featureExtract(imageBytes);
         }
-        return new float[0];
+        return null;
     }
 }
