@@ -1,9 +1,7 @@
 package com.hzgc.ftpserver.local;
 
-
 import com.hzgc.ftpserver.kafka.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.util.FtpUtil;
-import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Arrays;
 import java.util.Map;
 
 public class LocalSTOR extends AbstractCommand {
@@ -25,7 +22,6 @@ public class LocalSTOR extends AbstractCommand {
     /**
      * Execute command.
      */
-    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
@@ -127,47 +123,30 @@ public class LocalSTOR extends AbstractCommand {
                 byte[] data = baos.toByteArray();
 
                 String rowKey = FtpUtil.transformNameToKey(fileName);
+                int faceNum = FtpUtil.pickPicture(fileName);
 
                 if (rowKey.contains("unknown")) {
                     LOG.error(rowKey + ": unknown ipcID, Not send to Kafka!");
                 } else {
-                    if (file.getName().contains(".json")) {
-                        String jsonName = FtpUtil.key2fileName(rowKey, FileType.JSON);
-                        FtpUtil.bytesToFile(data,rowKey,jsonName);
-                    } else if (fileName.contains(".jpg")) {
-                        if (FtpUtil.pickPicture(fileName) == 0) {
-                            String picName = FtpUtil.key2fileName(rowKey, FileType.PICTURE);
-                            FtpUtil.bytesToFile(data,rowKey,picName);
-                        } else if (FtpUtil.pickPicture(fileName) > 0) {
-                            int faceNum = FtpUtil.pickPicture(fileName);
-                            String faceRowKey = FtpUtil.faceKey(faceNum, rowKey);
-                            String faceName = FtpUtil.key2fileName(faceRowKey, FileType.FACE);
-                            FtpUtil.bytesToFile(data,rowKey,faceName);
-
-                            Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceRowKey);
-                            SendResult tempResult = rocketMQProducer.
-                                    send(parseKey.get("ipcID"), parseKey.get("mqkey"), data);
-
-                            rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
-                                    parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
-
-                            float[] feature = null;
-                            feature=FaceFunction.featureExtract(data);
-                            String filePath = FtpUtil.key2absolutePath(faceRowKey,FileType.FACE);
-                            if (feature != null && feature.length == 512) {
-                                LOG.info("feature = " + Arrays.toString(feature));
-                                kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, FaceFunction.floatArray2ByteArray(feature));
-                            }else {
-                                LOG.info("feature = " + Arrays.toString(feature));
-                            }
-                        } else {
-                            LOG.info("Contains illegal file[" + file.getName() + "], write to local default");
-                        }
+                    if (fileName.contains(".jpg") && faceNum > 0) {
+                        String faceRowKey = FtpUtil.faceKey(faceNum, rowKey);
+                        Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceRowKey);
+                        SendResult tempResult = rocketMQProducer.
+                                send(parseKey.get("ipcID"), parseKey.get("mqkey"), data);
+                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
+                                parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
+                        //TODO
+                        /*float[] feature = FaceFunction.featureExtract(data);
+                        String filePath = FtpUtil.key2absolutePath(faceRowKey, FileType.FACE);
+                        if (feature != null && feature.length == 512) {
+                            LOG.info("feature = [" + Arrays.toString(feature) + "]");
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, FaceFunction.floatArray2ByteArray(feature));
+                        }*/
                     }
                 }
 
                 bais = new ByteArrayInputStream(data);
-                LOG.info(fileName + " to ByteArrayInputStream size is： " +bais.available());
+                LOG.info(fileName + " to ByteArrayInputStream size is： " + bais.available());
                 transSz = dataConnection.transferFromClient(session.getFtpletSession(), new BufferedInputStream(bais), outStream);
 
                 // attempt to close the output stream so that errors in

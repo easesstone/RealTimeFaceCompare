@@ -1,14 +1,13 @@
 package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.local.FileType;
+import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FtpUtil implements Serializable {
     private static Logger LOG = Logger.getLogger(FtpUtil.class);
@@ -53,15 +52,15 @@ public class FtpUtil implements Serializable {
         return picType;
     }
 
-    public static String faceKey(int faceNum, String key) { //    3B0383FPAG00883_170523160015_0000004075_00_PC-PC
+    public static String faceKey(int faceNum, String key) {
         StringBuilder faceKey = new StringBuilder();
         if (faceNum < 10) {
             key = key.substring(0, key.lastIndexOf("_"));
-            String key1 = key.substring(0,key.lastIndexOf("_"));
+            String key1 = key.substring(0, key.lastIndexOf("_"));
             faceKey.append(key1).append("_0").append(faceNum).append("_").append(IpAddressUtil.getHostName());
         } else if (faceNum >= 10 && faceNum < 100) {
             key = key.substring(0, key.lastIndexOf("_"));
-            String key1 = key.substring(0,key.lastIndexOf("_"));
+            String key1 = key.substring(0, key.lastIndexOf("_"));
             faceKey.append(key1).append("_").append(faceNum).append("_").append(IpAddressUtil.getHostName());
         } else {
             faceKey.append(key);
@@ -79,14 +78,14 @@ public class FtpUtil implements Serializable {
             String timeName = tempKey.substring(2, tempKey.lastIndexOf("_")).replace("_", "");
 
             StringBuffer prefixNameKey = new StringBuffer();
-            prefixNameKey = prefixNameKey.append(prefixName).reverse();
-            if (prefixName.length() < 10) {
+            prefixNameKey = prefixNameKey.append(prefixName);
+            /*if (prefixName.length() < 10) {
                 StringBuilder stringBuilder = new StringBuilder();
                 for (int i = 0; i < 10 - prefixName.length(); i++) {
                     stringBuilder.insert(0, "0");
                 }
                 prefixNameKey.insert(0, stringBuilder);
-            }
+            }*/
             key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00").append("_").append(IpAddressUtil.getHostName());
         } else {
             key.append(fileName);
@@ -134,6 +133,8 @@ public class FtpUtil implements Serializable {
      * @return 绝对路径
      */
     public static String key2absolutePath(String rowKey, FileType type) {
+        StringBuilder fileName = new StringBuilder();
+
         String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
         String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
         String year = timeStr.substring(0, 2);
@@ -141,44 +142,44 @@ public class FtpUtil implements Serializable {
         String day = timeStr.substring(4, 6);
         String hour = timeStr.substring(6, 8);
         String minute = timeStr.substring(8, 10);
-        //String second = timeStr.substring(10, 12);
+        String second = timeStr.substring(10, 12);
 
-        String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1,rowKey.length());
-
-        StringBuilder fileName = new StringBuilder();
-        fileName = fileName.append("/opt/data/").append(hostName).append("/").append(ipcId).
-                append("/20").append(year).append("/").append(month).append("/").append(day).
-                append("/").append(hour).append("/").append(minute).append("/");
-
-        String rowkey1 = rowKey.substring(0,rowKey.lastIndexOf("_"));
+        String rowkey1 = rowKey.substring(0, rowKey.lastIndexOf("_"));
+        String postId = rowkey1.substring(rowkey1.indexOf("_") + 14, rowkey1.lastIndexOf("_"));
         int numType = Integer.parseInt(rowkey1.substring(rowkey1.lastIndexOf("_") + 1, rowkey1.length()));
 
+        String ftpServerIP = "";
+        int ftpServerPort = 0;
+        String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
+        Properties properties = new Properties();
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+            properties.load(in);
+            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
+            ftpServerIP = properties.getProperty(hostName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        fileName = fileName.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
+                append("/20").append(year).append("/").append(month).append("/").append(day).
+                append("/").append(hour).append("/").append(minute).append("/").
+                append("20").append(year).append("_").append(month).append("_").append(day).
+                append(hour).append("_").append(minute).append("_").append(second).
+                append("_").append(postId);
+
         if (type == FileType.PICTURE) {
-            if (numType == 0) {
-                fileName = fileName.append(rowKey).append(".jpg");
-            } else if (numType > 0) {
-                rowkey1 = rowkey1.substring(0, rowkey1.lastIndexOf("_") + 1) + "00";
-                fileName = fileName.append(rowkey1).append("_").append(hostName).append(".jpg");
-            } else {
-                LOG.warn("rowKey format error :" + rowKey);
-            }
+            fileName = fileName.append("_0").append(".jpg");
         } else if (type == FileType.FACE) {
             if (numType == 0) {
                 LOG.info("picture rowKey cannot analysis to face filePath !");
             } else if (numType > 0) {
-                fileName = fileName.append(rowKey).append(".jpg");
+                fileName = fileName.append("_").append(numType).append(".jpg");
             } else {
                 LOG.warn("rowKey format error :" + rowKey);
             }
         } else if (type == FileType.JSON) {
-            if (numType == 0) {
-                fileName = fileName.append(rowKey).append(".json");
-            } else if (numType > 0) {
-                rowkey1 = rowkey1.substring(0, rowkey1.lastIndexOf("_") + 1) + "00";
-                fileName = fileName.append(rowkey1).append("_").append(hostName).append(".json");
-            } else {
-                LOG.warn("rowKey format error :" + rowKey);
-            }
+            fileName = fileName.append("_0").append(".json");
         }
         return fileName.toString();
     }
@@ -190,6 +191,8 @@ public class FtpUtil implements Serializable {
      * @return 相对路径
      */
     public static String key2relativePath(String rowKey) {
+        StringBuilder filePath = new StringBuilder();
+
         String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
         String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
         String year = timeStr.substring(0, 2);
@@ -199,12 +202,22 @@ public class FtpUtil implements Serializable {
         String minute = timeStr.substring(8, 10);
         //String second = timeStr.substring(10, 12);
 
-        String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1,rowKey.length());
+        String ftpServerIP = "";
+        int ftpServerPort = 0;
+        String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
+        Properties properties = new Properties();
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+            properties.load(in);
+            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
+            ftpServerIP = properties.getProperty(hostName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        StringBuilder filePath = new StringBuilder();
-        filePath = filePath.append("F:\\data\\").append(hostName).append("\\").append(ipcId).
-                append("\\20").append(year).append("\\").append(month).append("\\").append(day).
-                append("\\").append(hour).append("\\").append(minute);
+        filePath = filePath.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
+                append("/20").append(year).append("/").append(month).append("/").append(day).
+                append("/").append(hour).append("/").append(minute);
         return filePath.toString();
     }
 
@@ -218,37 +231,34 @@ public class FtpUtil implements Serializable {
     public static String key2fileName(String rowKey, FileType type) {
         StringBuilder fileName = new StringBuilder();
 
-        String rowkey1 = rowKey.substring(0,rowKey.lastIndexOf("_"));
+        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
+        String year = timeStr.substring(0, 2);
+        String month = timeStr.substring(2, 4);
+        String day = timeStr.substring(4, 6);
+        String hour = timeStr.substring(6, 8);
+        String minute = timeStr.substring(8, 10);
+        String second = timeStr.substring(10, 12);
+
+        String rowkey1 = rowKey.substring(0, rowKey.lastIndexOf("_"));
+        String postId = rowkey1.substring(rowkey1.indexOf("_") + 14, rowkey1.lastIndexOf("_"));
         int numType = Integer.parseInt(rowkey1.substring(rowkey1.lastIndexOf("_") + 1, rowkey1.length()));
 
+        fileName = fileName.append("20").append(year).append("_").append(month)
+                .append("_").append(day).append("_").append(hour)
+                .append("_").append(minute).append("_").append(second).append("_").append(postId);
+
         if (type == FileType.PICTURE) {
-            if (numType == 0) {
-                fileName = fileName.append(rowKey).append(".jpg");
-            } else if (numType > 0) {
-                String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1,rowKey.length());
-                rowkey1 = rowkey1.substring(0, rowkey1.lastIndexOf("_") + 1) + "00";
-                fileName = fileName.append(rowkey1).append("_").append(hostName).append(".jpg");
-            } else {
-                LOG.warn("rowKey format error : " + rowKey);
-            }
+            fileName = fileName.append("_0").append(".jpg");
         } else if (type == FileType.FACE) {
             if (numType == 0) {
                 LOG.info("picture rowKey cannot analysis to face fileName !");
             } else if (numType > 0) {
-                fileName = fileName.append(rowKey).append(".jpg");
+                fileName = fileName.append("_").append(numType).append(".jpg");
             } else {
                 LOG.warn("rowKey format error :" + rowKey);
             }
         } else if (type == FileType.JSON) {
-            if (numType == 0) {
-                fileName = fileName.append(rowKey).append(".json");
-            } else if (numType > 0) {
-                String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1,rowKey.length());
-                rowkey1 = rowkey1.substring(0, rowkey1.lastIndexOf("_") + 1) + "00";
-                fileName = fileName.append(rowkey1).append("_").append(hostName).append(".json");
-            } else {
-                LOG.warn("rowKey format error : " + rowKey);
-            }
+            fileName = fileName.append("_0").append(".json");
         } else {
             LOG.warn("method param is error.");
         }
@@ -258,8 +268,8 @@ public class FtpUtil implements Serializable {
     /**
      * 保存字节数组到本地文件
      *
-     * @param bytes 字节数组
-     * @param rowKey rowKey
+     * @param bytes    字节数组
+     * @param rowKey   rowKey
      * @param fileName 文件名称
      */
     public static void bytesToFile(byte[] bytes, String rowKey, String fileName) {
@@ -273,7 +283,7 @@ public class FtpUtil implements Serializable {
         }
         try {
             //file = new File(filePath + "/" + fileName);
-            fos = new FileOutputStream( dir.getPath()+ File.separator + fileName);
+            fos = new FileOutputStream(dir.getPath() + File.separator + fileName);
             bos = new BufferedOutputStream(fos);
             bos.write(bytes);
         } catch (Exception e) {
@@ -295,8 +305,9 @@ public class FtpUtil implements Serializable {
             }
         }
     }
-    private static String key = "3B0383FPAG00883_170926192916_0000000524_00_s100";
 
+    private static String key = "3B0383FPAG00883_170523160015_5704_10_PC-PC";
+    // ftp://192.168.1.28:2121/3B0383FPAG00883/2017/05/23/16/00/2017_05_23_16_00_15_5704_0.jpg
     public static void main(String[] args) {
         System.out.println("rowkey        : " + key);
         String picPath = key2absolutePath(key, FileType.PICTURE);

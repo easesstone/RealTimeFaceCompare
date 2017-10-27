@@ -2,16 +2,13 @@ package com.hzgc.ftpserver.kafka.ftp;
 
 import com.hzgc.ftpserver.kafka.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.local.LocalIODataConnection;
-import com.hzgc.ftpserver.local.LocalSTOR;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.jni.NativeFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
 import com.hzgc.util.IOUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
-import org.apache.ftpserver.util.IoUtils;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
