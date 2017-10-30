@@ -29,6 +29,9 @@ public class ProducerOverFtp implements Serializable {
                 this.fis = new FileInputStream(file);
             }
             this.kafkaPropers.load(fis);
+            //kafka 自定义编码器
+            this.kafkaPropers.put("key.serializer", "org.apache.kafka.common.serialization.StringDeserializer");
+            this.kafkaPropers.put("value.serializer", FaceObject.class.getName());
             PICTURE = kafkaPropers.getProperty("topic-picture");
             FACE = kafkaPropers.getProperty("topic-face");
             JSON = kafkaPropers.getProperty("topic-json");
@@ -72,12 +75,16 @@ public class ProducerOverFtp implements Serializable {
         return PICTURE;
     }
 
-    public static String getFace() { return FACE; }
+    public static String getFace() {
+        return FACE;
+    }
 
     public static String getJson() {
         return JSON;
     }
 
-    public static String getFEATURE() { return FEATURE; }
+    public static String getFEATURE() {
+        return FEATURE;
+    }
 
 }

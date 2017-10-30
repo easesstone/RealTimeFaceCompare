@@ -1,6 +1,6 @@
-package com.hzgc.jni;
+package com.hzgc.ftpserver.util;
 
-import com.hzgc.jni.FaceAttr;
+import com.hzgc.ftpserver.producer.FaceObject;
 
 import java.io.*;
 
@@ -11,17 +11,17 @@ public class BeanUtils {
     /**
      * 对象转字节数组
      *
-     * @param faceAttr
+     * @param faceObject
      * @return byte[]
      */
-    public static byte[] objectToBytes(FaceAttr faceAttr) {
+    public static byte[] objectToBytes(FaceObject faceObject) {
         byte[] bytes = null;
         ByteArrayOutputStream bo = null;
         ObjectOutputStream oo = null;
         try {
             bo = new ByteArrayOutputStream();
             oo = new ObjectOutputStream(bo);
-            oo.writeObject(faceAttr);
+            oo.writeObject(faceObject);
             bytes = bo.toByteArray();
 
         } catch (IOException e) {
@@ -47,14 +47,14 @@ public class BeanUtils {
      * @param bytes
      * @return
      */
-    public static FaceAttr bytesToObject(byte[] bytes) {
-        FaceAttr faceAttr = null;
+    public static FaceObject bytesToObject(byte[] bytes) {
+        FaceObject faceObject = null;
         ByteArrayInputStream bi = null;
         ObjectInputStream oi = null;
         try {
             bi = new ByteArrayInputStream(bytes);
             oi = new ObjectInputStream(bi);
-            faceAttr = (FaceAttr) oi.readObject();
+            faceObject = (FaceObject) oi.readObject();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,7 +70,7 @@ public class BeanUtils {
                 e.printStackTrace();
             }
         }
-        return faceAttr;
+        return faceObject;
     }
 }
 
