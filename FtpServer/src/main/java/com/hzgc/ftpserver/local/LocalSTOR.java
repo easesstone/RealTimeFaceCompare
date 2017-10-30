@@ -1,17 +1,27 @@
 package com.hzgc.ftpserver.local;
 
 
+import com.hzgc.dubbo.dynamicrepo.FileType;
+import com.hzgc.dubbo.dynamicrepo.PictureType;
+import com.hzgc.ftpserver.producer.FaceObject;
+import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.util.FtpUtil;
+import com.hzgc.jni.FaceAttr;
+import com.hzgc.jni.FaceFunction;
+import com.hzgc.rocketmq.util.RocketMQProducer;
+import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
 import org.apache.ftpserver.util.IoUtils;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Map;
 
 public class LocalSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(LocalSTOR.class);
@@ -19,10 +29,13 @@ public class LocalSTOR extends AbstractCommand {
     /**
      * Execute command.
      */
-    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
+        LocalFtpServerContext localContext = null;
+        if (context instanceof LocalFtpServerContext) {
+            localContext = (LocalFtpServerContext) context;
+        }
         try {
 
             // get state variable
@@ -36,7 +49,7 @@ public class LocalSTOR extends AbstractCommand {
                                 .translate(
                                         session,
                                         request,
-                                        context,
+                                        localContext,
                                         FtpReply.REPLY_501_SYNTAX_ERROR_IN_PARAMETERS_OR_ARGUMENTS,
                                         "STOR", null));
                 return;
@@ -69,7 +82,7 @@ public class LocalSTOR extends AbstractCommand {
                 LOG.info("Exception getting file object", ex);
             }
             if (file == null) {
-                session.write(LocalizedFtpReply.translate(session, request, context,
+                session.write(LocalizedFtpReply.translate(session, request, localContext,
                         FtpReply.REPLY_550_REQUESTED_ACTION_NOT_TAKEN,
                         "STOR.invalid", fileName));
                 return;
@@ -78,7 +91,7 @@ public class LocalSTOR extends AbstractCommand {
 
             // get permission
             if (!file.isWritable()) {
-                session.write(LocalizedFtpReply.translate(session, request, context,
+                session.write(LocalizedFtpReply.translate(session, request, localContext,
                         FtpReply.REPLY_550_REQUESTED_ACTION_NOT_TAKEN,
                         "STOR.permission", fileName));
                 return;
@@ -86,7 +99,7 @@ public class LocalSTOR extends AbstractCommand {
 
             // get data connection
             session.write(
-                    LocalizedFtpReply.translate(session, request, context,
+                    LocalizedFtpReply.translate(session, request, localContext,
                             FtpReply.REPLY_150_FILE_STATUS_OKAY, "STOR",
                             fileName)).awaitUninterruptibly(10000);
 
@@ -96,7 +109,7 @@ public class LocalSTOR extends AbstractCommand {
                 dataConnection = new LocalIODataConnection(customConnFactory.createDataSocket(), customConnFactory.getSession(), customConnFactory);
             } catch (Exception e) {
                 LOG.info("Exception getting the input data stream", e);
-                session.write(LocalizedFtpReply.translate(session, request, context,
+                session.write(LocalizedFtpReply.translate(session, request, localContext,
                         FtpReply.REPLY_425_CANT_OPEN_DATA_CONNECTION, "STOR",
                         fileName));
                 return;
@@ -109,19 +122,44 @@ public class LocalSTOR extends AbstractCommand {
                 outStream = file.createOutputStream(skipLen);
                 ByteArrayOutputStream baos = null;
                 ByteArrayInputStream bais = null;
+                ProducerOverFtp kafkaProducer = localContext.getProducerOverFtp();
+                RocketMQProducer rocketMQProducer = localContext.getProducerRocketMQ();
                 long transSz;
-                //parsing JSON files
-                if (file.getName().contains(".jpg")) {
-                    InputStream is = dataConnection.getDataInputStream();
-                    baos = FtpUtil.inputStreamCacher(is);
-                    bais = new ByteArrayInputStream(baos.toByteArray());
-                    //String jsonStr = FtpUtil.loadJsonFile(bais);
-                    //FtpUtil.writeJsonLog("[" + jsonStr + "]");
-                    transSz = dataConnection.
-                            transferFromClient(session.getFtpletSession(), new BufferedInputStream(bais), outStream);
+                InputStream is = dataConnection.getDataInputStream();
+                baos = FtpUtil.inputStreamCacher(is);
+                byte[] data = baos.toByteArray();
+
+                String rowKey = FtpUtil.transformNameToKey(fileName);
+                int faceNum = FtpUtil.pickPicture(fileName);
+
+                if (rowKey.contains("unknown")) {
+                    LOG.error(rowKey + ": unknown ipcID, Not send to Kafka!");
                 } else {
-                    transSz = dataConnection.transferFromClient(session.getFtpletSession(), outStream);
+                    if (fileName.contains(".jpg") && faceNum > 0) {
+                        String faceRowKey = FtpUtil.faceKey(faceNum, rowKey);
+                        Map<String, String> map = FtpUtil.getRowKeyMessage(faceRowKey);
+                        SendResult tempResult = rocketMQProducer.
+                                send(map.get("ipcID"), map.get("mqkey"), data);
+                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), map.get("ipcID"),
+                                map.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
+
+                        FaceObject faceObject = new FaceObject();
+                        faceObject.setIpcId(map.get("ipcID"));
+                        faceObject.setTimeStamp(map.get("time"));
+                        faceObject.setType(PictureType.PERSON);
+                        faceObject.setTimeSlot(map.get("sj"));
+                        FaceAttr attribute = FaceFunction.featureExtract(data);
+                        faceObject.setAttribute(attribute);
+
+                        String filePath = FtpUtil.key2absolutePath(faceRowKey, FileType.FACE);
+                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, ObjectUtil.objectToByte(faceObject));
+                    }
                 }
+
+                bais = new ByteArrayInputStream(data);
+                LOG.info(fileName + " to ByteArrayInputStream size is： " + bais.available());
+                transSz = dataConnection.transferFromClient(session.getFtpletSession(), new BufferedInputStream(bais), outStream);
+
                 // attempt to close the output stream so that errors in
                 // closing it will return an error to the client (FTPSERVER-119)
                 if (outStream != null) {
@@ -131,14 +169,14 @@ public class LocalSTOR extends AbstractCommand {
                 LOG.info("File uploaded {}", fileName);
 
                 // notify the statistics component
-                ServerFtpStatistics ftpStat = (ServerFtpStatistics) context
+                ServerFtpStatistics ftpStat = (ServerFtpStatistics) localContext
                         .getFtpStatistics();
                 ftpStat.setUpload(session, file, transSz);
 
             } catch (SocketException ex) {
                 LOG.info("Socket exception during data transfer", ex);
                 failure = true;
-                session.write(LocalizedFtpReply.translate(session, request, context,
+                session.write(LocalizedFtpReply.translate(session, request, localContext,
                         FtpReply.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED,
                         "STOR", fileName));
             } catch (IOException ex) {
@@ -149,7 +187,7 @@ public class LocalSTOR extends AbstractCommand {
                                 .translate(
                                         session,
                                         request,
-                                        context,
+                                        localContext,
                                         FtpReply.REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN,
                                         "STOR", fileName));
             } finally {
@@ -159,7 +197,7 @@ public class LocalSTOR extends AbstractCommand {
 
             // if data transfer ok - send transfer complete message
             if (!failure) {
-                session.write(LocalizedFtpReply.translate(session, request, context,
+                session.write(LocalizedFtpReply.translate(session, request, localContext,
                         FtpReply.REPLY_226_CLOSING_DATA_CONNECTION, "STOR",
                         fileName));
 
