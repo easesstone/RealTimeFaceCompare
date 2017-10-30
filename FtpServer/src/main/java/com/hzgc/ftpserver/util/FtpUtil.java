@@ -1,5 +1,6 @@
 package com.hzgc.ftpserver.util;
 
+import com.hzgc.ftpserver.local.FileType;
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
