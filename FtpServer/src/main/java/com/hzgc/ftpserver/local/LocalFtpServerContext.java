@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.local;
 
 
-import com.hzgc.ftpserver.kafka.producer.ProducerOverFtp;
+import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
 import org.apache.ftpserver.impl.DefaultFtpServerContext;
@@ -13,6 +13,7 @@ public class LocalFtpServerContext extends DefaultFtpServerContext implements Se
     static {
         NativeFunction.init();
     }
+
     private static Logger LOG = Logger.getLogger(LocalFtpServerContext.class);
     private ProducerOverFtp producerOverFtp = ProducerOverFtp.getInstance();
     private RocketMQProducer producerRocketMQ = RocketMQProducer.getInstance();

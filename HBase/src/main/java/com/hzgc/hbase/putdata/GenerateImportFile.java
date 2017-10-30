@@ -28,7 +28,7 @@ public class GenerateImportFile {
                   findFile(file.getAbsolutePath(), addStr);
                 } else {
                     System.out.println(file.getAbsolutePath());
-                    float[] temp = FaceFunction.featureExtract(file.getAbsolutePath());
+                    float[] temp = FaceFunction.featureExtract(file.getAbsolutePath()).getFeature();
                     if (temp != null && temp.length == 512) {
                         importList.add(file.getAbsolutePath() +
                                 sepator +

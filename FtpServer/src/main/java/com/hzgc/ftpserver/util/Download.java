@@ -1,17 +1,16 @@
 package com.hzgc.ftpserver.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.SocketException;
-
-import com.hzgc.ftpserver.pool.FTPClientConfigure;
-import com.hzgc.ftpserver.pool.FtpClientFactory;
-import org.apache.commons.net.ftp.*;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 
+import java.io.*;
+import java.net.SocketException;
+
+/**
+ * ftpClient文件下载
+ */
 public class Download {
 
     private static Logger logger = Logger.getLogger(Download.class);

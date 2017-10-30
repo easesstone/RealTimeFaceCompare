@@ -6,6 +6,9 @@ import org.apache.log4j.Logger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+/**
+ * 获取IP、hostName工具类
+ */
 public class IpAddressUtil {
 
     private static Logger LOG = Logger.getLogger(IpAddressUtil.class);

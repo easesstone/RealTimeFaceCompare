@@ -6,6 +6,7 @@ import java.io.*;
 import java.math.BigDecimal;
 
 public class FaceFunction {
+    private static final String SPLIT = ":";
 
     /**
      * 特征提取方法 （内）（赵喆）
@@ -13,9 +14,10 @@ public class FaceFunction {
      * @param imageData 将图片转为字节数组传入
      * @return 输出float[]形式的特征值
      */
-    public synchronized static float[] featureExtract(byte[] imageData) {
-        float[] feature = null;
+    public synchronized static FaceAttr featureExtract(byte[] imageData) {
+        FaceAttr faceAttr = null;
         BufferedImage faceImage;
+        int successOrfailue;
         try {
             if (null != imageData) {
                 faceImage = ImageIO.read(new ByteArrayInputStream(imageData));
@@ -24,14 +26,18 @@ public class FaceFunction {
                 int[] rgbArray = new int[height * width * 3];
                 for (int h = 0; h < height; h++) {
                     for (int w = 0; w < width; w++) {
-                        int pixel = faceImage.getRGB(w, h);
-                        rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;
+                        int pixel = faceImage.getRGB(w, h);//RGB颜色模型
+                        rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;//0xff0000 红色
                         rgbArray[h * width * 3 + w * 3 + 1] = (pixel & 0xff00) >> 8;
                         rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
                     }
                 }
-                feature = NativeFunction.feature_extract(rgbArray, width, height);
-                return feature;
+              successOrfailue= NativeFunction.feature_extract(faceAttr,rgbArray, width, height);
+                if (successOrfailue==0) {
+                    return faceAttr;
+                }else{
+                    return null;
+                }
             } else {
                 throw new NullPointerException("The data of picture is null");
             }
@@ -47,19 +53,20 @@ public class FaceFunction {
      * @param imagePath 传入图片的绝对路径
      * @return 返回float[]形式的特征值
      */
-    public synchronized static float[] featureExtract(String imagePath) {
-        float[] feature = null;
+    public synchronized static FaceAttr featureExtract(String imagePath) {
+        FaceAttr faceAttr = null;
         File imageFile;
         ByteArrayInputStream bais = null;
         ByteArrayOutputStream baos = null;
         FileInputStream fis = null;
         byte[] buffer = new byte[1024];
+        int successOrfailue;
         try {
             imageFile = new File(imagePath);
             if (imageFile.exists()) {
                 baos = new ByteArrayOutputStream();
                 fis = new FileInputStream(imageFile);
-                int len = 0;
+                int len;
                 while ((len = fis.read(buffer)) > -1) {
                     baos.write(buffer, 0, len);
                 }
@@ -71,14 +78,18 @@ public class FaceFunction {
                     int[] rgbArray = new int[height * width * 3];
                     for (int h = 0; h < height; h++) {
                         for (int w = 0; w < width; w++) {
-                            int pixel = image.getRGB(w, h);
+                            int pixel = image.getRGB(w, h);// 下面三行代码将一个数字转换为RGB数字
                             rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;
                             rgbArray[h * width * 3 + w * 3 + 1] = (pixel & 0xff00) >> 8;
                             rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
                         }
                     }
-                    feature = NativeFunction.feature_extract(rgbArray, width, height);
-                    return feature;
+                  successOrfailue=  NativeFunction.feature_extract(faceAttr,rgbArray, width, height);
+                    if (successOrfailue==0) {
+                        return faceAttr;
+                    }else {
+                        return null;
+                    }
                 } else {
                     return null;
                 }
@@ -110,79 +121,46 @@ public class FaceFunction {
                 }
             }
         }
-        return feature;
+        return faceAttr;
     }
 
     /**
      * 将特征值（float[]）转换为字符串（String）（内）（赵喆）
      *
      * @param feature 传入float[]类型的特征值
-     * @return 输出指定编码为ISO-8859-1的String
+     * @return 输出指定编码为UTF-8的String
      */
     public static String floatArray2string(float[] feature) {
         if (feature != null && feature.length == 512) {
-            byte[] bytes = floatArray2ByteArray(feature);
-            try {
-                return new String(bytes, "ISO8859-1");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 1; i < feature.length; i++) {
+                if (i == 511) {
+                    sb.append(feature[i]);
+                } else {
+                    sb.append(feature[i]).append(":");
+                }
             }
+            return sb.toString();
         }
         return "";
     }
 
     /**
-     * float数组转byte数组
-     *
-     * @param feature 特征值（float[]）
-     * @return 特征值(byte[])
-     */
-    public static byte[] floatArray2ByteArray(float[] feature) {
-        if (feature != null && feature.length == 512) {
-            byte[] byteFeature = new byte[feature.length * 4];
-            int temp = 0;
-            for (float f : feature) {
-                byte[] tempbyte = float2byte(f);
-                System.arraycopy(tempbyte, 0, byteFeature, temp, tempbyte.length);
-                temp = temp + 4;
-            }
-            return byteFeature;
-        }
-        return null;
-    }
-
-    /**
      * 将特征值（String）转换为特征值（float[]）（内）（赵喆）
      *
-     * @param feature 传入编码为ISO-8859-1的String
+     * @param feature 传入编码为UTF-8的String
      * @return 返回float[]类型的特征值
      */
     public static float[] string2floatArray(String feature) {
-        float[] floatFeature;
-        if (null != feature && feature.length() > 0) {
-            try {
-                byte[] byteFeature = feature.getBytes("ISO-8859-1");
-                floatFeature = new float[byteFeature.length / 4];
-                byte[] buffer = new byte[4];
-                int countByte = 0;
-                int countFloat = 0;
-                while (countByte < byteFeature.length && countFloat < floatFeature.length) {
-                    buffer[0] = byteFeature[countByte];
-                    buffer[1] = byteFeature[countByte + 1];
-                    buffer[2] = byteFeature[countByte + 2];
-                    buffer[3] = byteFeature[countByte + 3];
-                    if (countByte % 4 == 0) {
-                        floatFeature[countFloat] = byte2float(buffer, 0);
-                    }
-                    countByte = countByte + 4;
-                    countFloat++;
-                }
-                return floatFeature;
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+        if (feature != null && feature.length() > 0) {
+            float[] featureFloat = new float[512];
+            String[] strArr = feature.split(SPLIT);
+            for (int i = 0; i < strArr.length; i++) {
+                featureFloat[i] = Float.valueOf(strArr[i]);
             }
+            return featureFloat;
         }
-        return null;
+        return new float[0];
     }
 
     /**
@@ -201,18 +179,14 @@ public class FaceFunction {
     /**
      * 将byte[]型特征转化为float[]
      *
-     * @param fea
+     * @param fea byte[]型特征
      * @return float[]
      */
     public static float[] byteArr2floatArr(byte[] fea) {
-        if (null != fea && fea.length == 2048) {
-            try {
-                return FaceFunction.string2floatArray(new String(fea, "ISO-8859-1"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+        if (null != fea && fea.length > 0) {
+            return string2floatArray(new String(fea));
         }
-        return null;
+        return new float[0];
     }
 
     public static float featureCompare(float[] currentFeature, float[] historyFeature) {
@@ -221,67 +195,17 @@ public class FaceFunction {
         double historyFeatureMultiple = 0;
         for (int i = 0; i < currentFeature.length; i++) {
             similarityDegree = similarityDegree + currentFeature[i] * historyFeature[i];
-            currentFeatureMultiple = currentFeatureMultiple + Math.pow(currentFeature[i], 2);
+            currentFeatureMultiple = currentFeatureMultiple + Math.pow(currentFeature[i], 2);//pow 返回currentFeature[i] 平方
             historyFeatureMultiple = historyFeatureMultiple + Math.pow(historyFeature[i], 2);
         }
 
-        double tempSim = similarityDegree / Math.sqrt(currentFeatureMultiple) / Math.sqrt(historyFeatureMultiple);
-        double actualValue = new BigDecimal((0.5 + (tempSim / 2)) * 100).
-                setScale(2, BigDecimal.ROUND_HALF_UP).
+        double tempSim = similarityDegree / Math.sqrt(currentFeatureMultiple) / Math.sqrt(historyFeatureMultiple);//sqrt 平方根 余弦相似度
+        double actualValue = new BigDecimal((0.5 + (tempSim / 2)) * 100).//余弦相似度表示为cosineSIM=0.5cosθ+0.5
+                setScale(2, BigDecimal.ROUND_HALF_UP).//ROUND_HALF_UP=4 保留两位小数四舍五入
                 doubleValue();
         if (actualValue >= 100) {
             return 100;
         }
         return (float) actualValue;
-    }
-
-    /**
-     * 内部方法：将字节数组转为float
-     *
-     * @param featureByte 传入字节数组
-     * @param index       从指定位置开始读取4个字节
-     * @return 返回4个字节组成的float数组
-     */
-    private static float byte2float(byte[] featureByte, int index) {
-        int l;
-        l = featureByte[index + 0];
-        l &= 0xff;
-        l |= ((long) featureByte[index + 1] << 8);
-        l &= 0xffff;
-        l |= ((long) featureByte[index + 2] << 16);
-        l &= 0xffffff;
-        l |= ((long) featureByte[index + 3] << 24);
-        return Float.intBitsToFloat(l);
-    }
-
-    /**
-     * 内部方法：将float转为4个长度的字节数组
-     *
-     * @param featureFloat 传入单一float
-     * @return 返回4ge长度的字节数组
-     */
-    private static byte[] float2byte(float featureFloat) {
-        // 把float转换为byte[]
-        int fbit = Float.floatToIntBits(featureFloat);
-
-        byte[] buffer = new byte[4];
-        for (int i = 0; i < 4; i++) {
-            buffer[i] = (byte) (fbit >> (24 - i * 8));
-        }
-
-        // 翻转数组
-        int len = buffer.length;
-        // 建立一个与源数组元素类型相同的数组
-        byte[] dest = new byte[len];
-        // 为了防止修改源数组，将源数组拷贝一份副本
-        System.arraycopy(buffer, 0, dest, 0, len);
-        byte temp;
-        // 将顺位第i个与倒数第i个交换
-        for (int i = 0; i < len / 2; ++i) {
-            temp = dest[i];
-            dest[i] = dest[len - i - 1];
-            dest[len - i - 1] = temp;
-        }
-        return dest;
     }
 }

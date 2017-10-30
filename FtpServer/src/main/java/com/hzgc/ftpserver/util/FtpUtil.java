@@ -6,8 +6,9 @@ import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class FtpUtil implements Serializable {
     private static Logger LOG = Logger.getLogger(FtpUtil.class);
@@ -52,22 +53,35 @@ public class FtpUtil implements Serializable {
         return picType;
     }
 
+    /**
+     * 根据大图rowKey拼装小图rowKey
+     *
+     * @param faceNum 第几张小图（小图文件名最后一位或两位）
+     * @param key     大图rowKey
+     * @return 小图rowKey
+     */
     public static String faceKey(int faceNum, String key) {
         StringBuilder faceKey = new StringBuilder();
         if (faceNum < 10) {
             key = key.substring(0, key.lastIndexOf("_"));
             String key1 = key.substring(0, key.lastIndexOf("_"));
-            faceKey.append(key1).append("_0").append(faceNum).append("_").append(IpAddressUtil.getHostName());
+            faceKey.append(key1).append("_0").append(faceNum).append("_").append(IP.getHostName());
         } else if (faceNum >= 10 && faceNum < 100) {
             key = key.substring(0, key.lastIndexOf("_"));
             String key1 = key.substring(0, key.lastIndexOf("_"));
-            faceKey.append(key1).append("_").append(faceNum).append("_").append(IpAddressUtil.getHostName());
+            faceKey.append(key1).append("_").append(faceNum).append("_").append(IP.getHostName());
         } else {
             faceKey.append(key);
         }
         return faceKey.toString();
     }
 
+    /**
+     * 根据设备组上传数据至FTP的路径拼装rowKey
+     *
+     * @param fileName 图片上传Ftp绝对路径
+     * @return rowKey
+     */
     public static String transformNameToKey(String fileName) {
         StringBuilder key = new StringBuilder();
 
@@ -86,13 +100,19 @@ public class FtpUtil implements Serializable {
                 }
                 prefixNameKey.insert(0, stringBuilder);
             }*/
-            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00").append("_").append(IpAddressUtil.getHostName());
+            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00").append("_").append(IP.getHostName());
         } else {
             key.append(fileName);
         }
         return key.toString();
     }
 
+    /**
+     * 根据rowKey获取到rowKey信息
+     *
+     * @param rowKey rowKey
+     * @return Map<String, String> rowKey信息
+     */
     public static Map<String, String> getRowKeyMessage(String rowKey) {
         String ipcID = rowKey.substring(0, rowKey.indexOf("_"));
         String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.lastIndexOf("_"));
@@ -105,18 +125,19 @@ public class FtpUtil implements Serializable {
         String second = timeStr.substring(10, 12);
 
         StringBuilder time = new StringBuilder();
-        time = time.append(20).append(year).append("-").append(month).append("-").append(day).append(" ").append(hour).append(":").append(minute).append(":").append(second);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        time = time.append(20).append(year).append("-").append(month).append("-").append(day).
+                append(" ").append(hour).append(":").append(minute).append(":").append(second);
+        //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         StringBuilder sj = new StringBuilder();
         sj = sj.append(hour).append(minute);
 
         Map<String, String> map = new HashMap<>();
         try {
-            Date date = sdf.parse(time.toString());
-            long timeStamp = date.getTime();
+            /*Date date = sdf.parse(time.toString());
+            long timeStamp = date.getTime();*/
             map.put("ipcID", ipcID);
-            map.put("time", String.valueOf(timeStamp));
+            map.put("time", String.valueOf(time));
             map.put("mqkey", time.toString());
             map.put("sj", sj.toString());//sj为动态库同步ES所需字段
         } catch (Exception e) {
@@ -165,7 +186,7 @@ public class FtpUtil implements Serializable {
                 append("/20").append(year).append("/").append(month).append("/").append(day).
                 append("/").append(hour).append("/").append(minute).append("/").
                 append("20").append(year).append("_").append(month).append("_").append(day).
-                append(hour).append("_").append(minute).append("_").append(second).
+                append("_").append(hour).append("_").append(minute).append("_").append(second).
                 append("_").append(postId);
 
         if (type == FileType.PICTURE) {
@@ -206,13 +227,16 @@ public class FtpUtil implements Serializable {
         int ftpServerPort = 0;
         String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
         Properties properties = new Properties();
+        InputStream in = null;
         try {
-            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+            in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
             properties.load(in);
             ftpServerPort = Integer.parseInt(properties.getProperty("port"));
             ftpServerIP = properties.getProperty(hostName);
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            IoUtils.close(in);
         }
 
         filePath = filePath.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
@@ -266,49 +290,19 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     * 保存字节数组到本地文件
+     * 通过FTP地址解析到rowKey
      *
-     * @param bytes    字节数组
-     * @param rowKey   rowKey
-     * @param fileName 文件名称
+     * @param url ftp图片地址 例如：ftp://192.168.1.28:2121/3B0383FPAG00883/2017/05/23/16/00/2017_05_23_16_00_15_5704_0.jpg
+     * @return rowKey 例如：3B0383FPAG00883_170523160015_5704_10_PC-PC
      */
-    public static void bytesToFile(byte[] bytes, String rowKey, String fileName) {
-        BufferedOutputStream bos = null;
-        FileOutputStream fos = null;
-        //File file = null;
-        String filePath = key2relativePath(rowKey);
-        File dir = new File(filePath);
-        if (!dir.exists()) {//判断文件目录是否存在
-            dir.mkdirs();
-        }
-        try {
-            //file = new File(filePath + "/" + fileName);
-            fos = new FileOutputStream(dir.getPath() + File.separator + fileName);
-            bos = new BufferedOutputStream(fos);
-            bos.write(bytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
+    public static String url2key(String url) {
+        String path = url.substring(url.lastIndexOf(":"), url.length());
+        String path1 = path.substring(path.indexOf("/"), path.length());
+        return transformNameToKey(path1);
     }
 
-    private static String key = "3B0383FPAG00883_170523160015_5704_10_PC-PC";
-    // ftp://192.168.1.28:2121/3B0383FPAG00883/2017/05/23/16/00/2017_05_23_16_00_15_5704_0.jpg
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
+        String key = "3B0383FPAG00883_170523160015_5704_00_PC-PC";
         System.out.println("rowkey        : " + key);
         String picPath = key2absolutePath(key, FileType.PICTURE);
         System.out.println("picture  path : " + picPath);
@@ -324,5 +318,9 @@ public class FtpUtil implements Serializable {
         System.out.println("face     Name : " + faceName);
         String jsonName = key2fileName(key, FileType.JSON);
         System.out.println("json     Name : " + jsonName);
-    }
+
+        Map<String,String> map = new HashMap<>();
+        map = getRowKeyMessage(key);
+        System.out.println(map.toString());
+    }*/
 }

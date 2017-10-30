@@ -1,8 +1,13 @@
 package com.hzgc.ftpserver.local;
 
-import com.hzgc.ftpserver.kafka.producer.ProducerOverFtp;
+import com.hzgc.dubbo.dynamicrepo.PictureType;
+import com.hzgc.ftpserver.producer.FaceObject;
+import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.util.FtpUtil;
+import com.hzgc.jni.FaceAttr;
+import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
+import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
@@ -22,6 +27,7 @@ public class LocalSTOR extends AbstractCommand {
     /**
      * Execute command.
      */
+    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
@@ -130,18 +136,22 @@ public class LocalSTOR extends AbstractCommand {
                 } else {
                     if (fileName.contains(".jpg") && faceNum > 0) {
                         String faceRowKey = FtpUtil.faceKey(faceNum, rowKey);
-                        Map<String, String> parseKey = FtpUtil.getRowKeyMessage(faceRowKey);
+                        Map<String, String> map = FtpUtil.getRowKeyMessage(faceRowKey);
                         SendResult tempResult = rocketMQProducer.
-                                send(parseKey.get("ipcID"), parseKey.get("mqkey"), data);
-                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), parseKey.get("ipcID"),
-                                parseKey.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
-                        //TODO
-                        /*float[] feature = FaceFunction.featureExtract(data);
+                                send(map.get("ipcID"), map.get("mqkey"), data);
+                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), map.get("ipcID"),
+                                map.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
+
+                        FaceObject faceObject = new FaceObject();
+                        faceObject.setIpcId(map.get("ipcID"));
+                        faceObject.setTimeStamp(map.get("time"));
+                        faceObject.setType(PictureType.PERSON);
+                        faceObject.setTimeSlot(map.get("sj"));
+                        FaceAttr attribute = FaceFunction.featureExtract(data);
+                        faceObject.setAttribute(attribute);
+
                         String filePath = FtpUtil.key2absolutePath(faceRowKey, FileType.FACE);
-                        if (feature != null && feature.length == 512) {
-                            LOG.info("feature = [" + Arrays.toString(feature) + "]");
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, FaceFunction.floatArray2ByteArray(feature));
-                        }*/
+                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, ObjectUtil.objectToByte(faceObject));
                     }
                 }
 

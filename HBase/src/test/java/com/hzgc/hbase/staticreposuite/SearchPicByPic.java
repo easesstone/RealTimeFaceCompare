@@ -166,7 +166,7 @@ public class SearchPicByPic {
     @Test
     public void testSearchPicByPic() throws IOException {
         String filePath = "/opt/ldl/small_pic/2017_04_24_06_33_16_28366_1.jpg";
-        float[] feature_curr = FaceFunction.featureExtract(filePath);
+        float[] feature_curr = FaceFunction.featureExtract(filePath).getFeature();
         String feature_curr_s = FaceFunction.floatArray2string(feature_curr);
         byte [] photo = Image2Byte2Image.image2byte(filePath);
         ObjectSearchResult objectSearchResult =objectInfoHandler.searchByPhotoAndThreshold("12341", photo,
@@ -185,7 +185,7 @@ public class SearchPicByPic {
                 .get();
         String feature_his = (String) response.getSource().get("feature");
         String filePath = "/opt/ldl/small_pic/2017_04_24_06_33_16_28366_1.jpg";
-        float[] feature_curr = FaceFunction.featureExtract(filePath);
+        float[] feature_curr = FaceFunction.featureExtract(filePath).getFeature();
         System.out.println(NativeFunction.compare(feature_curr, FaceFunction.string2floatArray(feature_his)));
     }
 }
