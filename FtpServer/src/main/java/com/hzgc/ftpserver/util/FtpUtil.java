@@ -65,11 +65,11 @@ public class FtpUtil implements Serializable {
         if (faceNum < 10) {
             key = key.substring(0, key.lastIndexOf("_"));
             String key1 = key.substring(0, key.lastIndexOf("_"));
-            faceKey.append(key1).append("_0").append(faceNum).append("_").append(IP.getHostName());
+            faceKey.append(key1).append("_0").append(faceNum).append("_").append(IpAddressUtil.getHostName());
         } else if (faceNum >= 10 && faceNum < 100) {
             key = key.substring(0, key.lastIndexOf("_"));
             String key1 = key.substring(0, key.lastIndexOf("_"));
-            faceKey.append(key1).append("_").append(faceNum).append("_").append(IP.getHostName());
+            faceKey.append(key1).append("_").append(faceNum).append("_").append(IpAddressUtil.getHostName());
         } else {
             faceKey.append(key);
         }
@@ -100,7 +100,7 @@ public class FtpUtil implements Serializable {
                 }
                 prefixNameKey.insert(0, stringBuilder);
             }*/
-            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00").append("_").append(IP.getHostName());
+            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00").append("_").append(IpAddressUtil.getHostName());
         } else {
             key.append(fileName);
         }

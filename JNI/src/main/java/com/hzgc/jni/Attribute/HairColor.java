@@ -1,10 +1,12 @@
 package com.hzgc.jni.Attribute;
 
 
+import java.io.Serializable;
+
 /**
  * 头发颜色：0->无；1->金色；2->黑色；3->棕色；4->灰白
  */
-public enum HairColor {
+public enum HairColor implements Serializable{
     None(0), Blond(1), Black(2), Brown(3), Gray(4);
 
     private int haircolorvalue;

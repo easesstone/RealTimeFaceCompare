@@ -1,6 +1,5 @@
 package com.hzgc.ftpserver.util;
 
-
 import org.apache.log4j.Logger;
 
 import java.net.InetAddress;
@@ -37,11 +36,6 @@ public class IpAddressUtil {
             return null;
         }
         return netAddress.getHostName();
-    }
-
-    public static void main(String[] args) {
-        System.out.println("host ip:" + getHostIp());
-        System.out.println("host name:" + getHostName());
     }
 }
 
