@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.local;
 
 
-import com.hzgc.dubbo.dynamicrepo.FileType;
+import com.hzgc.ftpserver.util.FileType;
 import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
