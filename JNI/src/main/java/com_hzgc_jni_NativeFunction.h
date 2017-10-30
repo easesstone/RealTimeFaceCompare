@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_hzgc_jni_NativeFunction
  * Method:    feature_extract
- * Signature: ([III)[F
+ * Signature: (Lcom/hzgc/jni/FaceAttr;[III)I
  */
-JNIEXPORT jfloatArray JNICALL Java_com_hzgc_jni_NativeFunction_feature_1extract
-  (JNIEnv *, jclass, jintArray, jint, jint);
+JNIEXPORT jint JNICALL Java_com_hzgc_jni_NativeFunction_feature_1extract
+  (JNIEnv *, jclass, jobject, jintArray, jint, jint);
 
 /*
  * Class:     com_hzgc_jni_NativeFunction

@@ -197,7 +197,7 @@ public class RealTimeCompare implements Serializable {
      */
     private SearchResult compareByImage(PictureType pictureType, SearchOption option) {
         //对上传的图片提取特征
-        float[] searchFea = FaceFunction.featureExtract(image);
+        float[] searchFea = FaceFunction.featureExtract(image).getFeature();
         if (null != searchFea && searchFea.length == 512) {
             //将图片特征插入到特征库
             boolean insertStatus = dynamicPhotoService.upPictureInsert(pictureType, searchId, searchFea, image);
