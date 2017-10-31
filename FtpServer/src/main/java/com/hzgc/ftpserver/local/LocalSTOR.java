@@ -1,10 +1,10 @@
 package com.hzgc.ftpserver.local;
 
-
 import com.hzgc.ftpserver.util.FileType;
 import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
+import com.hzgc.ftpserver.util.BeanUtils;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
@@ -29,6 +29,7 @@ public class LocalSTOR extends AbstractCommand {
     /**
      * Execute command.
      */
+    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
@@ -152,7 +153,7 @@ public class LocalSTOR extends AbstractCommand {
                         faceObject.setAttribute(attribute);
 
                         String filePath = FtpUtil.key2absolutePath(faceRowKey, FileType.FACE);
-                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, ObjectUtil.objectToByte(faceObject));
+                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, BeanUtils.objectToBytes(faceObject));
                     }
                 }
 

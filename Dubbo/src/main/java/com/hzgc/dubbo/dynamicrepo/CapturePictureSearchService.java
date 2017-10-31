@@ -53,4 +53,15 @@ public interface CapturePictureSearchService {
      */
     List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
 
+    /**
+     * 抓拍统计查询接口（马燊偲）
+     * 查询指定时间段内，指定设备抓拍的图片数量、该设备最后一次抓拍时间
+     *
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param ipcId 设备ID
+     * @return 该时间段内该设备抓拍张数
+     */
+    Object[] captureCountQuery(String startTime, String endTime, String ipcId);
+
 }

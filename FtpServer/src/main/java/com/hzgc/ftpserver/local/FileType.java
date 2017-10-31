@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.util;
+package com.hzgc.ftpserver.local;
 
 
 import java.io.Serializable;
