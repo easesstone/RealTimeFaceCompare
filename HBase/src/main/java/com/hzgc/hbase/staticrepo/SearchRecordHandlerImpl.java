@@ -1,6 +1,7 @@
 package com.hzgc.hbase.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
+import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
 import com.hzgc.dubbo.staticrepo.SearchRecordHandler;
 import com.hzgc.dubbo.staticrepo.SrecordTable;
 import com.hzgc.hbase.util.HBaseHelper;
@@ -19,12 +20,20 @@ import org.apache.log4j.*;
 public class SearchRecordHandlerImpl implements SearchRecordHandler {
     private static Logger LOG = Logger.getLogger(SearchRecordHandlerImpl.class);
 
+    /**
+     * 处理流程，根据rowkey 取得当时的搜索条件，然后重新想数据库房一次请求
+     * @param rowkey，即Hbase 数据库中的rowkey，查询记录唯一标志
+     * @param from  返回的查询记录中，从哪一条开始
+     * @param size  需要返回的记录数
+     * @return
+     */
     @Override
     public ObjectSearchResult getRocordOfObjectInfo(String rowkey,int from,int size) {
+        ObjectInfoHandlerImpl objectInfoHandler = new ObjectInfoHandlerImpl();
         Table table = HBaseHelper.getTable(SrecordTable.TABLE_NAME);
         Get get = new Get(Bytes.toBytes(rowkey));
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
-        List<Map<String,Object>> filterList = null;
+        PSearchArgsModel pSearchArgsModel = null;
         Result result = null;
         try {
             result = table.get(get);
@@ -32,42 +41,19 @@ public class SearchRecordHandlerImpl implements SearchRecordHandler {
             LOG.error("get data by rowkey from srecord table failed! used method getRocordOfObjectInfo.");
             e.printStackTrace();
         }
+        byte[] searchModelByte = null;
         if (result != null) {
-            String useString = result + ".";
-            if (useString.contains(SrecordTable.SEARCH_STATUS)) {
-                objectSearchResult.setSearchStatus(Bytes.toInt(result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF),
-                        Bytes.toBytes(SrecordTable.SEARCH_STATUS))));
-            }
-            if(useString.contains(SrecordTable.PHOTOID)) {
-                objectSearchResult.setPhotoId(Bytes.toString(result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF),
-                        Bytes.toBytes(SrecordTable.PHOTOID))));
-            }
-            objectSearchResult.setSearchId(rowkey);
-            if (useString.contains(SrecordTable.SEARCH_NUMS)) {
-                objectSearchResult.setSearchNums(Bytes.toLong(result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF),
-                        Bytes.toBytes(SrecordTable.SEARCH_NUMS))));
-            }
-            if(useString.contains(SrecordTable.RESULTS)) {
-                byte[] resultBySearch = result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF),
-                        Bytes.toBytes(SrecordTable.RESULTS));
-                ObjectInputStream ois;
-                List<Map<String, Object>> results;
-                try {
-                    ois = new ObjectInputStream(new ByteArrayInputStream(resultBySearch));
-                    results = (List<Map<String, Object>>) ois.readObject();
-                    if(from + size - 1 < results.size()) {
-                        filterList = results.subList(from - 1, from + size - 1);
-                    }else{
-                        filterList = results.subList(from - 1, results.size());
-                    }
-                } catch (Exception e) {
-                    LOG.error("change the results format from the method getRocordOfObjectInfo failed!");
-                    e.printStackTrace();
-                } finally {
-                    HBaseUtil.closTable(table);
-                }
-                objectSearchResult.setResults(filterList);
-            }
+           searchModelByte = result.getValue(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.PSEARCH_MODEL));
+        }
+        ObjectInputStream ois;
+        try {
+            ois = new ObjectInputStream(new ByteArrayInputStream(searchModelByte));
+            pSearchArgsModel = (PSearchArgsModel) ois.readObject();
+            objectSearchResult = objectInfoHandler.getObjectInfo(pSearchArgsModel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
         return objectSearchResult;
     }

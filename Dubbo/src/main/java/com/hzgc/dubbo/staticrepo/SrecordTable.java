@@ -12,4 +12,5 @@ public class SrecordTable implements Serializable {
     public static final String RESULTS = "results";      // 人员信息列表
     public static final String PHOTOID = "photoid";     // 照片ID
     public static final String PHOTO = "photo";          // 照片
+    public static final String PSEARCH_MODEL = "searchmodel";     // 搜索模型。
 }
