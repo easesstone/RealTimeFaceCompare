@@ -1,6 +1,5 @@
 package com.hzgc.ftpserver.local;
 
-import com.hzgc.ftpserver.util.FileType;
 import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
@@ -9,7 +8,6 @@ import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
-import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
