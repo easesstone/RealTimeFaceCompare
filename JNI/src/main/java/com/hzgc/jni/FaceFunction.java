@@ -14,8 +14,8 @@ public class FaceFunction {
      * @param imageData 将图片转为字节数组传入
      * @return 输出float[]形式的特征值
      */
-    public synchronized static FaceAttr featureExtract(byte[] imageData) {
-        FaceAttr faceAttr = null;
+    public synchronized static FaceAttribute featureExtract(byte[] imageData) {
+        FaceAttribute faceAttribute = null;
         BufferedImage faceImage;
         int successOrfailue;
         try {
@@ -32,9 +32,9 @@ public class FaceFunction {
                         rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
                     }
                 }
-              successOrfailue= NativeFunction.feature_extract(faceAttr,rgbArray, width, height);
+              successOrfailue= NativeFunction.feature_extract(faceAttribute,rgbArray, width, height);
                 if (successOrfailue==0) {
-                    return faceAttr;
+                    return faceAttribute;
                 }else{
                     return null;
                 }
@@ -53,8 +53,8 @@ public class FaceFunction {
      * @param imagePath 传入图片的绝对路径
      * @return 返回float[]形式的特征值
      */
-    public synchronized static FaceAttr featureExtract(String imagePath) {
-        FaceAttr faceAttr = null;
+    public synchronized static FaceAttribute featureExtract(String imagePath) {
+        FaceAttribute faceAttribute = null;
         File imageFile;
         ByteArrayInputStream bais = null;
         ByteArrayOutputStream baos = null;
@@ -84,9 +84,9 @@ public class FaceFunction {
                             rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
                         }
                     }
-                  successOrfailue=  NativeFunction.feature_extract(faceAttr,rgbArray, width, height);
+                  successOrfailue=  NativeFunction.feature_extract(faceAttribute,rgbArray, width, height);
                     if (successOrfailue==0) {
-                        return faceAttr;
+                        return faceAttribute;
                     }else {
                         return null;
                     }
@@ -121,7 +121,7 @@ public class FaceFunction {
                 }
             }
         }
-        return faceAttr;
+        return faceAttribute;
     }
 
     /**

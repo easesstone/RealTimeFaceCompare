@@ -1,5 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.Attribute;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.util.ObjectListSort.ListUtils;
@@ -87,7 +88,7 @@ public class RealTimeCompare implements Serializable {
             Date endDate = option.getEndDate();
             List<TimeInterval> intervals = option.getIntervals();
             sortParams = option.getSortParams();
-            List<SearchFilter> filters = option.getFilters();
+            Attribute attribute = option.getAttribute();
             offset = option.getOffset();
             count = option.getCount();
             //设置查询Id
