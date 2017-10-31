@@ -17,6 +17,7 @@ public class ProducerCallBack implements Callback, Serializable {
         this.key = key;
     }
 
+    @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
         long elapsedTime = System.currentTimeMillis() - startTime;
         if (metadata != null) {

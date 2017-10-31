@@ -8,9 +8,9 @@ import java.net.UnknownHostException;
 /**
  * 获取IP、hostName工具类
  */
-public class IP {
+public class IpAddressUtil {
 
-    private static Logger LOG = Logger.getLogger(IP.class);
+    private static Logger LOG = Logger.getLogger(IpAddressUtil.class);
 
     private static InetAddress netAddress = getInetAddress();
 
@@ -36,11 +36,6 @@ public class IP {
             return null;
         }
         return netAddress.getHostName();
-    }
-
-    public static void main(String[] args) {
-        System.out.println("host ip:" + getHostIp());
-        System.out.println("host name:" + getHostName());
     }
 }
 

@@ -6,17 +6,26 @@ import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.DateUtil;
 import com.hzgc.util.ObjectUtil;
+import com.sun.tools.internal.xjc.model.SymbolSpace;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * 以图搜图接口实现类，内含四个方法（外）（彭聪）
@@ -28,7 +37,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
     static {
         ElasticSearchHelper.getEsClient();
-        HBaseHelper.getHBaseConnection();
+        //HBaseHelper.getHBaseConnection();
     }
 
     /**
@@ -359,9 +368,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
         if (result != null) {
             byte[] smallImage = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-            if (smallImage != null){
+            if (smallImage != null) {
                 capturedPicture.setSmallImage(smallImage);
-            }else {
+            } else {
                 LOG.warn("get smallImage is null!");
             }
         } else {
@@ -392,9 +401,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private void setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
         if (bigImageResult != null) {
             byte[] bigImage = bigImageResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-            if (bigImage != null){
+            if (bigImage != null) {
                 capturedPicture.setBigImage(bigImage);
-            }else {
+            } else {
                 LOG.warn("get bigImage is null!");
             }
         } else {
@@ -405,9 +414,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private void setSmallImageToCapturedPicture_car(CapturedPicture capturedPicture, Result result) {
         if (result != null) {
             byte[] smallImage = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-            if (smallImage != null){
+            if (smallImage != null) {
                 capturedPicture.setSmallImage(smallImage);
-            }else {
+            } else {
                 LOG.warn("get smallImage is null!");
             }
         } else {
@@ -441,9 +450,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private void setBigImageToCapturedPicture_car(CapturedPicture capturedPicture, Result bigImageResult) {
         if (bigImageResult != null) {
             byte[] bigImage = bigImageResult.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-            if (bigImage != null){
+            if (bigImage != null) {
                 capturedPicture.setBigImage(bigImage);
-            }else {
+            } else {
                 LOG.warn("get bigImage is null!");
             }
         } else {
@@ -483,4 +492,58 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
 
+    /**
+     * 抓拍统计查询接口（马燊偲）
+     * 查询指定时间段内，指定设备抓拍的图片数量、该设备最后一次抓拍时间
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param ipcId     设备ID
+     * @return 该时间段内该设备抓拍张数
+     */
+    public Object[] captureCountQuery(String startTime, String endTime, String ipcId) {
+
+        Object[] returnobject = new Object[2]; //返回值
+        if (null != startTime && startTime.length() > 0
+                && null != endTime && endTime.length() > 0
+                && null != ipcId && ipcId.length() > 0) {
+
+            //设定查询条件：指定时间段startTime至endTime，指定设备ipcId
+            QueryBuilder qb = boolQuery()
+                    .must(matchQuery("s", ipcId))
+                    .must(rangeQuery("t").
+                            gte(startTime).lte(endTime));//gte: >= 大于或等于；lte: <= 小于或等于
+
+            SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
+                    .prepareSearch("dynamic") //指定要查询的索引名称
+                    .setTypes("person") //指定要查询的类型名称
+                    .setQuery(qb) //根据查询条件qb设置查询
+                    .addSort("t", SortOrder.DESC) //以时间字段降序排序
+                    .get();
+
+            SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
+            long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
+
+            /**
+             * 获取该时间段内设备最后一次抓拍时间：
+             * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+             * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+             * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+             * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+             **/
+            SearchHit[] searchHits = hits.hits();
+            //获取最后一次抓拍时间
+            String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
+
+            /**
+             * 返回值为：设备抓拍张数、设备最后一次抓拍时间；两者为不同类型Long和String
+             * 因此定义一个Object[]类型的数组，用于存放不同类型的返回值
+             **/
+            returnobject = new Object[2];
+            returnobject[0] = totalresultcount; //类型：Long
+            returnobject[1] = lastcapturetime; //类型：String
+        }
+
+        return returnobject;
+    }
 }

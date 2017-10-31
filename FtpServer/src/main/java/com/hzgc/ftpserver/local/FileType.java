@@ -1,4 +1,4 @@
-package com.hzgc.dubbo.dynamicrepo;
+package com.hzgc.ftpserver.local;
 
 
 import java.io.Serializable;
