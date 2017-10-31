@@ -16,7 +16,7 @@ public class FaceExtractImpl implements FaceExtract {
     }
 
     @Override
-    public FaceAttr featureExtract(byte[] imageBytes) {
+    public FaceAttribute featureExtract(byte[] imageBytes) {
         if (imageBytes != null && imageBytes.length > 0) {
             return FaceFunction.featureExtract(imageBytes);
         }
