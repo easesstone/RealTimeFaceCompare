@@ -7,5 +7,5 @@ public interface FaceExtract {
      * @param imageBytes 图片的字节数组
      * @return float[] 特征值:长度为2048的float[]数组
      */
-    FaceAttr featureExtract(byte[] imageBytes);
+    FaceAttribute featureExtract(byte[] imageBytes);
 }

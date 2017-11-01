@@ -1,4 +1,4 @@
-package com.hzgc.jni.Attribute;
+package com.hzgc.dubbo.Attribute;
 
 import java.io.Serializable;
 

@@ -1,6 +1,7 @@
 package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.producer.FaceObject;
+import com.hzgc.util.IOUtil;
 
 import java.io.*;
 
@@ -27,16 +28,8 @@ public class BeanUtils {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (bo != null) {
-                    bo.close();
-                }
-                if (oo != null) {
-                    oo.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            IOUtil.closeStream(bo);
+            IOUtil.closeStream(oo);
         }
         return bytes;
     }
@@ -59,16 +52,8 @@ public class BeanUtils {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (bi != null) {
-                    bi.close();
-                }
-                if (oi != null) {
-                    oi.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            IOUtil.closeStream(bi);
+            IOUtil.closeStream(oi);
         }
         return faceObject;
     }

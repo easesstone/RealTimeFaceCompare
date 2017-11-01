@@ -1,5 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.Attribute;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -52,7 +54,7 @@ public class SearchOption implements Serializable {
     /**
      * 参数筛选选项
      */
-    private List<SearchFilter> filters;
+    private Attribute attribute;
     /**
      * 排序参数
      */
@@ -164,12 +166,12 @@ public class SearchOption implements Serializable {
         this.intervals = intervals;
     }
 
-    public List<SearchFilter> getFilters() {
-        return filters;
+    public Attribute getAttribute() {
+        return attribute;
     }
 
-    public void setFilters(List<SearchFilter> filters) {
-        this.filters = filters;
+    public void setAttribute(Attribute attribute) {
+        this.attribute = attribute;
     }
 
     public void init() {
@@ -197,8 +199,10 @@ public class SearchOption implements Serializable {
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", intervals=" + intervals +
-                ", filters=" + filters +
-                ", sortParams=" + sortParams +
+                ", attribute=" + attribute +
+                ", sortParams='" + sortParams + '\'' +
+                ", offset=" + offset +
+                ", count=" + count +
                 '}';
     }
 }
