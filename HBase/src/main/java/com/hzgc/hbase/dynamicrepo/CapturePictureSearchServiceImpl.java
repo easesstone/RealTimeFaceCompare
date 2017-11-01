@@ -499,11 +499,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @param ipcId     设备ID
-     * @return 该时间段内该设备抓拍张数
+     * @return CaptureCount 查询结果对象。对象内封装了：该时间段内该设备抓拍张数，该时间段内该设备最后一次抓拍时间。
      */
-    public Object[] captureCountQuery(String startTime, String endTime, String ipcId) {
+    public CaptureCount captureCountQuery(String startTime, String endTime, String ipcId) {
 
-        Object[] returnobject = new Object[2]; //返回值
+        //CaptureCount是一个封装类，用于封装返回的结果。
+        CaptureCount returnresult = new CaptureCount();
         if (null != startTime && startTime.length() > 0
                 && null != endTime && endTime.length() > 0
                 && null != ipcId && ipcId.length() > 0) {
@@ -536,14 +537,13 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
 
             /**
-             * 返回值为：设备抓拍张数、设备最后一次抓拍时间；两者为不同类型Long和String
-             * 因此定义一个Object[]类型的数组，用于存放不同类型的返回值
+             * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
              **/
-            returnobject = new Object[2];
-            returnobject[0] = totalresultcount; //类型：Long
-            returnobject[1] = lastcapturetime; //类型：String
+
+            returnresult.setTotalresultcount(totalresultcount);
+            returnresult.setLastcapturetime(lastcapturetime);
         }
 
-        return returnobject;
+        return returnresult;
     }
 }
