@@ -12,7 +12,7 @@
         <module>FtpServer</module>
         <module>HBase</module>
         <module>Dubbo</module>
-        <module>Spark_Streaming</module>
+        <module>Cluster</module>
         <module>RocketMQ</module>
         <module>Distribution</module>
         <module>JNI</module>
