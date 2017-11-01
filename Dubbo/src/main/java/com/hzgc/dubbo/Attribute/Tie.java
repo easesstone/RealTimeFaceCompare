@@ -1,9 +1,11 @@
-package com.hzgc.jni.Attribute;
+package com.hzgc.dubbo.Attribute;
+
+import java.io.Serializable;
 
 /**
  * 是否系领带：0->无；1->系领带；2->没有系领带；
  */
-public enum Tie {
+public enum Tie implements Serializable{
     None(0), Tie_y(1), Tie_n(2);
 
     private int tievalue;

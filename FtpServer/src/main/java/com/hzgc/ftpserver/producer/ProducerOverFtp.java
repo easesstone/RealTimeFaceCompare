@@ -17,9 +17,9 @@ public class ProducerOverFtp implements Serializable {
     private static KafkaProducer<String, byte[]> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
-    private static String PICTURE = "picture";
+    /*private static String PICTURE = "picture";
     private static String FACE = "face";
-    private static String JSON = "json";
+    private static String JSON = "json";*/
     private static String FEATURE = "feature";
 
     ProducerOverFtp() {
@@ -29,9 +29,9 @@ public class ProducerOverFtp implements Serializable {
                 this.fis = new FileInputStream(file);
             }
             this.kafkaPropers.load(fis);
-            PICTURE = kafkaPropers.getProperty("topic-picture");
+            /*PICTURE = kafkaPropers.getProperty("topic-picture");
             FACE = kafkaPropers.getProperty("topic-face");
-            JSON = kafkaPropers.getProperty("topic-json");
+            JSON = kafkaPropers.getProperty("topic-json");*/
             FEATURE = kafkaPropers.getProperty("topic-feature");
             if (kafkaPropers != null) {
                 kafkaProducer = new KafkaProducer<String, byte[]>(kafkaPropers);
@@ -68,7 +68,7 @@ public class ProducerOverFtp implements Serializable {
         private static final ProducerOverFtp instanc = new ProducerOverFtp();
     }
 
-    public static String getPicture() {
+    /*public static String getPicture() {
         return PICTURE;
     }
 
@@ -76,7 +76,7 @@ public class ProducerOverFtp implements Serializable {
 
     public static String getJson() {
         return JSON;
-    }
+    }*/
 
     public static String getFEATURE() { return FEATURE; }
 

@@ -470,10 +470,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         pSearchArgsModel.isMoHuSearch(),
                         pSearchArgsModel.getStart(),
                         pSearchArgsModel.getPageSize());
+                putSearchRecordToHBase(pSearchArgsModel.getPaltaformId(), objectSearchResult,
+                        pSearchArgsModel.getImage(), pSearchArgsModel);
                 break;
             }
             case "searchByRowkey": {
                 objectSearchResult = searchByRowkey(pSearchArgsModel.getRowkey());
+                putSearchRecordToHBase(pSearchArgsModel.getPaltaformId(), objectSearchResult,
+                        pSearchArgsModel.getImage(), pSearchArgsModel);
                 break;
             }
             case "searchByCphone": {
@@ -485,12 +489,16 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 objectSearchResult = searchByCreator(pSearchArgsModel.getCreator(),
                         pSearchArgsModel.isMoHuSearch(),
                         pSearchArgsModel.getStart(), pSearchArgsModel.getPageSize());
+                putSearchRecordToHBase(pSearchArgsModel.getPaltaformId(), objectSearchResult,
+                        pSearchArgsModel.getImage(), pSearchArgsModel);
                 break;
             }
             case "searchByName": {
                 objectSearchResult = searchByName(pSearchArgsModel.getName(),
                         pSearchArgsModel.isMoHuSearch(),
                         pSearchArgsModel.getStart(), pSearchArgsModel.getPageSize());
+                putSearchRecordToHBase(pSearchArgsModel.getPaltaformId(), objectSearchResult,
+                        pSearchArgsModel.getImage(), pSearchArgsModel);
                 break;
             }
             default: {
@@ -500,7 +508,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         pSearchArgsModel.getThredshold(), pSearchArgsModel.getPkeys(),
                         pSearchArgsModel.getCreator(), pSearchArgsModel.getCphone(),
                         pSearchArgsModel.getStart(), pSearchArgsModel.getPageSize(),
-                        pSearchArgsModel.isMoHuSearch());
+                        pSearchArgsModel.isMoHuSearch(), pSearchArgsModel);
                 break;
             }
         }
@@ -512,7 +520,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private ObjectSearchResult searchByMutiCondition(String platformId, String idCard, String name, int sex,
                                                      byte[] photo, String feature, float threshold,
                                                      List<String> pkeys, String creator, String cphone,
-                                                     int start, int pageSize, boolean moHuSearch) {
+                                                     int start, int pageSize, boolean moHuSearch, PSearchArgsModel pSearchArgsModel) {
         SearchRequestBuilder requestBuilder;
         if (start == -1) {
             start = 1;
@@ -608,7 +616,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             LOG.info("以图搜图的时候，先根据条件进行过滤花费时间是：" + (System.currentTimeMillis() - startTime));
             ObjectSearchResult objectSearchResult = searchByPhotoAndThreshold(filteredBaseRepo,threshold, feature);
             objectSearchResult = HBaseUtil.dealWithPaging(objectSearchResult, start, pageSize);
-            putSearchRecordToHBase(platformId, objectSearchResult, photo);
+            putSearchRecordToHBase(platformId, objectSearchResult,
+                    photo, pSearchArgsModel);
             return objectSearchResult;
         }
 
@@ -696,7 +705,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
 
         ObjectSearchResult tmp = HBaseUtil.dealWithPaging(objectSearchResult_Tmp, start, pageSize);
-        putSearchRecordToHBase(platformId, tmp, null);
+        putSearchRecordToHBase(platformId, tmp, null, pSearchArgsModel);
         return tmp;
     }
 
@@ -752,7 +761,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             LOG.info("根据rowkey获取对象信息的时候异常............");
             searchResult.setSearchStatus(1);
             e.printStackTrace();
-            putSearchRecordToHBase(null, searchResult, null);
             return searchResult;
         } finally {
             HBaseUtil.closTable(table);
@@ -969,7 +977,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public String getFeature(String tag, byte[] photo) {
         long start = System.currentTimeMillis();
-        float[] floatFeature = FaceFunction.featureExtract(photo).getFeature();
+        float[] floatFeature = FaceFunction.featureExtract(photo);
         String feature = "";
         if (floatFeature != null && floatFeature.length == 512) {
             feature = FaceFunction.floatArray2string(floatFeature);
@@ -1049,6 +1057,91 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     Bytes.toBytes(searchResult.getSearchStatus()))
                     .addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.SEARCH_NUMS),
                             Bytes.toBytes(searchResult.getSearchNums()));
+            if (platformId != null) {
+                put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.PLATFORM_ID),
+                        Bytes.toBytes(platformId));
+            }
+            if (searchResult.getPhotoId() != null) {
+                put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.PHOTOID),
+                        Bytes.toBytes(searchResult.getPhotoId()));
+            }
+            if (results != null) {
+                put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.RESULTS), results);
+            }
+            if (photo != null) {
+                put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.PHOTO), photo);
+            }
+            try {
+                table.put(put);
+            } catch (IOException e) {
+                LOG.info("excute putSearchRecordToHBase failed.");
+                e.printStackTrace();
+            } finally {
+                HBaseUtil.closTable(table);
+                LOG.info("putSearchRecordToHBase, time: " + (System.currentTimeMillis() - start));
+            }
+        }
+    }
+    // 保存历史查询记录
+    private void putSearchRecordToHBase(String platformId, ObjectSearchResult searchResult, byte[] photo,
+                                        PSearchArgsModel pSearchArgsModel) {
+        long start = System.currentTimeMillis();
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ObjectOutputStream oout = null;
+        byte[] results = null;
+        byte[] searchModel = null;
+        if (searchResult != null) {
+            List<Map<String, Object>> persons = searchResult.getResults();
+            if (persons != null) {
+                for (Map<String, Object> person : persons) {
+                    Iterator<Map.Entry<String, Object>> it = person.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<String, Object> entry = it.next();
+                        String key = entry.getKey();
+                        if (ObjectInfoTable.FEATURE.equals(key)) {
+                            it.remove();
+                        }
+                    }
+                }
+            }
+            try {
+                oout = new ObjectOutputStream(bout);
+                oout.writeObject(new ArrayList(searchResult.getResults()));
+                results = bout.toByteArray();
+                oout.flush();
+                bout = new ByteArrayOutputStream();
+                oout = new ObjectOutputStream(bout);
+                oout.writeObject(pSearchArgsModel);
+                searchModel = bout.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (oout != null) {
+                        oout.close();
+                    }
+                    bout.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (searchResult != null) {
+            Table table = HBaseHelper.getTable(SrecordTable.TABLE_NAME);
+            String srecordRowKey = searchResult.getSearchId();
+            if (srecordRowKey == null) {
+                LOG.info("putSearchRecordToHBase, failed:  rowkey cannnot be null.");
+                return;
+            }
+            Put put = new Put(Bytes.toBytes(srecordRowKey));
+            put.setDurability(Durability.ASYNC_WAL);
+            LOG.info("srecord rowkey is:  " + searchResult.getSearchId());
+            put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.SEARCH_STATUS),
+                    Bytes.toBytes(searchResult.getSearchStatus()))
+                    .addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.SEARCH_NUMS),
+                            Bytes.toBytes(searchResult.getSearchNums()));
+            put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.PSEARCH_MODEL),
+                    searchModel);
             if (platformId != null) {
                 put.addColumn(Bytes.toBytes(SrecordTable.RD_CLOF), Bytes.toBytes(SrecordTable.PLATFORM_ID),
                         Bytes.toBytes(platformId));
