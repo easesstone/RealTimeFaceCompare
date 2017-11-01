@@ -1,9 +1,11 @@
-package com.hzgc.jni.Attribute;
+package com.hzgc.dubbo.Attribute;
+
+import java.io.Serializable;
 
 /**
  * 性别：0->无；1->男；2->女；
  */
-public enum Gender {
+public enum Gender implements Serializable{
     None(0), Male(1), Female(2);
 
     private int gendervalue;

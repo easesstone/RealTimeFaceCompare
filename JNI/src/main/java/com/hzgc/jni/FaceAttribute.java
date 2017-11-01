@@ -1,11 +1,11 @@
 package com.hzgc.jni;
 
-import com.hzgc.jni.Attribute.*;
+import com.hzgc.dubbo.Attribute.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class FaceAttr implements Serializable{
+public class FaceAttribute implements Serializable{
     /**
      * 特征值
      */

@@ -1,15 +1,13 @@
 package com.hzgc.ftpserver.local;
 
-
-import com.hzgc.dubbo.dynamicrepo.FileType;
 import com.hzgc.dubbo.dynamicrepo.PictureType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
+import com.hzgc.ftpserver.util.BeanUtils;
 import com.hzgc.ftpserver.util.FtpUtil;
-import com.hzgc.jni.FaceAttr;
+import com.hzgc.jni.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
-import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
@@ -29,6 +27,7 @@ public class LocalSTOR extends AbstractCommand {
     /**
      * Execute command.
      */
+    @Override
     public void execute(final FtpIoSession session,
                         final FtpServerContext context, final FtpRequest request)
             throws IOException, FtpException {
@@ -148,11 +147,11 @@ public class LocalSTOR extends AbstractCommand {
                         faceObject.setTimeStamp(map.get("time"));
                         faceObject.setType(PictureType.PERSON);
                         faceObject.setTimeSlot(map.get("sj"));
-                        FaceAttr attribute = FaceFunction.featureExtract(data);
+                        FaceAttribute attribute = FaceFunction.featureExtract(data);
                         faceObject.setAttribute(attribute);
 
                         String filePath = FtpUtil.key2absolutePath(faceRowKey, FileType.FACE);
-                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, ObjectUtil.objectToByte(faceObject));
+                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, BeanUtils.objectToBytes(faceObject));
                     }
                 }
 

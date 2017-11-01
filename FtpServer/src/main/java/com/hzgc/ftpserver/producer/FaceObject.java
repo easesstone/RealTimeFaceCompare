@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.producer;
 
 import com.hzgc.dubbo.dynamicrepo.PictureType;
-import com.hzgc.jni.FaceAttr;
+import com.hzgc.jni.FaceAttribute;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class FaceObject implements Serializable {
     /**
      * 人脸属性对象
      */
-    private FaceAttr attribute;
+    private FaceAttribute attribute;
     /**
      * 小图
      */
@@ -67,11 +67,11 @@ public class FaceObject implements Serializable {
         this.timeSlot = timeSlot;
     }
 
-    public FaceAttr getAttribute() {
+    public FaceAttribute getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(FaceAttr attribute) {
+    public void setAttribute(FaceAttribute attribute) {
         this.attribute = attribute;
     }
 
