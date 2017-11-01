@@ -150,7 +150,7 @@ public class LocalSTOR extends AbstractCommand {
                         FaceAttribute attribute = FaceFunction.featureExtract(data);
                         faceObject.setAttribute(attribute);
 
-                        String filePath = FtpUtil.key2absolutePath(faceRowKey, FileType.FACE);
+                        String filePath = FtpUtil.filePath2absolutePath(fileName);
                         kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, BeanUtils.objectToBytes(faceObject));
                     }
                 }
