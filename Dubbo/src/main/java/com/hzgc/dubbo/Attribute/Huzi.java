@@ -13,7 +13,7 @@ public enum Huzi implements Serializable{
     /**
      * 与其他属性的拼接运算，默认是OR运算
      */
-    private Iogistic logistic = Iogistic.OR;
+    private Logistic logistic = Logistic.OR;
 
     public String getValue() {
         return value;
@@ -23,11 +23,11 @@ public enum Huzi implements Serializable{
         this.value = value;
     }
 
-    public Iogistic getLogistic() {
+    public Logistic getLogistic() {
         return logistic;
     }
 
-    public void setLogistic(Iogistic logistic) {
+    public void setLogistic(Logistic logistic) {
         this.logistic = logistic;
     }
 
