@@ -6,23 +6,36 @@ import java.io.Serializable;
  * 是否戴眼镜：0->无；1->戴眼镜；2->没有戴眼镜；
  */
 public enum Eyeglasses implements Serializable{
-    None(0), Eyeglasses_y(1), Eyeglasses_n(2);
+    None, Eyeglasses_y, Eyeglasses_n;
 
-    private int eyeglassesvalue;
+    private String value;
 
-    private Eyeglasses(int eyeglassesvalue) {
-        this.eyeglassesvalue = eyeglassesvalue;
+    /**
+     * 与其他属性的拼接运算，默认是OR运算
+     */
+    private Iogistic logistic = Iogistic.OR;
+
+    public String getValue() {
+        return value;
     }
 
-    public int getEyeglassesvalue() {
-        return eyeglassesvalue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void setEyeglassesvalue(int eyeglassesvalue) {
-        this.eyeglassesvalue = eyeglassesvalue;
+    public Iogistic getLogistic() {
+        return logistic;
     }
 
+    public void setLogistic(Iogistic logistic) {
+        this.logistic = logistic;
+    }
+
+    @Override
     public String toString() {
-        return "EyeglassesValue{" + "value=" + eyeglassesvalue + '}';
+        return "Eyeglasses{" +
+                "value='" + value + '\'' +
+                ", logistic=" + logistic +
+                '}';
     }
 }

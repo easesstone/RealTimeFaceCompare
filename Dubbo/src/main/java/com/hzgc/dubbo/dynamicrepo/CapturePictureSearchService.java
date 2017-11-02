@@ -33,7 +33,7 @@ public interface CapturePictureSearchService {
      * @param type 图片类型（人、车）
      * @return 过滤参数键值对
      */
-    Map<String, String> getSearchFilterParams(int type);
+    Map<String, List<String>> getAttribute(SearchType type);
 
     /**
      * 根据id（rowkey）获取动态信息库内容（CapturedPicture对象）（刘思阳）

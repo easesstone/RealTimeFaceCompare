@@ -6,23 +6,36 @@ import java.io.Serializable;
  * 是否带帽子：0->无；1->戴帽子；2->没有戴帽子；
  */
 public enum Hat implements Serializable{
-    None(0), Hat_y(1), Hat_n(2);
+    None, Hat_y, Hat_n;
 
-    private int hatvalue;
+    private String value;
 
-    private Hat(int hatvalue) {
-        this.hatvalue = hatvalue;
+    /**
+     * 与其他属性的拼接运算，默认是OR运算
+     */
+    private Iogistic logistic = Iogistic.OR;
+
+    public String getValue() {
+        return value;
     }
 
-    public int getHatvalue() {
-        return hatvalue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void setHatvalue(int hatvalue) {
-        this.hatvalue = hatvalue;
+    public Iogistic getLogistic() {
+        return logistic;
     }
 
+    public void setLogistic(Iogistic logistic) {
+        this.logistic = logistic;
+    }
+
+    @Override
     public String toString() {
-        return "HatValue{" + "value=" + hatvalue + '}';
+        return "Eyeglasses{" +
+                "value='" + value + '\'' +
+                ", logistic=" + logistic +
+                '}';
     }
 }

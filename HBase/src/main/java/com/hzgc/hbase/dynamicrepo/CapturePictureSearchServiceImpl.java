@@ -1,12 +1,12 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.DateUtil;
 import com.hzgc.util.ObjectUtil;
-import com.sun.tools.internal.xjc.model.SymbolSpace;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -14,7 +14,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
@@ -129,8 +128,65 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 过滤参数键值对
      */
     @Override
-    public Map<String, String> getSearchFilterParams(int type) {
-        return null;
+    public Map<String, List<String>> getAttribute(SearchType type) {
+        Map<String, List<String>> map = new HashMap<>();
+
+        if (type == SearchType.PERSON) {
+            List<String> hairColorList = new ArrayList<>();
+            for (HairColor hc : HairColor.values()) {
+                hairColorList.add(hc.name());
+            }
+            map.put(HairColor.class.getName(), hairColorList);
+
+            List<String> hairStyleList = new ArrayList<>();
+            for (HairStyle hs : HairStyle.values()) {
+                hairStyleList.add(hs.name());
+            }
+            map.put(HairStyle.class.getName(), hairStyleList);
+
+            List<String> genderList = new ArrayList<>();
+            for (Gender gender : Gender.values()) {
+                genderList.add(gender.name());
+            }
+            map.put("Gender", genderList);
+
+            List<String> hatList = new ArrayList<>();
+            for (Hat hat : Hat.values()) {
+                hatList.add(hat.name());
+            }
+            map.put("Hat", hatList);
+
+            List<String> tieList = new ArrayList<>();
+            for (Tie tie : Tie.values()) {
+                tieList.add(tie.name());
+            }
+            map.put("Tie", tieList);
+
+            List<String> huziList = new ArrayList<>();
+            for (Huzi huzi : Huzi.values()) {
+                huziList.add(huzi.name());
+            }
+            map.put("Huzi", huziList);
+
+            List<String> eyeglassesList = new ArrayList<>();
+            for (Eyeglasses eyeglasses : Eyeglasses.values()) {
+                eyeglassesList.add(eyeglasses.name());
+            }
+            map.put("Eyeglasses", eyeglassesList);
+
+        }else if (type == SearchType.CAR){
+
+        }else {
+            LOG.error("method CapturePictureSearchServiceImpl.getAttribute SearchType is error.");
+        }
+        return map;
+    }
+
+    public static void main(String[] args) {
+        CapturePictureSearchService service = new CapturePictureSearchServiceImpl();
+        Map<String, List<String>> map = new HashMap<>();
+        map = service.getAttribute(SearchType.PERSON);
+        System.out.println(map);
     }
 
     /**
