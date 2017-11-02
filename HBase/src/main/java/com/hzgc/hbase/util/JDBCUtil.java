@@ -1,4 +1,4 @@
-package com.hzgc.util.jdbc;
+package com.hzgc.hbase.util;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.hzgc.util.FileUtil;
