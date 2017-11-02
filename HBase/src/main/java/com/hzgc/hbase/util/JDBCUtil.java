@@ -37,15 +37,12 @@ public class JDBCUtil {
     static {
         try {
             resourceFile = FileUtil.loadResourceFile("jdbc.properties");
-            propertie.list(System.out);
             if (resourceFile != null) {
                 propertie.load(new FileInputStream(resourceFile));
-                System.out.println(propertie);
             }
             dataSource = DruidDataSourceFactory.createDataSource(propertie); //DruidDataSrouce工厂模式
-            System.out.println(dataSource + " " + propertie);
         } catch (Exception e) {
-            log.info("获取配置失败");
+            log.info("get jdbc.properties failure");
         }
     }
 
