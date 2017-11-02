@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 人脸特征属性对象
  */
-public class Attribute implements Serializable{
+public class Attribute implements Serializable {
     /**
      * 头发颜色
      */

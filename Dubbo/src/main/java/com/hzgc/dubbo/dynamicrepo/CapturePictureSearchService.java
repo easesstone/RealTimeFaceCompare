@@ -58,10 +58,10 @@ public interface CapturePictureSearchService {
      * 查询指定时间段内，指定设备抓拍的图片数量、该设备最后一次抓拍时间
      *
      * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param ipcId 设备ID
+     * @param endTime   结束时间
+     * @param ipcId     设备ID
      * @return CaptureCount 查询结果对象。对象内封装了：该时间段内该设备抓拍张数，该时间段内该设备最后一次抓拍时间。
      */
-    CaptureCount  captureCountQuery(String startTime, String endTime, String ipcId);
+    CaptureCount captureCountQuery(String startTime, String endTime, String ipcId);
 
 }

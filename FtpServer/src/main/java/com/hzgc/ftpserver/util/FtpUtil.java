@@ -142,7 +142,7 @@ public class FtpUtil implements Serializable {
             map.put("ipcID", ipcID);
             map.put("time", time.toString());
             map.put("mqkey", time.toString());
-            map.put("date",date.toString());
+            map.put("date", date.toString());
             map.put("sj", sj.toString());//sj为动态库同步ES所需字段
         } catch (Exception e) {
             e.printStackTrace();
@@ -210,7 +210,7 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     *通过上传文件路径解析到文件的ftp地址
+     * 通过上传文件路径解析到文件的ftp地址
      *
      * @param filePath ftp接收数据路径
      * @return 文件的ftp地址
@@ -264,7 +264,7 @@ public class FtpUtil implements Serializable {
             ftpServerIP = properties.getProperty(hostName);
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             IoUtils.close(in);
         }
 

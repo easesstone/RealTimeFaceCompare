@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 头发类型：0->无；1->直发；2->卷发；3->光头；
  */
-public enum HairStyle implements Serializable{
+public enum HairStyle implements Serializable {
     None, Straight, Wavy, Bald;
 
     private String value;

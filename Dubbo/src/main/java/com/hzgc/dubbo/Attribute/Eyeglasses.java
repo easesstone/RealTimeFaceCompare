@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 是否戴眼镜：0->无；1->戴眼镜；2->没有戴眼镜；
  */
-public enum Eyeglasses implements Serializable{
+public enum Eyeglasses implements Serializable {
     None, Eyeglasses_y, Eyeglasses_n;
 
     private String value;

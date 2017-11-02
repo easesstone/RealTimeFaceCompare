@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 是否带帽子：0->无；1->戴帽子；2->没有戴帽子；
  */
-public enum Hat implements Serializable{
+public enum Hat implements Serializable {
     None, Hat_y, Hat_n;
 
     private String value;

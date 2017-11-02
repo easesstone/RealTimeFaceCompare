@@ -174,9 +174,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             }
             map.put("Eyeglasses", eyeglassesList);
 
-        }else if (type == SearchType.CAR){
+        } else if (type == SearchType.CAR) {
 
-        }else {
+        } else {
             LOG.error("method CapturePictureSearchServiceImpl.getAttribute SearchType is error.");
         }
         return map;

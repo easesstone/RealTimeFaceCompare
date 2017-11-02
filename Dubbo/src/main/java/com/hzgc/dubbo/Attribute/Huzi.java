@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 胡子类型：0->无；1->鼻子和嘴唇之间的胡子;2->山羊胡；3->络腮胡；4->没有胡子；
  */
-public enum Huzi implements Serializable{
+public enum Huzi implements Serializable {
     None, Mustache, Goatee, Sideburns, Nobeard;
 
     private String value;

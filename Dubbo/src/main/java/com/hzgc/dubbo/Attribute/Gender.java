@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 性别：0->无；1->男；2->女；
  */
-public enum Gender implements Serializable{
+public enum Gender implements Serializable {
     None, Male, Female;
 
     private String value;
