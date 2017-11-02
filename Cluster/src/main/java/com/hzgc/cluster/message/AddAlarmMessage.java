@@ -1,4 +1,4 @@
-package com.hzgc.streaming.message;
+package com.hzgc.cluster.message;
 
 import java.io.Serializable;
 

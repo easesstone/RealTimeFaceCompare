@@ -1,4 +1,4 @@
-package com.hzgc.streaming.util
+package com.hzgc.cluster.util
 
 
 /**
