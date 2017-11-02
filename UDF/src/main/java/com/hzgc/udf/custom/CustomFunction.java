@@ -26,7 +26,7 @@ public class CustomFunction {
         return new float[0];
     }
 
-    private float featureCompare(float[] currentFeature, float[] historyFeature) {
+    public float featureCompare(float[] currentFeature, float[] historyFeature) {
         double similarityDegree = 0;
         double currentFeatureMultiple = 0;
         double historyFeatureMultiple = 0;
