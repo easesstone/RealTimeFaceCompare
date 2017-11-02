@@ -154,7 +154,7 @@ public class FtpUtil implements Serializable {
      * @return 绝对路径
      */
     public static String key2absolutePath(String rowKey, FileType type) {
-        StringBuilder fileName = new StringBuilder();
+        StringBuilder url = new StringBuilder();
 
         String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
         String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
@@ -182,7 +182,7 @@ public class FtpUtil implements Serializable {
             e.printStackTrace();
         }
 
-        fileName = fileName.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
+        url = url.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
                 append("/20").append(year).append("/").append(month).append("/").append(day).
                 append("/").append(hour).append("/").append(minute).append("/").
                 append("20").append(year).append("_").append(month).append("_").append(day).
@@ -190,19 +190,44 @@ public class FtpUtil implements Serializable {
                 append("_").append(postId);
 
         if (type == FileType.PICTURE) {
-            fileName = fileName.append("_0").append(".jpg");
+            url = url.append("_0").append(".jpg");
         } else if (type == FileType.FACE) {
             if (numType == 0) {
                 LOG.info("picture rowKey cannot analysis to face filePath !");
             } else if (numType > 0) {
-                fileName = fileName.append("_").append(numType).append(".jpg");
+                url = url.append("_").append(numType).append(".jpg");
             } else {
                 LOG.warn("rowKey format error :" + rowKey);
             }
         } else if (type == FileType.JSON) {
-            fileName = fileName.append("_0").append(".json");
+            url = url.append("_0").append(".json");
         }
-        return fileName.toString();
+        return url.toString();
+    }
+
+    /**
+     *通过上传文件路径解析到文件的ftp地址
+     *
+     * @param filePath ftp接收数据路径
+     * @return 文件的ftp地址
+     */
+    public static String filePath2absolutePath(String filePath) {
+        StringBuilder url = new StringBuilder();
+        String ftpServerIP = "";
+        int ftpServerPort = 0;
+        String hostName = IpAddressUtil.getHostName();
+        Properties properties = new Properties();
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+            properties.load(in);
+            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
+            assert hostName != null;
+            ftpServerIP = properties.getProperty(hostName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        url = url.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append(filePath);
+        return url.toString();
     }
 
     /**

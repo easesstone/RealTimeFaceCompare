@@ -1,4 +1,4 @@
-package com.hzgc.streaming.job
+package com.hzgc.cluster.alarm
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -8,8 +8,8 @@ import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.rocketmq.util.RocketMQProducer
-import com.hzgc.streaming.message.AddAlarmMessage
-import com.hzgc.streaming.util.StreamingUtils
+import com.hzgc.cluster.message.AddAlarmMessage
+import com.hzgc.cluster.util.StreamingUtils
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils

@@ -1,4 +1,4 @@
-package com.hzgc.streaming.job
+package com.hzgc.cluster.alarm
 
 import kafka.serializer.Decoder
 import kafka.utils.VerifiableProperties
