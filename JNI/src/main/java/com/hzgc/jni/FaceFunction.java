@@ -15,11 +15,11 @@ public class FaceFunction {
      * @return 输出float[]形式的特征值
      */
     public synchronized static FaceAttribute featureExtract(byte[] imageData) {
-        FaceAttribute faceAttribute = null;
         BufferedImage faceImage;
-        int successOrfailue;
         try {
             if (null != imageData) {
+                FaceAttribute faceAttribute = new FaceAttribute();
+                int successOrfailue;
                 faceImage = ImageIO.read(new ByteArrayInputStream(imageData));
                 int height = faceImage.getHeight();
                 int width = faceImage.getWidth();
@@ -32,11 +32,11 @@ public class FaceFunction {
                         rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
                     }
                 }
-              successOrfailue= NativeFunction.feature_extract(faceAttribute,rgbArray, width, height);
-                if (successOrfailue==0) {
+                successOrfailue = NativeFunction.feature_extract(faceAttribute, rgbArray, width, height);
+                if (successOrfailue == 0) {
                     return faceAttribute;
-                }else{
-                    return null;
+                } else {
+                    return new FaceAttribute();
                 }
             } else {
                 throw new NullPointerException("The data of picture is null");
@@ -44,7 +44,7 @@ public class FaceFunction {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new FaceAttribute();
     }
 
     /**
@@ -54,44 +54,42 @@ public class FaceFunction {
      * @return 返回float[]形式的特征值
      */
     public synchronized static FaceAttribute featureExtract(String imagePath) {
-        FaceAttribute faceAttribute = null;
         File imageFile;
         ByteArrayInputStream bais = null;
         ByteArrayOutputStream baos = null;
         FileInputStream fis = null;
         byte[] buffer = new byte[1024];
-        int successOrfailue;
         try {
             imageFile = new File(imagePath);
             if (imageFile.exists()) {
-                baos = new ByteArrayOutputStream();
-                fis = new FileInputStream(imageFile);
-                int len;
-                while ((len = fis.read(buffer)) > -1) {
-                    baos.write(buffer, 0, len);
+            }
+            baos = new ByteArrayOutputStream();
+            fis = new FileInputStream(imageFile);
+            int len;
+            while ((len = fis.read(buffer)) > -1) {
+                baos.write(buffer, 0, len);
+            }
+            bais = new ByteArrayInputStream(baos.toByteArray());
+            BufferedImage image = ImageIO.read(bais);
+            if (image != null) {
+                FaceAttribute faceAttribute = new FaceAttribute();
+                int successOrfailue;
+                int height = image.getHeight();
+                int width = image.getWidth();
+                int[] rgbArray = new int[height * width * 3];
+                for (int h = 0; h < height; h++) {
+                    for (int w = 0; w < width; w++) {
+                        int pixel = image.getRGB(w, h);// 下面三行代码将一个数字转换为RGB数字
+                        rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;
+                        rgbArray[h * width * 3 + w * 3 + 1] = (pixel & 0xff00) >> 8;
+                        rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
+                    }
                 }
-                bais = new ByteArrayInputStream(baos.toByteArray());
-                BufferedImage image = ImageIO.read(bais);
-                if (image != null) {
-                    int height = image.getHeight();
-                    int width = image.getWidth();
-                    int[] rgbArray = new int[height * width * 3];
-                    for (int h = 0; h < height; h++) {
-                        for (int w = 0; w < width; w++) {
-                            int pixel = image.getRGB(w, h);// 下面三行代码将一个数字转换为RGB数字
-                            rgbArray[h * width * 3 + w * 3] = (pixel & 0xff0000) >> 16;
-                            rgbArray[h * width * 3 + w * 3 + 1] = (pixel & 0xff00) >> 8;
-                            rgbArray[h * width * 3 + w * 3 + 2] = (pixel & 0xff);
-                        }
-                    }
-                  successOrfailue=  NativeFunction.feature_extract(faceAttribute,rgbArray, width, height);
-                    if (successOrfailue==0) {
-                        return faceAttribute;
-                    }else {
-                        return null;
-                    }
+                successOrfailue = NativeFunction.feature_extract(faceAttribute, rgbArray, width, height);
+                if (successOrfailue == 0) {
+                    return faceAttribute;
                 } else {
-                    return null;
+                    return new FaceAttribute();
                 }
             } else {
                 throw new FileNotFoundException(imageFile.getName() + " is not exists");
@@ -121,7 +119,7 @@ public class FaceFunction {
                 }
             }
         }
-        return faceAttribute;
+        return new FaceAttribute();
     }
 
     /**
