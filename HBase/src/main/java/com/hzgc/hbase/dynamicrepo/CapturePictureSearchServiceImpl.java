@@ -592,4 +592,19 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
         return returnresult;
     }
+
+    @Override
+    public SearchResult getCaptureHistory(SearchOption option) {
+        option.setSearchType(SearchType.PERSON);
+        long esStartTime = System.currentTimeMillis();
+        SearchResult searchResult = getImageIdListFromEs_History(option);
+        long esEndTime = System.currentTimeMillis();
+        LOG.info("search" + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
+        return searchResult;
+    }
+
+    private SearchResult getImageIdListFromEs_History(SearchOption option) {
+        FilterByRowkey filterByRowkey = new FilterByRowkey();
+        return filterByRowkey.getRowKey_history(option);
+    }
 }
