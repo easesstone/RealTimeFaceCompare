@@ -593,6 +593,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         return returnresult;
     }
 
+
     @Override
     public SearchResult getCaptureHistory(SearchOption option) {
         option.setSearchType(SearchType.PERSON);
