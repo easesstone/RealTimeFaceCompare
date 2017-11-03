@@ -12,12 +12,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PutDataToEs implements Serializable {
-    private static PutDataToEs instance = new PutDataToEs();
-
-    private PutDataToEs() {
-    }
-
+    private static PutDataToEs instance = null;
     public static PutDataToEs getInstance() {
+        if (instance == null) {
+            synchronized (PutDataToEs.class) {
+                if (instance == null) {
+                    instance = new PutDataToEs();
+                }
+            }
+        }
         return instance;
     }
 

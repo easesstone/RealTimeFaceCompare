@@ -112,13 +112,13 @@ public class FilterByRowkey {
                 }
             }
             //人脸属性肯定存在
-            totalBQ.must(QueryBuilders.matchQuery("eleglasses",eleglasses).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("gender",gender).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("haircolor",haircolor).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("hairstyle",hairstyle).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("hat",hat).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("huzi",huzi).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("tie",tie).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+            totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
 
             // 开始时间和结束时间存在的时候的处理
             if (startTime != null && endTime != null) {
@@ -183,10 +183,10 @@ public class FilterByRowkey {
                 String ipcid = (String) hit.getSource().get("ipcid");
                 String timestamp = (String) hit.getSource().get("timestamp");
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                long truetimestamp = 0;
+                long time = 0;
                 try {
                     Date date = sdf.parse(timestamp);
-                    truetimestamp = date.getTime();
+                    time = date.getTime();
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -197,7 +197,7 @@ public class FilterByRowkey {
                 capturePicture.setId(rowKey);
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setPictureType(PictureType.valueOf(pictype));
-                capturePicture.setTimeStamp(truetimestamp);
+                capturePicture.setTimeStamp(time);
                 persons.add(capturePicture);
                 i++;
                 if (i == count) {

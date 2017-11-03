@@ -21,6 +21,7 @@ import scala.collection.mutable.ArrayBuffer
   * 人脸新增告警实时处理任务（刘善彬）
   */
 object FaceAddAlarmJob {
+
   case class Json(staticID: String,
                   staticObjectType: String,
                   sim: Float)

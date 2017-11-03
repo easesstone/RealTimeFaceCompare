@@ -65,7 +65,7 @@ object kafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.coalesce(3, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
     })
     ssc.start()
     ssc.awaitTermination()
