@@ -19,10 +19,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -129,50 +126,50 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public Map<String, List<String>> getAttribute(SearchType type) {
-        Map<String, List<String>> map = new HashMap<>();
+        Map<String, List<String>> map = new LinkedHashMap<>();
 
         if (type == SearchType.PERSON) {
             List<String> hairColorList = new ArrayList<>();
             for (HairColor hc : HairColor.values()) {
                 hairColorList.add(hc.name());
             }
-            map.put(HairColor.class.getName(), hairColorList);
+            map.put("HairColor", hairColorList);
 
             List<String> hairStyleList = new ArrayList<>();
             for (HairStyle hs : HairStyle.values()) {
                 hairStyleList.add(hs.name());
             }
-            map.put(HairStyle.class.getName(), hairStyleList);
+            map.put("HairStyle", hairStyleList);
 
             List<String> genderList = new ArrayList<>();
             for (Gender gender : Gender.values()) {
                 genderList.add(gender.name());
             }
-            map.put(Gender.class.getName(), genderList);
+            map.put("Gender", genderList);
 
             List<String> hatList = new ArrayList<>();
             for (Hat hat : Hat.values()) {
                 hatList.add(hat.name());
             }
-            map.put(Hat.class.getName(), hatList);
+            map.put("Hat", hatList);
 
             List<String> tieList = new ArrayList<>();
             for (Tie tie : Tie.values()) {
                 tieList.add(tie.name());
             }
-            map.put(Tie.class.getName(), tieList);
+            map.put("Tie", tieList);
 
             List<String> huziList = new ArrayList<>();
             for (Huzi huzi : Huzi.values()) {
                 huziList.add(huzi.name());
             }
-            map.put(Huzi.class.getName(), huziList);
+            map.put("Huzi", huziList);
 
             List<String> eyeglassesList = new ArrayList<>();
             for (Eyeglasses eyeglasses : Eyeglasses.values()) {
                 eyeglassesList.add(eyeglasses.name());
             }
-            map.put(Eyeglasses.class.getName(), eyeglassesList);
+            map.put("Eyeglasses", eyeglassesList);
 
         } else if (type == SearchType.CAR) {
 
@@ -182,6 +179,12 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         return map;
     }
 
+    public static void main(String[] args) {
+        Map<String, List<String>> map = new HashMap<>();
+        CapturePictureSearchServiceImpl service = new CapturePictureSearchServiceImpl();
+        map = service.getAttribute(SearchType.PERSON);
+        System.out.println(map.toString());
+    }
     /**
      * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *
