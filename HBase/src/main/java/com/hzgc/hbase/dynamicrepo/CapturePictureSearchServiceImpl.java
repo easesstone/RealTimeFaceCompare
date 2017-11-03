@@ -179,12 +179,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         return map;
     }
 
-    public static void main(String[] args) {
-        Map<String, List<String>> map = new HashMap<>();
-        CapturePictureSearchServiceImpl service = new CapturePictureSearchServiceImpl();
-        map = service.getAttribute(SearchType.PERSON);
-        System.out.println(map.toString());
-    }
     /**
      * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *
