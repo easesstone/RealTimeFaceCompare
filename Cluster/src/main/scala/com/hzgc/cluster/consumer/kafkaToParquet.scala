@@ -12,57 +12,62 @@ import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 
 object kafkaToParquet {
 
-  case class pic(ftpurl: String, eyeglasses: String, feature: String, gender: String, haircolor: String,
-                 hairstyle: String, hat: String, huzi: String, tie: String, ipcid: String, timeSlot: String,
-                 timestamp: String, pictype: String, date: String) {}
+  def getItem(parameter: String, properties: Properties): String = {
+    val item = properties.getProperty(parameter)
+    if (null != item) {
+      return item
+    } else {
+      println("Please check the parameter " + parameter + " is correct!!!")
+      System.exit(1)
+    }
+    null
+  }
+
+  case class Picture(ftpurl: String, //图片搜索地址
+                     feature: String, ipcid: String, timeSlot: String, //feature：图片特征值 ipcid：设备id  timeslot：时间段
+                     timestamp: String, pictype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
+                     eyeglasses: String, gender: String, haircolor: String, //人脸属性：眼镜、性别、头发颜色
+                     hairstyle: String, hat: String, huzi: String, tie: String //人脸属性：发型、帽子、胡子、领带
+                    )
 
   val properties: Properties = StreamingUtils.getProperties
-  val appname: String = properties.getProperty("job.faceObjectConsumer.appName")
-  val master: String = properties.getProperty("job.faceObjectConsumer.master")
-  val timeInterval: Duration = Durations.seconds(properties.getProperty("job.faceObjectConsumer.timeInterval").toLong)
-  val brokers: String = properties.getProperty("job.faceObjectConsumer.broker.list")
-  val kafkaGroupId: String = properties.getProperty("job.faceObjectConsumer.group.id")
-  val topics = Set(properties.getProperty("job.faceObjectConsumer.topic.name"))
-  val numDstreams: Int = properties.getProperty("job.faceObjectConsumer.DStreamNums").toInt
-  val repartitionNum: Int = properties.getProperty("job.repartition.number").toInt
-  val storeAddress: String = properties.getProperty("job.storeAddress")
+  val appname: String = getItem("job.faceObjectConsumer.appName", properties)
+  val master: String = getItem("job.faceObjectConsumer.master", properties)
+  val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
+  val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties)
+  val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)
+  val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))
+  val numDstreams: Int = getItem("job.faceObjectConsumer.DStreamNums", properties).toInt
+  val repartitionNum: Int = getItem("job.repartition.number", properties).toInt
+  val storeAddress: String = getItem("job.storeAddress", properties)
 
   def main(args: Array[String]): Unit = {
-    val list = List(appname, master, timeInterval, brokers, kafkaGroupId, topics, numDstreams, repartitionNum, storeAddress)
-    list.foreach(p => {
-      if (null == p || p.equals("")) {
-        println("Please make sure the parameter correct!!!")
-      }
-    })
-    val session = SparkSession.builder().appName(appname).master(master).getOrCreate()
-    val str = new StreamingContext(session.sparkContext, timeInterval)
+    val spark = SparkSession.builder().appName(appname).master(master).getOrCreate()
+    val ssc = new StreamingContext(spark.sparkContext, timeInterval)
     val kafkaParams = Map(
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
     val putDataToEs = new PutDataToEs
     val kafkaDstream = (1 to numDstreams).map(_ =>
-      KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](str, kafkaParams, topics))
-    val unionDstream = str.union(kafkaDstream).repartition(repartitionNum)
-    unionDstream.map(p => {
+      KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics))
+    val unionDstream = ssc.union(kafkaDstream).repartition(repartitionNum)
+    val kafkaDF = unionDstream.map(p => {
       var status = putDataToEs.putDataToEs(p._1, p._2)
-      if (status == 1) {
-        println("Put data to es success!")
-      } else {
+      if (status != 1) {
         println("Put data to es failed!")
       }
+      Picture(p._1, FaceFunction.floatArray2string(p._2.getAttribute.getFeature), p._2.getIpcId,
+        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses.name(),
+        p._2.getAttribute.getGender.name(), p._2.getAttribute.getHairColor.name(), p._2.getAttribute.getHairStyle.name(),
+        p._2.getAttribute.getHat.name(), p._2.getAttribute.getHuzi.name(), p._2.getAttribute.getTie.name()
+      )
     })
-    val kafkaDF = unionDstream.map(p => pic(p._1, p._2.getAttribute.getEyeglasses.name(),
-      FaceFunction.floatArray2string(p._2.getAttribute.getFeature),
-      p._2.getAttribute.getGender.name(), p._2.getAttribute.getHairColor.name(),
-      p._2.getAttribute.getHairStyle.name(), p._2.getAttribute.getHat.name(),
-      p._2.getAttribute.getHuzi.name(), p._2.getAttribute.getTie.name(),
-      p._2.getIpcId, p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate))
     kafkaDF.foreachRDD(rdd => {
-      import session.implicits._
+      import spark.implicits._
       rdd.coalesce(3, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
     })
-    str.start()
-    str.awaitTermination()
+    ssc.start()
+    ssc.awaitTermination()
   }
 }

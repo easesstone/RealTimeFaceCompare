@@ -12,6 +12,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PutDataToEs implements Serializable {
+    private static PutDataToEs instance = new PutDataToEs();
+
+    private PutDataToEs() {
+    }
+
+    public static PutDataToEs getInstance() {
+        return instance;
+    }
+
     public int putDataToEs(String ftpurl, FaceObject faceObject) {
         String timestamp = faceObject.getTimeStamp();
         String ipcid = faceObject.getIpcId();
