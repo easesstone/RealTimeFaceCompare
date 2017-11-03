@@ -28,6 +28,5 @@ HBase/src/main/java/com/hzgc/hbase/provider/
 HBase/src/main/resources/consumer.xml
 HBase/src/main/resources/provider.xml
 HBase/src/test/java/com/hzgc/hbase/consumer/
-/HBase/src/main/resources/
 /FtpServer/src/main/resources/producer-over-ftp.properties
 /FtpServer/src/main/resources/ftpAddress.properties
