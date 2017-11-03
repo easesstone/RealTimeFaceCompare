@@ -48,7 +48,7 @@ object kafkaToParquet {
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
-    val putDataToEs = new PutDataToEs
+    val putDataToEs = PutDataToEs.getInstance()
     val kafkaDstream = (1 to numDstreams).map(_ =>
       KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics))
     val unionDstream = ssc.union(kafkaDstream).repartition(repartitionNum)
