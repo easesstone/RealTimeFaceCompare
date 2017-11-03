@@ -48,15 +48,16 @@ public class FilterByRowkey {
     }
 
     private SearchRequestBuilder getSearchRequestBuilder_history(SearchOption option) {
+       SearchRequestBuilder searchRequestBuilder = null;
         // 传过来为空，返回空
         if (option == null) {
-            return null;
+            return searchRequestBuilder;
         }
         // 获取搜索类型，搜索类型要么是人，要么是车，不可以为空，为空不处理
         SearchType searchType = option.getSearchType();
         // 搜索类型为空，则返回空。
         if (searchType == null) {
-            return null;
+            return searchRequestBuilder;
         }
 
         // es 中的索引，
