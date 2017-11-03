@@ -28,26 +28,53 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
         }
     },
     "mappings": {
-        "person": {
-            "properties": {
-                "f" : {
-                    "type" : "text",
-                    "analyzer" : "trigrams"
-                },
-                "t" : {
-                    "type" : "date",
-                    "format": "yyyy-MM-dd HH:mm:ss"
-                },
-                "fea" : {
-                    "type" : "text",
-                    "index" : "not_analyzed"
-                },
-                "sj": {
-                    "type": "long",
-                    "index": "not_analyzed"
-                }
-            }
+         "person": {
+              "properties": {
+                    "ftpurl" : {
+                                          "type" : "text"
+                              },
+                              "eyeglasses" : {
+                                           "type" : "text"
+                               },
+                              "feature" : {
+                                           "type" : "text"
+                              },
+                              "gender" : {
+                                           "type" : "text"
+                              },
+                              "haircolor" : {
+                                           "type" : "text"
+                              },
+                              "hairstyle" : {
+                                           "type" : "text"
+                              },
+                              "hat" : {
+                                           "type" : "text"
+                              },
+                              "huzi" : {
+                                          "type" : "text"
+                              },
+                              "tie" : {
+                                           "type" : "text"
+                              },
+                              "ipcid" : {
+                                           "type" : "text"
+                              },
+                              "timequantum" : {
+                                           "type" : "text"
+                              },
+                              "date" : {
+                                            "type" : "text"
+                              },
+                              "timestamp" : {
+                                  "type" : "date",
+                                  "format": "yyyy-MM-dd HH:mm:ss"
+                              },
+                              "pictype" : {
+                                  "type" : "text"
+                              }
+                    }
+              }
         }
     }
-}
 '

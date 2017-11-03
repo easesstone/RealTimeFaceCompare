@@ -22,6 +22,7 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -180,7 +181,15 @@ public class FilterByRowkey {
                 capturePicture = new CapturedPicture();
                 String rowKey = hit.getId();
                 String ipcid = (String) hit.getSource().get("ipcid");
-                long timestamp = (long) hit.getSource().get("timestamp");
+                String timestamp = (String) hit.getSource().get("timestamp");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                long truetimestamp = 0;
+                try {
+                    Date date = sdf.parse(timestamp);
+                    truetimestamp = date.getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 String pictype = (String) hit.getSource().get("pictype");
                 if (rowKey.endsWith("_00")) {
                     continue;
@@ -188,7 +197,7 @@ public class FilterByRowkey {
                 capturePicture.setId(rowKey);
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setPictureType(PictureType.valueOf(pictype));
-                capturePicture.setTimeStamp(timestamp);
+                capturePicture.setTimeStamp(truetimestamp);
                 persons.add(capturePicture);
                 i++;
                 if (i == count) {
