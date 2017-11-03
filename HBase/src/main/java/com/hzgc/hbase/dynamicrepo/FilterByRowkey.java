@@ -59,7 +59,6 @@ public class FilterByRowkey {
             return null;
         }
 
-
         // es 中的索引，
         String index = "";
         // es 中类型
@@ -71,7 +70,6 @@ public class FilterByRowkey {
         LOG.info("offset is:" + offset);
         int count = option.getCount();
         LOG.info("count is:" + count);
-
 
         // 搜索类型为人的情况下
         if (SearchType.PERSON.equals(searchType)) {
@@ -181,10 +179,16 @@ public class FilterByRowkey {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
                 String rowKey = hit.getId();
+                String ipcid = (String) hit.getSource().get("ipcid");
+                long timestamp = (long) hit.getSource().get("timestamp");
+                String pictype = (String) hit.getSource().get("pictype");
                 if (rowKey.endsWith("_00")) {
                     continue;
                 }
                 capturePicture.setId(rowKey);
+                capturePicture.setIpcId(ipcid);
+                capturePicture.setPictureType(PictureType.valueOf(pictype));
+                capturePicture.setTimeStamp(timestamp);
                 persons.add(capturePicture);
                 i++;
                 if (i == count) {
