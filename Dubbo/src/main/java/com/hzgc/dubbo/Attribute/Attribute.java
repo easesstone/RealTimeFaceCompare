@@ -1,9 +1,11 @@
 package com.hzgc.dubbo.Attribute;
 
+import java.io.Serializable;
+
 /**
  * 人脸特征属性对象
  */
-public class Attribute {
+public class Attribute implements Serializable {
     /**
      * 头发颜色
      */
