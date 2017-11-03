@@ -5,24 +5,37 @@ import java.io.Serializable;
 /**
  * 性别：0->无；1->男；2->女；
  */
-public enum Gender implements Serializable{
-    None(0), Male(1), Female(2);
+public enum Gender implements Serializable {
+    None, Male, Female;
 
-    private int gendervalue;
+    private String value;
 
-    private Gender(int gendervalue) {
-        this.gendervalue = gendervalue;
+    /**
+     * 与其他属性的拼接运算，默认是OR运算
+     */
+    private Logistic logistic = Logistic.OR;
+
+    public String getValue() {
+        return value;
     }
 
-    public int getGendervalue() {
-        return gendervalue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void setGendervalue(int gendervalue) {
-        this.gendervalue = gendervalue;
+    public Logistic getLogistic() {
+        return logistic;
     }
 
+    public void setLogistic(Logistic logistic) {
+        this.logistic = logistic;
+    }
+
+    @Override
     public String toString() {
-        return "Gendervalue{" + "value=" + gendervalue + '}';
+        return "Eyeglasses{" +
+                "value='" + value + '\'' +
+                ", logistic=" + logistic +
+                '}';
     }
 }

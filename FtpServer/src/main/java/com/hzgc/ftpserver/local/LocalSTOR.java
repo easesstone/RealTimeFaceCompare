@@ -147,6 +147,7 @@ public class LocalSTOR extends AbstractCommand {
                         faceObject.setTimeStamp(map.get("time"));
                         faceObject.setType(PictureType.PERSON);
                         faceObject.setTimeSlot(map.get("sj"));
+                        faceObject.setDate(map.get("date"));
                         FaceAttribute attribute = FaceFunction.featureExtract(data);
                         faceObject.setAttribute(attribute);
 
