@@ -148,31 +148,31 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             for (Gender gender : Gender.values()) {
                 genderList.add(gender.name());
             }
-            map.put("Gender", genderList);
+            map.put(Gender.class.getName(), genderList);
 
             List<String> hatList = new ArrayList<>();
             for (Hat hat : Hat.values()) {
                 hatList.add(hat.name());
             }
-            map.put("Hat", hatList);
+            map.put(Hat.class.getName(), hatList);
 
             List<String> tieList = new ArrayList<>();
             for (Tie tie : Tie.values()) {
                 tieList.add(tie.name());
             }
-            map.put("Tie", tieList);
+            map.put(Tie.class.getName(), tieList);
 
             List<String> huziList = new ArrayList<>();
             for (Huzi huzi : Huzi.values()) {
                 huziList.add(huzi.name());
             }
-            map.put("Huzi", huziList);
+            map.put(Huzi.class.getName(), huziList);
 
             List<String> eyeglassesList = new ArrayList<>();
             for (Eyeglasses eyeglasses : Eyeglasses.values()) {
                 eyeglassesList.add(eyeglasses.name());
             }
-            map.put("Eyeglasses", eyeglassesList);
+            map.put(Eyeglasses.class.getName(), eyeglassesList);
 
         } else if (type == SearchType.CAR) {
 
