@@ -48,16 +48,15 @@ public class FilterByRowkey {
     }
 
     private SearchRequestBuilder getSearchRequestBuilder_history(SearchOption option) {
-       SearchRequestBuilder searchRequestBuilder = null;
         // 传过来为空，返回空
         if (option == null) {
-            return searchRequestBuilder;
+            return null;
         }
         // 获取搜索类型，搜索类型要么是人，要么是车，不可以为空，为空不处理
         SearchType searchType = option.getSearchType();
         // 搜索类型为空，则返回空。
         if (searchType == null) {
-            return searchRequestBuilder;
+            return null;
         }
 
         // es 中的索引，
@@ -161,14 +160,14 @@ public class FilterByRowkey {
     }
 
     private SearchResult dealWithSearchRequestBuilder_history(SearchRequestBuilder searchRequestBuilder, int count) {
+        // 最终要返回的值
+        SearchResult result = new SearchResult();
         // requestBuilder 为空，则返回空
         if (searchRequestBuilder == null) {
-            return null;
+            return result;
         }
         // 通过SearchRequestBuilder 获取response 对象。
         SearchResponse searchResponse = searchRequestBuilder.get();
-        // 最终要返回的值
-        SearchResult result = new SearchResult();
         // 滚动查询
         SearchHits searchHits = searchResponse.getHits();
         result.setTotal((int) searchHits.getTotalHits());
