@@ -129,6 +129,9 @@ public class FtpUtil implements Serializable {
                 append(" ").append(hour).append(":").append(minute).append(":").append(second);
         //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        StringBuilder date = new StringBuilder();
+        date = date.append(20).append(year).append("-").append(month).append("-").append(day);
+
         StringBuilder sj = new StringBuilder();
         sj = sj.append(hour).append(minute);
 
@@ -137,8 +140,9 @@ public class FtpUtil implements Serializable {
             /*Date date = sdf.parse(time.toString());
             long timeStamp = date.getTime();*/
             map.put("ipcID", ipcID);
-            map.put("time", String.valueOf(time));
+            map.put("time", time.toString());
             map.put("mqkey", time.toString());
+            map.put("date", date.toString());
             map.put("sj", sj.toString());//sj为动态库同步ES所需字段
         } catch (Exception e) {
             e.printStackTrace();
@@ -206,7 +210,7 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     *通过上传文件路径解析到文件的ftp地址
+     * 通过上传文件路径解析到文件的ftp地址
      *
      * @param filePath ftp接收数据路径
      * @return 文件的ftp地址
@@ -260,7 +264,7 @@ public class FtpUtil implements Serializable {
             ftpServerIP = properties.getProperty(hostName);
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             IoUtils.close(in);
         }
 

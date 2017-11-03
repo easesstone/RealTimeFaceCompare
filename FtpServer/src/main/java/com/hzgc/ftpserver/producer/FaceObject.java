@@ -23,6 +23,10 @@ public class FaceObject implements Serializable {
      */
     private PictureType type;
     /**
+     * 日期（格式：2017-01-01）
+     */
+    private String date;
+    /**
      * 时间段（格式：0000）(小时+分钟)
      */
     private String timeSlot;
@@ -59,6 +63,14 @@ public class FaceObject implements Serializable {
         this.type = type;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public String getTimeSlot() {
         return timeSlot;
     }
@@ -89,6 +101,7 @@ public class FaceObject implements Serializable {
                 "ipcId='" + ipcId + '\'' +
                 ", timeStamp='" + timeStamp + '\'' +
                 ", type=" + type +
+                ", date='" + date + '\'' +
                 ", timeSlot='" + timeSlot + '\'' +
                 ", attribute=" + attribute +
                 ", image=" + Arrays.toString(image) +

@@ -1,12 +1,12 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.util.DateUtil;
 import com.hzgc.util.ObjectUtil;
-import com.sun.tools.internal.xjc.model.SymbolSpace;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -14,16 +14,12 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -129,8 +125,58 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 过滤参数键值对
      */
     @Override
-    public Map<String, String> getSearchFilterParams(int type) {
-        return null;
+    public Map<String, List<String>> getAttribute(SearchType type) {
+        Map<String, List<String>> map = new LinkedHashMap<>();
+
+        if (type == SearchType.PERSON) {
+            List<String> hairColorList = new ArrayList<>();
+            for (HairColor hc : HairColor.values()) {
+                hairColorList.add(hc.name());
+            }
+            map.put("HairColor", hairColorList);
+
+            List<String> hairStyleList = new ArrayList<>();
+            for (HairStyle hs : HairStyle.values()) {
+                hairStyleList.add(hs.name());
+            }
+            map.put("HairStyle", hairStyleList);
+
+            List<String> genderList = new ArrayList<>();
+            for (Gender gender : Gender.values()) {
+                genderList.add(gender.name());
+            }
+            map.put("Gender", genderList);
+
+            List<String> hatList = new ArrayList<>();
+            for (Hat hat : Hat.values()) {
+                hatList.add(hat.name());
+            }
+            map.put("Hat", hatList);
+
+            List<String> tieList = new ArrayList<>();
+            for (Tie tie : Tie.values()) {
+                tieList.add(tie.name());
+            }
+            map.put("Tie", tieList);
+
+            List<String> huziList = new ArrayList<>();
+            for (Huzi huzi : Huzi.values()) {
+                huziList.add(huzi.name());
+            }
+            map.put("Huzi", huziList);
+
+            List<String> eyeglassesList = new ArrayList<>();
+            for (Eyeglasses eyeglasses : Eyeglasses.values()) {
+                eyeglassesList.add(eyeglasses.name());
+            }
+            map.put("Eyeglasses", eyeglassesList);
+
+        } else if (type == SearchType.CAR) {
+
+        } else {
+            LOG.error("method CapturePictureSearchServiceImpl.getAttribute SearchType is error.");
+        }
+        return map;
     }
 
     /**
@@ -545,5 +591,20 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
 
         return returnresult;
+    }
+
+    @Override
+    public SearchResult getCaptureHistory(SearchOption option) {
+        option.setSearchType(SearchType.PERSON);
+        long esStartTime = System.currentTimeMillis();
+        SearchResult searchResult = getImageIdListFromEs_History(option);
+        long esEndTime = System.currentTimeMillis();
+        LOG.info("search" + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
+        return searchResult;
+    }
+
+    private SearchResult getImageIdListFromEs_History(SearchOption option) {
+        FilterByRowkey filterByRowkey = new FilterByRowkey();
+        return filterByRowkey.getRowKey_history(option);
     }
 }
