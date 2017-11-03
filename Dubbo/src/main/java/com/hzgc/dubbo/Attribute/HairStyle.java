@@ -5,24 +5,37 @@ import java.io.Serializable;
 /**
  * 头发类型：0->无；1->直发；2->卷发；3->光头；
  */
-public enum HairStyle implements Serializable{
-    None(0), Straight(1), Wavy(2), Bald(3);
+public enum HairStyle implements Serializable {
+    None, Straight, Wavy, Bald;
 
-    private int hairstylevalue;
+    private String value;
 
-    private HairStyle(int hairstyle) {
-        this.hairstylevalue = hairstyle;
+    /**
+     * 与其他属性的拼接运算，默认是OR运算
+     */
+    private Logistic logistic = Logistic.OR;
+
+    public String getValue() {
+        return value;
     }
 
-    public int getHairstyle() {
-        return hairstylevalue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void setHairstyle(int hairstylevalue) {
-        this.hairstylevalue = hairstylevalue;
+    public Logistic getLogistic() {
+        return logistic;
     }
 
+    public void setLogistic(Logistic logistic) {
+        this.logistic = logistic;
+    }
+
+    @Override
     public String toString() {
-        return "HairStyle{" + "style=" + hairstylevalue + '}';
+        return "Eyeglasses{" +
+                "value='" + value + '\'' +
+                ", logistic=" + logistic +
+                '}';
     }
 }
