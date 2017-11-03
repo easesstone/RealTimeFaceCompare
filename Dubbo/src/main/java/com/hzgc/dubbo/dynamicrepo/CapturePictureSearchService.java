@@ -64,4 +64,11 @@ public interface CapturePictureSearchService {
      */
     CaptureCount captureCountQuery(String startTime, String endTime, String ipcId);
 
+    /**
+     * 查询抓拍历史记录
+     * @param option
+     * @return
+     */
+    SearchResult getCaptureHistory(SearchOption option);
+
 }

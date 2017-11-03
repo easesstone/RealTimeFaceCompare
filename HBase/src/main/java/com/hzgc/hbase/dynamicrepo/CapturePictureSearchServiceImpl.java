@@ -592,4 +592,33 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
         return returnresult;
     }
+
+    @Override
+    public SearchResult getCaptureHistory(SearchOption option) {
+        DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();;
+        PictureType pictureType = PictureType.SMALL_PERSON;
+        option.setSearchType(SearchType.PERSON);
+        long esStartTime = System.currentTimeMillis();
+        SearchResult searchResult = getImageIdListFromEs_History(option);
+        long esEndTime = System.currentTimeMillis();
+        LOG.info("search" + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
+        List<CapturedPicture> capturedPicturesTemp = searchResult.getPictures();
+        List<String> rowKeyList = new ArrayList<>(capturedPicturesTemp.size());
+        for (CapturedPicture capturedPicture : capturedPicturesTemp) {
+            String rowKey = capturedPicture.getId();
+            rowKeyList.add(rowKey);
+        }
+        List<CapturedPicture> capturedPicturesNew = dynamicPhotoService.getMultiBatchCaptureMessage(rowKeyList, pictureType.getType());
+        long startTime = System.currentTimeMillis();
+        List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getImageData(capturedPicturesNew, pictureType.getType());
+        long endTime = System.currentTimeMillis();
+        LOG.info("search " + option.getCount() + "history image from es takes:" + (endTime - startTime) + "ms");
+        searchResult.setPictures(capturedPicturesPerson);
+        return searchResult;
+    }
+
+    private SearchResult getImageIdListFromEs_History(SearchOption option) {
+        FilterByRowkey filterByRowkey = new FilterByRowkey();
+        return filterByRowkey.getRowKey_history(option);
+    }
 }

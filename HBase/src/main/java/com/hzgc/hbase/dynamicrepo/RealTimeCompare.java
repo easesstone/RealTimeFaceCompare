@@ -128,57 +128,6 @@ public class RealTimeCompare implements Serializable {
                         }
                     }
                 }
-            } else {
-                //searchType 为空，则同时返回人、车
-                insertType = DynamicTable.MIX_TYPE;
-                PictureType pictureType;
-                List<String> personImageIdList;
-                option.setSearchType(SearchType.PERSON);
-                personImageIdList = getImageIdListFromEs(option);
-
-                //通过es查询到的车辆图片id列表
-                List<String> carImageIdList = null;
-                /**
-                 * 摄像头同时支持人脸和车辆抓拍时解除下面注释，从车辆动态库中获取抓拍图片
-                 */
-               /* option.setSearchType(SearchType.CAR);
-                carImageIdList = getImageIdListFromEs(option);*/
-                /*用于同时保存人车图片id*/
-                List<String> personAddCarList = new ArrayList<>();
-                /*用于同时保存人车图片对象*/
-                capturedPictureList = new ArrayList<>();
-                if (null != personImageIdList && personImageIdList.size() > 0) {
-                    personAddCarList.addAll(personImageIdList);
-                    pictureType = PictureType.SMALL_PERSON;
-                    List<CapturedPicture> capturedPicturesPerson = dynamicPhotoService.getMultiBatchCaptureMessage(personImageIdList, pictureType.getType());
-                    if (null != capturedPicturesPerson) {
-                        capturedPictureList.addAll(capturedPicturesPerson);
-                    } else {
-                        LOG.info("get person capturedPicture null");
-                    }
-                } else {
-                    LOG.info("no person image get from es");
-                }
-                if (null != carImageIdList && carImageIdList.size() > 0) {
-                    personAddCarList.addAll(carImageIdList);
-                    pictureType = PictureType.SMALL_CAR;
-                    List<CapturedPicture> capturedPicturesCar = dynamicPhotoService.getMultiBatchCaptureMessage(carImageIdList, pictureType.getType());
-                    if (null != capturedPicturesCar) {
-                        capturedPictureList.addAll(capturedPicturesCar);
-                    } else {
-                        LOG.info("get car capturedPicture null");
-                    }
-                } else {
-                    LOG.info("no image of car get from es");
-                }
-                searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
-                List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
-                //读取imageData并返回结果
-                List<CapturedPicture> FullCapturePictureList = new ArrayList<>(count);
-                for (CapturedPicture capturedPicture : capturedPictureRes) {
-                    FullCapturePictureList.add(dynamicPhotoService.getImageData(capturedPicture));
-                }
-                searchResult.setPictures(FullCapturePictureList);
             }
         } else {
             LOG.error("search parameter option is null");

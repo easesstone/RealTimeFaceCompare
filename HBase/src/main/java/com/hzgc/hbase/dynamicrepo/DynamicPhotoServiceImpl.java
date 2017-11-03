@@ -761,6 +761,35 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         }
         return capturedPicture;
     }
+
+    /**
+     * 批量获取图片对象数据
+     * @param capturedPictures
+     * @param type
+     * @return
+     */
+    @Override
+    public List<CapturedPicture> getImageData(List<CapturedPicture> capturedPictures, int type) {
+        if (null != capturedPictures && capturedPictures.size() > 0) {
+            Table table;
+            byte[] family;
+            byte[] qualifier;
+            if (type == PictureType.SMALL_PERSON.getType()) {
+                table = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
+                family = DynamicTable.PERSON_COLUMNFAMILY;
+                qualifier = DynamicTable.PERSON_COLUMN_IMGE;
+            } else {
+                table = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
+                family = DynamicTable.PERSON_COLUMNFAMILY;
+                qualifier = DynamicTable.PERSON_COLUMN_IMGE;
+            }
+            capturedPictures = getBatchImageData(capturedPictures, table, family, qualifier);
+            HBaseUtil.closTable(table);
+        } else {
+            LOG.info("the capturedPictures is null");
+        }
+        return capturedPictures;
+    }
 }
 
 /**
