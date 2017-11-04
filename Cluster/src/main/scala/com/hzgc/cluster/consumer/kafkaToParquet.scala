@@ -24,7 +24,7 @@ object kafkaToParquet {
   }
 
   case class Picture(ftpurl: String, //图片搜索地址
-                     feature: String, ipcid: String, timeSlot: String, //feature：图片特征值 ipcid：设备id  timeslot：时间段
+                     feature: String, ipcid: String, timeslot: String, //feature：图片特征值 ipcid：设备id  timeslot：时间段
                      timestamp: String, pictype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
                      eyeglasses: String, gender: String, haircolor: String, //人脸属性：眼镜、性别、头发颜色
                      hairstyle: String, hat: String, huzi: String, tie: String //人脸属性：发型、帽子、胡子、领带
