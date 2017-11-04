@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class PutDataToEs implements Serializable {
     private static PutDataToEs instance = null;
+
     public static PutDataToEs getInstance() {
         if (instance == null) {
             synchronized (PutDataToEs.class) {
@@ -30,7 +31,7 @@ public class PutDataToEs implements Serializable {
         String timeslot = faceObject.getTimeSlot();
         String date = faceObject.getDate();
         IndexResponse indexResponse = new IndexResponse();
-        String picType = faceObject.getType().name();
+        String pictype = faceObject.getType().name();
         Map<String, Object> map = new HashMap<>();
         FaceAttribute faceAttr = faceObject.getAttribute();
         float[] feature = faceAttr.getFeature();
@@ -51,7 +52,7 @@ public class PutDataToEs implements Serializable {
         String tie = faceAttr.getTie().name();
         map.put("tie", tie);
         map.put("date", date);
-        map.put("pictype", picType);
+        map.put("pictype", pictype);
         map.put("timestamp", timestamp);
         map.put("ipcid", ipcid);
         map.put("timeslot", timeslot);

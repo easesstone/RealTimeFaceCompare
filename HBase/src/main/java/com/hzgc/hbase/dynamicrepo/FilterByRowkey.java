@@ -85,7 +85,7 @@ public class FilterByRowkey {
             //人脸属性--眼镜
             String eleglasses = option.getAttribute().getEyeglasses().name();
             //人脸属性--性别
-            String gender = option.getAttribute().getGender().name();
+            String gender = option.getAttribute().getGender().toString();
             //人脸属性--头发颜色
             String haircolor = option.getAttribute().getHairColor().name();
             //人脸属性--发型
@@ -106,25 +106,38 @@ public class FilterByRowkey {
                     Iterator it = deviceId.iterator();
                     while (it.hasNext()) {
                         String t = (String) it.next();
-                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery("s", t).analyzer("standard"));
+                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery("ipcid", t).analyzer("standard"));
                     }
                     totalBQ.must(devicdIdBQ);
                 }
             }
-            //人脸属性肯定存在
-            totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
-
+            //人脸属性筛选
+            if (eleglasses != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+            }
+            if (gender != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+            }
+            if (haircolor != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+            }
+            if (hairstyle != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+            }
+            if (hat != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+            }
+            if (huzi != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+            }
+            if (tie != "None") {
+                totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
+            }
             // 开始时间和结束时间存在的时候的处理
             if (startTime != null && endTime != null) {
                 String start = dateFormat.format(startTime);
                 String end = dateFormat.format(endTime);
-                totalBQ.must(QueryBuilders.rangeQuery("t").gte(start).lte(end));
+                totalBQ.must(QueryBuilders.rangeQuery("timestamp").gte(start).lte(end));
             }
             //TimeIntervals 时间段的封装类
             TimeInterval timeInterval;
@@ -139,7 +152,7 @@ public class FilterByRowkey {
                     start_sj = start_sj / 60 + start_sj % 60;
                     int end_sj = timeInterval.getEnd();
                     end_sj = end_sj / 60 + end_sj % 60;
-                    timeInQB.should(QueryBuilders.rangeQuery("sj").gte(start_sj).lte(end_sj));
+                    timeInQB.should(QueryBuilders.rangeQuery("timeslot").gte(start_sj).lte(end_sj));
                     totalBQ.must(timeInQB);
                 }
             }
@@ -152,11 +165,10 @@ public class FilterByRowkey {
         LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
-                .setFetchSource(new String[]{"sj"}, null)
                 .setTypes(type)
                 .setFrom(offset)
                 .setSize(100)
-                .addSort("t", SortOrder.DESC);
+                .addSort("timestamp", SortOrder.DESC);
         return requestBuilder.setQuery(totalBQ);
     }
 
@@ -181,6 +193,7 @@ public class FilterByRowkey {
                 capturePicture = new CapturedPicture();
                 String rowKey = hit.getId();
                 String ipcid = (String) hit.getSource().get("ipcid");
+                System.out.println(hit.getSourceAsString());
                 String timestamp = (String) hit.getSource().get("timestamp");
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 long time = 0;
