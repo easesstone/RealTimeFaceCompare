@@ -18,7 +18,7 @@ object kafkaToParquet {
       return item
     } else {
       println("Please check the parameter " + parameter + " is correct!!!")
-      System.exit(0)
+      System.exit(1)
     }
     null
   }
