@@ -85,17 +85,17 @@ public class FilterByRowkey {
             //人脸属性--眼镜
             int eleglasses = option.getAttribute().getEyeglasses().getValue();
             //人脸属性--性别
-            int gender = 0;    //option.getAttribute().getGender().getValue();
+            int gender = option.getAttribute().getGender().getValue();
             //人脸属性--头发颜色
-            int haircolor = 0;   //option.getAttribute().getHairColor().getValue();
+            int haircolor = option.getAttribute().getHairColor().getValue();
             //人脸属性--发型
-            int hairstyle = 0;    //option.getAttribute().getHairStyle().getValue();
+            int hairstyle = option.getAttribute().getHairStyle().getValue();
             //人脸属性--帽子
-            int hat = 0;   //option.getAttribute().getHat().getValue();
+            int hat = option.getAttribute().getHat().getValue();
             //人脸属性--胡子
-            int huzi = 0;    //option.getAttribute().getHuzi().getValue();
+            int huzi = option.getAttribute().getHuzi().getValue();
             //人脸属性--领带
-            int tie = 0;    //option.getAttribute().getTie().getValue();
+            int tie = option.getAttribute().getTie().getValue();
             // 设备ID 的的boolQueryBuilder
             BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
             // 格式化时间
