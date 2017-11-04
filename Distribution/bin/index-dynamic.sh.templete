@@ -60,7 +60,7 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                               "ipcid" : {
                                            "type" : "text"
                               },
-                              "timequantum" : {
+                              "timeslot" : {
                                            "type" : "text"
                               },
                               "date" : {
