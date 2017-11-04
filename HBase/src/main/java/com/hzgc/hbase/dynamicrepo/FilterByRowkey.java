@@ -83,19 +83,19 @@ public class FilterByRowkey {
             // 时间段
             List<TimeInterval> timeIntervals = option.getIntervals();
             //人脸属性--眼镜
-            String eleglasses = option.getAttribute().getEyeglasses().name();
+            int eleglasses = option.getAttribute().getEyeglasses().getValue();
             //人脸属性--性别
-            String gender = option.getAttribute().getGender().name();
+            int gender = 0;    //option.getAttribute().getGender().getValue();
             //人脸属性--头发颜色
-            String haircolor = option.getAttribute().getHairColor().name();
+            int haircolor = 0;   //option.getAttribute().getHairColor().getValue();
             //人脸属性--发型
-            String hairstyle = option.getAttribute().getHairStyle().name();
+            int hairstyle = 0;    //option.getAttribute().getHairStyle().getValue();
             //人脸属性--帽子
-            String hat = option.getAttribute().getHat().name();
+            int hat = 0;   //option.getAttribute().getHat().getValue();
             //人脸属性--胡子
-            String huzi = option.getAttribute().getHuzi().name();
+            int huzi = 0;    //option.getAttribute().getHuzi().getValue();
             //人脸属性--领带
-            String tie = option.getAttribute().getTie().name();
+            int tie = 0;    //option.getAttribute().getTie().getValue();
             // 设备ID 的的boolQueryBuilder
             BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
             // 格式化时间
@@ -112,25 +112,25 @@ public class FilterByRowkey {
                 }
             }
             //人脸属性筛选
-            if (eleglasses != "None") {
+            if (eleglasses != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
             }
-            if (gender != "None") {
+            if (gender != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
             }
-            if (haircolor != "None") {
+            if (haircolor != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
             }
-            if (hairstyle != "None") {
+            if (hairstyle != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
             }
-            if (hat != "None") {
+            if (hat != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
             }
-            if (huzi != "None") {
+            if (huzi != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
             }
-            if (tie != "None") {
+            if (tie != 0) {
                 totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
             }
             // 开始时间和结束时间存在的时候的处理

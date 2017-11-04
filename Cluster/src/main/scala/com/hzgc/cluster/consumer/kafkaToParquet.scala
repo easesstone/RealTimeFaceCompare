@@ -26,8 +26,8 @@ object kafkaToParquet {
   case class Picture(ftpurl: String, //图片搜索地址
                      feature: String, ipcid: String, timeslot: String, //feature：图片特征值 ipcid：设备id  timeslot：时间段
                      timestamp: String, pictype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
-                     eyeglasses: String, gender: String, haircolor: String, //人脸属性：眼镜、性别、头发颜色
-                     hairstyle: String, hat: String, huzi: String, tie: String //人脸属性：发型、帽子、胡子、领带
+                     eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
+                     hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
                     )
 
   val properties: Properties = StreamingUtils.getProperties
@@ -58,9 +58,9 @@ object kafkaToParquet {
         println("Put data to es failed!")
       }
       Picture(p._1, FaceFunction.floatArray2string(p._2.getAttribute.getFeature), p._2.getIpcId,
-        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses.name(),
-        p._2.getAttribute.getGender.name(), p._2.getAttribute.getHairColor.name(), p._2.getAttribute.getHairStyle.name(),
-        p._2.getAttribute.getHat.name(), p._2.getAttribute.getHuzi.name(), p._2.getAttribute.getTie.name()
+        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses.getValue,
+        p._2.getAttribute.getGender.getValue, p._2.getAttribute.getHairColor.getValue, p._2.getAttribute.getHairStyle.getValue,
+        p._2.getAttribute.getHat.getValue, p._2.getAttribute.getHuzi.getValue, p._2.getAttribute.getTie.getValue
       )
     })
     kafkaDF.foreachRDD(rdd => {

@@ -1,7 +1,7 @@
 #!/bin/bash
 ## 动态信息库person 表的映射
-curl -XDELETE 's100:9200/dynamic?pretty'  -H 'Content-Type: application/json'
-curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
+curl -XDELETE 's109:9200/dynamic?pretty'  -H 'Content-Type: application/json'
+curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
 {
     "settings": {
         "analysis": {
@@ -34,28 +34,28 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                                           "type" : "text"
                               },
                               "eyeglasses" : {
-                                           "type" : "text"
+                                           "type" : "long"
                                },
                               "feature" : {
                                            "type" : "text"
                               },
                               "gender" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "haircolor" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "hairstyle" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "hat" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "huzi" : {
-                                          "type" : "text"
+                                          "type" : "long"
                               },
                               "tie" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "ipcid" : {
                                            "type" : "text"
