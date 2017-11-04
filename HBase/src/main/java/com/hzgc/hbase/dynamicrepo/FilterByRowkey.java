@@ -149,10 +149,10 @@ public class FilterByRowkey {
                 while (timeInIt.hasNext()) {
                     timeInterval = timeInIt.next();
                     int start_sj = timeInterval.getStart();
-                    start_sj = start_sj / 60 + start_sj % 60;
+                    String start_ts = String.valueOf(start_sj * 100 / 60 + start_sj % 60);
                     int end_sj = timeInterval.getEnd();
-                    end_sj = end_sj / 60 + end_sj % 60;
-                    timeInQB.should(QueryBuilders.rangeQuery("timeslot").gte(start_sj).lte(end_sj));
+                    String end_ts = String.valueOf(end_sj * 100 / 60 + end_sj % 60);
+                    timeInQB.should(QueryBuilders.rangeQuery("timeslot").gte(start_ts).lte(end_ts));
                     totalBQ.must(timeInQB);
                 }
             }
