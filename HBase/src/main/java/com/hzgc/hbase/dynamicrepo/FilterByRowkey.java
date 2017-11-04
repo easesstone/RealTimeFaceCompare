@@ -85,7 +85,7 @@ public class FilterByRowkey {
             //人脸属性--眼镜
             String eleglasses = option.getAttribute().getEyeglasses().name();
             //人脸属性--性别
-            String gender = option.getAttribute().getGender().toString();
+            String gender = option.getAttribute().getGender().name();
             //人脸属性--头发颜色
             String haircolor = option.getAttribute().getHairColor().name();
             //人脸属性--发型
