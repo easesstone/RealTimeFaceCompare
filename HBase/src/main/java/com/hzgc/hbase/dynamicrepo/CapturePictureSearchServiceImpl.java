@@ -13,7 +13,9 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
@@ -606,5 +608,65 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private SearchResult getImageIdListFromEs_History(SearchOption option) {
         FilterByRowkey filterByRowkey = new FilterByRowkey();
         return filterByRowkey.getRowKey_history(option);
+    }
+
+    /**
+     * 抓拍属性统计查询 (刘思阳)
+     * 查询指定时间段内，单个或某组设备中某种属性在抓拍图片中的数量
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param ipcIdList 单个或某组设备ID
+     * @return 单个或某组设备中某种属性在抓拍图片中的数量（Map<设备ID, AttributeCount>）
+     */
+    @Override
+    public Map<String, AttributeCount> captureAttributeQuery(String startTime, String endTime, List<String> ipcIdList, SearchType type) {
+        Map<String, AttributeCount> map = new LinkedHashMap<>();
+        AttributeCount attributeCount = new AttributeCount();
+        if (type == SearchType.PERSON){
+            CapturePictureSearchService service = new CapturePictureSearchServiceImpl();
+            Map<String, List<String>> attributeMap;
+            attributeMap = service.getAttribute(SearchType.PERSON);
+
+            if (ipcIdList != null && ipcIdList.size() > 0){
+                for (String ipcId : ipcIdList) {
+                    Map<String, Long> map1 = new LinkedHashMap<>();
+                    for (Map.Entry<String, List<String>> entry : attributeMap.entrySet()) {
+                        String key = entry.getKey();
+                        List<String> values = entry.getValue();
+                        for (String value : values) {
+                            String attribute = key + "_" + value;
+
+                            BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                            FilterIpcId.must(QueryBuilders.matchQuery("ipcId", ipcId));
+                            FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
+                            FilterIpcId.must(QueryBuilders.matchQuery(key, value));
+                            SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                    .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                    .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                    .setQuery(FilterIpcId).get();
+                            SearchHits hits = searchResponse.getHits();
+                            long totalHits = hits.getTotalHits();
+
+                            map1.put(attribute, totalHits);
+                        }
+                        attributeCount.setAttributeMap(map1);
+
+                        CaptureCount captureCount = service.captureCountQuery(startTime, endTime, ipcId);
+                        long count = captureCount.getTotalresultcount();
+                        attributeCount.setCaptureCount(count);
+                    }
+                    map.put(ipcId, attributeCount);
+                }
+            }else {
+                LOG.error("ipcIdList is null.");
+            }
+        }else if (type == SearchType.CAR){
+
+        }else {
+            LOG.error("method CapturePictureSearchServiceImpl.captureAttributeQuery SearchType is error.");
+        }
+
+        return map;
     }
 }
