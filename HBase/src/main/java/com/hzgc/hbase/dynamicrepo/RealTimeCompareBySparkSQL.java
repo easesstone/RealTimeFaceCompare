@@ -70,6 +70,7 @@ class RealTimeCompareBySparkSQL {
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
     RealTimeCompareBySparkSQL() {
+
         dynamicPhotoService = new DynamicPhotoServiceImpl();
         capturePictureSearchService = new CapturePictureSearchServiceImpl();
         //获取ftp配置文件,并初始化propertie
@@ -168,15 +169,15 @@ class RealTimeCompareBySparkSQL {
             jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                 while (rs.next()) {
                     //图片ftpurl
-                    String imageid = rs.getString(DynamicHiveTable.PIC_URL);
+                    String imageid = rs.getString(DynamicTable.FTPURL);
                     //设备id
-                    String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
+                    String ipcid = rs.getString(DynamicTable.IPCID);
                     //相似度
-                    Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
+                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
-                    Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
+                    Long timestamp = rs.getLong(DynamicTable.TIMESTAMP);
                     //图片类型
-                    String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
+                    String pic_type = rs.getString(DynamicTable.PICTYPE);
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setId(imageid);
                     capturedPicture.setIpcId(ipcid);
@@ -216,15 +217,16 @@ class RealTimeCompareBySparkSQL {
                 String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
                 jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                     //图片ftpurl
-                    String imageid = rs.getString(DynamicHiveTable.PIC_URL);
+                    String imageid = rs.getString(DynamicTable.FTPURL);
                     //设备id
-                    String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
+                    String ipcid = rs.getString(DynamicTable.IPCID);
                     //相似度
-                    Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
+                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
-                    Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
+                    Long timestamp = rs.getLong(DynamicTable.TIMESTAMP);
                     //图片类型
-                    String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
+                    String pic_type = rs.getString(DynamicTable.PICTYPE);
+
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setId(imageid);
                     capturedPicture.setIpcId(ipcid);
@@ -244,8 +246,7 @@ class RealTimeCompareBySparkSQL {
         return searchResult;
     }
 
-
-    /**
+    /***
      * 获取根据过滤条件拼接成的sql
      *
      * @param searchFeaStr 通过图片获取的特征值
