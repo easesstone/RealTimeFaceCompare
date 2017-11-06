@@ -52,15 +52,16 @@ object kafkaToParquet {
     val kafkaDstream = (1 to numDstreams).map(_ =>
       KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics))
     val unionDstream = ssc.union(kafkaDstream).repartition(repartitionNum)
-    val kafkaDF = unionDstream.map(p => {
-      var status = putDataToEs.putDataToEs(p._1, p._2)
+    val kafkaDF = unionDstream.map(faceobject => {
+      var status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
       if (status != 1) {
         println("Put data to es failed!")
       }
-      Picture(p._1, FaceFunction.floatArray2string(p._2.getAttribute.getFeature), p._2.getIpcId,
-        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses,
-        p._2.getAttribute.getGender, p._2.getAttribute.getHairColor, p._2.getAttribute.getHairStyle,
-        p._2.getAttribute.getHat, p._2.getAttribute.getHuzi, p._2.getAttribute.getTie
+      Picture(faceobject._1, FaceFunction.floatArray2string(faceobject._2.getAttribute.getFeature), faceobject._2.getIpcId,
+        faceobject._2.getTimeSlot, faceobject._2.getTimeStamp, faceobject._2.getType.name(), faceobject._2.getDate,
+        faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender, faceobject._2.getAttribute.getHairColor,
+        faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat, faceobject._2.getAttribute.getHuzi,
+        faceobject._2.getAttribute.getTie
       )
     })
     kafkaDF.foreachRDD(rdd => {

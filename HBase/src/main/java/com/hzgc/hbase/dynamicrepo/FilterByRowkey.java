@@ -1,6 +1,5 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.Logistic;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
@@ -121,7 +120,7 @@ public class FilterByRowkey {
                     Iterator it = deviceId.iterator();
                     while (it.hasNext()) {
                         String t = (String) it.next();
-                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery("ipcid", t).analyzer("standard"));
+                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, t).analyzer("standard"));
                     }
                     totalBQ.must(devicdIdBQ);
                 }
@@ -129,58 +128,58 @@ public class FilterByRowkey {
             //人脸属性筛选
             if (eleglasses != 0) {
                 if (elelog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, eleglasses).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, eleglasses).analyzer("standard"));
                 }
             }
             if (gender != 0) {
                 if (genlog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.GENDER, gender).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.GENDER, gender).analyzer("standard"));
                 }
             }
             if (haircolor != 0) {
                 if (collog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HAIRCOLOR, haircolor).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HAIRCOLOR, haircolor).analyzer("standard"));
                 }
             }
             if (hairstyle != 0) {
                 if (stylog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, hairstyle).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, hairstyle).analyzer("standard"));
                 }
             }
             if (hat != 0) {
                 if (hatlog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HAT, hat).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HAT, hat).analyzer("standard"));
                 }
             }
             if (huzi != 0) {
                 if (huzlog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HUZI, huzi).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HUZI, huzi).analyzer("standard"));
                 }
             }
             if (tie != 0) {
                 if (tielog == "AND") {
-                    totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.TIE, tie).analyzer("standard"));
                 } else {
-                    totalBQ.should(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.TIE, tie).analyzer("standard"));
                 }
             }
             // 开始时间和结束时间存在的时候的处理
             if (startTime != null && endTime != null) {
                 String start = dateFormat.format(startTime);
                 String end = dateFormat.format(endTime);
-                totalBQ.must(QueryBuilders.rangeQuery("timestamp").gte(start).lte(end));
+                totalBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(start).lte(end));
             }
             //TimeIntervals 时间段的封装类
             TimeInterval timeInterval;
@@ -195,7 +194,7 @@ public class FilterByRowkey {
                     String start_ts = String.valueOf(start_sj * 100 / 60 + start_sj % 60);
                     int end_sj = timeInterval.getEnd();
                     String end_ts = String.valueOf(end_sj * 100 / 60 + end_sj % 60);
-                    timeInQB.should(QueryBuilders.rangeQuery("timeslot").gte(start_ts).lte(end_ts));
+                    timeInQB.should(QueryBuilders.rangeQuery(DynamicTable.TIMESLOT).gte(start_ts).lte(end_ts));
                     totalBQ.must(timeInQB);
                 }
             }
@@ -211,7 +210,7 @@ public class FilterByRowkey {
                 .setTypes(type)
                 .setFrom(offset)
                 .setSize(100)
-                .addSort("timestamp", SortOrder.DESC);
+                .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC);
         return requestBuilder.setQuery(totalBQ);
     }
 
@@ -235,9 +234,9 @@ public class FilterByRowkey {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
                 String rowKey = hit.getId();
-                String ipcid = (String) hit.getSource().get("ipcid");
+                String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
                 System.out.println(hit.getSourceAsString());
-                String timestamp = (String) hit.getSource().get("timestamp");
+                String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 long time = 0;
                 try {
@@ -246,7 +245,7 @@ public class FilterByRowkey {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String pictype = (String) hit.getSource().get("pictype");
+                String pictype = (String) hit.getSource().get(DynamicTable.PICTYPE);
                 if (rowKey.endsWith("_00")) {
                     continue;
                 }

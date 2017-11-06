@@ -573,35 +573,33 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
             long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
 
-	        //返回结果包含的文档放在数组hits中
-	        SearchHit[] searchHits = hits.hits();
-	        //若不存在符合条件的查询结果
-	        if (totalresultcount == 0){
-	        	LOG.error("The result count is 0! Last capture time does not exist!");
-		        returnresult.setTotalresultcount(totalresultcount);
-		        returnresult.setLastcapturetime("None");
-	        }
-	        else {
-		        /**
-		         * 获取该时间段内设备最后一次抓拍时间：
-		         * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-		         * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-		         * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-		         * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
-		         **/
+            //返回结果包含的文档放在数组hits中
+            SearchHit[] searchHits = hits.hits();
+            //若不存在符合条件的查询结果
+            if (totalresultcount == 0) {
+                LOG.error("The result count is 0! Last capture time does not exist!");
+                returnresult.setTotalresultcount(totalresultcount);
+                returnresult.setLastcapturetime("None");
+            } else {
+                /**
+                 * 获取该时间段内设备最后一次抓拍时间：
+                 * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+                 * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+                 * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+                 * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+                 **/
 
-		        //获取最后一次抓拍时间
-		        String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
+                //获取最后一次抓拍时间
+                String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
 
-		        /**
-		         * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
-		         **/
-		        returnresult.setTotalresultcount(totalresultcount);
-		        returnresult.setLastcapturetime(lastcapturetime);
-	        }
-        }
-        else {
-        	LOG.error("The Input parameters are wrong!");
+                /**
+                 * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
+                 **/
+                returnresult.setTotalresultcount(totalresultcount);
+                returnresult.setLastcapturetime(lastcapturetime);
+            }
+        } else {
+            LOG.error("The Input parameters are wrong!");
         }
         return returnresult;
     }
@@ -645,9 +643,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = hc.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("haircolor", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAIRCOLOR, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -664,9 +662,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = hs.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("hairstyle", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -683,9 +681,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = gender.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("gender", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.GENDER, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -702,9 +700,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = hat.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("hat", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAT, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -721,9 +719,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = tie.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("tie", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.TIE, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -740,9 +738,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = huzi.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("huzi", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HUZI, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -759,9 +757,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = eyeglasses.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("eyeglasses", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
