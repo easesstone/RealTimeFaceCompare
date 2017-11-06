@@ -60,7 +60,7 @@ public class FilterByOption {
                     .append(" >= ")
                     .append(option.getThreshold());
         }
-        if (attribute.getEyeglasses().getValue() != null) {
+        if (attribute.getEyeglasses() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.EYEGLASSES)
@@ -69,7 +69,7 @@ public class FilterByOption {
                     .append(attribute.getEyeglasses().getValue())
                     .append("'");
         }
-        if (attribute.getGender().getValue() != null) {
+        if (attribute.getGender() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.GENDER)
@@ -78,7 +78,7 @@ public class FilterByOption {
                     .append(attribute.getGender().getValue())
                     .append("'");
         }
-        if (attribute.getHairColor().getValue() != null) {
+        if (attribute.getHairColor() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HAIRCOLOR)
@@ -87,7 +87,7 @@ public class FilterByOption {
                     .append(attribute.getHairColor().getValue())
                     .append("'");
         }
-        if (attribute.getHairStyle().getValue() != null) {
+        if (attribute.getHairStyle() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HAIRSTYLE)
@@ -96,7 +96,7 @@ public class FilterByOption {
                     .append(attribute.getHairStyle().getValue())
                     .append("'");
         }
-        if (attribute.getHat().getValue() != null) {
+        if (attribute.getHat() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HAT)
@@ -105,7 +105,7 @@ public class FilterByOption {
                     .append(attribute.getHat().getValue())
                     .append("'");
         }
-        if (attribute.getHuzi().getValue() != null) {
+        if (attribute.getHuzi() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HUZI)
@@ -114,7 +114,7 @@ public class FilterByOption {
                     .append(attribute.getHuzi().getValue())
                     .append("'");
         }
-        if (attribute.getTie().getValue() != null) {
+        if (attribute.getTie() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.TIE)
@@ -166,7 +166,7 @@ public class FilterByOption {
                     .append("'");
         }
         if (option.getDeviceIds() != null) {
-            for (String ipcid :  option.getDeviceIds()) {
+            for (String ipcid : option.getDeviceIds()) {
                 stringBuilder
                         .append(" and ")
                         .append(DynamicHiveTable.PARTITION_IPCID)
@@ -196,7 +196,7 @@ public class FilterByOption {
                     .append(option.getThreshold());
         }
 
-        if (attribute.getEyeglasses().getValue() != null) {
+        if (attribute.getEyeglasses() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.EYEGLASSES)
@@ -205,7 +205,7 @@ public class FilterByOption {
                     .append(attribute.getEyeglasses().getValue())
                     .append("'");
         }
-        if (attribute.getGender().getValue() != null) {
+        if (attribute.getGender() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.GENDER)
@@ -214,7 +214,7 @@ public class FilterByOption {
                     .append(attribute.getGender().getValue())
                     .append("'");
         }
-        if (attribute.getHairColor().getValue() != null) {
+        if (attribute.getHairColor() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HAIRCOLOR)
@@ -223,7 +223,7 @@ public class FilterByOption {
                     .append(attribute.getHairColor().getValue())
                     .append("'");
         }
-        if (attribute.getHairStyle().getValue() != null) {
+        if (attribute.getHairStyle() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HAIRSTYLE)
@@ -232,7 +232,7 @@ public class FilterByOption {
                     .append(attribute.getHairStyle().getValue())
                     .append("'");
         }
-        if (attribute.getHat().getValue() != null) {
+        if (attribute.getHat() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HAT)
@@ -241,7 +241,7 @@ public class FilterByOption {
                     .append(attribute.getHat().getValue())
                     .append("'");
         }
-        if (attribute.getHuzi().getValue() != null) {
+        if (attribute.getHuzi() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.HUZI)
@@ -250,7 +250,7 @@ public class FilterByOption {
                     .append(attribute.getHuzi().getValue())
                     .append("'");
         }
-        if (attribute.getTie().getValue() != null) {
+        if (attribute.getTie() != null) {
             stringBuilder
                     .append(" and ")
                     .append(DynamicHiveTable.TIE)
@@ -265,7 +265,7 @@ public class FilterByOption {
                 int start_sj = timeInterval.getStart();
                 start_sj = (start_sj / 60) * 100 + start_sj % 60;
                 int end_sj = timeInterval.getEnd();
-                end_sj = (end_sj / 60) * 100+ end_sj % 60;
+                end_sj = (end_sj / 60) * 100 + end_sj % 60;
                 stringBuilder
                         .append(" and ")
                         .append(DynamicHiveTable.TIMESLOT)
@@ -301,8 +301,8 @@ public class FilterByOption {
                     .append(dateFormat_date.format(option.getEndDate()))
                     .append("'");
         }
-        if ( option.getDeviceIds() != null) {
-            for (String ipcid :  option.getDeviceIds()) {
+        if (option.getDeviceIds() != null) {
+            for (String ipcid : option.getDeviceIds()) {
                 stringBuilder
                         .append(" and ")
                         .append(DynamicHiveTable.PARTITION_IPCID)
