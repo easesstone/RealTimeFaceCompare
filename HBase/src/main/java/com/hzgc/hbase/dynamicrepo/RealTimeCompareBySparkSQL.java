@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -57,10 +56,6 @@ public class RealTimeCompareBySparkSQL {
      * 查询结果，最终的返回值
      */
     private static SearchResult searchResult = new SearchResult();
-    /**
-     * 搜索类型
-     */
-    private SearchType searchType;
 
     /**
      * 图片对象列表
@@ -75,7 +70,7 @@ public class RealTimeCompareBySparkSQL {
     private DynamicPhotoService dynamicPhotoService;
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
-     protected RealTimeCompareBySparkSQL() {
+     RealTimeCompareBySparkSQL() {
 
         dynamicPhotoService = new DynamicPhotoServiceImpl();
          capturePictureSearchService = new CapturePictureSearchServiceImpl();
@@ -91,10 +86,13 @@ public class RealTimeCompareBySparkSQL {
 
     }
 
-    protected SearchResult pictureSearchBySparkSQL(SearchOption option) {
+    SearchResult pictureSearchBySparkSQL(SearchOption option) {
         if (null != option) {
             //搜索类型 是人还是车
-            searchType = option.getSearchType();
+            /*
+      搜索类型
+     */
+            SearchType searchType = option.getSearchType();
             //排序参数
             sortParams = option.getSortParams();
             //上传图片数据
@@ -172,27 +170,24 @@ public class RealTimeCompareBySparkSQL {
             String searchFeaStr = FaceFunction.floatArray2string(searchFea);
             //特征值比对，根据条件过滤
             String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
-            jdbcUtil.executeQuery(selectBySparkSQL, null, new JDBCUtil.QueryCallback() {
-                @Override
-                public void process(ResultSet rs) throws Exception {
-                    while (rs.next()) {
-                        //图片ftpurl
-                        String imageid = rs.getString(DynamicHiveTable.PIC_URL);
-                        //设备id
-                        String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
-                        //相似度
-                        Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
-                        //时间戳
-                        Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
-                        //图片类型
-                        String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
-                        capturedPicture = new CapturedPicture();
-                        capturedPicture.setId(imageid);
-                        capturedPicture.setIpcId(ipcid);
-                        capturedPicture.setTimeStamp(timestamp);
-                        capturedPicture.setSimilarity(similaritys);
-                        capturedPicture.setPictureType(PictureType.valueOf(pic_type));
-                    }
+            jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
+                while (rs.next()) {
+                    //图片ftpurl
+                    String imageid = rs.getString(DynamicHiveTable.PIC_URL);
+                    //设备id
+                    String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
+                    //相似度
+                    Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
+                    //时间戳
+                    Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
+                    //图片类型
+                    String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
+                    capturedPicture = new CapturedPicture();
+                    capturedPicture.setId(imageid);
+                    capturedPicture.setIpcId(ipcid);
+                    capturedPicture.setTimeStamp(timestamp);
+                    capturedPicture.setSimilarity(similaritys);
+                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
                 }
             });
             capturedPictureList = new ArrayList<>();
@@ -224,27 +219,24 @@ public class RealTimeCompareBySparkSQL {
             //将float[]特征值转为String特征值
             String searchFeaStr = FaceFunction.floatArray2string(searchFea);
             String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
-            jdbcUtil.executeQuery(selectBySparkSQL, null, new JDBCUtil.QueryCallback() {
-                @Override
-                public void process(ResultSet rs) throws Exception {
-                    //图片ftpurl
-                    String imageid = rs.getString(DynamicHiveTable.PIC_URL);
-                    //设备id
-                    String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
-                    //相似度
-                    Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
-                    //时间戳
-                    Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
-                    //图片类型
-                    String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
+            jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
+                //图片ftpurl
+                String imageid = rs.getString(DynamicHiveTable.PIC_URL);
+                //设备id
+                String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
+                //相似度
+                Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
+                //时间戳
+                Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
+                //图片类型
+                String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
 
-                    capturedPicture = new CapturedPicture();
-                    capturedPicture.setId(imageid);
-                    capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
-                    capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
-                }
+                capturedPicture = new CapturedPicture();
+                capturedPicture.setId(imageid);
+                capturedPicture.setIpcId(ipcid);
+                capturedPicture.setTimeStamp(timestamp);
+                capturedPicture.setSimilarity(similaritys);
+                capturedPicture.setPictureType(PictureType.valueOf(pic_type));
             });
             capturedPictureList = new ArrayList<>();
             capturedPictureList.add(capturedPicture);
