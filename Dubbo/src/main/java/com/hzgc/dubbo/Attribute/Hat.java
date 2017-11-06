@@ -6,20 +6,24 @@ import java.io.Serializable;
  * 是否带帽子：0->无；1->戴帽子；2->没有戴帽子；
  */
 public enum Hat implements Serializable {
-    None, Hat_y, Hat_n;
+    None(0), Hat_y(1), Hat_n(2);
 
-    private String value;
+    private int value;
 
     /**
      * 与其他属性的拼接运算，默认是OR运算
      */
     private Logistic logistic = Logistic.OR;
 
-    public String getValue() {
+    private Hat(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(int value) {
         this.value = value;
     }
 
@@ -31,11 +35,12 @@ public enum Hat implements Serializable {
         this.logistic = logistic;
     }
 
-    @Override
-    public String toString() {
-        return "Eyeglasses{" +
-                "value='" + value + '\'' +
-                ", logistic=" + logistic +
-                '}';
+    public static Hat get(int hatvalue) {
+        for (Hat hairStyle : Hat.values()) {
+            if (hatvalue == hairStyle.getValue()) {
+                return hairStyle;
+            }
+        }
+        return Hat.None;
     }
 }
