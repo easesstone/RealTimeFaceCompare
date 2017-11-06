@@ -7,20 +7,24 @@ import java.io.Serializable;
  * 头发颜色：0->无；1->金色；2->黑色；3->棕色；4->灰白
  */
 public enum HairColor implements Serializable {
-    None, Blond, Black, Brown, Gray;
+    None(0), Blond(1), Black(2), Brown(3), Gray(4);
 
-    private String value;
+    private int value;
 
     /**
      * 与其他属性的拼接运算，默认是OR运算
      */
     private Logistic logistic = Logistic.OR;
 
-    public String getValue() {
+    private HairColor(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(int value) {
         this.value = value;
     }
 
@@ -32,11 +36,12 @@ public enum HairColor implements Serializable {
         this.logistic = logistic;
     }
 
-    @Override
-    public String toString() {
-        return "Eyeglasses{" +
-                "value='" + value + '\'' +
-                ", logistic=" + logistic +
-                '}';
+    public static HairColor get(int haircolorvalue) {
+        for (HairColor hairColor : HairColor.values()) {
+            if (haircolorvalue == hairColor.getValue()) {
+                return hairColor;
+            }
+        }
+        return HairColor.None;
     }
 }
