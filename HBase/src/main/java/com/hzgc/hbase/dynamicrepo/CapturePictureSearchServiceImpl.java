@@ -181,13 +181,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         return map;
     }
 
- /*   public static void main(String[] args) {
-        CapturePictureSearchService service = new CapturePictureSearchServiceImpl();
-        Map<String, List<Integer>> map = service.getAttribute(SearchType.PERSON);
-        System.out.println(map);
-
-    }*/
-
     /**
      * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
      *
@@ -784,13 +777,5 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         }
 
         return map;
-    }
-
-    public static void main(String[] args) {
-        CapturePictureSearchService service = new CapturePictureSearchServiceImpl();
-        List<String> list = new ArrayList<>();
-        list.add("DS-2CD2T20FD-I320160122AACH571485690");
-        Map<String, AttributeCount> map = service.captureAttributeQuery("2017-09-20 15:55:06", "2017-10-20 15:55:06", list, SearchType.PERSON);
-        System.out.println(map.toString());
     }
 }
