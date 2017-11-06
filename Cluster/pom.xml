@@ -80,6 +80,11 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.11.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_2.11</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -89,6 +94,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>*.propertie</include>
+                    <include>*.xml</include>
                 </includes>
             </resource>
         </resources>
