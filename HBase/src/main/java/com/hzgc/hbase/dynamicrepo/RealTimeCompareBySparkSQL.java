@@ -24,7 +24,7 @@ import java.util.Properties;
  */
 public class RealTimeCompareBySparkSQL {
 
-    private Logger LOG = Logger.getLogger(RealTimeCompare.class);
+    private Logger LOG = Logger.getLogger(RealTimeCompareBySparkSQL.class);
     /***
      * 获取jdbc连接
      */
