@@ -166,7 +166,7 @@ class FilterByOption {
                     .append("'");
         }
         if (option.getDeviceIds() != null) {
-            for (String ipcid :  option.getDeviceIds()) {
+            for (String ipcid : option.getDeviceIds()) {
                 stringBuilder
                         .append(" and ")
                         .append(DynamicHiveTable.PARTITION_IPCID)
@@ -265,7 +265,7 @@ class FilterByOption {
                 int start_sj = timeInterval.getStart();
                 start_sj = (start_sj / 60) * 100 + start_sj % 60;
                 int end_sj = timeInterval.getEnd();
-                end_sj = (end_sj / 60) * 100+ end_sj % 60;
+                end_sj = (end_sj / 60) * 100 + end_sj % 60;
                 stringBuilder
                         .append(" and ")
                         .append(DynamicHiveTable.TIMESLOT)
@@ -301,8 +301,8 @@ class FilterByOption {
                     .append(dateFormat_date.format(option.getEndDate()))
                     .append("'");
         }
-        if ( option.getDeviceIds() != null) {
-            for (String ipcid :  option.getDeviceIds()) {
+        if (option.getDeviceIds() != null) {
+            for (String ipcid : option.getDeviceIds()) {
                 stringBuilder
                         .append(" and ")
                         .append(DynamicHiveTable.PARTITION_IPCID)

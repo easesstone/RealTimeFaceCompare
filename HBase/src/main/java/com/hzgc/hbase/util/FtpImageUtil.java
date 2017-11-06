@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-/**
- * Created by Melody on 2017-11-6.
- */
+
 public class FtpImageUtil {
 
     private static Logger logger = Logger.getLogger(FtpImageUtil.class);
@@ -36,6 +34,7 @@ public class FtpImageUtil {
         }
         return baos;
     }
+
     /**
      * 获取FTPClient对象
      *
@@ -68,6 +67,7 @@ public class FtpImageUtil {
         }
         return ftpClient;
     }
+
     /**
      * 从FTP服务器下载文件并转为字节数组
      *
@@ -99,7 +99,7 @@ public class FtpImageUtil {
 
                 //通过FTPClient获取文件输入流并转为byte[]
                 in = ftpClient.retrieveFileStream(ftpFileName);
-                ftpFileBytes =inputStreamCacher(in).toByteArray();
+                ftpFileBytes = inputStreamCacher(in).toByteArray();
 
                 in.close();
                 ftpClient.logout();
