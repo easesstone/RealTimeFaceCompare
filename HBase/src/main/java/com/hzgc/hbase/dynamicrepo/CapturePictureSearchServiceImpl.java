@@ -662,9 +662,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = hs.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("hairstyle", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -681,9 +681,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = gender.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("gender", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.GENDER, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -700,9 +700,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = hat.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("hat", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAT, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -719,9 +719,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = tie.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("tie", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.TIE, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -738,9 +738,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = huzi.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("huzi", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HUZI, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
@@ -757,9 +757,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         Integer ordinal = eyeglasses.ordinal();
 
                         BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                        FilterIpcId.must(QueryBuilders.matchQuery("ipcid", ipcId));
-                        FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                        FilterIpcId.must(QueryBuilders.matchQuery("eyeglasses", ordinal));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, ordinal));
                         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
