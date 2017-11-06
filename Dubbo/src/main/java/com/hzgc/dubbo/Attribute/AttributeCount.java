@@ -62,6 +62,7 @@ public class AttributeCount implements Serializable {
 
     public void setHairStyleMap(Map<Integer, Long> hairStyleMap) {
         this.hairStyleMap = hairStyleMap;
+    }
 
     public Map<Integer, Long> getGenderMap() {
         return genderMap;
