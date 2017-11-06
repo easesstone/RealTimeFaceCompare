@@ -6,20 +6,24 @@ import java.io.Serializable;
  * 头发类型：0->无；1->直发；2->卷发；3->光头；
  */
 public enum HairStyle implements Serializable {
-    None, Straight, Wavy, Bald;
+    None(0), Straight(1), Wavy(2), Bald(3);
 
-    private String value;
+    private int value;
 
     /**
      * 与其他属性的拼接运算，默认是OR运算
      */
     private Logistic logistic = Logistic.OR;
 
-    public String getValue() {
+    private HairStyle(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(int value) {
         this.value = value;
     }
 
@@ -31,11 +35,12 @@ public enum HairStyle implements Serializable {
         this.logistic = logistic;
     }
 
-    @Override
-    public String toString() {
-        return "Eyeglasses{" +
-                "value='" + value + '\'' +
-                ", logistic=" + logistic +
-                '}';
+    public static HairStyle get(int hairstylevalue) {
+        for (HairStyle hairStyle : HairStyle.values()) {
+            if (hairstylevalue == hairStyle.getValue()) {
+                return hairStyle;
+            }
+        }
+        return HairStyle.None;
     }
 }

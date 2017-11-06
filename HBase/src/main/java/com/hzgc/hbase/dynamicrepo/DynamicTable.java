@@ -142,5 +142,18 @@ public class DynamicTable implements Serializable {
     // 以下是索引类型常量
     public static final String DYNAMIC_INDEX = "dynamic";
     public static final String PERSON_INDEX_TYPE = "person";
+    public static final String FTPURL = "ftpurl";
+    public static final String IPCID = "ipcid";
+    public static final String TIMESLOT = "timeslot";
+    public static final String TIMESTAMP = "timestamp";
+    public static final String PICTYPE = "pictype";
+    public static final String DATE = "date";
+    public static final String ELEGLASSES = "eleglasses";
+    public static final String GENDER = "gender";
+    public static final String HAIRCOLOR = "haircolor";
+    public static final String HAIRSTYLE = "hairstyle";
+    public static final String HAT = "hat";
+    public static final String HUZI = "huzi";
+    public static final String TIE = "tie";
 
 }

@@ -111,49 +111,49 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @return 过滤参数键值对
      */
     @Override
-    public Map<String, List<String>> getAttribute(SearchType type) {
-        Map<String, List<String>> map = new LinkedHashMap<>();
+    public Map<String, List<Integer>> getAttribute(SearchType type) {
+        Map<String, List<Integer>> map = new LinkedHashMap<>();
 
         if (type == SearchType.PERSON) {
-            List<String> hairColorList = new ArrayList<>();
+            List<Integer> hairColorList = new ArrayList<>();
             for (HairColor hc : HairColor.values()) {
-                hairColorList.add(hc.name());
+                hairColorList.add(hc.ordinal());
             }
             map.put("HairColor", hairColorList);
 
-            List<String> hairStyleList = new ArrayList<>();
+            List<Integer> hairStyleList = new ArrayList<>();
             for (HairStyle hs : HairStyle.values()) {
-                hairStyleList.add(hs.name());
+                hairStyleList.add(hs.ordinal());
             }
             map.put("HairStyle", hairStyleList);
 
-            List<String> genderList = new ArrayList<>();
+            List<Integer> genderList = new ArrayList<>();
             for (Gender gender : Gender.values()) {
-                genderList.add(gender.name());
+                genderList.add(gender.ordinal());
             }
             map.put("Gender", genderList);
 
-            List<String> hatList = new ArrayList<>();
+            List<Integer> hatList = new ArrayList<>();
             for (Hat hat : Hat.values()) {
-                hatList.add(hat.name());
+                hatList.add(hat.ordinal());
             }
             map.put("Hat", hatList);
 
-            List<String> tieList = new ArrayList<>();
+            List<Integer> tieList = new ArrayList<>();
             for (Tie tie : Tie.values()) {
-                tieList.add(tie.name());
+                tieList.add(tie.ordinal());
             }
             map.put("Tie", tieList);
 
-            List<String> huziList = new ArrayList<>();
+            List<Integer> huziList = new ArrayList<>();
             for (Huzi huzi : Huzi.values()) {
-                huziList.add(huzi.name());
+                huziList.add(huzi.ordinal());
             }
             map.put("Huzi", huziList);
 
-            List<String> eyeglassesList = new ArrayList<>();
+            List<Integer> eyeglassesList = new ArrayList<>();
             for (Eyeglasses eyeglasses : Eyeglasses.values()) {
-                eyeglassesList.add(eyeglasses.name());
+                eyeglassesList.add(eyeglasses.ordinal());
             }
             map.put("Eyeglasses", eyeglassesList);
 
@@ -556,35 +556,33 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
             long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
 
-	        //返回结果包含的文档放在数组hits中
-	        SearchHit[] searchHits = hits.hits();
-	        //若不存在符合条件的查询结果
-	        if (totalresultcount == 0){
-	        	LOG.error("The result count is 0! Last capture time does not exist!");
-		        returnresult.setTotalresultcount(totalresultcount);
-		        returnresult.setLastcapturetime("None");
-	        }
-	        else {
-		        /**
-		         * 获取该时间段内设备最后一次抓拍时间：
-		         * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-		         * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-		         * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-		         * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
-		         **/
+            //返回结果包含的文档放在数组hits中
+            SearchHit[] searchHits = hits.hits();
+            //若不存在符合条件的查询结果
+            if (totalresultcount == 0) {
+                LOG.error("The result count is 0! Last capture time does not exist!");
+                returnresult.setTotalresultcount(totalresultcount);
+                returnresult.setLastcapturetime("None");
+            } else {
+                /**
+                 * 获取该时间段内设备最后一次抓拍时间：
+                 * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+                 * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+                 * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+                 * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+                 **/
 
-		        //获取最后一次抓拍时间
-		        String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
+                //获取最后一次抓拍时间
+                String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
 
-		        /**
-		         * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
-		         **/
-		        returnresult.setTotalresultcount(totalresultcount);
-		        returnresult.setLastcapturetime(lastcapturetime);
-	        }
-        }
-        else {
-        	LOG.error("The Input parameters are wrong!");
+                /**
+                 * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
+                 **/
+                returnresult.setTotalresultcount(totalresultcount);
+                returnresult.setLastcapturetime(lastcapturetime);
+            }
+        } else {
+            LOG.error("The Input parameters are wrong!");
         }
         return returnresult;
     }
@@ -616,48 +614,157 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public Map<String, AttributeCount> captureAttributeQuery(String startTime, String endTime, List<String> ipcIdList, SearchType type) {
         Map<String, AttributeCount> map = new LinkedHashMap<>();
-        AttributeCount attributeCount = new AttributeCount();
-        if (type == SearchType.PERSON){
+        if (type == SearchType.PERSON) {
             CapturePictureSearchService service = new CapturePictureSearchServiceImpl();
-            Map<String, List<String>> attributeMap;
-            attributeMap = service.getAttribute(SearchType.PERSON);
-
-            if (ipcIdList != null && ipcIdList.size() > 0){
+            if (ipcIdList != null && ipcIdList.size() > 0) {
                 for (String ipcId : ipcIdList) {
-                    Map<String, Long> map1 = new LinkedHashMap<>();
-                    for (Map.Entry<String, List<String>> entry : attributeMap.entrySet()) {
-                        String key = entry.getKey();
-                        List<String> values = entry.getValue();
-                        for (String value : values) {
-                            String attribute = key + "_" + value;
+                    AttributeCount attributeCount = new AttributeCount();
 
-                            BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                            FilterIpcId.must(QueryBuilders.matchQuery("ipcId", ipcId));
-                            FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
-                            FilterIpcId.must(QueryBuilders.matchQuery(key, value));
-                            SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
-                                    .prepareSearch(DynamicTable.DYNAMIC_INDEX)
-                                    .setTypes(DynamicTable.PERSON_INDEX_TYPE)
-                                    .setQuery(FilterIpcId).get();
-                            SearchHits hits = searchResponse.getHits();
-                            long totalHits = hits.getTotalHits();
+                    //头发颜色属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> hairColorMap = new LinkedHashMap<>();
+                    for (HairColor hc : HairColor.values()) {
+                        Integer ordinal = hc.ordinal();
 
-                            map1.put(attribute, totalHits);
-                        }
-                        attributeCount.setAttributeMap(map1);
-
-                        CaptureCount captureCount = service.captureCountQuery(startTime, endTime, ipcId);
-                        long count = captureCount.getTotalresultcount();
-                        attributeCount.setCaptureCount(count);
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAIRCOLOR, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        hairColorMap.put(ordinal, totalHits);
                     }
+                    attributeCount.setHairColorMap(hairColorMap);
+
+                    //头发类型属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> hairStyleMap = new LinkedHashMap<>();
+                    for (HairStyle hs : HairStyle.values()) {
+                        Integer ordinal = hs.ordinal();
+
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        hairStyleMap.put(ordinal, totalHits);
+                    }
+                    attributeCount.setHairStyleMap(hairStyleMap);
+
+                    //性别属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> genderMap = new LinkedHashMap<>();
+                    for (Gender gender : Gender.values()) {
+                        Integer ordinal = gender.ordinal();
+
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.GENDER, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        genderMap.put(ordinal, totalHits);
+                    }
+                    attributeCount.setGenderMap(genderMap);
+
+                    //是否带帽子属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> hatMap = new LinkedHashMap<>();
+                    for (Hat hat : Hat.values()) {
+                        Integer ordinal = hat.ordinal();
+
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HAT, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        hatMap.put(ordinal, totalHits);
+                    }
+                    attributeCount.setHatMap(hatMap);
+
+                    //是否系领带属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> tieMap = new LinkedHashMap<>();
+                    for (Tie tie : Tie.values()) {
+                        Integer ordinal = tie.ordinal();
+
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.TIE, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        tieMap.put(ordinal, totalHits);
+                    }
+                    attributeCount.setTieMap(tieMap);
+
+                    //胡子类型属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> huziMap = new LinkedHashMap<>();
+                    for (Huzi huzi : Huzi.values()) {
+                        Integer ordinal = huzi.ordinal();
+
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.HUZI, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        huziMap.put(ordinal, totalHits);
+                    }
+                    attributeCount.setHuziMap(huziMap);
+
+                    //是否戴眼镜属性统计（Map<属性, 数量>）
+                    Map<Integer, Long> eyeglassesMap = new LinkedHashMap<>();
+                    for (Eyeglasses eyeglasses : Eyeglasses.values()) {
+                        Integer ordinal = eyeglasses.ordinal();
+
+                        BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                        FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
+                        FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, ordinal));
+                        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                .setQuery(FilterIpcId).get();
+                        SearchHits hits = searchResponse.getHits();
+                        long totalHits = hits.getTotalHits();
+                        eyeglassesMap.put(ordinal, totalHits);
+                    }
+                    attributeCount.setEyeglassesMap(eyeglassesMap);
+
+                    CaptureCount captureCount = service.captureCountQuery(startTime, endTime, ipcId);
+                    long count = captureCount.getTotalresultcount();
+                    attributeCount.setCaptureCount(count);
+
                     map.put(ipcId, attributeCount);
                 }
-            }else {
+            } else {
                 LOG.error("ipcIdList is null.");
             }
-        }else if (type == SearchType.CAR){
+        } else if (type == SearchType.CAR) {
 
-        }else {
+        } else {
             LOG.error("method CapturePictureSearchServiceImpl.captureAttributeQuery SearchType is error.");
         }
 

@@ -22,6 +22,7 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -82,19 +83,33 @@ public class FilterByRowkey {
             // 时间段
             List<TimeInterval> timeIntervals = option.getIntervals();
             //人脸属性--眼镜
-            String eleglasses = option.getAttribute().getEyeglasses().getValue();
+            int eleglasses = option.getAttribute().getEyeglasses().getValue();
+            //眼镜的状态值
+            String elelog = String.valueOf(option.getAttribute().getEyeglasses().getLogistic());
             //人脸属性--性别
-            String gender = option.getAttribute().getGender().getValue();
+            int gender = option.getAttribute().getGender().getValue();
+            //性别的状态值
+            String genlog = String.valueOf(option.getAttribute().getGender().getLogistic());
             //人脸属性--头发颜色
-            String haircolor = option.getAttribute().getHairColor().getValue();
+            int haircolor = option.getAttribute().getHairColor().getValue();
+            //头发颜色的状态值
+            String collog = String.valueOf(option.getAttribute().getHairColor().getLogistic());
             //人脸属性--发型
-            String hairstyle = option.getAttribute().getHairStyle().getValue();
+            int hairstyle = option.getAttribute().getHairStyle().getValue();
+            //发型的状态值
+            String stylog = String.valueOf(option.getAttribute().getHairStyle().getLogistic());
             //人脸属性--帽子
-            String hat = option.getAttribute().getHat().getValue();
+            int hat = option.getAttribute().getHat().getValue();
+            //帽子的状态值
+            String hatlog = String.valueOf(option.getAttribute().getHat().getLogistic());
             //人脸属性--胡子
-            String huzi = option.getAttribute().getHuzi().getValue();
+            int huzi = option.getAttribute().getHuzi().getValue();
+            //胡子的状态值
+            String huzlog = String.valueOf(option.getAttribute().getHuzi().getLogistic());
             //人脸属性--领带
-            String tie = option.getAttribute().getTie().getValue();
+            int tie = option.getAttribute().getTie().getValue();
+            //领带的状态值
+            String tielog = String.valueOf(option.getAttribute().getTie().getLogistic());
             // 设备ID 的的boolQueryBuilder
             BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
             // 格式化时间
@@ -105,25 +120,66 @@ public class FilterByRowkey {
                     Iterator it = deviceId.iterator();
                     while (it.hasNext()) {
                         String t = (String) it.next();
-                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery("s", t).analyzer("standard"));
+                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, t).analyzer("standard"));
                     }
                     totalBQ.must(devicdIdBQ);
                 }
             }
-            //人脸属性肯定存在
-            totalBQ.must(QueryBuilders.matchQuery("eleglasses",eleglasses).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("gender",gender).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("haircolor",haircolor).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("hairstyle",hairstyle).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("hat",hat).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("huzi",huzi).analyzer("standard"));
-            totalBQ.must(QueryBuilders.matchQuery("tie",tie).analyzer("standard"));
-
+            //人脸属性筛选
+            if (eleglasses != 0) {
+                if (elelog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, eleglasses).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.ELEGLASSES, eleglasses).analyzer("standard"));
+                }
+            }
+            if (gender != 0) {
+                if (genlog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.GENDER, gender).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.GENDER, gender).analyzer("standard"));
+                }
+            }
+            if (haircolor != 0) {
+                if (collog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HAIRCOLOR, haircolor).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HAIRCOLOR, haircolor).analyzer("standard"));
+                }
+            }
+            if (hairstyle != 0) {
+                if (stylog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, hairstyle).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HAIRSTYLE, hairstyle).analyzer("standard"));
+                }
+            }
+            if (hat != 0) {
+                if (hatlog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HAT, hat).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HAT, hat).analyzer("standard"));
+                }
+            }
+            if (huzi != 0) {
+                if (huzlog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.HUZI, huzi).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.HUZI, huzi).analyzer("standard"));
+                }
+            }
+            if (tie != 0) {
+                if (tielog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery(DynamicTable.TIE, tie).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery(DynamicTable.TIE, tie).analyzer("standard"));
+                }
+            }
             // 开始时间和结束时间存在的时候的处理
             if (startTime != null && endTime != null) {
                 String start = dateFormat.format(startTime);
                 String end = dateFormat.format(endTime);
-                totalBQ.must(QueryBuilders.rangeQuery("t").gte(start).lte(end));
+                totalBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(start).lte(end));
             }
             //TimeIntervals 时间段的封装类
             TimeInterval timeInterval;
@@ -135,10 +191,10 @@ public class FilterByRowkey {
                 while (timeInIt.hasNext()) {
                     timeInterval = timeInIt.next();
                     int start_sj = timeInterval.getStart();
-                    start_sj = start_sj / 60 + start_sj % 60;
+                    String start_ts = String.valueOf(start_sj * 100 / 60 + start_sj % 60);
                     int end_sj = timeInterval.getEnd();
-                    end_sj = end_sj / 60 + end_sj % 60;
-                    timeInQB.should(QueryBuilders.rangeQuery("sj").gte(start_sj).lte(end_sj));
+                    String end_ts = String.valueOf(end_sj * 100 / 60 + end_sj % 60);
+                    timeInQB.should(QueryBuilders.rangeQuery(DynamicTable.TIMESLOT).gte(start_ts).lte(end_ts));
                     totalBQ.must(timeInQB);
                 }
             }
@@ -151,11 +207,10 @@ public class FilterByRowkey {
         LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
-                .setFetchSource(new String[]{"sj"}, null)
                 .setTypes(type)
                 .setFrom(offset)
                 .setSize(100)
-                .addSort("t", SortOrder.DESC);
+                .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC);
         return requestBuilder.setQuery(totalBQ);
     }
 
@@ -179,16 +234,25 @@ public class FilterByRowkey {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
                 String rowKey = hit.getId();
-                String ipcid = (String) hit.getSource().get("ipcid");
-                long timestamp = (long) hit.getSource().get("timestamp");
-                String pictype = (String) hit.getSource().get("pictype");
+                String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
+                System.out.println(hit.getSourceAsString());
+                String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                long time = 0;
+                try {
+                    Date date = sdf.parse(timestamp);
+                    time = date.getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String pictype = (String) hit.getSource().get(DynamicTable.PICTYPE);
                 if (rowKey.endsWith("_00")) {
                     continue;
                 }
                 capturePicture.setId(rowKey);
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setPictureType(PictureType.valueOf(pictype));
-                capturePicture.setTimeStamp(timestamp);
+                capturePicture.setTimeStamp(time);
                 persons.add(capturePicture);
                 i++;
                 if (i == count) {
