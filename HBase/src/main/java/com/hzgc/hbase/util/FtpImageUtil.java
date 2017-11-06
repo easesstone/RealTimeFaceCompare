@@ -17,6 +17,9 @@ public class FtpImageUtil {
 
     private static Logger logger = Logger.getLogger(FtpImageUtil.class);
 
+    /**
+     * 输入流转为字节数组
+     */
     public static ByteArrayOutputStream inputStreamCacher(InputStream is) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
