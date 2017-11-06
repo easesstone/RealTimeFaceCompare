@@ -36,9 +36,6 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                               "eyeglasses" : {
                                            "type" : "long"
                                },
-                              "feature" : {
-                                           "type" : "text"
-                              },
                               "gender" : {
                                            "type" : "long"
                               },

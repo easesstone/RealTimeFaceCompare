@@ -58,9 +58,9 @@ object kafkaToParquet {
         println("Put data to es failed!")
       }
       Picture(p._1, FaceFunction.floatArray2string(p._2.getAttribute.getFeature), p._2.getIpcId,
-        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses.getValue,
-        p._2.getAttribute.getGender.getValue, p._2.getAttribute.getHairColor.getValue, p._2.getAttribute.getHairStyle.getValue,
-        p._2.getAttribute.getHat.getValue, p._2.getAttribute.getHuzi.getValue, p._2.getAttribute.getTie.getValue
+        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses,
+        p._2.getAttribute.getGender, p._2.getAttribute.getHairColor, p._2.getAttribute.getHairStyle,
+        p._2.getAttribute.getHat, p._2.getAttribute.getHuzi, p._2.getAttribute.getTie
       )
     })
     kafkaDF.foreachRDD(rdd => {

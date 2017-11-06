@@ -1,5 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.Logistic;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
@@ -84,18 +85,32 @@ public class FilterByRowkey {
             List<TimeInterval> timeIntervals = option.getIntervals();
             //人脸属性--眼镜
             int eleglasses = option.getAttribute().getEyeglasses().getValue();
+            //眼镜的状态值
+            String elelog = String.valueOf(option.getAttribute().getEyeglasses().getLogistic());
             //人脸属性--性别
             int gender = option.getAttribute().getGender().getValue();
+            //性别的状态值
+            String genlog = String.valueOf(option.getAttribute().getGender().getLogistic());
             //人脸属性--头发颜色
             int haircolor = option.getAttribute().getHairColor().getValue();
+            //头发颜色的状态值
+            String collog = String.valueOf(option.getAttribute().getHairColor().getLogistic());
             //人脸属性--发型
             int hairstyle = option.getAttribute().getHairStyle().getValue();
+            //发型的状态值
+            String stylog = String.valueOf(option.getAttribute().getHairStyle().getLogistic());
             //人脸属性--帽子
             int hat = option.getAttribute().getHat().getValue();
+            //帽子的状态值
+            String hatlog = String.valueOf(option.getAttribute().getHat().getLogistic());
             //人脸属性--胡子
             int huzi = option.getAttribute().getHuzi().getValue();
+            //胡子的状态值
+            String huzlog = String.valueOf(option.getAttribute().getHuzi().getLogistic());
             //人脸属性--领带
             int tie = option.getAttribute().getTie().getValue();
+            //领带的状态值
+            String tielog = String.valueOf(option.getAttribute().getTie().getLogistic());
             // 设备ID 的的boolQueryBuilder
             BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
             // 格式化时间
@@ -113,25 +128,53 @@ public class FilterByRowkey {
             }
             //人脸属性筛选
             if (eleglasses != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+                if (elelog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("eleglasses", eleglasses).analyzer("standard"));
+                }
             }
             if (gender != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+                if (genlog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("gender", gender).analyzer("standard"));
+                }
             }
             if (haircolor != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+                if (collog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("haircolor", haircolor).analyzer("standard"));
+                }
             }
             if (hairstyle != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+                if (stylog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("hairstyle", hairstyle).analyzer("standard"));
+                }
             }
             if (hat != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+                if (hatlog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("hat", hat).analyzer("standard"));
+                }
             }
             if (huzi != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+                if (huzlog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("huzi", huzi).analyzer("standard"));
+                }
             }
             if (tie != 0) {
-                totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
+                if (tielog == "AND") {
+                    totalBQ.must(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
+                } else {
+                    totalBQ.should(QueryBuilders.matchQuery("tie", tie).analyzer("standard"));
+                }
             }
             // 开始时间和结束时间存在的时候的处理
             if (startTime != null && endTime != null) {
