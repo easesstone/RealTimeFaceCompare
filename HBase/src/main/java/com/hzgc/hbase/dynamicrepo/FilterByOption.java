@@ -7,7 +7,7 @@ import com.hzgc.dubbo.dynamicrepo.TimeInterval;
 import java.text.SimpleDateFormat;
 
 
-public class FilterByOption {
+class FilterByOption {
 
     /***
      * 获取拼接sql
@@ -15,7 +15,7 @@ public class FilterByOption {
      * @param option 搜索条件
      * @return 返回拼接的sql
      */
-    protected String getSQLwithOption(String searchFeaStr, SearchOption option) {
+    String getSQLwithOption(String searchFeaStr, SearchOption option) {
 
         //timestamp字段
         SimpleDateFormat dateFormat_timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

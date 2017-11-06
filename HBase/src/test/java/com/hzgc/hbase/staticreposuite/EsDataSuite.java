@@ -1,14 +1,7 @@
 package com.hzgc.hbase.staticreposuite;
 
-import com.hzgc.dubbo.dynamicrepo.SearchOption;
-import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
-import com.hzgc.hbase.dynamicrepo.DynamicTable;
-import com.hzgc.hbase.dynamicrepo.RealTimeCompare;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -23,8 +16,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -86,7 +77,6 @@ public class EsDataSuite {
             SearchHit[] hits = response.getHits().getHits();
             for (SearchHit hit : hits) {
                 String time = (String) hit.getSource().get("t");
-                String sj = (String) hit.getSource().get("sj");
                 if (time == null) {
                     System.out.println(time + ": " + hit.getId());
                 }
