@@ -8,6 +8,7 @@ import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
+import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
@@ -152,7 +153,7 @@ public class LocalSTOR extends AbstractCommand {
                         faceObject.setAttribute(attribute);
 
                         String filePath = FtpUtil.filePath2absolutePath(fileName);
-                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath, BeanUtils.objectToBytes(faceObject));
+                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath,faceObject);
                     }
                 }
 
