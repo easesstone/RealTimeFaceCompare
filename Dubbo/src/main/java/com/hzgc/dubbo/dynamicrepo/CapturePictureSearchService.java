@@ -1,5 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.AttributeCount;
+
 import java.util.List;
 import java.util.Map;
 
@@ -33,35 +35,37 @@ public interface CapturePictureSearchService {
      * @param type 图片类型（人、车）
      * @return 过滤参数键值对
      */
-    Map<String, String> getSearchFilterParams(int type);
-
-    /**
-     * 根据id（rowkey）获取动态信息库内容（CapturedPicture对象）（刘思阳）
-     *
-     * @param imageId id（小图rowkey）
-     * @param type    图片类型，人/车
-     * @return CapturedPicture    动态库对象
-     */
-    CapturedPicture getCaptureMessage(String imageId, int type);
-
-    /**
-     * 批量获取图片
-     *
-     * @param imageIdList 图片Id列表
-     * @param type        类型
-     * @return 图片列表
-     */
-    List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
+    Map<String, List<Integer>> getAttribute(SearchType type);
 
     /**
      * 抓拍统计查询接口（马燊偲）
      * 查询指定时间段内，指定设备抓拍的图片数量、该设备最后一次抓拍时间
      *
      * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param ipcId 设备ID
+     * @param endTime   结束时间
+     * @param ipcId     设备ID
      * @return CaptureCount 查询结果对象。对象内封装了：该时间段内该设备抓拍张数，该时间段内该设备最后一次抓拍时间。
      */
-    CaptureCount  captureCountQuery(String startTime, String endTime, String ipcId);
+    CaptureCount captureCountQuery(String startTime, String endTime, String ipcId);
+
+    /**
+     * 查询抓拍历史记录（陈柯）
+     * 根据条件筛选抓拍图片，并返回图片对象
+     * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
+     *               符合条件的图片对象并返回
+     * @return SearchResult符合条件的图片对象
+     */
+    SearchResult getCaptureHistory(SearchOption option);
+
+    /**
+     * 抓拍属性统计查询 (刘思阳)
+     * 查询指定时间段内，单个或某组设备中某种属性在抓拍图片中的数量
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param ipcIdList 单个或某组设备ID
+     * @return 单个或某组设备中某种属性在抓拍图片中的数量（Map<设备ID, Map<属性, 数量>>）
+     */
+    Map<String, AttributeCount> captureAttributeQuery(String startTime, String endTime, List<String> ipcIdList, SearchType type);
 
 }
