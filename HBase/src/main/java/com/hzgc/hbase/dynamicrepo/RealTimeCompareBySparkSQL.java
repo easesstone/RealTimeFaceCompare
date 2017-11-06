@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -22,7 +21,7 @@ import java.util.Properties;
 /**
  * 通过parkSQL以图搜图
  */
-public class RealTimeCompareBySparkSQL {
+class RealTimeCompareBySparkSQL {
 
     private Logger LOG = Logger.getLogger(RealTimeCompareBySparkSQL.class);
     /***
@@ -58,11 +57,6 @@ public class RealTimeCompareBySparkSQL {
      */
     private static SearchResult searchResult = new SearchResult();
     /**
-     * 搜索类型
-     */
-    private SearchType searchType;
-
-    /**
      * 图片对象列表
      */
     private List<CapturedPicture> capturedPictureList;
@@ -75,10 +69,9 @@ public class RealTimeCompareBySparkSQL {
     private DynamicPhotoService dynamicPhotoService;
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
-     protected RealTimeCompareBySparkSQL() {
-
+    RealTimeCompareBySparkSQL() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
-         capturePictureSearchService = new CapturePictureSearchServiceImpl();
+        capturePictureSearchService = new CapturePictureSearchServiceImpl();
         //获取ftp配置文件,并初始化propertie
         try {
             File resourceFile = FileUtil.loadResourceFile("ftp.properties");
@@ -86,15 +79,15 @@ public class RealTimeCompareBySparkSQL {
                 propertie.load(new FileInputStream(resourceFile));
             }
         } catch (Exception e) {
-            LOG.info("get ftp.properties failure");
+            LOG.error("get ftp.properties failure");
         }
 
     }
 
-    protected SearchResult pictureSearchBySparkSQL(SearchOption option) {
+    SearchResult pictureSearchBySparkSQL(SearchOption option) {
         if (null != option) {
             //搜索类型 是人还是车
-            searchType = option.getSearchType();
+            SearchType searchType = option.getSearchType();
             //排序参数
             sortParams = option.getSortParams();
             //上传图片数据
@@ -114,12 +107,12 @@ public class RealTimeCompareBySparkSQL {
                     if (null != image && image.length > 0) {
                         searchResult = compareByImageBySparkSQL(pictureType, option);
                     } else {
-                        //无图，有imageId
+                        //无图片，有imageId,相当于ftpurl
                         if (null != imageId) {
                             searchResult = compareByImageIdBySparkSQL(option);
                         } else {
                             //无图无imageId,通过其他参数查询
-                            capturePictureSearchService.getCaptureHistory(option);
+                            searchResult = capturePictureSearchService.getCaptureHistory(option);
                         }
                     }
                 }
@@ -131,12 +124,12 @@ public class RealTimeCompareBySparkSQL {
                     if (null != image && image.length > 0) {
                         searchResult = compareByImageBySparkSQL(pictureType, option);
                     } else {
-                        //没有图片，有imageId,相当于ftpurl
+                        //无图片，有imageId,相当于ftpurl
                         if (null != imageId) {
                             searchResult = compareByImageIdBySparkSQL(option);
                         } else {
                             //无图无imageId,通过其他参数查询
-                            capturePictureSearchService.getCaptureHistory(option);
+                            searchResult = capturePictureSearchService.getCaptureHistory(option);
                         }
                     }
                 }
@@ -172,34 +165,31 @@ public class RealTimeCompareBySparkSQL {
             String searchFeaStr = FaceFunction.floatArray2string(searchFea);
             //特征值比对，根据条件过滤
             String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
-            jdbcUtil.executeQuery(selectBySparkSQL, null, new JDBCUtil.QueryCallback() {
-                @Override
-                public void process(ResultSet rs) throws Exception {
-                    while (rs.next()) {
-                        //图片ftpurl
-                        String imageid = rs.getString(DynamicHiveTable.PIC_URL);
-                        //设备id
-                        String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
-                        //相似度
-                        Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
-                        //时间戳
-                        Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
-                        //图片类型
-                        String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
-                        capturedPicture = new CapturedPicture();
-                        capturedPicture.setId(imageid);
-                        capturedPicture.setIpcId(ipcid);
-                        capturedPicture.setTimeStamp(timestamp);
-                        capturedPicture.setSimilarity(similaritys);
-                        capturedPicture.setPictureType(PictureType.valueOf(pic_type));
-                    }
+            jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
+                while (rs.next()) {
+                    //图片ftpurl
+                    String imageid = rs.getString(DynamicHiveTable.PIC_URL);
+                    //设备id
+                    String ipcid = rs.getString(DynamicHiveTable.PARTITION_IPCID);
+                    //相似度
+                    Float similaritys = rs.getFloat(DynamicHiveTable.SIMILARITY);
+                    //时间戳
+                    Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
+                    //图片类型
+                    String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
+                    capturedPicture = new CapturedPicture();
+                    capturedPicture.setId(imageid);
+                    capturedPicture.setIpcId(ipcid);
+                    capturedPicture.setTimeStamp(timestamp);
+                    capturedPicture.setSimilarity(similaritys);
+                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
                 }
             });
             capturedPictureList = new ArrayList<>();
             capturedPictureList.add(capturedPicture);
             searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
         } else {
-            LOG.info("search feature is null or short than 512");
+            LOG.error("search feature is null or short than 512");
         }
         return searchResult;
     }
@@ -218,15 +208,13 @@ public class RealTimeCompareBySparkSQL {
                 propertie.getProperty("ftppassword"),
                 imageId);
         if (image != null && image.length > 0) {
-        //提取上传图片的特征值
-        float[] searchFea = FaceFunction.featureExtract(image).getFeature();
-        if (null != searchFea && searchFea.length == 512) {
-            //将float[]特征值转为String特征值
-            String searchFeaStr = FaceFunction.floatArray2string(searchFea);
-            String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
-            jdbcUtil.executeQuery(selectBySparkSQL, null, new JDBCUtil.QueryCallback() {
-                @Override
-                public void process(ResultSet rs) throws Exception {
+            //提取上传图片的特征值
+            float[] searchFea = FaceFunction.featureExtract(image).getFeature();
+            if (null != searchFea && searchFea.length == 512) {
+                //将float[]特征值转为String特征值
+                String searchFeaStr = FaceFunction.floatArray2string(searchFea);
+                String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
+                jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                     //图片ftpurl
                     String imageid = rs.getString(DynamicHiveTable.PIC_URL);
                     //设备id
@@ -237,28 +225,27 @@ public class RealTimeCompareBySparkSQL {
                     Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
                     //图片类型
                     String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
-
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setId(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
                     capturedPicture.setPictureType(PictureType.valueOf(pic_type));
-                }
-            });
-            capturedPictureList = new ArrayList<>();
-            capturedPictureList.add(capturedPicture);
-            searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+                });
+                capturedPictureList = new ArrayList<>();
+                capturedPictureList.add(capturedPicture);
+                searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+            } else {
+                LOG.error("search feature is null or short than 512");
+            }
         } else {
-            LOG.info("search feature is null or short than 512");
+            LOG.error("search image is null with [" + imageId + "] ");
         }
-    }else {
-            LOG.info("search image is null with ["+imageId+"] ");
-        }
-            return searchResult;
+        return searchResult;
     }
 
-    /***
+
+    /**
      * 获取根据过滤条件拼接成的sql
      *
      * @param searchFeaStr 通过图片获取的特征值
@@ -293,7 +280,7 @@ public class RealTimeCompareBySparkSQL {
             searchResultTemp.setSearchId(searchId);
             searchResultTemp.setTotal(capturedPictures.size());
         } else {
-            LOG.info("Find no image by deviceIds or timeStamp");
+            LOG.error("Find no image by deviceIds or timeStamp");
         }
         return searchResultTemp;
     }
@@ -311,7 +298,7 @@ public class RealTimeCompareBySparkSQL {
         if (null != sortParams && sortParams.length() > 0) {
             ListUtils.sort(capturedPictures, sortParam.getSortNameArr(), sortParam.getIsAscArr());
         } else {
-            LOG.info("sortParams is null!");
+            LOG.error("sortParams is null!");
         }
         return capturedPictures;
     }
@@ -337,21 +324,4 @@ public class RealTimeCompareBySparkSQL {
         }
         return subCapturePictureList;
     }
-
-    public static void main(String[] args) {
-
-        RealTimeCompareBySparkSQL realTimeCompareBySparkSQLTwo = new RealTimeCompareBySparkSQL();
-
-        SearchOption searchOption = new SearchOption();
-        searchOption.setThreshold(60.00F);
-        List<String> ipcId = new ArrayList<>();
-        ipcId.add("0");
-        ipcId.add("1");
-        searchOption.setDeviceIds(ipcId);
-        searchOption.setSearchType(SearchType.PERSON);
-        searchOption.setImageId("device-test-1-420620197310111020");
-        searchResult = realTimeCompareBySparkSQLTwo.pictureSearchBySparkSQL(searchOption);
-        System.out.println(searchResult);
-    }
-
 }

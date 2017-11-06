@@ -1,6 +1,5 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.alibaba.dubbo.common.utils.LogUtil;
 import com.hzgc.dubbo.Attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
@@ -31,8 +30,6 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  */
 public class CapturePictureSearchServiceImpl implements CapturePictureSearchService {
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
-   /* private static SparkConf conf = new SparkConf().setAppName("RealTimeCompare").setMaster("local[*]");
-    private static transient JavaSparkContext jsc = new JavaSparkContext(conf);*/
 
     static {
         ElasticSearchHelper.getEsClient();
@@ -40,7 +37,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
-     * 接收应用层传递的参数进行搜图（彭聪）
+     * 接收应用层传递的参数进行搜图（乔凯峰）
      *
      * @param option 搜索选项
      * @return 搜索结果SearchResult对象
@@ -60,7 +57,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     /**
      * 获取查询结果
      *
-     * @param searchId 搜索的 id（rowkey）（刘思阳）
+     * @param searchId 搜索的 id（searchId）（乔凯峰）
      * @param offset   从第几条开始
      * @param count    条数
      * @return SearchResult对象
@@ -86,14 +83,18 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 capturedPictureList = (List<CapturedPicture>) ObjectUtil.byteToObject(searchMessage);
                 DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
-                if (searchType.equals(DynamicTable.PERSON_TYPE)) {
-                    //结果集（capturedPictureList）分页返回
-                    searchResult = sortAndSplit(capturedPictureList, offset, count);
-                } else if (searchType.equals(DynamicTable.CAR_TYPE)) {
-                    //结果集（capturedPictureList）分页返回
-                    searchResult = sortAndSplit(capturedPictureList, offset, count);
-                } else {
-                    searchResult = sortAndSplit(capturedPictureList, offset, count);
+                switch (searchType) {
+                    case DynamicTable.PERSON_TYPE:
+                        //结果集（capturedPictureList）分页返回
+                        searchResult = sortAndSplit(capturedPictureList, offset, count);
+                        break;
+                    case DynamicTable.CAR_TYPE:
+                        //结果集（capturedPictureList）分页返回
+                        searchResult = sortAndSplit(capturedPictureList, offset, count);
+                        break;
+                    default:
+                        searchResult = sortAndSplit(capturedPictureList, offset, count);
+                        break;
                 }
             } else {
                 LOG.info("get searchMessageMap null from table_searchRes");
@@ -163,333 +164,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             LOG.error("method CapturePictureSearchServiceImpl.getAttribute SearchType is error.");
         }
         return map;
-    }
-
-    /**
-     * 根据id（rowkey）获取动态信息库内容（DynamicObject对象）（刘思阳）
-     *
-     * @param imageId id（rowkey）
-     * @param type    图片类型，人/车
-     * @return DynamicObject    动态库对象
-     */
-    @Override
-    public CapturedPicture getCaptureMessage(String imageId, int type) {
-        CapturedPicture capturedPicture = new CapturedPicture();
-        if (null != imageId) {
-            capturedPicture.setId(imageId);
-            String rowKey = imageId.substring(0, imageId.lastIndexOf("_"));
-            StringBuilder bigImageRowKey = new StringBuilder();
-            bigImageRowKey.append(rowKey).append("_").append("00");
-
-            Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-            Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
-            Map<String, Object> mapEx = new HashMap<>();
-            switch (type) {
-                case 0:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = person.get(get);
-                        setSmallImageToCapturedPicture_person(capturedPicture, result);
-                        setCapturedPicture_person(capturedPicture, result, mapEx);
-
-                        Get bigImageGet = new Get(Bytes.toBytes(bigImageRowKey.toString()));
-                        Result bigImageResult = person.get(bigImageGet);
-                        setBigImageToCapturedPicture_person(capturedPicture, bigImageResult);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 0");
-                    } finally {
-                        HBaseUtil.closTable(person);
-                    }
-                    break;
-                case 1:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = car.get(get);
-                        setSmallImageToCapturedPicture_car(capturedPicture, result);
-                        setCapturedPicture_car(capturedPicture, result, mapEx);
-
-                        Get bigImageGet = new Get(Bytes.toBytes(bigImageRowKey.toString()));
-                        Result bigImageResult = car.get(bigImageGet);
-                        setBigImageToCapturedPicture_car(capturedPicture, bigImageResult);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 1");
-                    } finally {
-                        HBaseUtil.closTable(car);
-                    }
-                    break;
-                case 2:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = person.get(get);
-
-                        setSmallImageToCapturedPicture_person(capturedPicture, result);
-                        setCapturedPicture_person(capturedPicture, result, mapEx);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 2");
-                    } finally {
-                        HBaseUtil.closTable(person);
-                    }
-                    break;
-                case 3:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = car.get(get);
-
-                        setSmallImageToCapturedPicture_car(capturedPicture, result);
-                        setCapturedPicture_car(capturedPicture, result, mapEx);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 3");
-                    } finally {
-                        HBaseUtil.closTable(car);
-                    }
-                    break;
-                case 4:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = person.get(get);
-                        setCapturedPicture_person(capturedPicture, result, mapEx);
-
-                        Get bigImageGet = new Get(Bytes.toBytes(bigImageRowKey.toString()));
-                        Result bigImageResult = person.get(bigImageGet);
-                        setBigImageToCapturedPicture_person(capturedPicture, bigImageResult);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 4");
-                    } finally {
-                        HBaseUtil.closTable(person);
-                    }
-                    break;
-                case 5:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = car.get(get);
-                        setCapturedPicture_car(capturedPicture, result, mapEx);
-
-                        Get bigImageGet = new Get(Bytes.toBytes(bigImageRowKey.toString()));
-                        Result bigImageResult = car.get(bigImageGet);
-                        setBigImageToCapturedPicture_car(capturedPicture, bigImageResult);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 5");
-                    } finally {
-                        HBaseUtil.closTable(car);
-                    }
-                    break;
-                case 6:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = person.get(get);
-                        setCapturedPicture_person(capturedPicture, result, mapEx);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_person failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 6");
-                    } finally {
-                        HBaseUtil.closTable(car);
-                    }
-                    break;
-                case 7:
-                    try {
-                        Get get = new Get(Bytes.toBytes(imageId));
-                        Result result = car.get(get);
-                        setCapturedPicture_car(capturedPicture, result, mapEx);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LOG.error("get CapturedPicture by rowkey from table_car failed! used method CapturePictureSearchServiceImpl.getCaptureMessage.case 7");
-                    } finally {
-                        HBaseUtil.closTable(car);
-                    }
-                    break;
-                default:
-                    LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage param is error.");
-            }
-        } else {
-            LOG.error("method CapturePictureSearchServiceImpl.getCaptureMessage imageId is empty.");
-        }
-        return capturedPicture;
-    }
-
-    /**
-     * 批量查询图片对象（彭聪）
-     *
-     * @param imageIdList 图片ID列表
-     * @param type        搜索类型
-     * @return List<CapturedPicture> 图片对象列表
-     */
-    @Override
-    public List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type) {
-        List<CapturedPicture> capturedPictureList = new ArrayList<>();
-        if (imageIdList != null) {
-            List<Get> gets = new ArrayList<>();
-            CapturedPicture capturedPicture;
-            if (type == PictureType.SMALL_PERSON.getType()) {
-                Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-                for (String anImageIdList : imageIdList) {
-                    Get get = new Get(Bytes.toBytes(anImageIdList));
-                    get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-                    gets.add(get);
-                }
-                Result[] results = new Result[imageIdList.size()];
-                try {
-                    results = person.get(gets);
-                    HBaseUtil.closTable(person);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (results != null) {
-                    for (Result result : results) {
-                        capturedPicture = new CapturedPicture();
-                        if (result != null) {
-                            String rowKey = Bytes.toString(result.getRow());
-                            capturedPicture.setId(rowKey);
-                            byte[] imageData = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-                            capturedPicture.setSmallImage(imageData);
-                            Map<String, Object> mapEx = new HashMap<>();
-                            setCapturedPicture_person(capturedPicture, result, mapEx);
-                            capturedPictureList.add(capturedPicture);
-                        } else {
-                            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                        }
-                    }
-                } else {
-                    LOG.error("get Result[] from table_person is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                }
-            } else if (type == PictureType.SMALL_CAR.getType()) {
-                Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
-                for (String anImageIdList : imageIdList) {
-                    Get get = new Get(Bytes.toBytes(anImageIdList));
-                    get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-                    gets.add(get);
-                }
-                Result[] results = new Result[imageIdList.size()];
-                try {
-                    results = car.get(gets);
-                    HBaseUtil.closTable(car);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (results != null) {
-                    for (Result result : results) {
-                        capturedPicture = new CapturedPicture();
-                        if (result != null) {
-                            String rowKey = Bytes.toString(result.getRow());
-                            byte[] imageData = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-                            capturedPicture.setId(rowKey);
-                            capturedPicture.setSmallImage(imageData);
-                            Map<String, Object> mapEx = new HashMap<>();
-                            setCapturedPicture_car(capturedPicture, result, mapEx);
-                            capturedPictureList.add(capturedPicture);
-                        } else {
-                            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                        }
-                    }
-                } else {
-                    LOG.error("get Result[] from table_car is null! used method CapturePictureSearchServiceImpl.getBatchCaptureMessage.");
-                }
-
-            } else {
-                LOG.info("the type is error");
-            }
-        }
-        return capturedPictureList;
-    }
-
-    private void setSmallImageToCapturedPicture_person(CapturedPicture capturedPicture, Result result) {
-        if (result != null) {
-            byte[] smallImage = result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-            if (smallImage != null) {
-                capturedPicture.setSmallImage(smallImage);
-            } else {
-                LOG.warn("get smallImage is null!");
-            }
-        } else {
-            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_person.");
-        }
-    }
-
-    private void setCapturedPicture_person(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
-        if (result != null) {
-            String des = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE));
-            capturedPicture.setDescription(des);
-
-            String ex = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_EXTRA));
-            mapEx.put("ex", ex);
-            capturedPicture.setExtend(mapEx);
-
-            String ipcId = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID));
-            capturedPicture.setIpcId(ipcId);
-
-            String time = Bytes.toString(result.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP));
-            long timeStamp = DateUtil.dateToTimeStamp(time);
-            capturedPicture.setTimeStamp(timeStamp);
-        } else {
-            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_person.");
-        }
-    }
-
-    private void setBigImageToCapturedPicture_person(CapturedPicture capturedPicture, Result bigImageResult) {
-        if (bigImageResult != null) {
-            byte[] bigImage = bigImageResult.getValue(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IMGE);
-            if (bigImage != null) {
-                capturedPicture.setBigImage(bigImage);
-            } else {
-                LOG.warn("get bigImage is null!");
-            }
-        } else {
-            LOG.error("get Result from table_person is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_person.");
-        }
-    }
-
-    private void setSmallImageToCapturedPicture_car(CapturedPicture capturedPicture, Result result) {
-        if (result != null) {
-            byte[] smallImage = result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-            if (smallImage != null) {
-                capturedPicture.setSmallImage(smallImage);
-            } else {
-                LOG.warn("get smallImage is null!");
-            }
-        } else {
-            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setSmallImageToCapturedPicture_car.");
-        }
-    }
-
-    private void setCapturedPicture_car(CapturedPicture capturedPicture, Result result, Map<String, Object> mapEx) {
-        if (result != null) {
-            String des = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE));
-            capturedPicture.setDescription(des);
-
-            String ex = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_EXTRA));
-            mapEx.put("ex", ex);
-            capturedPicture.setExtend(mapEx);
-
-            String ipcId = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID));
-            capturedPicture.setIpcId(ipcId);
-
-            String time = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP));
-            long timeStamp = DateUtil.dateToTimeStamp(time);
-            capturedPicture.setTimeStamp(timeStamp);
-
-            String plateNumber = Bytes.toString(result.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_PLATENUM));
-            capturedPicture.setPlateNumber(plateNumber);
-        } else {
-            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setCapturedPicture_car.");
-        }
-    }
-
-    private void setBigImageToCapturedPicture_car(CapturedPicture capturedPicture, Result bigImageResult) {
-        if (bigImageResult != null) {
-            byte[] bigImage = bigImageResult.getValue(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IMGE);
-            if (bigImage != null) {
-                capturedPicture.setBigImage(bigImage);
-            } else {
-                LOG.warn("get bigImage is null!");
-            }
-        } else {
-            LOG.error("get Result from table_car is null! used method CapturePictureSearchServiceImpl.setBigImageToCapturedPicture_car.");
-        }
     }
 
     /**
@@ -564,20 +238,20 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 returnresult.setTotalresultcount(totalresultcount);
                 returnresult.setLastcapturetime("None");
             } else {
-                /**
-                 * 获取该时间段内设备最后一次抓拍时间：
-                 * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-                 * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-                 * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-                 * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
-                 **/
+                /*
+                  获取该时间段内设备最后一次抓拍时间：
+                  返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+                  因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+                  例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+                  将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+                 */
 
                 //获取最后一次抓拍时间
                 String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
 
-                /**
-                 * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
-                 **/
+                /*
+                  返回值为：设备抓拍张数、设备最后一次抓拍时间。
+                 */
                 returnresult.setTotalresultcount(totalresultcount);
                 returnresult.setLastcapturetime(lastcapturetime);
             }
@@ -587,19 +261,22 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         return returnresult;
     }
 
+    /**
+     * 查询抓拍历史记录（陈柯）
+     * 根据条件筛选抓拍图片，并返回图片对象
+     * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
+     *               符合条件的图片对象并返回
+     * @return SearchResult符合条件的图片对象
+     */
     @Override
     public SearchResult getCaptureHistory(SearchOption option) {
+        CaptureHistory captureHistory = new CaptureHistory();
         option.setSearchType(SearchType.PERSON);
         long esStartTime = System.currentTimeMillis();
-        SearchResult searchResult = getImageIdListFromEs_History(option);
+        SearchResult searchResult = captureHistory.getRowKey_history(option);
         long esEndTime = System.currentTimeMillis();
         LOG.info("search" + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
         return searchResult;
-    }
-
-    private SearchResult getImageIdListFromEs_History(SearchOption option) {
-        FilterByRowkey filterByRowkey = new FilterByRowkey();
-        return filterByRowkey.getRowKey_history(option);
     }
 
     /**
