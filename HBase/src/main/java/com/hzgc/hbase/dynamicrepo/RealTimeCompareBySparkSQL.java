@@ -56,7 +56,6 @@ class RealTimeCompareBySparkSQL {
      * 查询结果，最终的返回值
      */
     private static SearchResult searchResult = new SearchResult();
-
     /**
      * 图片对象列表
      */
@@ -70,7 +69,7 @@ class RealTimeCompareBySparkSQL {
     private DynamicPhotoService dynamicPhotoService;
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
-     RealTimeCompareBySparkSQL() {
+    RealTimeCompareBySparkSQL() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
         capturePictureSearchService = new CapturePictureSearchServiceImpl();
         //获取ftp配置文件,并初始化propertie
@@ -80,7 +79,7 @@ class RealTimeCompareBySparkSQL {
                 propertie.load(new FileInputStream(resourceFile));
             }
         } catch (Exception e) {
-            LOG.info("get ftp.properties failure");
+            LOG.error("get ftp.properties failure");
         }
 
     }
@@ -88,9 +87,6 @@ class RealTimeCompareBySparkSQL {
     SearchResult pictureSearchBySparkSQL(SearchOption option) {
         if (null != option) {
             //搜索类型 是人还是车
-            /*
-      搜索类型
-     */
             SearchType searchType = option.getSearchType();
             //排序参数
             sortParams = option.getSortParams();
@@ -111,12 +107,12 @@ class RealTimeCompareBySparkSQL {
                     if (null != image && image.length > 0) {
                         searchResult = compareByImageBySparkSQL(pictureType, option);
                     } else {
-                        //无图，有imageId
+                        //无图片，有imageId,相当于ftpurl
                         if (null != imageId) {
                             searchResult = compareByImageIdBySparkSQL(option);
                         } else {
                             //无图无imageId,通过其他参数查询
-                            capturePictureSearchService.getCaptureHistory(option);
+                            searchResult = capturePictureSearchService.getCaptureHistory(option);
                         }
                     }
                 }
@@ -128,12 +124,12 @@ class RealTimeCompareBySparkSQL {
                     if (null != image && image.length > 0) {
                         searchResult = compareByImageBySparkSQL(pictureType, option);
                     } else {
-                        //没有图片，有imageId,相当于ftpurl
+                        //无图片，有imageId,相当于ftpurl
                         if (null != imageId) {
                             searchResult = compareByImageIdBySparkSQL(option);
                         } else {
                             //无图无imageId,通过其他参数查询
-                            capturePictureSearchService.getCaptureHistory(option);
+                            searchResult = capturePictureSearchService.getCaptureHistory(option);
                         }
                     }
                 }
@@ -193,7 +189,7 @@ class RealTimeCompareBySparkSQL {
             capturedPictureList.add(capturedPicture);
             searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
         } else {
-            LOG.info("search feature is null or short than 512");
+            LOG.error("search feature is null or short than 512");
         }
         return searchResult;
     }
@@ -229,7 +225,6 @@ class RealTimeCompareBySparkSQL {
                     Long timestamp = rs.getLong(DynamicHiveTable.TIMESTAMP);
                     //图片类型
                     String pic_type = rs.getString(DynamicHiveTable.PIC_TYPE);
-
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setId(imageid);
                     capturedPicture.setIpcId(ipcid);
@@ -241,8 +236,10 @@ class RealTimeCompareBySparkSQL {
                 capturedPictureList.add(capturedPicture);
                 searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
             } else {
-                LOG.info("search feature is null or short than 512");
+                LOG.error("search feature is null or short than 512");
             }
+        } else {
+            LOG.error("search image is null with [" + imageId + "] ");
         }
         return searchResult;
     }
@@ -283,7 +280,7 @@ class RealTimeCompareBySparkSQL {
             searchResultTemp.setSearchId(searchId);
             searchResultTemp.setTotal(capturedPictures.size());
         } else {
-            LOG.info("Find no image by deviceIds or timeStamp");
+            LOG.error("Find no image by deviceIds or timeStamp");
         }
         return searchResultTemp;
     }
@@ -301,7 +298,7 @@ class RealTimeCompareBySparkSQL {
         if (null != sortParams && sortParams.length() > 0) {
             ListUtils.sort(capturedPictures, sortParam.getSortNameArr(), sortParam.getIsAscArr());
         } else {
-            LOG.info("sortParams is null!");
+            LOG.error("sortParams is null!");
         }
         return capturedPictures;
     }

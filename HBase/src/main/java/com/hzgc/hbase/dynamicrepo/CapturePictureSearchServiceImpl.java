@@ -37,7 +37,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
-     * 接收应用层传递的参数进行搜图（彭聪）
+     * 接收应用层传递的参数进行搜图（乔凯峰）
      *
      * @param option 搜索选项
      * @return 搜索结果SearchResult对象
@@ -57,7 +57,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     /**
      * 获取查询结果
      *
-     * @param searchId 搜索的 id（rowkey）（刘思阳）
+     * @param searchId 搜索的 id（searchId）（乔凯峰）
      * @param offset   从第几条开始
      * @param count    条数
      * @return SearchResult对象

@@ -46,95 +46,68 @@ class FilterByOption {
         stringBuilder
                 .append("select * from ")
                 .append("( select * , ")
-                .append(DynamicHiveTable.FUNCTION_NAME)
+                .append(DynamicTable.FUNCTION_NAME)
                 .append("(").append("'").append(searchFeaStr).append("'").append(",")
-                .append(DynamicHiveTable.FEATURE)
-                .append(") as").append(DynamicHiveTable.SIMILARITY)
+                .append(DynamicTable.FEATURE)
+                .append(") as").append(DynamicTable.SIMILARITY)
                 .append(" from ")
-                .append(DynamicHiveTable.PERSON_TABLE)
+                .append(DynamicTable.PERSON_TABLE)
                 .append(") person_temp_table ");
         if (0.00f != option.getThreshold()) {
             stringBuilder
                     .append(" where ")
-                    .append(DynamicHiveTable.SIMILARITY)
+                    .append(DynamicTable.SIMILARITY)
                     .append(" >= ")
                     .append(option.getThreshold());
         }
         if (attribute.getEyeglasses() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.EYEGLASSES)
+                    .append(DynamicTable.ELEGLASSES)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getEyeglasses().getValue())
-                    .append("'");
+                    .append(attribute.getEyeglasses().getValue());
         }
         if (attribute.getGender() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.GENDER)
+                    .append(DynamicTable.GENDER)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getGender().getValue())
-                    .append("'");
+                    .append(attribute.getGender().getValue());
         }
         if (attribute.getHairColor() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HAIRCOLOR)
+                    .append(DynamicTable.HAIRCOLOR)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHairColor().getValue())
-                    .append("'");
+                    .append(attribute.getHairColor().getValue());
         }
         if (attribute.getHairStyle() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HAIRSTYLE)
+                    .append(DynamicTable.HAIRSTYLE)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHairStyle().getValue())
-                    .append("'");
+                    .append(attribute.getHairStyle().getValue());
         }
         if (attribute.getHat() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HAT)
+                    .append(DynamicTable.HAT)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHat().getValue())
-                    .append("'");
+                    .append(attribute.getHat().getValue());
         }
         if (attribute.getHuzi() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HUZI)
+                    .append(DynamicTable.HUZI)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHuzi().getValue())
-                    .append("'");
+                    .append(attribute.getHuzi().getValue());
         }
         if (attribute.getTie() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.TIE)
+                    .append(DynamicTable.TIE)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getTie().getValue())
-                    .append("'");
-        }
-        if (option.getStartDate() != null && option.getEndDate() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicHiveTable.TIMESTAMP)
-                    .append(" between ")
-                    .append("'")
-                    .append(dateFormat_timestamp.format(option.getStartDate()))
-                    .append("'")
-                    .append(" and ")
-                    .append("'")
-                    .append(dateFormat_timestamp.format(option.getEndDate()))
-                    .append("'");
+                    .append(attribute.getTie().getValue());
         }
         if (option.getIntervals() != null) {
             for (TimeInterval timeInterval1 : option.getIntervals()) {
@@ -145,7 +118,7 @@ class FilterByOption {
                 end_sj = (end_sj / 60) * 100 + end_sj % 60;
                 stringBuilder
                         .append(" and ")
-                        .append(DynamicHiveTable.TIMESLOT)
+                        .append(DynamicTable.TIMESLOT)
                         .append(" between ")
                         .append(start_sj)
                         .append(" and ")
@@ -155,7 +128,7 @@ class FilterByOption {
         if (option.getStartDate() != null && option.getEndDate() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.PARTITION_DATE)
+                    .append(DynamicTable.DATE)
                     .append(" between ")
                     .append("'")
                     .append(dateFormat_date.format(option.getStartDate()))
@@ -169,7 +142,7 @@ class FilterByOption {
             for (String ipcid : option.getDeviceIds()) {
                 stringBuilder
                         .append(" and ")
-                        .append(DynamicHiveTable.PARTITION_IPCID)
+                        .append(DynamicTable.IPCID)
                         .append(" = ")
                         .append("'")
                         .append(ipcid)
@@ -183,15 +156,16 @@ class FilterByOption {
         stringBuilder
                 .append(" select * from ")
                 .append("( select * ,")
-                .append(DynamicHiveTable.FUNCTION_NAME)
-                .append("(").append("'").append(searchFeaStr).append("'").append(",").append(DynamicHiveTable.FEATURE)
-                .append(") as ").append(DynamicHiveTable.SIMILARITY)
-                .append(" from ").append(DynamicHiveTable.MID_TABLE)
+                .append(DynamicTable.FUNCTION_NAME)
+                .append("(").append("'").append(searchFeaStr).append("'").append(",")
+                .append(DynamicTable.FEATURE)
+                .append(") as ").append(DynamicTable.SIMILARITY)
+                .append(" from ").append(DynamicTable.MID_TABLE)
                 .append(") mid_temp_table ");
         if (0.00f != option.getThreshold()) {
             stringBuilder
                     .append(" where ")
-                    .append(DynamicHiveTable.SIMILARITY)
+                    .append(DynamicTable.SIMILARITY)
                     .append(" >= ")
                     .append(option.getThreshold());
         }
@@ -199,65 +173,51 @@ class FilterByOption {
         if (attribute.getEyeglasses() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.EYEGLASSES)
+                    .append(DynamicTable.ELEGLASSES)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getEyeglasses().getValue())
-                    .append("'");
+                    .append(attribute.getEyeglasses().getValue());
         }
         if (attribute.getGender() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.GENDER)
+                    .append(DynamicTable.GENDER)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getGender().getValue())
-                    .append("'");
+                    .append(attribute.getGender().getValue());
         }
         if (attribute.getHairColor() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HAIRCOLOR)
+                    .append(DynamicTable.HAIRCOLOR)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHairColor().getValue())
-                    .append("'");
+                    .append(attribute.getHairColor().getValue());
         }
         if (attribute.getHairStyle() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HAIRSTYLE)
+                    .append(DynamicTable.HAIRSTYLE)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHairStyle().getValue())
-                    .append("'");
+                    .append(attribute.getHairStyle().getValue());
         }
         if (attribute.getHat() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HAT)
+                    .append(DynamicTable.HAT)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHat().getValue())
-                    .append("'");
+                    .append(attribute.getHat().getValue());
         }
         if (attribute.getHuzi() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.HUZI)
+                    .append(DynamicTable.HUZI)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getHuzi().getValue())
-                    .append("'");
+                    .append(attribute.getHuzi().getValue());
         }
         if (attribute.getTie() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.TIE)
+                    .append(DynamicTable.TIE)
                     .append(" = ")
-                    .append("'")
-                    .append(attribute.getTie().getValue())
-                    .append("'");
+                    .append(attribute.getTie().getValue());
         }
         if (option.getIntervals() != null) {
             for (TimeInterval timeInterval1 : option.getIntervals()) {
@@ -268,7 +228,7 @@ class FilterByOption {
                 end_sj = (end_sj / 60) * 100 + end_sj % 60;
                 stringBuilder
                         .append(" and ")
-                        .append(DynamicHiveTable.TIMESLOT)
+                        .append(DynamicTable.TIMESLOT)
                         .append(" between ")
                         .append(start_sj)
                         .append(" and ")
@@ -278,7 +238,7 @@ class FilterByOption {
         if (option.getStartDate() != null && option.getEndDate() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.TIMESTAMP)
+                    .append(DynamicTable.TIMESTAMP)
                     .append(" between ")
                     .append("'")
                     .append(dateFormat_timestamp.format(option.getStartDate()))
@@ -291,7 +251,7 @@ class FilterByOption {
         if (option.getStartDate() != null && option.getEndDate() != null) {
             stringBuilder
                     .append(" and ")
-                    .append(DynamicHiveTable.PARTITION_DATE)
+                    .append(DynamicTable.DATE)
                     .append(" between ")
                     .append("'")
                     .append(dateFormat_date.format(option.getStartDate()))
@@ -305,7 +265,7 @@ class FilterByOption {
             for (String ipcid : option.getDeviceIds()) {
                 stringBuilder
                         .append(" and ")
-                        .append(DynamicHiveTable.PARTITION_IPCID)
+                        .append(DynamicTable.IPCID)
                         .append(" = ")
                         .append("'")
                         .append(ipcid)
@@ -314,5 +274,4 @@ class FilterByOption {
         }
         return stringBuilder.toString();
     }
-
 }

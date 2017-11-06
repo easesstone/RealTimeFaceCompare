@@ -155,5 +155,10 @@ public class DynamicTable implements Serializable {
     public static final String HAT = "hat";
     public static final String HUZI = "huzi";
     public static final String TIE = "tie";
+    public static final String PERSON_TABLE = "person_table";
+    public static final String MID_TABLE = "mid_table";
+    public static final String FEATURE = "feature";
+    public static final String SIMILARITY = "similarity";
+    public static final String FUNCTION_NAME = "compare";
 
 }
