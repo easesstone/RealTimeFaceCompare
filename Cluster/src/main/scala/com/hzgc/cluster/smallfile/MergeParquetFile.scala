@@ -155,6 +155,8 @@ object MergeParquetFile {
 
         // 7,删除原来的文件
         ReadWriteHDFS.del(pathArr, fs);
+
+        sparkSession.close()
     }
 
     /** 根据输入目录计算目录大小，并以128*2M大小计算partition */
