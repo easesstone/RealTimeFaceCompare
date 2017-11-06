@@ -138,13 +138,12 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
         List<float[]> feaFloatList = new ArrayList<>();
         if (null != imageIdList && imageIdList.size() > 0) {
             List<Get> gets = new ArrayList<>();
-            for (int i = 0, len = imageIdList.size(); i < len; i++) {
-                if (imageIdList.get(i) != null) {
-                    Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
+            for (String anImageIdList : imageIdList)
+                if (anImageIdList != null) {
+                    Get get = new Get(Bytes.toBytes(anImageIdList));
                     get.addColumn(Bytes.toBytes("i"), Bytes.toBytes("f"));
                     gets.add(get);
                 }
-            }
             if (type == PictureType.SMALL_PERSON) {
                 Table personTable = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
                 try {
@@ -446,9 +445,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
 
             if (type == PictureType.SMALL_PERSON.getType()) {
                 Table person = HBaseHelper.getTable(DynamicTable.TABLE_PERSON);
-                for (int i = 0, len = imageIdList.size(); i < len; i++) {
-                    if (imageIdList.get(i) != null) {
-                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
+                for (String anImageIdList : imageIdList) {
+                    if (anImageIdList != null) {
+                        Get get = new Get(Bytes.toBytes(anImageIdList));
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_IPCID);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_TIMESTAMP);
                         get.addColumn(DynamicTable.PERSON_COLUMNFAMILY, DynamicTable.PERSON_COLUMN_DESCRIBE);
@@ -464,14 +463,14 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                     LOG.info(e.getMessage());
                 }
                 if (results != null) {
-                    for (int i = 0; i < results.length; i++) {
+                    for (Result result : results) {
                         capturedPicture = new CapturedPicture();
-                        if (results[i] != null) {
-                            String rowKey = Bytes.toString(results[i].getRow());
+                        if (result != null) {
+                            String rowKey = Bytes.toString(result.getRow());
                             capturedPicture.setId(rowKey);
                             capturedPicture.setPictureType(PictureType.SMALL_PERSON);
                             try {
-                                setCapturedPicture_person(capturedPicture, results[i], mapEx);
+                                setCapturedPicture_person(capturedPicture, result, mapEx);
                             } catch (ParseException e) {
                                 LOG.info("Parse mapEx failed by setCapturedPicture_person");
                             }
@@ -485,9 +484,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
                 }
             } else if (type == PictureType.SMALL_CAR.getType()) {
                 Table car = HBaseHelper.getTable(DynamicTable.TABLE_CAR);
-                for (int i = 0, len = imageIdList.size(); i < len; i++) {
-                    if (imageIdList.get(i) != null) {
-                        Get get = new Get(Bytes.toBytes(imageIdList.get(i)));
+                for (String anImageIdList : imageIdList) {
+                    if (anImageIdList != null) {
+                        Get get = new Get(Bytes.toBytes(anImageIdList));
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_IPCID);
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_DESCRIBE);
                         get.addColumn(DynamicTable.CAR_COLUMNFAMILY, DynamicTable.CAR_COLUMN_TIMESTAMP);
