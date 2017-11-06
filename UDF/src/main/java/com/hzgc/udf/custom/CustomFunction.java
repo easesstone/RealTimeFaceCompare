@@ -25,6 +25,14 @@ public class CustomFunction {
         }
         return new float[0];
     }
+    public float featureCompare(String currentFeatureStr, float[] historyFeature) {
+        float[] currentFeature = string2floatArray(currentFeatureStr);
+        if (currentFeature.length == 512 && historyFeature.length == 512) {
+            return featureCompare(currentFeature, historyFeature);
+        }
+        return 0;
+    }
+
 
     public float featureCompare(float[] currentFeature, float[] historyFeature) {
         double similarityDegree = 0;

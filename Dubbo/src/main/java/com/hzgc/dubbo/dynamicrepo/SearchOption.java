@@ -51,6 +51,10 @@ public class SearchOption implements Serializable {
      * 搜索的时间区间，为空或者没有传入这个参数时候搜索整天
      */
     private List<TimeInterval> intervals;
+    /***
+     * date（分区字段） 数据格式 年-月-日 作为以图搜图过滤条件
+     */
+    private  List<String> date;
     /**
      * 参数筛选选项
      */
@@ -164,6 +168,14 @@ public class SearchOption implements Serializable {
 
     public void setIntervals(List<TimeInterval> intervals) {
         this.intervals = intervals;
+    }
+
+    public void setDate(List<String> date) {
+        this.date = date;
+    }
+
+    public List<String> getDate() {
+        return date;
     }
 
     public Attribute getAttribute() {
