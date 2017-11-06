@@ -36,7 +36,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
     static {
         ElasticSearchHelper.getEsClient();
-        //HBaseHelper.getHBaseConnection();
+        HBaseHelper.getHBaseConnection();
     }
 
     /**
@@ -47,10 +47,10 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public SearchResult search(SearchOption option) {
-        RealTimeCompare realTimeCompare = new RealTimeCompare();
+        RealTimeCompareBySparkSQL realTimeCompareBySparkSQL = new RealTimeCompareBySparkSQL();
         SearchResult searchResult = null;
         try {
-            searchResult = realTimeCompare.pictureSearch(option);
+            searchResult = realTimeCompareBySparkSQL.pictureSearchBySparkSQL(option);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -89,28 +89,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 if (searchType.equals(DynamicTable.PERSON_TYPE)) {
                     //结果集（capturedPictureList）分页返回
                     searchResult = sortAndSplit(capturedPictureList, offset, count);
-                    //读取imageData并返回结果
-                    List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
-                    int type = PictureType.SMALL_PERSON.getType();
-                    List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, type);
-                    searchResult.setPictures(FullCapturePictureList);
                 } else if (searchType.equals(DynamicTable.CAR_TYPE)) {
                     //结果集（capturedPictureList）分页返回
                     searchResult = sortAndSplit(capturedPictureList, offset, count);
-                    //读取imageData并返回结果
-                    List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
-                    int type = PictureType.SMALL_CAR.getType();
-                    List<CapturedPicture> FullCapturePictureList = dynamicPhotoService.getFullImageData(capturedPictureRes, type);
-                    searchResult.setPictures(FullCapturePictureList);
                 } else {
                     searchResult = sortAndSplit(capturedPictureList, offset, count);
-                    List<CapturedPicture> capturedPictureRes = searchResult.getPictures();
-                    List<CapturedPicture> FullCapturePictureList = new ArrayList<>();
-                    for (CapturedPicture capturedPicture : capturedPictureRes) {
-                        capturedPicture = dynamicPhotoService.getImageData(capturedPicture);
-                        FullCapturePictureList.add(capturedPicture);
-                    }
-                    searchResult.setPictures(FullCapturePictureList);
                 }
             } else {
                 LOG.info("get searchMessageMap null from table_searchRes");

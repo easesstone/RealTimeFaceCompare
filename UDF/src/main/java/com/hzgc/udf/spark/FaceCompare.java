@@ -12,7 +12,7 @@ public class FaceCompare extends UDF {
         return 0;
     }
 
-    public float evaluate(float[] currentFeature, float[] historyFeature) {
+    public float evaluate(String currentFeature, float[] historyFeature) {
         if (currentFeature != null && historyFeature != null) {
             return function.featureCompare(currentFeature, historyFeature);
         }
