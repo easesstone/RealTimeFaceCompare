@@ -1,5 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
+import com.alibaba.dubbo.common.utils.LogUtil;
 import com.hzgc.dubbo.Attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
@@ -13,7 +14,9 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
@@ -558,12 +561,11 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             //设定查询条件：指定时间段startTime至endTime，指定设备ipcId
             QueryBuilder qb = boolQuery()
                     .must(matchQuery("s", ipcId))
-                    .must(rangeQuery("t").
-                            gte(startTime).lte(endTime));//gte: >= 大于或等于；lte: <= 小于或等于
+                    .must(rangeQuery("t").gte(startTime).lte(endTime));//gte: >= 大于或等于；lte: <= 小于或等于
 
             SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
-                    .prepareSearch("dynamic") //指定要查询的索引名称
-                    .setTypes("person") //指定要查询的类型名称
+                    .prepareSearch(DynamicTable.DYNAMIC_INDEX) //指定要查询的索引名称
+                    .setTypes(DynamicTable.PERSON_INDEX_TYPE) //指定要查询的类型名称
                     .setQuery(qb) //根据查询条件qb设置查询
                     .addSort("t", SortOrder.DESC) //以时间字段降序排序
                     .get();
@@ -571,25 +573,36 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
             long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
 
-            /**
-             * 获取该时间段内设备最后一次抓拍时间：
-             * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-             * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-             * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-             * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
-             **/
-            SearchHit[] searchHits = hits.hits();
-            //获取最后一次抓拍时间
-            String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
+	        //返回结果包含的文档放在数组hits中
+	        SearchHit[] searchHits = hits.hits();
+	        //若不存在符合条件的查询结果
+	        if (totalresultcount == 0){
+	        	LOG.error("The result count is 0! Last capture time does not exist!");
+		        returnresult.setTotalresultcount(totalresultcount);
+		        returnresult.setLastcapturetime("None");
+	        }
+	        else {
+		        /**
+		         * 获取该时间段内设备最后一次抓拍时间：
+		         * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+		         * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+		         * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+		         * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+		         **/
 
-            /**
-             * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
-             **/
+		        //获取最后一次抓拍时间
+		        String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
 
-            returnresult.setTotalresultcount(totalresultcount);
-            returnresult.setLastcapturetime(lastcapturetime);
+		        /**
+		         * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
+		         **/
+		        returnresult.setTotalresultcount(totalresultcount);
+		        returnresult.setLastcapturetime(lastcapturetime);
+	        }
         }
-
+        else {
+        	LOG.error("The Input parameters are wrong!");
+        }
         return returnresult;
     }
 
@@ -606,5 +619,65 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private SearchResult getImageIdListFromEs_History(SearchOption option) {
         FilterByRowkey filterByRowkey = new FilterByRowkey();
         return filterByRowkey.getRowKey_history(option);
+    }
+
+    /**
+     * 抓拍属性统计查询 (刘思阳)
+     * 查询指定时间段内，单个或某组设备中某种属性在抓拍图片中的数量
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param ipcIdList 单个或某组设备ID
+     * @return 单个或某组设备中某种属性在抓拍图片中的数量（Map<设备ID, AttributeCount>）
+     */
+    @Override
+    public Map<String, AttributeCount> captureAttributeQuery(String startTime, String endTime, List<String> ipcIdList, SearchType type) {
+        Map<String, AttributeCount> map = new LinkedHashMap<>();
+        AttributeCount attributeCount = new AttributeCount();
+        if (type == SearchType.PERSON){
+            CapturePictureSearchService service = new CapturePictureSearchServiceImpl();
+            Map<String, List<String>> attributeMap;
+            attributeMap = service.getAttribute(SearchType.PERSON);
+
+            if (ipcIdList != null && ipcIdList.size() > 0){
+                for (String ipcId : ipcIdList) {
+                    Map<String, Long> map1 = new LinkedHashMap<>();
+                    for (Map.Entry<String, List<String>> entry : attributeMap.entrySet()) {
+                        String key = entry.getKey();
+                        List<String> values = entry.getValue();
+                        for (String value : values) {
+                            String attribute = key + "_" + value;
+
+                            BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
+                            FilterIpcId.must(QueryBuilders.matchQuery("ipcId", ipcId));
+                            FilterIpcId.must(QueryBuilders.rangeQuery("timestamp").gt(startTime).lt(endTime));
+                            FilterIpcId.must(QueryBuilders.matchQuery(key, value));
+                            SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                                    .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                                    .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                                    .setQuery(FilterIpcId).get();
+                            SearchHits hits = searchResponse.getHits();
+                            long totalHits = hits.getTotalHits();
+
+                            map1.put(attribute, totalHits);
+                        }
+                        attributeCount.setAttributeMap(map1);
+
+                        CaptureCount captureCount = service.captureCountQuery(startTime, endTime, ipcId);
+                        long count = captureCount.getTotalresultcount();
+                        attributeCount.setCaptureCount(count);
+                    }
+                    map.put(ipcId, attributeCount);
+                }
+            }else {
+                LOG.error("ipcIdList is null.");
+            }
+        }else if (type == SearchType.CAR){
+
+        }else {
+            LOG.error("method CapturePictureSearchServiceImpl.captureAttributeQuery SearchType is error.");
+        }
+
+        return map;
     }
 }
