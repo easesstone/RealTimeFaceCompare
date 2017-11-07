@@ -1,7 +1,7 @@
 #!/bin/bash
 ## 动态信息库person 表的映射
-curl -XDELETE 's100:9200/dynamic?pretty'  -H 'Content-Type: application/json'
-curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
+curl -XDELETE 's109:9200/dynamic?pretty'  -H 'Content-Type: application/json'
+curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
 {
     "settings": {
         "analysis": {
@@ -28,26 +28,50 @@ curl -XPUT 's100:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
         }
     },
     "mappings": {
-        "person": {
-            "properties": {
-                "f" : {
-                    "type" : "text",
-                    "analyzer" : "trigrams"
-                },
-                "t" : {
-                    "type" : "date",
-                    "format": "yyyy-MM-dd HH:mm:ss"
-                },
-                "fea" : {
-                    "type" : "text",
-                    "index" : "not_analyzed"
-                },
-                "sj": {
-                    "type": "long",
-                    "index": "not_analyzed"
-                }
-            }
+         "person": {
+              "properties": {
+                    "ftpurl" : {
+                                          "type" : "text"
+                              },
+                              "eyeglasses" : {
+                                           "type" : "long"
+                               },
+                              "gender" : {
+                                           "type" : "long"
+                              },
+                              "haircolor" : {
+                                           "type" : "long"
+                              },
+                              "hairstyle" : {
+                                           "type" : "long"
+                              },
+                              "hat" : {
+                                           "type" : "long"
+                              },
+                              "huzi" : {
+                                          "type" : "long"
+                              },
+                              "tie" : {
+                                           "type" : "long"
+                              },
+                              "ipcid" : {
+                                           "type" : "text"
+                              },
+                              "timeslot" : {
+                                           "type" : "text"
+                              },
+                              "date" : {
+                                            "type" : "text"
+                              },
+                              "timestamp" : {
+                                  "type" : "date",
+                                  "format": "yyyy-MM-dd HH:mm:ss"
+                              },
+                              "pictype" : {
+                                  "type" : "text"
+                              }
+                    }
+              }
         }
     }
-}
 '
