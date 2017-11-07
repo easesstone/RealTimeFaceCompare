@@ -18,4 +18,37 @@ public class AttributeCount {
      * 属性统计
      */
     private List<Attribute> attributes;
+
+    public String getIPCId() {
+        return IPCId;
+    }
+
+    public void setIPCId(String IPCId) {
+        this.IPCId = IPCId;
+    }
+
+    public long getCaptureCount() {
+        return captureCount;
+    }
+
+    public void setCaptureCount(long captureCount) {
+        this.captureCount = captureCount;
+    }
+
+    public List<Attribute> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<Attribute> attributes) {
+        this.attributes = attributes;
+    }
+
+    @Override
+    public String toString() {
+        return "AttributeCount{" +
+                "IPCId='" + IPCId + '\'' +
+                ", captureCount=" + captureCount +
+                ", attributes=" + attributes +
+                '}';
+    }
 }
