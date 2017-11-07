@@ -58,6 +58,10 @@ public class CapturePictureCatchHistoryTest {
         AttributeValue attributeValue = new AttributeValue();
         attributeValue.setValue(1);
         attributeValue.setDesc("黄色");
+        AttributeValue attributeValue1 = new AttributeValue();
+        attributeValue1.setValue(2);
+        attributeValue1.setDesc("红色");
+        attributeValues.add(attributeValue1);
         attributeValues.add(attributeValue);
         attribute.setValues(attributeValues);
         attributes.add(attribute);
