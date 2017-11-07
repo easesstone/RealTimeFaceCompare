@@ -247,7 +247,7 @@ class RealTimeCompareBySparkSQL {
         return searchResult;
     }
 
-    /***
+    /**
      * 获取根据过滤条件拼接成的sql
      *
      * @param searchFeaStr 通过图片获取的特征值
@@ -255,8 +255,8 @@ class RealTimeCompareBySparkSQL {
      * @return 拼接的sql
      */
     private String getSQLwithOption(String searchFeaStr, SearchOption option) {
-        FilterByOption filterByOption = new FilterByOption();
-        return filterByOption.getSQLwithOption(searchFeaStr, option);
+        ParseByOption parseByOption = new ParseByOption();
+        return parseByOption.getSQLwithOption(searchFeaStr, option);
     }
 
     /**

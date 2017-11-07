@@ -1,7 +1,7 @@
 package com.hzgc.dubbo.Attribute;
 
 /**
- * 属性值
+ * 单个属性值
  */
 public class AttributeValue {
     /**
