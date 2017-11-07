@@ -8,7 +8,9 @@ import com.hzgc.hbase.dynamicrepo.DynamicTable;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import org.elasticsearch.action.index.IndexResponse;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,11 +49,23 @@ public class CapturePictureCatchHistoryTest {
                 .setSource(map).get();
         System.out.println(indexResponse.getVersion());
         SearchOption searchOption = new SearchOption();
+        searchOption.setCount(1);
+        List<Attribute> attributes = new ArrayList<>();
         Attribute attribute = new Attribute();
-        attribute.setEyeglasses(Eyeglasses.Eyeglasses_y);
-        attribute.setGender(Gender.Female);
-        searchOption.setCount(3);
-        searchOption.setAttribute(attribute);
+        attribute.setIdentify("haircolor");
+        attribute.setLogistic(Logistic.AND);
+        List<AttributeValue> attributeValues = new ArrayList<>();
+        AttributeValue attributeValue = new AttributeValue();
+        attributeValue.setValue(1);
+        attributeValue.setDesc("黄色");
+        AttributeValue attributeValue1 = new AttributeValue();
+        attributeValue1.setValue(2);
+        attributeValue1.setDesc("红色");
+        attributeValues.add(attributeValue1);
+        attributeValues.add(attributeValue);
+        attribute.setValues(attributeValues);
+        attributes.add(attribute);
+        searchOption.setAttributes(attributes);
         CapturePictureSearchServiceImpl capturePictureSearchService = new CapturePictureSearchServiceImpl();
         SearchResult searchResult = capturePictureSearchService.getCaptureHistory(searchOption);
         System.out.println(searchResult);
