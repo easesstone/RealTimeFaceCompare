@@ -1,106 +1,68 @@
 package com.hzgc.dubbo.Attribute;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 人脸特征属性对象
  */
 public class Attribute implements Serializable {
     /**
-     * 头发颜色
+     * 属性id
      */
-    private HairColor hairColor;
+    private String identify;
     /**
-     * 头发类型
+     * 描述
      */
-    private HairStyle hairStyle;
+    private String desc;
     /**
-     * 性别
+     * 逻辑关系，AND,OR
      */
-    private Gender gender;
+    private Logistic logistic;
     /**
-     * 是否带帽子
+     * 属性值
      */
-    private Hat hat;
-    /**
-     * 是否系领带
-     */
-    private Tie tie;
-    /**
-     * 胡子类型
-     */
-    private Huzi huzi;
-    /**
-     * 是否戴眼镜
-     */
-    private Eyeglasses eyeglasses;
+    private List<AttributeValue> values;
 
-    public HairColor getHairColor() {
-        return hairColor;
+    public String getIdentify() {
+        return identify;
     }
 
-    public void setHairColor(HairColor hairColor) {
-        this.hairColor = hairColor;
+    public void setIdentify(String identify) {
+        this.identify = identify;
     }
 
-    public HairStyle getHairStyle() {
-        return hairStyle;
+    public String getDesc() {
+        return desc;
     }
 
-    public void setHairStyle(HairStyle hairStyle) {
-        this.hairStyle = hairStyle;
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
-    public Gender getGender() {
-        return gender;
+    public Logistic getLogistic() {
+        return logistic;
     }
 
-    public void setGender(Gender gender) {
-        this.gender = gender;
+    public void setLogistic(Logistic logistic) {
+        this.logistic = logistic;
     }
 
-    public Hat getHat() {
-        return hat;
+    public List<AttributeValue> getValues() {
+        return values;
     }
 
-    public void setHat(Hat hat) {
-        this.hat = hat;
-    }
-
-    public Tie getTie() {
-        return tie;
-    }
-
-    public void setTie(Tie tie) {
-        this.tie = tie;
-    }
-
-    public Huzi getHuzi() {
-        return huzi;
-    }
-
-    public void setHuzi(Huzi huzi) {
-        this.huzi = huzi;
-    }
-
-    public Eyeglasses getEyeglasses() {
-        return eyeglasses;
-    }
-
-    public void setEyeglasses(Eyeglasses eyeglasses) {
-        this.eyeglasses = eyeglasses;
+    public void setValues(List<AttributeValue> values) {
+        this.values = values;
     }
 
     @Override
     public String toString() {
         return "Attribute{" +
-                "hairColor=" + hairColor +
-                ", hairStyle=" + hairStyle +
-                ", gender=" + gender +
-                ", hat=" + hat +
-                ", tie=" + tie +
-                ", huzi=" + huzi +
-                ", eyeglasses=" + eyeglasses +
+                "identify='" + identify + '\'' +
+                ", desc='" + desc + '\'' +
+                ", logistic=" + logistic +
+                ", values=" + values +
                 '}';
     }
 }

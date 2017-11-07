@@ -43,4 +43,21 @@ public enum Eyeglasses implements Serializable {
         }
         return Eyeglasses.None;
     }
+
+    /**
+     * 获取属性描述
+     *
+     * @param eyeglasses 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(Eyeglasses eyeglasses) {
+        if (eyeglasses == Eyeglasses.None) {
+            return "无";
+        } else if (eyeglasses == Eyeglasses.Eyeglasses_y) {
+            return "戴眼镜";
+        } else if (eyeglasses == Eyeglasses.Eyeglasses_n) {
+            return "没有戴眼镜";
+        }
+        return null;
+    }
 }
