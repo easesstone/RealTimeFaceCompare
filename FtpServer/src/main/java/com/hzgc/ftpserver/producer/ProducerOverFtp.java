@@ -14,7 +14,7 @@ import java.util.Properties;
 
 public class ProducerOverFtp implements Serializable {
     private static Logger LOG = Logger.getLogger(ProducerOverFtp.class);
-    private static KafkaProducer<String, byte[]> kafkaProducer;
+    private static KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
     /*private static String PICTURE = "picture";
@@ -34,7 +34,7 @@ public class ProducerOverFtp implements Serializable {
             JSON = kafkaPropers.getProperty("topic-json");*/
             FEATURE = kafkaPropers.getProperty("topic-feature");
             if (kafkaPropers != null) {
-                kafkaProducer = new KafkaProducer<String, byte[]>(kafkaPropers);
+                kafkaProducer = new KafkaProducer<String, FaceObject>(kafkaPropers);
                 LOG.info("Create KafkaProducer successfull");
             }
         } catch (Exception e) {
@@ -44,10 +44,10 @@ public class ProducerOverFtp implements Serializable {
         }
     }
 
-    public void sendKafkaMessage(final String topic, final String key, final byte[] value) {
+    public void sendKafkaMessage(final String topic, final String key, FaceObject value) {
         long startTime = System.currentTimeMillis();
         if (kafkaPropers != null) {
-            kafkaProducer.send(new ProducerRecord<String, byte[]>(topic, key, value),
+            kafkaProducer.send(new ProducerRecord<String, FaceObject>(topic, key, value),
                     new ProducerCallBack(startTime, key));
         }
         LOG.info("Send Kafka message[topic:" + topic + ", key:" + key + "]");
