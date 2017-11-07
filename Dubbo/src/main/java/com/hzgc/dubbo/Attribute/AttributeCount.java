@@ -3,7 +3,7 @@ package com.hzgc.dubbo.Attribute;
 import java.util.List;
 
 /**
- * 属性统计
+ *
  */
 public class AttributeCount {
     /**

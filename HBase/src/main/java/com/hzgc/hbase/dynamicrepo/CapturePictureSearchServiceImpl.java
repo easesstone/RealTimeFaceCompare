@@ -272,14 +272,14 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
             //设定查询条件：指定时间段startTime至endTime，指定设备ipcId
             QueryBuilder qb = boolQuery()
-                    .must(matchQuery("s", ipcId))
-                    .must(rangeQuery("t").gte(startTime).lte(endTime));//gte: >= 大于或等于；lte: <= 小于或等于
+                    .must(matchQuery(DynamicTable.IPCID, ipcId))
+                    .must(rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));//gte: >= 大于或等于；lte: <= 小于或等于
 
             SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
                     .prepareSearch(DynamicTable.DYNAMIC_INDEX) //指定要查询的索引名称
                     .setTypes(DynamicTable.PERSON_INDEX_TYPE) //指定要查询的类型名称
                     .setQuery(qb) //根据查询条件qb设置查询
-                    .addSort("t", SortOrder.DESC) //以时间字段降序排序
+                    .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC) //以时间字段降序排序
                     .get();
 
             SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
@@ -303,7 +303,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                  **/
 
                 //获取最后一次抓拍时间
-                String lastcapturetime = (String) searchHits[0].getSourceAsMap().get("t");
+                String lastcapturetime = (String) searchHits[0].getSourceAsMap().get(DynamicTable.TIMESTAMP);
 
                 /**
                  * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
@@ -320,6 +320,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     /**
      * 查询抓拍历史记录（陈柯）
      * 根据条件筛选抓拍图片，并返回图片对象
+     *
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
      * @return SearchResult符合条件的图片对象

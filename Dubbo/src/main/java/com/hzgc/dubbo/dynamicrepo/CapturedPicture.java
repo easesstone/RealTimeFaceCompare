@@ -44,7 +44,7 @@ public class CapturedPicture implements Serializable {
     /**
      * 时间戳
      */
-    private long timeStamp;
+    private String timeStamp;
 
     /**
      * 车牌，当 SearchType 为 CAR 时有用，需要支持模糊搜索
@@ -107,11 +107,11 @@ public class CapturedPicture implements Serializable {
         this.smallImage = smallImage;
     }
 
-    public long getTimeStamp() {
+    public String getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(long timeStamp) {
+    public void setTimeStamp(String timeStamp) {
         this.timeStamp = timeStamp;
     }
 
