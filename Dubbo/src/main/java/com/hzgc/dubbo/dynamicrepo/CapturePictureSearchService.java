@@ -39,24 +39,6 @@ public interface CapturePictureSearchService {
     List<Attribute> getAttribute(SearchType type);
 
     /**
-     * 根据id（rowkey）获取动态信息库内容（CapturedPicture对象）（刘思阳）
-     *
-     * @param imageId id（小图rowkey）
-     * @param type    图片类型，人/车
-     * @return CapturedPicture    动态库对象
-     */
-    CapturedPicture getCaptureMessage(String imageId, int type);
-
-    /**
-     * 批量获取图片
-     *
-     * @param imageIdList 图片Id列表
-     * @param type        类型
-     * @return 图片列表
-     */
-    List<CapturedPicture> getBatchCaptureMessage(List<String> imageIdList, int type);
-
-    /**
      * 抓拍统计查询接口（马燊偲）
      * 查询指定时间段内，指定设备抓拍的图片数量、该设备最后一次抓拍时间
      *
@@ -68,9 +50,11 @@ public interface CapturePictureSearchService {
     CaptureCount captureCountQuery(String startTime, String endTime, String ipcId);
 
     /**
-     * 查询抓拍历史记录
-     * @param option
-     * @return
+     * 查询抓拍历史记录（陈柯）
+     * 根据条件筛选抓拍图片，并返回图片对象
+     * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
+     *               符合条件的图片对象并返回
+     * @return SearchResult符合条件的图片对象
      */
     SearchResult getCaptureHistory(SearchOption option);
 
