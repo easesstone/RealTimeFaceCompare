@@ -43,4 +43,23 @@ public enum HairStyle implements Serializable {
         }
         return HairStyle.None;
     }
+
+    /**
+     * 获取属性描述
+     *
+     * @param hairStyle 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(HairStyle hairStyle) {
+        if (hairStyle == HairStyle.None) {
+            return "无";
+        } else if (hairStyle == HairStyle.Straight) {
+            return "直发";
+        } else if (hairStyle == HairStyle.Wavy) {
+            return "卷发";
+        } else if (hairStyle == HairStyle.Bald) {
+            return "光头";
+        }
+        return null;
+    }
 }

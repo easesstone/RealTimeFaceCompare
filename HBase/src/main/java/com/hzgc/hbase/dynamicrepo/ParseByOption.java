@@ -7,7 +7,7 @@ import com.hzgc.dubbo.dynamicrepo.TimeInterval;
 import java.text.SimpleDateFormat;
 
 
-class FilterByOption {
+class ParseByOption {
 
     /***
      * 获取拼接sql

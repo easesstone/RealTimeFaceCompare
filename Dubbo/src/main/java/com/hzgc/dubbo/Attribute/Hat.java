@@ -36,11 +36,28 @@ public enum Hat implements Serializable {
     }
 
     public static Hat get(int hatvalue) {
-        for (Hat hairStyle : Hat.values()) {
-            if (hatvalue == hairStyle.getValue()) {
-                return hairStyle;
+        for (Hat hat : Hat.values()) {
+            if (hatvalue == hat.getValue()) {
+                return hat;
             }
         }
         return Hat.None;
+    }
+
+    /**
+     * 获取属性描述
+     *
+     * @param hat 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(Hat hat) {
+        if (hat == Hat.None) {
+            return "无";
+        } else if (hat == Hat.Hat_y) {
+            return "戴帽子";
+        } else if (hat == Hat.Hat_n) {
+            return "没有戴帽子";
+        }
+        return null;
     }
 }

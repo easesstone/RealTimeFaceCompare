@@ -185,7 +185,7 @@ class CaptureHistory {
                 .prepareSearch(index)
                 .setTypes(type)
                 .setFrom(offset)
-                .setSize(100)
+                .setSize(count)
                 .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC);
         return requestBuilder.setQuery(totalBQ);
     }
@@ -205,7 +205,6 @@ class CaptureHistory {
         SearchHit[] hits = searchHits.getHits();
         List<CapturedPicture> persons = new ArrayList<>();
         CapturedPicture capturePicture;
-        int i = 0;
         if (hits.length > 0) {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
@@ -222,18 +221,11 @@ class CaptureHistory {
                     e.printStackTrace();
                 }
                 String pictype = (String) hit.getSource().get(DynamicTable.PICTYPE);
-                if (rowKey.endsWith("_00")) {
-                    continue;
-                }
                 capturePicture.setId(rowKey);
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setPictureType(PictureType.valueOf(pictype));
                 capturePicture.setTimeStamp(time);
                 persons.add(capturePicture);
-                i++;
-                if (i == count) {
-                    break;
-                }
             }
         }
         result.setPictures(persons);
