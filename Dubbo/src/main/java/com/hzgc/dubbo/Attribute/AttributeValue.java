@@ -12,6 +12,10 @@ public class AttributeValue {
      * 值描述
      */
     private String desc;
+    /**
+     * 属性统计（属性统计接口使用）
+     */
+    private long count;
 
     public Integer getValue() {
         return value;
@@ -29,11 +33,20 @@ public class AttributeValue {
         this.desc = desc;
     }
 
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
+
     @Override
     public String toString() {
         return "AttributeValue{" +
                 "value=" + value +
                 ", desc='" + desc + '\'' +
+                ", count=" + count +
                 '}';
     }
 }

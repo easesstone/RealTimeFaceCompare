@@ -33,7 +33,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
     static {
         ElasticSearchHelper.getEsClient();
-        //HBaseHelper.getHBaseConnection();
+        HBaseHelper.getHBaseConnection();
     }
 
     /**
@@ -264,6 +264,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     /**
      * 查询抓拍历史记录（陈柯）
      * 根据条件筛选抓拍图片，并返回图片对象
+     *
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
      * @return SearchResult符合条件的图片对象
