@@ -1,5 +1,6 @@
 package com.hzgc.cluster.consumer
 
+import java.sql.Timestamp
 import java.util.Properties
 
 import com.hzgc.cluster.util.StreamingUtils
@@ -25,7 +26,7 @@ object kafkaToParquet {
 
   case class Picture(ftpurl: String, //图片搜索地址
                      feature: String, ipcid: String, timeslot: String, //feature：图片特征值 ipcid：设备id  timeslot：时间段
-                     timestamp: String, pictype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
+                     timestamp: Timestamp, pictype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
                      eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
                      hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
                     )
@@ -52,15 +53,16 @@ object kafkaToParquet {
     val kafkaDstream = (1 to numDstreams).map(_ =>
       KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics))
     val unionDstream = ssc.union(kafkaDstream).repartition(repartitionNum)
-    val kafkaDF = unionDstream.map(p => {
-      var status = putDataToEs.putDataToEs(p._1, p._2)
+    val kafkaDF = unionDstream.map(faceobject => {
+      val status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
       if (status != 1) {
         println("Put data to es failed!")
       }
-      Picture(p._1, FaceFunction.floatArray2string(p._2.getAttribute.getFeature), p._2.getIpcId,
-        p._2.getTimeSlot, p._2.getTimeStamp, p._2.getType.name(), p._2.getDate, p._2.getAttribute.getEyeglasses,
-        p._2.getAttribute.getGender, p._2.getAttribute.getHairColor, p._2.getAttribute.getHairStyle,
-        p._2.getAttribute.getHat, p._2.getAttribute.getHuzi, p._2.getAttribute.getTie
+      Picture(faceobject._1, FaceFunction.floatArray2string(faceobject._2.getAttribute.getFeature), faceobject._2.getIpcId,
+        faceobject._2.getTimeSlot, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(), faceobject._2.getDate,
+        faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender, faceobject._2.getAttribute.getHairColor,
+        faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat, faceobject._2.getAttribute.getHuzi,
+        faceobject._2.getAttribute.getTie
       )
     })
     kafkaDF.foreachRDD(rdd => {
