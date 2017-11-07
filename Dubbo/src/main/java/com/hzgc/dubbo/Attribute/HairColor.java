@@ -44,4 +44,25 @@ public enum HairColor implements Serializable {
         }
         return HairColor.None;
     }
+
+    /**
+     * 获取属性描述
+     *
+     * @param hairColor 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(HairColor hairColor) {
+        if (hairColor == HairColor.None) {
+            return "无";
+        } else if (hairColor == HairColor.Blond) {
+            return "金色";
+        } else if (hairColor == HairColor.Black) {
+            return "黑色";
+        } else if (hairColor == HairColor.Brown) {
+            return "棕色";
+        } else if (hairColor == HairColor.Gray) {
+            return "灰白";
+        }
+        return null;
+    }
 }

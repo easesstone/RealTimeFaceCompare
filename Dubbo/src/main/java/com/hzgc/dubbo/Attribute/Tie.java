@@ -43,4 +43,21 @@ public enum Tie implements Serializable {
         }
         return Tie.None;
     }
+
+    /**
+     * 获取属性描述
+     *
+     * @param tie 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(Tie tie) {
+        if (tie == Tie.None) {
+            return "无";
+        } else if (tie == Tie.Tie_y) {
+            return "系领带";
+        } else if (tie == Tie.Tie_n) {
+            return "没有系领带";
+        }
+        return null;
+    }
 }

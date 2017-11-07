@@ -43,4 +43,21 @@ public enum Gender implements Serializable {
         }
         return Gender.None;
     }
+
+    /**
+     * 获取属性描述
+     *
+     * @param gender 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(Gender gender) {
+        if (gender == Gender.None) {
+            return "无";
+        } else if (gender == Gender.Male) {
+            return "男";
+        } else if (gender == Gender.Female) {
+            return "女";
+        }
+        return null;
+    }
 }
