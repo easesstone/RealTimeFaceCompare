@@ -54,7 +54,7 @@ public class SearchOption implements Serializable {
     /**
      * 参数筛选选项
      */
-    private Attribute attribute;
+    private List<Attribute> attributes;
     /**
      * 排序参数
      */
@@ -166,12 +166,12 @@ public class SearchOption implements Serializable {
         this.intervals = intervals;
     }
 
-    public Attribute getAttribute() {
-        return attribute;
+    public List<Attribute> getAttributes() {
+        return attributes;
     }
 
-    public void setAttribute(Attribute attribute) {
-        this.attribute = attribute;
+    public void setAttributes(List<Attribute> attributes) {
+        this.attributes = attributes;
     }
 
     public void init() {
@@ -199,7 +199,7 @@ public class SearchOption implements Serializable {
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", intervals=" + intervals +
-                ", attribute=" + attribute +
+                ", attributes=" + attributes +
                 ", sortParams='" + sortParams + '\'' +
                 ", offset=" + offset +
                 ", count=" + count +

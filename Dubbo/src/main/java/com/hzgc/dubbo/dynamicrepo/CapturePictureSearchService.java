@@ -1,5 +1,6 @@
 package com.hzgc.dubbo.dynamicrepo;
 
+import com.hzgc.dubbo.Attribute.Attribute;
 import com.hzgc.dubbo.Attribute.AttributeCount;
 
 import java.util.List;
@@ -33,9 +34,9 @@ public interface CapturePictureSearchService {
      * 查看人、车图片有哪些属性
      *
      * @param type 图片类型（人、车）
-     * @return 过滤参数键值对
+     * @return 属性对象列表
      */
-    Map<String, List<Integer>> getAttribute(SearchType type);
+    List<Attribute> getAttribute(SearchType type);
 
     /**
      * 根据id（rowkey）获取动态信息库内容（CapturedPicture对象）（刘思阳）
@@ -80,8 +81,9 @@ public interface CapturePictureSearchService {
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @param ipcIdList 单个或某组设备ID
-     * @return 单个或某组设备中某种属性在抓拍图片中的数量（Map<设备ID, Map<属性, 数量>>）
+     * @param type      统计类型
+     * @return 单个或某组设备中某种属性在抓拍图片中的数量
      */
-    Map<String, AttributeCount> captureAttributeQuery(String startTime, String endTime, List<String> ipcIdList, SearchType type);
+    List<AttributeCount> captureAttributeQuery(String startTime, String endTime, List<String> ipcIdList, SearchType type);
 
 }
