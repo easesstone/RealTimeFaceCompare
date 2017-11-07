@@ -106,6 +106,7 @@ class RealTimeCompareBySparkSQL {
                     insertType = DynamicTable.PERSON_TYPE;
                     PictureType pictureType = PictureType.SMALL_PERSON;
                     if (null != image && image.length > 0) {
+                        //根据上传的图片查询
                         searchResult = compareByImageBySparkSQL(pictureType, option);
                     } else {
                         //无图片，有imageId,相当于ftpurl
@@ -175,15 +176,15 @@ class RealTimeCompareBySparkSQL {
                     //相似度
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
-                    Long timestamp = rs.getLong(DynamicTable.TIMESTAMP);
+                    String timestamp = rs.getString(DynamicTable.TIMESTAMP);
                     //图片类型
-                    String pic_type = rs.getString(DynamicTable.PICTYPE);
+                    String pictype = rs.getString(DynamicTable.PICTYPE);
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setId(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
+                    capturedPicture.setPictureType(PictureType.valueOf(pictype));
                 }
             });
             capturedPictureList = new ArrayList<>();
@@ -223,16 +224,16 @@ class RealTimeCompareBySparkSQL {
                     //相似度
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
-                    Long timestamp = rs.getLong(DynamicTable.TIMESTAMP);
+                    String timestamp = rs.getString(DynamicTable.TIMESTAMP);
                     //图片类型
-                    String pic_type = rs.getString(DynamicTable.PICTYPE);
+                    String pictype = rs.getString(DynamicTable.PICTYPE);
 
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setId(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
+                    capturedPicture.setPictureType(PictureType.valueOf(pictype));
                 });
                 capturedPictureList = new ArrayList<>();
                 capturedPictureList.add(capturedPicture);

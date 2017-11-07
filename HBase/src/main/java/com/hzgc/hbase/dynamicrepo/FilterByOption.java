@@ -21,9 +21,6 @@ class FilterByOption {
         SimpleDateFormat dateFormat_timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         //date分区字段
         SimpleDateFormat dateFormat_date = new SimpleDateFormat("yyyy-MM-dd");
-        Attribute attribute = option.getAttribute();
-        //TimeIntervals 时间段的封装类
-        TimeInterval timeInterval;
         StringBuilder stringBuilder = new StringBuilder();
         /*
         完整的sql语句
@@ -60,70 +57,64 @@ class FilterByOption {
                     .append(" >= ")
                     .append(option.getThreshold());
         }
-        if (attribute.getEyeglasses() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.ELEGLASSES)
-                    .append(" = ")
-                    .append(attribute.getEyeglasses().getValue());
-        }
-        if (attribute.getGender() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.GENDER)
-                    .append(" = ")
-                    .append(attribute.getGender().getValue());
-        }
-        if (attribute.getHairColor() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HAIRCOLOR)
-                    .append(" = ")
-                    .append(attribute.getHairColor().getValue());
-        }
-        if (attribute.getHairStyle() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HAIRSTYLE)
-                    .append(" = ")
-                    .append(attribute.getHairStyle().getValue());
-        }
-        if (attribute.getHat() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HAT)
-                    .append(" = ")
-                    .append(attribute.getHat().getValue());
-        }
-        if (attribute.getHuzi() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HUZI)
-                    .append(" = ")
-                    .append(attribute.getHuzi().getValue());
-        }
-        if (attribute.getTie() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.TIE)
-                    .append(" = ")
-                    .append(attribute.getTie().getValue());
+        if (option.getAttributes() != null) {
+            for (Attribute attribute : option.getAttributes()) {
+                if (attribute.getValues() != null) {
+                    for (AttributeValue attributeValue : attribute.getValues()) {
+                        if (String.valueOf(attribute.getLogistic()).equals("AND")) {
+                            stringBuilder
+                                    .append(" and ")
+                                    .append("'")
+                                    .append(attribute.getIdentify())
+                                    .append("'")
+                                    .append(" = ")
+                                    .append(attributeValue.getValue());
+                        } else {
+                            stringBuilder
+                                    .append(" or ")
+                                    .append("'")
+                                    .append(attribute.getIdentify())
+                                    .append("'")
+                                    .append(" = ")
+                                    .append("'")
+                                    .append(attributeValue.getValue())
+                                    .append("'");
+                        }
+                    }
+                }
+            }
         }
         if (option.getIntervals() != null) {
-            for (TimeInterval timeInterval1 : option.getIntervals()) {
-                timeInterval = timeInterval1;
+            for (TimeInterval timeInterval : option.getIntervals()) {
                 int start_sj = timeInterval.getStart();
-                start_sj = (start_sj / 60) * 100 + start_sj % 60;
+                String start_st = String.valueOf((start_sj / 60) * 100 + start_sj % 60);
                 int end_sj = timeInterval.getEnd();
-                end_sj = (end_sj / 60) * 100 + end_sj % 60;
+                String end_st = String.valueOf((end_sj / 60) * 100 + end_sj % 60);
                 stringBuilder
                         .append(" and ")
                         .append(DynamicTable.TIMESLOT)
                         .append(" between ")
-                        .append(start_sj)
+                        .append("'")
+                        .append(start_st)
+                        .append("'")
                         .append(" and ")
-                        .append(end_sj);
+                        .append("'")
+                        .append(end_st)
+                        .append("'");
             }
+        }
+        if (option.getStartDate() != null && option.getEndDate() != null) {
+            stringBuilder
+                    .append(" and ")
+                    .append(DynamicTable.TIMESTAMP)
+                    .append(" between ")
+                    .append("'")
+                    .append(dateFormat_timestamp.format(option.getStartDate()))
+                    .append("'")
+                    .append(" and ")
+                    .append("'")
+                    .append(dateFormat_timestamp.format(option.getEndDate()))
+                    .append("'");
         }
         if (option.getStartDate() != null && option.getEndDate() != null) {
             stringBuilder
@@ -169,70 +160,52 @@ class FilterByOption {
                     .append(" >= ")
                     .append(option.getThreshold());
         }
-
-        if (attribute.getEyeglasses() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.ELEGLASSES)
-                    .append(" = ")
-                    .append(attribute.getEyeglasses().getValue());
-        }
-        if (attribute.getGender() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.GENDER)
-                    .append(" = ")
-                    .append(attribute.getGender().getValue());
-        }
-        if (attribute.getHairColor() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HAIRCOLOR)
-                    .append(" = ")
-                    .append(attribute.getHairColor().getValue());
-        }
-        if (attribute.getHairStyle() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HAIRSTYLE)
-                    .append(" = ")
-                    .append(attribute.getHairStyle().getValue());
-        }
-        if (attribute.getHat() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HAT)
-                    .append(" = ")
-                    .append(attribute.getHat().getValue());
-        }
-        if (attribute.getHuzi() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.HUZI)
-                    .append(" = ")
-                    .append(attribute.getHuzi().getValue());
-        }
-        if (attribute.getTie() != null) {
-            stringBuilder
-                    .append(" and ")
-                    .append(DynamicTable.TIE)
-                    .append(" = ")
-                    .append(attribute.getTie().getValue());
+        if (option.getAttributes() != null) {
+            for (Attribute attribute : option.getAttributes()) {
+                if (attribute.getValues() != null) {
+                    for (AttributeValue attributeValue : attribute.getValues()) {
+                        if (String.valueOf(attribute.getLogistic()).equals("AND")) {
+                            stringBuilder
+                                    .append(" and ")
+                                    .append("'")
+                                    .append(attribute.getIdentify())
+                                    .append("'")
+                                    .append(" = ")
+                                    .append("'")
+                                    .append(attributeValue.getValue())
+                                    .append("'");
+                        } else {
+                            stringBuilder
+                                    .append(" or ")
+                                    .append("'")
+                                    .append(attribute.getIdentify())
+                                    .append("'")
+                                    .append(" = ")
+                                    .append("'")
+                                    .append(attributeValue.getValue())
+                                    .append("'");
+                        }
+                    }
+                }
+            }
         }
         if (option.getIntervals() != null) {
-            for (TimeInterval timeInterval1 : option.getIntervals()) {
-                timeInterval = timeInterval1;
+            for (TimeInterval timeInterval : option.getIntervals()) {
                 int start_sj = timeInterval.getStart();
-                start_sj = (start_sj / 60) * 100 + start_sj % 60;
+                String start_st = String.valueOf((start_sj / 60) * 100 + start_sj % 60);
                 int end_sj = timeInterval.getEnd();
-                end_sj = (end_sj / 60) * 100 + end_sj % 60;
+                String end_st = String.valueOf((end_sj / 60) * 100 + end_sj % 60);
                 stringBuilder
                         .append(" and ")
                         .append(DynamicTable.TIMESLOT)
                         .append(" between ")
-                        .append(start_sj)
+                        .append("'")
+                        .append(start_st)
+                        .append("'")
                         .append(" and ")
-                        .append(end_sj);
+                        .append("'")
+                        .append(end_st)
+                        .append("'");
             }
         }
         if (option.getStartDate() != null && option.getEndDate() != null) {
