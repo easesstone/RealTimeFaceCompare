@@ -4,6 +4,7 @@ import com.hzgc.dubbo.Attribute.Attribute;
 import com.hzgc.dubbo.Attribute.AttributeValue;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
+import com.hzgc.hbase.util.FtpUtil;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -144,11 +145,13 @@ class CaptureHistory {
         if (hits.length > 0) {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
-                String rowKey = hit.getId();
+                String surl = hit.getId();
+                String burl = FtpUtil.surlToBurl(surl);
                 String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
                 System.out.println(hit.getSourceAsString());
                 String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
-                capturePicture.setSurl(rowKey);
+                capturePicture.setSurl(surl);
+                capturePicture.setBurl(burl);
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setTimeStamp(timestamp);
                 persons.add(capturePicture);
