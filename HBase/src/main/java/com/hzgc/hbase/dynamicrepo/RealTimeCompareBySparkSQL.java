@@ -180,7 +180,7 @@ class RealTimeCompareBySparkSQL {
                     //图片类型
                     String pictype = rs.getString(DynamicTable.PICTYPE);
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setId(imageid);
+                    capturedPicture.setSurl(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
@@ -229,7 +229,7 @@ class RealTimeCompareBySparkSQL {
                     String pictype = rs.getString(DynamicTable.PICTYPE);
 
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setId(imageid);
+                    capturedPicture.setSurl(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);

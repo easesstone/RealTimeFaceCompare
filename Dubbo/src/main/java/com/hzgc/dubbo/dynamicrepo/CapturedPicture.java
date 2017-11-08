@@ -46,6 +46,22 @@ public class CapturedPicture implements Serializable {
      */
     private String plateNumber;
 
+    public String getSurl() {
+        return surl;
+    }
+
+    public void setSurl(String surl) {
+        this.surl = surl;
+    }
+
+    public String getBurl() {
+        return burl;
+    }
+
+    public void setBurl(String burl) {
+        this.burl = burl;
+    }
+
     public PictureType getPictureType() {
         return pictureType;
     }
@@ -105,6 +121,8 @@ public class CapturedPicture implements Serializable {
     @Override
     public String toString() {
         return "CapturedPicture{" +
+                ", surl=" + surl +
+                ", surl=" + burl +
                 ", pictureType=" + pictureType +
                 ", ipcId='" + ipcId + '\'' +
                 ", description='" + description + '\'' +
