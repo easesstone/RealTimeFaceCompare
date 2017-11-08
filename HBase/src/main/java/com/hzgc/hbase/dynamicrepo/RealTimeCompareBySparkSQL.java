@@ -127,17 +127,19 @@ class RealTimeCompareBySparkSQL {
             String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
             jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                 while (rs.next()) {
-                    //图片ftpurl
-                    String imageid = rs.getString(DynamicTable.FTPURL);
+                    //小图ftpurl
+                    String surl = rs.getString(DynamicTable.FTPURL);
                     //设备id
                     String ipcid = rs.getString(DynamicTable.IPCID);
                     //相似度
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
                     String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-
+                    //大图ftpurl
+                    String burl = FtpUtil.surlToBurl(surl);
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(imageid);
+                    capturedPicture.setSurl(surl);
+                    capturedPicture.setBurl(burl);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
@@ -174,16 +176,18 @@ class RealTimeCompareBySparkSQL {
                 String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
                 jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                     //图片ftpurl
-                    String imageid = rs.getString(DynamicTable.FTPURL);
+                    String surl = rs.getString(DynamicTable.FTPURL);
                     //设备id
                     String ipcid = rs.getString(DynamicTable.IPCID);
                     //相似度
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
                     String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-
+                    //大图ftpurl
+                    String burl = FtpUtil.surlToBurl(surl);
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(imageid);
+                    capturedPicture.setSurl(surl);
+                    capturedPicture.setBurl(burl);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
