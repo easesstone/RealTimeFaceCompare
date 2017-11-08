@@ -17,10 +17,14 @@ public class FtpUtil {
 
     private static Logger logger = Logger.getLogger(FtpUtil.class);
 
+
     /**
      * 输入流转为字节数组
+     *
+     * @param is 输入流
+     * @return 字节数组
      */
-    public static ByteArrayOutputStream inputStreamCacher(InputStream is) {
+    public static byte[] inputStreamCacher(InputStream is) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
         int len;
@@ -35,7 +39,7 @@ public class FtpUtil {
             IoUtils.close(baos);
             IoUtils.close(is);
         }
-        return baos;
+        return baos.toByteArray();
     }
 
     /**
@@ -102,7 +106,7 @@ public class FtpUtil {
 
                 //通过FTPClient获取文件输入流并转为byte[]
                 in = ftpClient.retrieveFileStream(ftpFileName);
-                ftpFileBytes = inputStreamCacher(in).toByteArray();
+                ftpFileBytes = inputStreamCacher(in);
 
                 in.close();
                 ftpClient.logout();
