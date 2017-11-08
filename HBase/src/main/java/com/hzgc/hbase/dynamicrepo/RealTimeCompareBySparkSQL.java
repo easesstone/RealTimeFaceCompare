@@ -2,20 +2,16 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.hbase.util.FtpImageUtil;
+import com.hzgc.hbase.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.FileUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.UuidUtil;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -49,7 +45,6 @@ class RealTimeCompareBySparkSQL {
      */
     private ParseByOption parseByOption = new ParseByOption();
     private String insertType;
-    private Properties propertie = new Properties();
     private DynamicPhotoService dynamicPhotoService;
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
@@ -57,16 +52,6 @@ class RealTimeCompareBySparkSQL {
 
         dynamicPhotoService = new DynamicPhotoServiceImpl();
         capturePictureSearchService = new CapturePictureSearchServiceImpl();
-        //获取ftp配置文件,并初始化propertie
-        try {
-            File resourceFile = FileUtil.loadResourceFile("ftp.properties");
-            if (resourceFile != null) {
-                propertie.load(new FileInputStream(resourceFile));
-            }
-        } catch (Exception e) {
-            LOG.error("get ftp.properties failure");
-        }
-
     }
 
     SearchResult pictureSearchBySparkSQL(SearchOption option) {
@@ -81,7 +66,7 @@ class RealTimeCompareBySparkSQL {
                     insertType = DynamicTable.PERSON_TYPE;
                     if (null != option.getImage() && option.getImage().length > 0) {
                         //根据上传的图片查询
-                        searchResult = compareByImageBySparkSQL(PictureType.SMALL_PERSON, option);
+                        searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
                         //无图片，有imageId,相当于ftpurl
                         if (null != option.getImageId()) {
@@ -95,10 +80,9 @@ class RealTimeCompareBySparkSQL {
                 //查询的对象库是车
                 else if (searchType == SearchType.CAR) {
                     insertType = DynamicTable.CAR_TYPE;
-                    PictureType pictureType = PictureType.SMALL_CAR;
                     //平台上传的参数中有图片
                     if (null != option.getImage() && option.getImage().length > 0) {
-                        searchResult = compareByImageBySparkSQL(pictureType, option);
+                        searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
                         //无图片，有imageId,相当于ftpurl
                         if (null != option.getImageId()) {
@@ -122,14 +106,14 @@ class RealTimeCompareBySparkSQL {
     /**
      * 以图搜图，图片不为空的查询方法
      *
-     * @param pictureType 图片类型（人、车）SearchOption 过滤条件
+     * @param type 图片类型（人、车）SearchOption 过滤条件
      * @return 返回所有满足查询条件的图片
      */
-    private SearchResult compareByImageBySparkSQL(PictureType pictureType, SearchOption option) {
+    private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option) {
         //提取上传图片的特征值
         float[] searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         //将图片特征插入到特征库
-        boolean insertStatus = dynamicPhotoService.upPictureInsert(pictureType, searchId, searchFea, option.getImage());
+        boolean insertStatus = dynamicPhotoService.upPictureInsert(type, searchId, searchFea, option.getImage());
         if (insertStatus) {
             LOG.info("feature[" + searchId + "]insert into HBase successful");
         } else {
@@ -143,22 +127,22 @@ class RealTimeCompareBySparkSQL {
             String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
             jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                 while (rs.next()) {
-                    //图片ftpurl
-                    String imageid = rs.getString(DynamicTable.FTPURL);
+                    //小图ftpurl
+                    String surl = rs.getString(DynamicTable.FTPURL);
                     //设备id
                     String ipcid = rs.getString(DynamicTable.IPCID);
                     //相似度
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
                     String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //图片类型
-                    String pictype = rs.getString(DynamicTable.PICTYPE);
+                    //大图ftpurl
+                    String burl = FtpUtil.surlToBurl(surl);
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(imageid);
+                    capturedPicture.setSurl(surl);
+                    capturedPicture.setBurl(burl);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pictype));
                 }
             });
             capturedPictureList = new ArrayList<>();
@@ -182,10 +166,7 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
 
         //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = FtpImageUtil.downloadftpFile2Bytes(
-                propertie.getProperty("ftpuser"),
-                propertie.getProperty("ftppassword"),
-                option.getImageId());
+        byte[] image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
         if (image != null && image.length > 0) {
             //提取上传图片的特征值
             float[] searchFea = FaceFunction.featureExtract(image).getFeature();
@@ -195,22 +176,21 @@ class RealTimeCompareBySparkSQL {
                 String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
                 jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                     //图片ftpurl
-                    String imageid = rs.getString(DynamicTable.FTPURL);
+                    String surl = rs.getString(DynamicTable.FTPURL);
                     //设备id
                     String ipcid = rs.getString(DynamicTable.IPCID);
                     //相似度
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
                     String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //图片类型
-                    String pictype = rs.getString(DynamicTable.PICTYPE);
-
+                    //大图ftpurl
+                    String burl = FtpUtil.surlToBurl(surl);
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(imageid);
+                    capturedPicture.setSurl(surl);
+                    capturedPicture.setBurl(burl);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pictype));
                 });
                 capturedPictureList = new ArrayList<>();
                 capturedPictureList.add(capturedPicture);

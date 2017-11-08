@@ -1,14 +1,12 @@
 package com.hzgc.ftpserver.local;
 
-import com.hzgc.dubbo.dynamicrepo.PictureType;
+import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
-import com.hzgc.ftpserver.util.BeanUtils;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.jni.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
-import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
@@ -146,7 +144,7 @@ public class LocalSTOR extends AbstractCommand {
                         FaceObject faceObject = new FaceObject();
                         faceObject.setIpcId(map.get("ipcID"));
                         faceObject.setTimeStamp(map.get("time"));
-                        faceObject.setType(PictureType.SMALL_PERSON);
+                        faceObject.setType(SearchType.PERSON);
                         faceObject.setTimeSlot(map.get("sj"));
                         faceObject.setDate(map.get("date"));
                         FaceAttribute attribute = FaceFunction.featureExtract(data);
