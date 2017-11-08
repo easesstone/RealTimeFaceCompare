@@ -74,9 +74,6 @@ public class SearchOption implements Serializable {
         return offset;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
 
     public int getCount() {
         return count;
@@ -98,72 +95,28 @@ public class SearchOption implements Serializable {
         return image;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
     public String getImageId() {
         return imageId;
-    }
-
-    public void setImageId(String imageId) {
-        this.imageId = imageId;
-    }
-
-    public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public void setPlateNumber(String plateNumber) {
-        this.plateNumber = plateNumber;
     }
 
     public float getThreshold() {
         return threshold;
     }
 
-    public void setThreshold(float threshold) {
-        this.threshold = threshold;
-    }
-
     public List<String> getDeviceIds() {
         return deviceIds;
-    }
-
-    public void setDeviceIds(List<String> deviceIds) {
-        this.deviceIds = deviceIds;
-    }
-
-    public String getPlatformId() {
-        return platformId;
-    }
-
-    public void setPlatformId(String platformId) {
-        this.platformId = platformId;
     }
 
     public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
     public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
     public List<TimeInterval> getIntervals() {
         return intervals;
-    }
-
-    public void setIntervals(List<TimeInterval> intervals) {
-        this.intervals = intervals;
     }
 
     public List<Attribute> getAttributes() {
@@ -180,10 +133,6 @@ public class SearchOption implements Serializable {
 
     public String getSortParams() {
         return sortParams;
-    }
-
-    public void setSortParams(String sortParams) {
-        this.sortParams = sortParams;
     }
 
     @Override
@@ -206,5 +155,3 @@ public class SearchOption implements Serializable {
                 '}';
     }
 }
-
-
