@@ -1,16 +1,23 @@
 package com.hzgc.ftpserver.producer;
 
 import com.hzgc.ftpserver.util.BeanUtils;
-import kafka.serializer.Encoder;
-import kafka.utils.VerifiableProperties;
+
+import java.util.Map;
 
 
-public class FaceObjectEncoder implements Encoder<FaceObject> {
-    public FaceObjectEncoder(VerifiableProperties verifiableProperties) {
+public class FaceObjectEncoder implements org.apache.kafka.common.serialization.Serializer<FaceObject> {
+    @Override
+    public void configure(Map<String, ?> map, boolean b) {
+
     }
 
     @Override
-    public byte[] toBytes(FaceObject faceObject) {
+    public byte[] serialize(String s, FaceObject faceObject) {
         return BeanUtils.objectToBytes(faceObject);
+    }
+
+    @Override
+    public void close() {
+
     }
 }

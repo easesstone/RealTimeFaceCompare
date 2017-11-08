@@ -43,4 +43,25 @@ public enum Huzi implements Serializable {
         }
         return Huzi.None;
     }
+
+    /**
+     * 获取属性描述
+     *
+     * @param huzi 属性对象
+     * @return 属性描述信息
+     */
+    public static String getDesc(Huzi huzi) {
+        if (huzi == Huzi.None) {
+            return "无";
+        } else if (huzi == Huzi.Mustache) {
+            return "鼻子和嘴唇之间的胡子";
+        } else if (huzi == Huzi.Goatee) {
+            return "山羊胡";
+        } else if (huzi == Huzi.Sideburns) {
+            return "络腮胡";
+        } else if (huzi == Huzi.Nobeard) {
+            return "没有胡子";
+        }
+        return null;
+    }
 }

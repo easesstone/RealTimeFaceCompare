@@ -10,13 +10,13 @@ import java.util.Map;
 public class CapturedPicture implements Serializable {
 
     /**
-     * 图片 id (rowkey)用于获取图片
+     * 小图url
      */
-    private String id;
+    private String surl;
     /**
-     * 图片类型
+     * 大图url
      */
-    private PictureType pictureType;
+    private String burl;
     /**
      * 捕获照片的设备 id
      */
@@ -34,37 +34,28 @@ public class CapturedPicture implements Serializable {
      */
     private Map<String, Object> extend;
     /**
-     * 图片数据
-     */
-    private byte[] smallImage;
-    /**
-     * 大图
-     */
-    private byte[] bigImage;
-    /**
      * 时间戳
      */
-    private long timeStamp;
-
+    private String timeStamp;
     /**
      * 车牌，当 SearchType 为 CAR 时有用，需要支持模糊搜索
      */
     private String plateNumber;
 
-    public String getId() {
-        return id;
+    public String getSurl() {
+        return surl;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setSurl(String surl) {
+        this.surl = surl;
     }
 
-    public PictureType getPictureType() {
-        return pictureType;
+    public String getBurl() {
+        return burl;
     }
 
-    public void setPictureType(PictureType pictureType) {
-        this.pictureType = pictureType;
+    public void setBurl(String burl) {
+        this.burl = burl;
     }
 
     public String getIpcId() {
@@ -99,28 +90,12 @@ public class CapturedPicture implements Serializable {
         this.extend = extend;
     }
 
-    public byte[] getSmallImage() {
-        return smallImage;
-    }
-
-    public void setSmallImage(byte[] smallImage) {
-        this.smallImage = smallImage;
-    }
-
-    public long getTimeStamp() {
+    public String getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(long timeStamp) {
+    public void setTimeStamp(String timeStamp) {
         this.timeStamp = timeStamp;
-    }
-
-    public byte[] getBigImage() {
-        return bigImage;
-    }
-
-    public void setBigImage(byte[] bigImage) {
-        this.bigImage = bigImage;
     }
 
     public String getPlateNumber() {
@@ -134,14 +109,12 @@ public class CapturedPicture implements Serializable {
     @Override
     public String toString() {
         return "CapturedPicture{" +
-                "id='" + id + '\'' +
-                ", pictureType=" + pictureType +
+                ", surl=" + surl +
+                ", surl=" + burl +
                 ", ipcId='" + ipcId + '\'' +
                 ", description='" + description + '\'' +
                 ", similarity=" + similarity +
                 ", extend=" + extend +
-                ", smallImage=" + Arrays.toString(smallImage) +
-                ", bigImage=" + Arrays.toString(bigImage) +
                 ", timeStamp=" + timeStamp +
                 ", plateNumber='" + plateNumber + '\'' +
                 '}';
