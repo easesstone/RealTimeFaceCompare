@@ -1,16 +1,16 @@
 package com.hzgc.hbase.util;
 
+import com.hzgc.util.FileUtil;
+import com.hzgc.util.IOUtil;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.SocketException;
+import java.util.Properties;
 
 
 public class FtpUtil {
@@ -78,12 +78,10 @@ public class FtpUtil {
     /**
      * 从FTP服务器下载文件并转为字节数组
      *
-     * @param ftpUserName FTP 用户名
-     * @param ftpPassword FTP用户名密码
      * @param ftpUrl      FTP地址
      * @return 文件的字节数组
      */
-    public static byte[] downloadftpFile2Bytes(String ftpUserName, String ftpPassword, String ftpUrl) {
+    public static byte[] downloadftpFile2Bytes(String ftpUrl) {
         byte[] ftpFileBytes = null;
         if (!ftpUrl.isEmpty()) {
             //解析FTP地址，得到ftpAddress、ftpPort、ftpFilePath、ftpFileName
@@ -92,6 +90,22 @@ public class FtpUtil {
             int ftpPort = Integer.parseInt(path.substring(0, path.indexOf("/")));
             String ftpFilePath = path.substring(path.indexOf("/"), path.lastIndexOf("/"));
             String ftpFileName = path.substring(path.lastIndexOf("/") + 1);
+
+            //通过ftpAddress.properties配置文件，ftpUserName、ftpPassword
+            String ftpUserName = "";
+            String ftpPassword = "";
+            Properties properties = new Properties();
+            InputStream inputStream = null;
+            try {
+                inputStream = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+                properties.load(inputStream);
+                ftpUserName = properties.getProperty("user");
+                ftpPassword = properties.getProperty("password");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }finally {
+                IOUtil.closeStream(inputStream);
+            }
 
             FTPClient ftpClient;
             InputStream in;
@@ -106,7 +120,7 @@ public class FtpUtil {
 
                 //通过FTPClient获取文件输入流并转为byte[]
                 in = ftpClient.retrieveFileStream(ftpFileName);
-                ftpFileBytes = inputStreamCacher(in);
+                ftpFileBytes = FtpUtil.inputStreamCacher(in);
 
                 in.close();
                 ftpClient.logout();
@@ -139,5 +153,30 @@ public class FtpUtil {
         String s2 = surl.substring(surl.lastIndexOf("."));
         burl.append(s1).append(0).append(s2);
         return burl.toString();
+    }
+
+    /**
+     * ftpUrl中的HostName转为IP
+     *
+     * @param ftpUrl 带HostName的ftpUrl
+     * @return 带IP的ftpUrl
+     */
+    public static String getFtpUrl(String ftpUrl){
+        String url;
+        String hostName = ftpUrl.substring(ftpUrl.indexOf("/") + 2 , ftpUrl.lastIndexOf(":"));
+        Properties properties = new Properties();
+        InputStream in = null;
+        String ftpServerIP = "";
+        try {
+            in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+            properties.load(in);
+            ftpServerIP = properties.getProperty(hostName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IoUtils.close(in);
+        }
+        url = ftpUrl.replace(hostName,ftpServerIP);
+        return url;
     }
 }

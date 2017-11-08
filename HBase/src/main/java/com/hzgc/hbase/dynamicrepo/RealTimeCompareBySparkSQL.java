@@ -5,17 +5,13 @@ import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.hbase.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.FileUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.UuidUtil;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -49,7 +45,6 @@ class RealTimeCompareBySparkSQL {
      */
     private ParseByOption parseByOption = new ParseByOption();
     private String insertType;
-    private Properties propertie = new Properties();
     private DynamicPhotoService dynamicPhotoService;
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
@@ -57,16 +52,6 @@ class RealTimeCompareBySparkSQL {
 
         dynamicPhotoService = new DynamicPhotoServiceImpl();
         capturePictureSearchService = new CapturePictureSearchServiceImpl();
-        //获取ftp配置文件,并初始化propertie
-        try {
-            File resourceFile = FileUtil.loadResourceFile("ftp.properties");
-            if (resourceFile != null) {
-                propertie.load(new FileInputStream(resourceFile));
-            }
-        } catch (Exception e) {
-            LOG.error("get ftp.properties failure");
-        }
-
     }
 
     SearchResult pictureSearchBySparkSQL(SearchOption option) {
@@ -182,10 +167,7 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
 
         //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = FtpUtil.downloadftpFile2Bytes(
-                propertie.getProperty("ftpuser"),
-                propertie.getProperty("ftppassword"),
-                option.getImageId());
+        byte[] image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
         if (image != null && image.length > 0) {
             //提取上传图片的特征值
             float[] searchFea = FaceFunction.featureExtract(image).getFeature();
