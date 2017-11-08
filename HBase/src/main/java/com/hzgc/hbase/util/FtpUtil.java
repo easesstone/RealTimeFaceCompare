@@ -13,9 +13,9 @@ import java.io.InputStream;
 import java.net.SocketException;
 
 
-public class FtpImageUtil {
+public class FtpUtil {
 
-    private static Logger logger = Logger.getLogger(FtpImageUtil.class);
+    private static Logger logger = Logger.getLogger(FtpUtil.class);
 
     /**
      * 输入流转为字节数组
@@ -121,5 +121,19 @@ public class FtpImageUtil {
             logger.warn("method param is error.");
         }
         return ftpFileBytes;
+    }
+
+    /**
+     * 小图ftpUrl转大图ftpUrl
+     *
+     * @param surl 小图ftpUrl
+     * @return 大图ftpUrl
+     */
+    public static String surlToBurl(String surl) {
+        StringBuilder burl = new StringBuilder();
+        String s1 = surl.substring(0, surl.lastIndexOf("_") + 1);
+        String s2 = surl.substring(surl.lastIndexOf("."));
+        burl.append(s1).append(0).append(s2);
+        return burl.toString();
     }
 }

@@ -2,7 +2,7 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.hbase.util.FtpImageUtil;
+import com.hzgc.hbase.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.util.FileUtil;
@@ -182,7 +182,7 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
 
         //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = FtpImageUtil.downloadftpFile2Bytes(
+        byte[] image = FtpUtil.downloadftpFile2Bytes(
                 propertie.getProperty("ftpuser"),
                 propertie.getProperty("ftppassword"),
                 option.getImageId());

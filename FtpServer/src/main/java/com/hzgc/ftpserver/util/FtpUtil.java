@@ -100,7 +100,7 @@ public class FtpUtil implements Serializable {
                 }
                 prefixNameKey.insert(0, stringBuilder);
             }*/
-            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_00").append("_").append(IpAddressUtil.getHostName());
+            key.append(ipcID).append("_").append(timeName).append("_").append(prefixNameKey).append("_0").append("_").append(IpAddressUtil.getHostName());
         } else {
             key.append(fileName);
         }
@@ -111,7 +111,7 @@ public class FtpUtil implements Serializable {
      * 根据rowKey获取到rowKey信息
      *
      * @param rowKey rowKey
-     * @return Map<String, String> rowKey信息
+     * @return rowKey信息
      */
     public static Map<String, String> getRowKeyMessage(String rowKey) {
         String ipcID = rowKey.substring(0, rowKey.indexOf("_"));
@@ -210,14 +210,13 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     * 通过上传文件路径解析到文件的ftp地址
+     * 通过上传文件路径解析到文件的ftp地址（ftp发送至kafka的key）
      *
      * @param filePath ftp接收数据路径
      * @return 文件的ftp地址
      */
     public static String filePath2absolutePath(String filePath) {
         StringBuilder url = new StringBuilder();
-        String ftpServerIP = "";
         int ftpServerPort = 0;
         String hostName = IpAddressUtil.getHostName();
         Properties properties = new Properties();
@@ -225,12 +224,10 @@ public class FtpUtil implements Serializable {
             InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
             properties.load(in);
             ftpServerPort = Integer.parseInt(properties.getProperty("port"));
-            assert hostName != null;
-            ftpServerIP = properties.getProperty(hostName);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        url = url.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append(filePath);
+        url = url.append("ftp://").append(hostName).append(":").append(ftpServerPort).append(filePath);
         return url.toString();
     }
 
@@ -330,26 +327,43 @@ public class FtpUtil implements Serializable {
         return transformNameToKey(path1);
     }
 
-    /*public static void main(String[] args) {
-        String key = "3B0383FPAG00883_170523160015_5704_00_PC-PC";
-        System.out.println("rowkey        : " + key);
+    public static void main(String[] args) {
+        String key = "3B0000000000000_170523160015_5704_1_lemon";
+        String filePath = "/3B0000000000000/2017/05/23/16/00/2017_05_23_16_00_15_5704_1.jpg";
+
+        System.out.println("----------------------------transformNameToKey----------------------------");
+        String rowkey = transformNameToKey(filePath);
+        System.out.println("rowkey        : " + rowkey);
+        System.out.println("---------------------------------------------------------------------------");
+
+        System.out.println("----------------------------key2absolutePath------------------------------");
         String picPath = key2absolutePath(key, FileType.PICTURE);
         System.out.println("picture  path : " + picPath);
         String facePath = key2absolutePath(key, FileType.FACE);
         System.out.println("face     Path : " + facePath);
         String jsonPath = key2absolutePath(key, FileType.JSON);
         System.out.println("json     Path : " + jsonPath);
+        System.out.println("---------------------------------------------------------------------------");
+
+        System.out.println("----------------------------filePath2absolutePath--------------------------");
+        String path = filePath2absolutePath(filePath);
+        System.out.println("absolute path : " + path);
+        System.out.println("---------------------------------------------------------------------------");
+
+        System.out.println("----------------------------key2relativePath-------------------------------");
         String relativePath = key2relativePath(key);
         System.out.println("relative Path : " + relativePath);
+        System.out.println("---------------------------------------------------------------------------");
+
+        System.out.println("----------------------------key2fileName-----------------------------------");
         String picName = key2fileName(key, FileType.PICTURE);
         System.out.println("picture  Name : " + picName);
         String faceName = key2fileName(key, FileType.FACE);
         System.out.println("face     Name : " + faceName);
         String jsonName = key2fileName(key, FileType.JSON);
         System.out.println("json     Name : " + jsonName);
-
-        Map<String,String> map = new HashMap<>();
-        map = getRowKeyMessage(key);
+        System.out.println("---------------------------------------------------------------------------");
+        Map<String, String> map = getRowKeyMessage(key);
         System.out.println(map.toString());
-    }*/
+    }
 }
