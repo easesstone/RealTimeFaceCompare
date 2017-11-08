@@ -30,7 +30,7 @@ public class PutDataToEs implements Serializable {
         String timeslot = faceObject.getTimeSlot();
         String date = faceObject.getDate();
         IndexResponse indexResponse = new IndexResponse();
-        String pictype = faceObject.getType().name();
+        String searchtype = faceObject.getType().name();
         Map<String, Object> map = new HashMap<>();
         FaceAttribute faceAttr = faceObject.getAttribute();
         int haircolor = faceAttr.getHairColor();
@@ -48,7 +48,7 @@ public class PutDataToEs implements Serializable {
         int tie = faceAttr.getTie();
         map.put(DynamicTable.TIE, tie);
         map.put(DynamicTable.DATE, date);
-        map.put(DynamicTable.PICTYPE, pictype);
+        map.put(DynamicTable.SEARCHTYPE, searchtype);
         map.put(DynamicTable.TIMESTAMP, timestamp);
         map.put(DynamicTable.IPCID, ipcid);
         map.put(DynamicTable.TIMESLOT, timeslot);

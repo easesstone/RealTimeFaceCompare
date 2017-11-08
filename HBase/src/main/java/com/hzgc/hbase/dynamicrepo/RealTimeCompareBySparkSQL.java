@@ -66,7 +66,7 @@ class RealTimeCompareBySparkSQL {
                     insertType = DynamicTable.PERSON_TYPE;
                     if (null != option.getImage() && option.getImage().length > 0) {
                         //根据上传的图片查询
-                        searchResult = compareByImageBySparkSQL(PictureType.SMALL_PERSON, option);
+                        searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
                         //无图片，有imageId,相当于ftpurl
                         if (null != option.getImageId()) {
@@ -80,10 +80,9 @@ class RealTimeCompareBySparkSQL {
                 //查询的对象库是车
                 else if (searchType == SearchType.CAR) {
                     insertType = DynamicTable.CAR_TYPE;
-                    PictureType pictureType = PictureType.SMALL_CAR;
                     //平台上传的参数中有图片
                     if (null != option.getImage() && option.getImage().length > 0) {
-                        searchResult = compareByImageBySparkSQL(pictureType, option);
+                        searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
                         //无图片，有imageId,相当于ftpurl
                         if (null != option.getImageId()) {
@@ -107,14 +106,14 @@ class RealTimeCompareBySparkSQL {
     /**
      * 以图搜图，图片不为空的查询方法
      *
-     * @param pictureType 图片类型（人、车）SearchOption 过滤条件
+     * @param type 图片类型（人、车）SearchOption 过滤条件
      * @return 返回所有满足查询条件的图片
      */
-    private SearchResult compareByImageBySparkSQL(PictureType pictureType, SearchOption option) {
+    private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option) {
         //提取上传图片的特征值
         float[] searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         //将图片特征插入到特征库
-        boolean insertStatus = dynamicPhotoService.upPictureInsert(pictureType, searchId, searchFea, option.getImage());
+        boolean insertStatus = dynamicPhotoService.upPictureInsert(type, searchId, searchFea, option.getImage());
         if (insertStatus) {
             LOG.info("feature[" + searchId + "]insert into HBase successful");
         } else {
@@ -136,14 +135,12 @@ class RealTimeCompareBySparkSQL {
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
                     String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //图片类型
-                    String pictype = rs.getString(DynamicTable.PICTYPE);
+
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setSurl(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pictype));
                 }
             });
             capturedPictureList = new ArrayList<>();
@@ -184,15 +181,12 @@ class RealTimeCompareBySparkSQL {
                     Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
                     String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //图片类型
-                    String pictype = rs.getString(DynamicTable.PICTYPE);
 
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setSurl(imageid);
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pictype));
                 });
                 capturedPictureList = new ArrayList<>();
                 capturedPictureList.add(capturedPicture);

@@ -18,10 +18,6 @@ public class CapturedPicture implements Serializable {
      */
     private String burl;
     /**
-     * 图片类型
-     */
-    private PictureType pictureType;
-    /**
      * 捕获照片的设备 id
      */
     private String ipcId;
@@ -60,14 +56,6 @@ public class CapturedPicture implements Serializable {
 
     public void setBurl(String burl) {
         this.burl = burl;
-    }
-
-    public PictureType getPictureType() {
-        return pictureType;
-    }
-
-    public void setPictureType(PictureType pictureType) {
-        this.pictureType = pictureType;
     }
 
     public String getIpcId() {
@@ -123,7 +111,6 @@ public class CapturedPicture implements Serializable {
         return "CapturedPicture{" +
                 ", surl=" + surl +
                 ", surl=" + burl +
-                ", pictureType=" + pictureType +
                 ", ipcId='" + ipcId + '\'' +
                 ", description='" + description + '\'' +
                 ", similarity=" + similarity +
