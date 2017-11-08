@@ -59,12 +59,10 @@ public class SearchOption implements Serializable {
      * 排序参数
      */
     private String sortParams;
-
     /**
      * 分页查询开始行
      */
     private int offset;
-
     /**
      * 查询条数
      */
@@ -72,6 +70,22 @@ public class SearchOption implements Serializable {
 
     public SearchType getSearchType() {
         return searchType;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public void setSearchType(SearchType searchType) {
@@ -124,22 +138,6 @@ public class SearchOption implements Serializable {
 
     public void setPlatformId(String platformId) {
         this.platformId = platformId;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
     }
 
     public List<TimeInterval> getIntervals() {
