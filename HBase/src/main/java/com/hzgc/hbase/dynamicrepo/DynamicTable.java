@@ -52,7 +52,7 @@ public class DynamicTable implements Serializable {
     //时间戳 数据格式 xxxx-xx-xx xx:xx:xx(年-月-日 时:分:秒)
     public static final String TIMESTAMP = "timestamp";
     //图片类型
-    public static final String PICTYPE = "pictype";
+    public static final String SEARCHTYPE = "searchtype";
     //日期 分区字段 数据格式 xxxx-xx-xx(年-月-日)
     public static final String DATE = "date";
     //人脸属性-是否戴眼镜

@@ -2,7 +2,7 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.CapturedPicture;
 import com.hzgc.dubbo.dynamicrepo.DynamicPhotoService;
-import com.hzgc.dubbo.dynamicrepo.PictureType;
+import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
@@ -31,9 +31,9 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
      * @return boolean 是否插入成功
      */
     @Override
-    public boolean upPictureInsert(PictureType type, String rowKey, float[] feature, byte[] image) {
+    public boolean upPictureInsert(SearchType type, String rowKey, float[] feature, byte[] image) {
         Table table = HBaseHelper.getTable(DynamicTable.TABLE_UPFEA);
-        if (null != rowKey && type == PictureType.SMALL_PERSON) {
+        if (null != rowKey && type == SearchType.PERSON) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));
@@ -48,7 +48,7 @@ public class DynamicPhotoServiceImpl implements DynamicPhotoService {
             } finally {
                 HBaseUtil.closTable(table);
             }
-        } else if (null != rowKey && type == PictureType.SMALL_CAR) {
+        } else if (null != rowKey && type == SearchType.CAR) {
             try {
                 String featureStr = FaceFunction.floatArray2string(feature);
                 Put put = new Put(Bytes.toBytes(rowKey));

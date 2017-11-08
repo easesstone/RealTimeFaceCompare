@@ -15,7 +15,7 @@ public interface DynamicPhotoService {
      * @param image   图片
      * @return boolean 是否插入成功
      */
-    boolean upPictureInsert(PictureType type, String rowKey, float[] feature, byte[] image);
+    boolean upPictureInsert(SearchType type, String rowKey, float[] feature, byte[] image);
 
     /**
      * 将查询ID、查询相关信息插入查询结果库 （内）（刘思阳）
