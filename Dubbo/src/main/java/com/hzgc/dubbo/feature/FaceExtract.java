@@ -1,4 +1,4 @@
-package com.hzgc.jni;
+package com.hzgc.dubbo.feature;
 
 public interface FaceExtract {
     /**

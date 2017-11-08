@@ -1,5 +1,7 @@
 package com.hzgc.jni;
 
+import com.hzgc.dubbo.feature.FaceAttribute;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
