@@ -70,19 +70,6 @@ public class SearchOption implements Serializable {
      */
     private int count;
 
-    public int getOffset() {
-        return offset;
-    }
-
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
     public SearchType getSearchType() {
         return searchType;
     }
@@ -95,28 +82,72 @@ public class SearchOption implements Serializable {
         return image;
     }
 
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+
     public String getImageId() {
         return imageId;
+    }
+
+    public void setImageId(String imageId) {
+        this.imageId = imageId;
+    }
+
+    public String getPlateNumber() {
+        return plateNumber;
+    }
+
+    public void setPlateNumber(String plateNumber) {
+        this.plateNumber = plateNumber;
     }
 
     public float getThreshold() {
         return threshold;
     }
 
+    public void setThreshold(float threshold) {
+        this.threshold = threshold;
+    }
+
     public List<String> getDeviceIds() {
         return deviceIds;
+    }
+
+    public void setDeviceIds(List<String> deviceIds) {
+        this.deviceIds = deviceIds;
+    }
+
+    public String getPlatformId() {
+        return platformId;
+    }
+
+    public void setPlatformId(String platformId) {
+        this.platformId = platformId;
     }
 
     public Date getStartDate() {
         return startDate;
     }
 
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
     public Date getEndDate() {
         return endDate;
     }
 
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
     public List<TimeInterval> getIntervals() {
         return intervals;
+    }
+
+    public void setIntervals(List<TimeInterval> intervals) {
+        this.intervals = intervals;
     }
 
     public List<Attribute> getAttributes() {
@@ -127,8 +158,24 @@ public class SearchOption implements Serializable {
         this.attributes = attributes;
     }
 
-    public void init() {
-        // 初始化搜索日期
+    public void setSortParams(String sortParams) {
+        this.sortParams = sortParams;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public String getSortParams() {

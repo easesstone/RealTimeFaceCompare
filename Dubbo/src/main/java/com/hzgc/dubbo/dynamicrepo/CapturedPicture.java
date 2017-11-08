@@ -10,9 +10,13 @@ import java.util.Map;
 public class CapturedPicture implements Serializable {
 
     /**
-     * 图片 id (rowkey)用于获取图片
+     * 小图url
      */
-    private String id;
+    private String surl;
+    /**
+     * 大图url
+     */
+    private String burl;
     /**
      * 图片类型
      */
@@ -34,30 +38,13 @@ public class CapturedPicture implements Serializable {
      */
     private Map<String, Object> extend;
     /**
-     * 图片数据
-     */
-    private byte[] smallImage;
-    /**
-     * 大图
-     */
-    private byte[] bigImage;
-    /**
      * 时间戳
      */
     private String timeStamp;
-
     /**
      * 车牌，当 SearchType 为 CAR 时有用，需要支持模糊搜索
      */
     private String plateNumber;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public PictureType getPictureType() {
         return pictureType;
@@ -99,28 +86,12 @@ public class CapturedPicture implements Serializable {
         this.extend = extend;
     }
 
-    public byte[] getSmallImage() {
-        return smallImage;
-    }
-
-    public void setSmallImage(byte[] smallImage) {
-        this.smallImage = smallImage;
-    }
-
     public String getTimeStamp() {
         return timeStamp;
     }
 
     public void setTimeStamp(String timeStamp) {
         this.timeStamp = timeStamp;
-    }
-
-    public byte[] getBigImage() {
-        return bigImage;
-    }
-
-    public void setBigImage(byte[] bigImage) {
-        this.bigImage = bigImage;
     }
 
     public String getPlateNumber() {
@@ -134,14 +105,11 @@ public class CapturedPicture implements Serializable {
     @Override
     public String toString() {
         return "CapturedPicture{" +
-                "id='" + id + '\'' +
                 ", pictureType=" + pictureType +
                 ", ipcId='" + ipcId + '\'' +
                 ", description='" + description + '\'' +
                 ", similarity=" + similarity +
                 ", extend=" + extend +
-                ", smallImage=" + Arrays.toString(smallImage) +
-                ", bigImage=" + Arrays.toString(bigImage) +
                 ", timeStamp=" + timeStamp +
                 ", plateNumber='" + plateNumber + '\'' +
                 '}';
