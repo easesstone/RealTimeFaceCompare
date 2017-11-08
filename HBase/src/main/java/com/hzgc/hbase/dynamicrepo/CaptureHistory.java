@@ -153,7 +153,7 @@ class CaptureHistory {
                 System.out.println(hit.getSourceAsString());
                 String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
                 String pictype = (String) hit.getSource().get(DynamicTable.PICTYPE);
-                capturePicture.setId(rowKey);
+                capturePicture.setSurl(rowKey);
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setPictureType(PictureType.valueOf(pictype));
                 capturePicture.setTimeStamp(timestamp);

@@ -40,13 +40,13 @@ public class SearchOption implements Serializable {
      */
     private String platformId;
     /**
-     * 开始日期
+     * 开始日期,格式：xxxx-xx-xx xx:xx:xx
      */
-    private Date startDate;
+    private String startDate;
     /**
-     * 截止日期
+     * 截止日期,格式：xxxx-xx-xx xx:xx:xx
      */
-    private Date endDate;
+    private String endDate;
     /**
      * 搜索的时间区间，为空或者没有传入这个参数时候搜索整天
      */
