@@ -4,13 +4,6 @@ import java.io.Serializable;
 
 public class CaptureCount implements Serializable {
 	/**
-	 * 本次查询的入参
-	 */
-	private String startTime;
-	private String endTime;
-	private String ipcId;
-
-	/**
 	 * 匹配到的查询结果
 	 */
 	private Long totalresultcount;

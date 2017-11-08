@@ -40,13 +40,13 @@ public class SearchOption implements Serializable {
      */
     private String platformId;
     /**
-     * 开始日期
+     * 开始日期,格式：xxxx-xx-xx xx:xx:xx
      */
-    private Date startDate;
+    private String startDate;
     /**
-     * 截止日期
+     * 截止日期,格式：xxxx-xx-xx xx:xx:xx
      */
-    private Date endDate;
+    private String endDate;
     /**
      * 搜索的时间区间，为空或者没有传入这个参数时候搜索整天
      */
@@ -59,35 +59,33 @@ public class SearchOption implements Serializable {
      * 排序参数
      */
     private String sortParams;
-
     /**
      * 分页查询开始行
      */
     private int offset;
-
     /**
      * 查询条数
      */
     private int count;
 
-    public int getOffset() {
-        return offset;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
     public SearchType getSearchType() {
         return searchType;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public void setSearchType(SearchType searchType) {
@@ -142,22 +140,6 @@ public class SearchOption implements Serializable {
         this.platformId = platformId;
     }
 
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
     public List<TimeInterval> getIntervals() {
         return intervals;
     }
@@ -174,16 +156,28 @@ public class SearchOption implements Serializable {
         this.attributes = attributes;
     }
 
-    public void init() {
-        // 初始化搜索日期
+    public void setSortParams(String sortParams) {
+        this.sortParams = sortParams;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public String getSortParams() {
         return sortParams;
-    }
-
-    public void setSortParams(String sortParams) {
-        this.sortParams = sortParams;
     }
 
     @Override
@@ -206,5 +200,3 @@ public class SearchOption implements Serializable {
                 '}';
     }
 }
-
-
