@@ -35,7 +35,7 @@ class RealTimeCompareBySparkSQL {
     /**
      * 图片对象列表
      */
-    private List<CapturedPicture> capturedPictureList;
+    private List<CapturedPicture> capturedPictureList =new ArrayList<>();
     /**
      * 图片对象
      */
@@ -147,10 +147,9 @@ class RealTimeCompareBySparkSQL {
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
+                    capturedPictureList.add(capturedPicture);
                 }
             });
-            capturedPictureList = new ArrayList<>();
-            capturedPictureList.add(capturedPicture);
             searchResult = sortAndSplit(capturedPictureList,
                     option.getSortParams(),
                     option.getOffset(),
@@ -196,7 +195,6 @@ class RealTimeCompareBySparkSQL {
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
                 });
-                capturedPictureList = new ArrayList<>();
                 capturedPictureList.add(capturedPicture);
                 searchResult = sortAndSplit(capturedPictureList,
                         option.getSortParams(),
