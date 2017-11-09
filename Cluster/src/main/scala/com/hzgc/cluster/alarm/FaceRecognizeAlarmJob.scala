@@ -50,7 +50,7 @@ object FaceRecognizeAlarmJob {
       createDirectStream[String, String, StringDecoder, FeatureDecoder](ssc, kafkaParams, topics)
     val jsonResult = kafkaDynamicPhoto.map(message => {
       val totalList = JavaConverters.asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
-      val ipcID = FtpUtil.getRowKeyMessage(message._1).get("ipcID")
+      val ipcID = FtpUtil.getFtpPathMessage(message._1).get("ipcID")
       val platID = deviceUtilI.getplatfromID(ipcID)
       val alarmRule = deviceUtilI.isWarnTypeBinding(ipcID)
       val filterResult = new ArrayBuffer[Json]()

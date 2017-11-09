@@ -19,7 +19,7 @@ public class FaceObject implements Serializable {
      */
     private String timeStamp;
     /**
-     * 文件类型
+     * 文件类型(区分人/车)
      */
     private SearchType type;
     /**
