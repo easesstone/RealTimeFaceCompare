@@ -35,7 +35,7 @@ class RealTimeCompareBySparkSQL {
     /**
      * 图片对象列表
      */
-    private List<CapturedPicture> capturedPictureList;
+    private List<CapturedPicture> capturedPictureList =new ArrayList<>();
     /**
      * 图片对象
      */
@@ -123,8 +123,12 @@ class RealTimeCompareBySparkSQL {
         if (null != searchFea && searchFea.length == 512) {
             //将float[]特征值转为String特征值
             String searchFeaStr = FaceFunction.floatArray2string(searchFea);
+            String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
+            if (selectBySparkSQL.length() == 0) {
+                LOG.warn("the threshold is null");
+                return searchResult;
+            }
             //特征值比对，根据条件过滤
-            String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
             jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                 while (rs.next()) {
                     //小图ftpurl
@@ -143,10 +147,9 @@ class RealTimeCompareBySparkSQL {
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
+                    capturedPictureList.add(capturedPicture);
                 }
             });
-            capturedPictureList = new ArrayList<>();
-            capturedPictureList.add(capturedPicture);
             searchResult = sortAndSplit(capturedPictureList,
                     option.getSortParams(),
                     option.getOffset(),
@@ -173,7 +176,7 @@ class RealTimeCompareBySparkSQL {
             if (null != searchFea && searchFea.length == 512) {
                 //将float[]特征值转为String特征值
                 String searchFeaStr = FaceFunction.floatArray2string(searchFea);
-                String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
+                String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
                 jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                     //图片ftpurl
                     String surl = rs.getString(DynamicTable.FTPURL);
@@ -192,7 +195,6 @@ class RealTimeCompareBySparkSQL {
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
                 });
-                capturedPictureList = new ArrayList<>();
                 capturedPictureList.add(capturedPicture);
                 searchResult = sortAndSplit(capturedPictureList,
                         option.getSortParams(),
