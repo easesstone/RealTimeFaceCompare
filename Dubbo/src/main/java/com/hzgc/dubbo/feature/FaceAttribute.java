@@ -1,4 +1,4 @@
-package com.hzgc.jni;
+package com.hzgc.dubbo.feature;
 
 
 import java.io.Serializable;

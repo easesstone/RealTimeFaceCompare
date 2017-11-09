@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.producer;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.jni.FaceAttribute;
+import com.hzgc.dubbo.feature.FaceAttribute;
 
 import java.io.Serializable;
 import java.util.Arrays;

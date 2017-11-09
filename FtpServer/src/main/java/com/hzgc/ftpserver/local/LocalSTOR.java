@@ -4,7 +4,7 @@ import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.util.FtpUtil;
-import com.hzgc.jni.FaceAttribute;
+import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
 import org.apache.ftpserver.command.AbstractCommand;
