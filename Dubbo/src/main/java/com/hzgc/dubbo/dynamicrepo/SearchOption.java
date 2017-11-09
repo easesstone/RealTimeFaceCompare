@@ -1,10 +1,9 @@
 package com.hzgc.dubbo.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.Attribute;
+import com.hzgc.dubbo.attribute.Attribute;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
