@@ -11,4 +11,12 @@ public interface FtpAddressService {
      */
     Properties getFtpAddress();
 
+    /**
+     * 通过主机名获取FTP的IP地址
+     *
+     * @param hostname 主机名
+     * @return IP地址
+     */
+    String getIPAddress(String hostname);
+
 }

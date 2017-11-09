@@ -4,6 +4,7 @@ import com.hzgc.dubbo.Attribute.Attribute;
 import com.hzgc.dubbo.Attribute.AttributeValue;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
+import com.hzgc.hbase.util.FtpUtil;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -58,9 +59,9 @@ class CaptureHistory {
             // 获取设备ID
             List<String> deviceId = option.getDeviceIds();
             // 起始时间
-            Date startTime = option.getStartDate();
+            String startTime = option.getStartDate();
             // 结束时间
-            Date endTime = option.getEndDate();
+            String endTime = option.getEndDate();
             // 时间段
             List<TimeInterval> timeIntervals = option.getIntervals();
             //人脸属性
@@ -83,8 +84,6 @@ class CaptureHistory {
             }
             // 设备ID 的的boolQueryBuilder
             BoolQueryBuilder devicdIdBQ = QueryBuilders.boolQuery();
-            // 格式化时间
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             // 设备ID 存在的时候的处理
             if (deviceId != null) {
                 for (Object t : deviceId) {
@@ -94,9 +93,7 @@ class CaptureHistory {
             }
             // 开始时间和结束时间存在的时候的处理
             if (startTime != null && endTime != null) {
-                String start = dateFormat.format(startTime);
-                String end = dateFormat.format(endTime);
-                totalBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(start).lte(end));
+                totalBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
             }
             //TimeIntervals 时间段的封装类
             TimeInterval timeInterval;
@@ -148,14 +145,14 @@ class CaptureHistory {
         if (hits.length > 0) {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
-                String rowKey = hit.getId();
+                String surl = hit.getId();
+                String burl = FtpUtil.surlToBurl(surl);
                 String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
                 System.out.println(hit.getSourceAsString());
                 String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
-                String pictype = (String) hit.getSource().get(DynamicTable.PICTYPE);
-                capturePicture.setId(rowKey);
+                capturePicture.setSurl(surl);
+                capturePicture.setBurl(burl);
                 capturePicture.setIpcId(ipcid);
-                capturePicture.setPictureType(PictureType.valueOf(pictype));
                 capturePicture.setTimeStamp(timestamp);
                 persons.add(capturePicture);
             }

@@ -67,7 +67,7 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                                   "type" : "date",
                                   "format": "yyyy-MM-dd HH:mm:ss"
                               },
-                              "pictype" : {
+                              "searchtype" : {
                                   "type" : "text"
                               }
                     }
