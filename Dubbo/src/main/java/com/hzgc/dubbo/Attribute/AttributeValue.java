@@ -1,9 +1,11 @@
 package com.hzgc.dubbo.Attribute;
 
+import java.io.Serializable;
+
 /**
  * 单个属性值
  */
-public class AttributeValue {
+public class AttributeValue implements Serializable {
     /**
      * 属性的值
      */

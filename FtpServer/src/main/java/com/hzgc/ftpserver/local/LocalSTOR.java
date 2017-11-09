@@ -149,17 +149,17 @@ public class LocalSTOR extends AbstractCommand {
                             faceObject.setTimeSlot(timeSlot);
                             faceObject.setDate(date);
                             faceObject.setType(SearchType.PERSON);
-                            faceObject.setHostName(IpAddressUtil.getHostName());
                             faceObject.setAttribute(FaceFunction.featureExtract(data));
 
                             //发送到kafka
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), fileName, faceObject);
+                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
+                            LOG.info("send to kafka successfully! {}", ftpUrl);
                         }
                     }
                 }
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(data);
-                LOG.info(fileName + " to ByteArrayInputStream size is： " + bais.available());
                 long transSz = dataConnection.transferFromClient(session.getFtpletSession(), new BufferedInputStream(bais), outStream);
 
                 // attempt to close the output stream so that errors in

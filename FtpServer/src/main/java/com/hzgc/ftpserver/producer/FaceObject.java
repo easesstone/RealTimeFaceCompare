@@ -31,10 +31,6 @@ public class FaceObject implements Serializable {
      */
     private String timeSlot;
     /**
-     * ftp主机名
-     */
-    private String hostName;
-    /**
      * 人脸属性对象
      */
     private FaceAttribute attribute;
@@ -83,14 +79,6 @@ public class FaceObject implements Serializable {
         this.timeSlot = timeSlot;
     }
 
-    public String getHostName() {
-        return hostName;
-    }
-
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
-    }
-
     public FaceAttribute getAttribute() {
         return attribute;
     }
@@ -115,7 +103,6 @@ public class FaceObject implements Serializable {
                 ", type=" + type +
                 ", date='" + date + '\'' +
                 ", timeSlot='" + timeSlot + '\'' +
-                ", hostName='" + hostName + '\'' +
                 ", attribute=" + attribute +
                 ", image=" + Arrays.toString(image) +
                 '}';
