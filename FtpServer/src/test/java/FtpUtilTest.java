@@ -38,7 +38,7 @@ public class FtpUtilTest {
         System.out.println("---------------------------------------------------------------------------");
 
         System.out.println("----------------------------getRowKeyMessage-------------------------------");
-        Map<String, String> map = FtpUtil.getRowKeyMessage(key);
+        Map<String, String> map = FtpUtil.getFtpPathMessage(key);
         System.out.println(map.toString());
         System.out.println("---------------------------------------------------------------------------");
 

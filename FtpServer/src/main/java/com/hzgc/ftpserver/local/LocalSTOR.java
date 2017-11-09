@@ -131,7 +131,7 @@ public class LocalSTOR extends AbstractCommand {
                 } else {
                     //当FTP接收到小图
                     if (fileName.contains(".jpg") && faceNum > 0) {
-                        Map<String, String> map = FtpUtil.getRowKeyMessage(fileName);
+                        Map<String, String> map = FtpUtil.getFtpPathMessage(fileName);
                         //若获取不到信息，则不发rocketMQ和Kafka
                         if (!map.isEmpty()) {
                             String ipcID = map.get("ipcID");
