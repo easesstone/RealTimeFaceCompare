@@ -2,18 +2,21 @@ package com.hzgc.cluster.alarm
 
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import com.google.gson.Gson
-import com.hzgc.ftpserver.util.FtpUtil
 import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.rocketmq.util.RocketMQProducer
 import com.hzgc.cluster.message.AddAlarmMessage
 import com.hzgc.cluster.util.StreamingUtils
+import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
+import com.hzgc.ftpserver.util.FtpUtil
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Durations, StreamingContext}
+
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
 
@@ -30,9 +33,11 @@ object FaceAddAlarmJob {
     val deviceUtilI = new DeviceUtilImpl()
     val properties = StreamingUtils.getProperties
     val appName = properties.getProperty("job.addAlarm.appName")
-    val master = properties.getProperty("job.addAlarm.master")
+    //    val master = properties.getProperty("job.addAlarm.master")
     val timeInterval = Durations.seconds(properties.getProperty("job.addAlarm.timeInterval").toLong)
-    val conf = new SparkConf().setAppName(appName).setMaster(master)
+    val conf = new SparkConf()
+      .setAppName(appName)
+    //      .setMaster(master)
     val ssc = new StreamingContext(conf, timeInterval)
 
     val kafkaGroupId = properties.getProperty("kafka.FaceAddAlarmJob.group.id")
@@ -43,10 +48,11 @@ object FaceAddAlarmJob {
       "group.id" -> kafkaGroupId
     )
     val kafkaDynamicPhoto = KafkaUtils.
-      createDirectStream[String, String, StringDecoder, FeatureDecoder](ssc, kafkaParams, topics)
+      createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
     val jsonResult = kafkaDynamicPhoto.map(message => {
       val totalList = JavaConverters.asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
-      val ipcID = FtpUtil.getRowKeyMessage(message._1).get("ipcID")
+      val faceObj = message._2
+      val ipcID = faceObj.getIpcId
       val platID = deviceUtilI.getplatfromID(ipcID)
       val alarmRule = deviceUtilI.isWarnTypeBinding(ipcID)
       val filterResult = new ArrayBuffer[Json]()
@@ -56,7 +62,7 @@ object FaceAddAlarmJob {
           if (addWarnRule != null && !addWarnRule.isEmpty) {
             totalList.foreach(record => {
               if (addWarnRule.containsKey(record(1))) {
-                val threshold = FaceFunction.featureCompare(record(2), message._2)
+                val threshold = FaceFunction.featureCompare(record(2), FaceFunction.floatArray2string(faceObj.getAttribute.getFeature))
                 if (threshold > addWarnRule.get(record(1))) {
                   filterResult += Json(record(0), record(1), threshold)
                 }
@@ -88,10 +94,14 @@ object FaceAddAlarmJob {
           if (result._4 == null || result._4.isEmpty) {
             val dateStr = df.format(new Date())
             val addAlarmMessage = new AddAlarmMessage()
+            val ftpMess = FtpUtil.getFtpUrlMessage(result._1)
             addAlarmMessage.setAlarmTime(dateStr)
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
-            addAlarmMessage.setDynamicID(result._1)
+            addAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
+            addAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(com.hzgc.hbase.util.FtpUtil.surlToBurl(result._1)).get("filepath"))
             addAlarmMessage.setDynamicDeviceID(result._2)
+            addAlarmMessage.setHostName(ftpMess.get("hostname"))
+            println("告警："+gson.toJson(addAlarmMessage))
             rocketMQProducer.send(result._3,
               "alarm_" + DeviceTable.ADDED.toString,
               result._1,

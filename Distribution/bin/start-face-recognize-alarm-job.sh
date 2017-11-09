@@ -25,11 +25,11 @@ if [ ! -d $LOG_DIR ];then
    mkdir $LOG_DIR
 fi
 
-#判断是否存在FI客户端
-if [ ! -d /opt/client ];then
-   echo "$/opt/client does not exit,please go to the node of the existing FI client !"
-   exit 0
-fi
+#判断是否存在Spark服务
+#if [ ! -d /opt/client ];then
+#  echo "$/opt/client does not exit,please go to the node of the existing FI client !"
+#   exit 0
+#fi
 
 #判断是否存在配置文件
 if [ ! -e $CONF_DIR/es-config.properties ];then
@@ -46,12 +46,12 @@ if [ ! -e $CONF_DIR/sparkJob.properties ];then
 fi
 
 #更新FI客户端Spark/spark/conf 下运行任务所需要的配置文件
-rm -rf /opt/client/Spark/spark/conf/es-config.properties
-rm -rf /opt/client/Spark/spark/conf/rocketmq.properties
-rm -rf /opt/client/Spark/spark/conf/sparkJob.properties
-cp $CONF_DIR/es-config.properties /opt/client/Spark/spark/conf
-cp $CONF_DIR/rocketmq.properties  /opt/client/Spark/spark/conf
-cp $CONF_DIR/sparkJob.properties  /opt/client/Spark/spark/conf
+#rm -rf /opt/hzgc/bigdata/Spark/spark/conf/es-config.properties
+#rm -rf /opt/hzgc/bigdata/Spark/spark/conf/rocketmq.properties
+#rm -rf /opt/hzgc/bigdata/Spark/spark/conf/sparkJob.properties
+#cp $CONF_DIR/es-config.properties /opt/hzgc/bigdata/Spark/spark/conf
+#cp $CONF_DIR/rocketmq.properties  /opt/hzgc/bigdata/Spark/spark/conf
+#cp $CONF_DIR/sparkJob.properties  /opt/hzgc/bigdata/Spark/spark/conf
 
 #判断是否存在jar
 if [ ! -e $LIB_DIR/hbase-client-1.0.2.jar ];then
