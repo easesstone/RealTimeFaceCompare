@@ -1,4 +1,4 @@
-package com.hzgc.dubbo.Attribute;
+package com.hzgc.dubbo.attribute;
 
 /**
  * 单个属性值

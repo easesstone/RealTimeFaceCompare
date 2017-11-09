@@ -1,4 +1,4 @@
-package com.hzgc.dubbo.Attribute;
+package com.hzgc.dubbo.attribute;
 
 /**
  * 与其他属性的拼接运算
