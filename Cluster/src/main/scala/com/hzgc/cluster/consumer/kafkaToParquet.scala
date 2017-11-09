@@ -5,7 +5,6 @@ import java.util.Properties
 
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
-import com.hzgc.jni.FaceFunction
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -38,10 +37,9 @@ object kafkaToParquet {
   val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties)
   val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)
   val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))
-  val numDstreams: Int = getItem("job.faceObjectConsumer.DStreamNums", properties).toInt
   val repartitionNum: Int = getItem("job.repartition.number", properties).toInt
   val storeAddress: String = getItem("job.storeAddress", properties)
-  val backupAddress: String =getItem("job.backupAddress",properties)
+  val backupAddress: String = getItem("job.backupAddress", properties)
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder().appName(appname).master(master).getOrCreate()
@@ -52,10 +50,8 @@ object kafkaToParquet {
       "group.id" -> kafkaGroupId
     )
     val putDataToEs = PutDataToEs.getInstance()
-    val kafkaDstream = (1 to numDstreams).map(_ =>
-      KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics))
-    val unionDstream = ssc.union(kafkaDstream).repartition(repartitionNum)
-    val kafkaDF = unionDstream.map(faceobject => {
+    val kafkaDstream = KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
+    val kafkaDF = kafkaDstream.map(faceobject => {
       val status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
       if (status != 1) {
         println("Put data to es failed!")
@@ -68,6 +64,9 @@ object kafkaToParquet {
       )
     })
     kafkaDF.foreachRDD(rdd => {
+      rdd.foreachPartition(par => {
+        par.foreach(println)
+      })
       import spark.implicits._
       rdd.coalesce(1).toDF().cache().checkpoint().write.mode(SaveMode.Append).parquet(storeAddress)
     })
