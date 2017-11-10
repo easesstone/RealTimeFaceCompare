@@ -50,9 +50,9 @@ object kafkaToParquet {
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
-    val putDataToEs = PutDataToEs.getInstance()
     val kafkaDstream = KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
     val kafkaDF = kafkaDstream.map(faceobject => {
+      val putDataToEs = PutDataToEs.getInstance()
       val status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
       if (status != 1) {
         println("Put data to es failed!")
@@ -65,9 +65,6 @@ object kafkaToParquet {
       )
     })
     kafkaDF.foreachRDD(rdd => {
-      rdd.foreachPartition(par => {
-        par.foreach(println)
-      })
       import spark.implicits._
       rdd.coalesce(1).toDF().cache().checkpoint().write.mode(SaveMode.Append).parquet(storeAddress)
     })
