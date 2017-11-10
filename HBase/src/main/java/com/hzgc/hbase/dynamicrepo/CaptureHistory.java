@@ -75,7 +75,6 @@ class CaptureHistory {
             List<TimeInterval> timeIntervals = option.getIntervals();
             //人脸属性
             List<Attribute> attributes = option.getAttributes();
-
             //筛选人脸属性
             if (attributes != null) {
                 for (Attribute attribute : attributes) {
@@ -121,14 +120,12 @@ class CaptureHistory {
                     totalBQ.must(timeInQB);
                 }
             }
-
             //索引和类型
             index = DynamicTable.DYNAMIC_INDEX;
             type = DynamicTable.PERSON_INDEX_TYPE;
         } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
 
         }
-
         LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
