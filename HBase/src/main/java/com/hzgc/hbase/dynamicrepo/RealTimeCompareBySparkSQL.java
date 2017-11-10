@@ -2,6 +2,7 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
+import com.hzgc.ftpserver.util.Download;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
@@ -115,7 +116,7 @@ class RealTimeCompareBySparkSQL {
             image = option.getImage();
             searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         } else {
-            image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
+            image = Download.downloadftpFile2Bytes(option.getImageId());
             if (image == null) {
                 return new SearchResult();
             }
@@ -187,7 +188,7 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
 
         //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
+        byte[] image = Download.downloadftpFile2Bytes(option.getImageId());
         if (image != null && image.length > 0) {
             //提取上传图片的特征值
             float[] searchFea = FaceFunction.featureExtract(image).getFeature();
