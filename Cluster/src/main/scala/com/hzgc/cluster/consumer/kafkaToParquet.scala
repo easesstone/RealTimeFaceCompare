@@ -50,14 +50,14 @@ object kafkaToParquet {
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
-    val putDataToEs = PutDataToEs.getInstance()
     val kafkaDstream = KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
     val kafkaDF = kafkaDstream.map(faceobject => {
+      val putDataToEs = PutDataToEs.getInstance()
       val status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
       if (status != 1) {
         println("Put data to es failed!")
       }
-      Picture(FtpUtil.getFtpUrl(faceobject._1), faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
+      Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
         faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
         faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
         faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
