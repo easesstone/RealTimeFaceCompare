@@ -89,8 +89,8 @@ if [ ! -e ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
    echo "${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
    exit 1
 fi
-if [ ! -e ${LIB_DIR}/elasticsearch-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/elasticsearch-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${LIB_DIR}/elasticsearch-1.0.jar ];then
+   echo "${LIB_DIR}/elasticsearch-1.0.jar does not exit!"
    exit 1
 fi
 if [ ! -e ${LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
@@ -113,7 +113,7 @@ fi
 ## 存放数据至parquet任务
 source ${ETC_PROFILE}
 source ${BIGDATA_ENV}
-nohup ${SPARK_HOME}/spark-submit \
+nohup spark-submit \
 --master ${SPARK_MASTER_PARAM} \
 --num-executors 3 \
 --class com.hzgc.cluster.consumer.kafkaToParquet \
@@ -121,7 +121,7 @@ nohup ${SPARK_HOME}/spark-submit \
 ${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
-${LIB_DIR}/elasticsearch-${MODULE_VERSION}.jar,\
+${LIB_DIR}/elasticsearch-1.0.jar,\
 ${LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
