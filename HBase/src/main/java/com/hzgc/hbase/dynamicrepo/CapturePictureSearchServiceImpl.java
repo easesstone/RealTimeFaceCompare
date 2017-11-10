@@ -32,7 +32,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 
     static {
         ElasticSearchHelper.getEsClient();
-        HBaseHelper.getHBaseConnection();
+//        HBaseHelper.getHBaseConnection();
     }
 
     /**
@@ -325,6 +325,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public SearchResult getCaptureHistory(SearchOption option) {
         CaptureHistory captureHistory = new CaptureHistory();
+        option.setSortParams("+timestamp");
         option.setSearchType(SearchType.PERSON);
         long esStartTime = System.currentTimeMillis();
         SearchResult searchResult = captureHistory.getRowKey_history(option);

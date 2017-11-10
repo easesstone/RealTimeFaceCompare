@@ -109,13 +109,13 @@ public class CapturedPicture implements Serializable {
     @Override
     public String toString() {
         return "CapturedPicture{" +
-                ", surl=" + surl +
-                ", surl=" + burl +
+                "surl='" + surl + '\'' +
+                ", burl='" + burl + '\'' +
                 ", ipcId='" + ipcId + '\'' +
                 ", description='" + description + '\'' +
                 ", similarity=" + similarity +
                 ", extend=" + extend +
-                ", timeStamp=" + timeStamp +
+                ", timeStamp='" + timeStamp + '\'' +
                 ", plateNumber='" + plateNumber + '\'' +
                 '}';
     }

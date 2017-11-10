@@ -52,6 +52,16 @@ class CaptureHistory {
         LOG.info("offset is:" + offset);
         int count = option.getCount();
         LOG.info("count is:" + count);
+        //排序条件
+        String sortParams = option.getSortParams();
+        String flag = String.valueOf(sortParams.charAt(0));
+        String sortparam = sortParams.substring(1);
+        String px ;
+        if (flag.equals("-")){
+            px = "desc";
+        }else {
+            px = "asc";
+        }
 
         // 搜索类型为人的情况下
         if (SearchType.PERSON.equals(searchType)) {
@@ -65,6 +75,7 @@ class CaptureHistory {
             List<TimeInterval> timeIntervals = option.getIntervals();
             //人脸属性
             List<Attribute> attributes = option.getAttributes();
+
             //筛选人脸属性
             if (attributes != null) {
                 for (Attribute attribute : attributes) {
@@ -110,19 +121,21 @@ class CaptureHistory {
                     totalBQ.must(timeInQB);
                 }
             }
+
             //索引和类型
             index = DynamicTable.DYNAMIC_INDEX;
             type = DynamicTable.PERSON_INDEX_TYPE;
         } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
 
         }
+
         LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
                 .setTypes(type)
                 .setFrom(offset)
                 .setSize(count)
-                .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC);
+                .addSort(sortparam, SortOrder.fromString(px));
         return requestBuilder.setQuery(totalBQ);
     }
 
