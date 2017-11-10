@@ -33,12 +33,10 @@ object FaceRecognizeAlarmJob {
     val deviceUtilI = new DeviceUtilImpl()
     val properties = StreamingUtils.getProperties
     val appName = properties.getProperty("job.recognizeAlarm.appName")
-    //    val master = properties.getProperty("job.recognizeAlarm.master")
     val itemNum = properties.getProperty("job.recognizeAlarm.items.num").toInt
     val timeInterval = Durations.seconds(properties.getProperty("job.recognizeAlarm.timeInterval").toLong)
     val conf = new SparkConf()
       .setAppName(appName)
-    //      .setMaster("local[*]")
     val ssc = new StreamingContext(conf, timeInterval)
 
     val kafkaGroupId = properties.getProperty("kafka.FaceRecognizeAlarmJob.group.id")
@@ -50,56 +48,51 @@ object FaceRecognizeAlarmJob {
     )
     val kafkaDynamicPhoto = KafkaUtils.
       createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
-    val jsonResult = kafkaDynamicPhoto.map(message => {
-      val totalList = JavaConverters.asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
-      val faceObj = message._2
-      val ipcID = faceObj.getIpcId
-      val platID = deviceUtilI.getplatfromID(ipcID)
-      val alarmRule = deviceUtilI.isWarnTypeBinding(ipcID)
-      val filterResult = new ArrayBuffer[Json]()
-      if (platID != null && platID.length > 0) {
-        println("platID:" + platID)
-        if (alarmRule != null && !alarmRule.isEmpty) {
-          println("alarmRule:" + alarmRule)
-          val recognizeWarnRule = alarmRule.get(DeviceTable.IDENTIFY)
-          if (recognizeWarnRule != null && !recognizeWarnRule.isEmpty) {
-            println("识别规则：" + recognizeWarnRule)
-            println("totalList:"+totalList.length)
-            totalList.foreach(record => {
-              println("record(1):"+record(1))
-              if (recognizeWarnRule.containsKey(record(1))) {
-                val threshold = FaceFunction.featureCompare(record(2), FaceFunction.floatArray2string(faceObj.getAttribute.getFeature))
-                println("threshold:" + threshold)
-                if (threshold > recognizeWarnRule.get(record(1))) {
-                  filterResult += Json(record(0), record(1), threshold)
+    val jsonResult = kafkaDynamicPhoto.
+      filter(obj => (obj._2.getAttribute.getFeature) != null).
+      map(message => {
+        val totalList = JavaConverters.asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
+        val faceObj = message._2
+        val ipcID = faceObj.getIpcId
+        val platID = deviceUtilI.getplatfromID(ipcID)
+        val alarmRule = deviceUtilI.isWarnTypeBinding(ipcID)
+        val filterResult = new ArrayBuffer[Json]()
+        if (platID != null && platID.length > 0) {
+          if (alarmRule != null && !alarmRule.isEmpty) {
+            val recognizeWarnRule = alarmRule.get(DeviceTable.IDENTIFY)
+            if (recognizeWarnRule != null && !recognizeWarnRule.isEmpty) {
+              totalList.foreach(record => {
+                if (recognizeWarnRule.containsKey(record(1))) {
+                  val threshold = FaceFunction.featureCompare(record(2), FaceFunction.floatArray2string(faceObj.getAttribute.getFeature))
+                  if (threshold > recognizeWarnRule.get(record(1))) {
+                    filterResult += Json(record(0), record(1), threshold)
+                  }
                 }
-              }
-            })
+              })
+            } else {
+              println("This device [" + ipcID + "] does not bind to recognize the alarm rule, which is not calculated by default")
+            }
           } else {
-            println("This device [" + ipcID + "] does not bind to recognize the alarm rule, which is not calculated by default")
+            println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
           }
         } else {
-          println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
+          println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
         }
-      } else {
-        println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
-      }
-      val finalResult = filterResult.sortWith(_.sim > _.sim).take(itemNum)
-      println("[[[[111111]]]]:" + finalResult.toList)
-      val updateTimeList = new util.ArrayList[String]()
-      if (alarmRule != null && platID != null) {
-        val offLineWarnRule = alarmRule.get(DeviceTable.OFFLINE)
-        if (offLineWarnRule != null && !offLineWarnRule.isEmpty) {
-          finalResult.foreach(record => {
-            if (offLineWarnRule.containsKey(record.staticObjectType)) {
-              updateTimeList.add(record.staticID)
-            }
-          })
+        val finalResult = filterResult.sortWith(_.sim > _.sim).take(itemNum)
+        val updateTimeList = new util.ArrayList[String]()
+        if (alarmRule != null && platID != null) {
+          val offLineWarnRule = alarmRule.get(DeviceTable.OFFLINE)
+          if (offLineWarnRule != null && !offLineWarnRule.isEmpty) {
+            finalResult.foreach(record => {
+              if (offLineWarnRule.containsKey(record.staticObjectType)) {
+                updateTimeList.add(record.staticID)
+              }
+            })
+          }
         }
-      }
-      ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(updateTimeList)
-      (message._1, ipcID, platID, finalResult)
-    }).filter(record => record._4.nonEmpty)
+        ObjectInfoInnerHandlerImpl.getInstance().updateObjectInfoTime(updateTimeList)
+        (message._1, ipcID, platID, finalResult)
+      }).filter(record => record._4.nonEmpty)
 
     jsonResult.foreachRDD(resultRDD => {
       resultRDD.foreachPartition(parRDD => {

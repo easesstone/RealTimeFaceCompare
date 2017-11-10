@@ -33,13 +33,10 @@ object FaceAddAlarmJob {
     val deviceUtilI = new DeviceUtilImpl()
     val properties = StreamingUtils.getProperties
     val appName = properties.getProperty("job.addAlarm.appName")
-    //    val master = properties.getProperty("job.addAlarm.master")
     val timeInterval = Durations.seconds(properties.getProperty("job.addAlarm.timeInterval").toLong)
     val conf = new SparkConf()
       .setAppName(appName)
-    //      .setMaster(master)
     val ssc = new StreamingContext(conf, timeInterval)
-
     val kafkaGroupId = properties.getProperty("kafka.FaceAddAlarmJob.group.id")
     val topics = Set(properties.getProperty("kafka.topic.name"))
     val brokers = properties.getProperty("kafka.metadata.broker.list")
@@ -49,7 +46,9 @@ object FaceAddAlarmJob {
     )
     val kafkaDynamicPhoto = KafkaUtils.
       createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
-    val jsonResult = kafkaDynamicPhoto.map(message => {
+    val jsonResult = kafkaDynamicPhoto.
+      filter(obj => (obj._2.getAttribute.getFeature) != null).
+      map(message => {
       val totalList = JavaConverters.asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
       val faceObj = message._2
       val ipcID = faceObj.getIpcId
@@ -101,7 +100,6 @@ object FaceAddAlarmJob {
             addAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(FtpUtil.surlToBurl(result._1)).get("filepath"))
             addAlarmMessage.setDynamicDeviceID(result._2)
             addAlarmMessage.setHostName(ftpMess.get("hostname"))
-            println("告警："+gson.toJson(addAlarmMessage))
             rocketMQProducer.send(result._3,
               "alarm_" + DeviceTable.ADDED.toString,
               result._1,
