@@ -2,7 +2,7 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.hbase.util.FtpUtil;
+import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.util.ObjectListSort.ListUtils;
@@ -35,7 +35,7 @@ class RealTimeCompareBySparkSQL {
     /**
      * 图片对象列表
      */
-    private List<CapturedPicture> capturedPictureList;
+    private List<CapturedPicture> capturedPictureList = new ArrayList<>();
     /**
      * 图片对象
      */
@@ -64,17 +64,12 @@ class RealTimeCompareBySparkSQL {
                 //查询的对象库是人
                 if (searchType == SearchType.PERSON) {
                     insertType = DynamicTable.PERSON_TYPE;
-                    if (null != option.getImage() && option.getImage().length > 0) {
+                    if (option.getImage() != null || option.getImageId() != null) {
                         //根据上传的图片查询
                         searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
-                        //无图片，有imageId,相当于ftpurl
-                        if (null != option.getImageId()) {
-                            searchResult = compareByImageIdBySparkSQL(option);
-                        } else {
-                            //无图无imageId,通过其他参数查询
-                            searchResult = capturePictureSearchService.getCaptureHistory(option);
-                        }
+                        //无图无imageId,通过其他参数查询
+                        searchResult = capturePictureSearchService.getCaptureHistory(option);
                     }
                 }
                 //查询的对象库是车
@@ -111,9 +106,20 @@ class RealTimeCompareBySparkSQL {
      */
     private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option) {
         //提取上传图片的特征值
-        float[] searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
+        float[] searchFea;
+        byte[] image;
+        if (option.getImage() != null) {
+            image = option.getImage();
+            searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
+        } else {
+            image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
+            if (image == null) {
+                return new SearchResult();
+            }
+            searchFea = FaceFunction.featureExtract(image).getFeature();
+        }
         //将图片特征插入到特征库
-        boolean insertStatus = dynamicPhotoService.upPictureInsert(type, searchId, searchFea, option.getImage());
+        boolean insertStatus = dynamicPhotoService.upPictureInsert(type, searchId, searchFea, image);
         if (insertStatus) {
             LOG.info("feature[" + searchId + "]insert into HBase successful");
         } else {
@@ -123,8 +129,12 @@ class RealTimeCompareBySparkSQL {
         if (null != searchFea && searchFea.length == 512) {
             //将float[]特征值转为String特征值
             String searchFeaStr = FaceFunction.floatArray2string(searchFea);
+            String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
+            if (selectBySparkSQL.length() == 0) {
+                LOG.warn("the threshold is null");
+                return searchResult;
+            }
             //特征值比对，根据条件过滤
-            String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
             jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                 while (rs.next()) {
                     //小图ftpurl
@@ -143,10 +153,9 @@ class RealTimeCompareBySparkSQL {
                     capturedPicture.setIpcId(ipcid);
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
+                    capturedPictureList.add(capturedPicture);
                 }
             });
-            capturedPictureList = new ArrayList<>();
-            capturedPictureList.add(capturedPicture);
             searchResult = sortAndSplit(capturedPictureList,
                     option.getSortParams(),
                     option.getOffset(),
@@ -173,7 +182,7 @@ class RealTimeCompareBySparkSQL {
             if (null != searchFea && searchFea.length == 512) {
                 //将float[]特征值转为String特征值
                 String searchFeaStr = FaceFunction.floatArray2string(searchFea);
-                String selectBySparkSQL = parseByOption.getSQLwithOption(searchFeaStr, option);
+                String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
                 jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
                     //图片ftpurl
                     String surl = rs.getString(DynamicTable.FTPURL);
@@ -192,7 +201,6 @@ class RealTimeCompareBySparkSQL {
                     capturedPicture.setTimeStamp(timestamp);
                     capturedPicture.setSimilarity(similaritys);
                 });
-                capturedPictureList = new ArrayList<>();
                 capturedPictureList.add(capturedPicture);
                 searchResult = sortAndSplit(capturedPictureList,
                         option.getSortParams(),

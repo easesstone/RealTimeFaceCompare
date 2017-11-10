@@ -1,10 +1,10 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.Attribute;
-import com.hzgc.dubbo.Attribute.AttributeValue;
+import com.hzgc.dubbo.attribute.Attribute;
+import com.hzgc.dubbo.attribute.AttributeValue;
 import com.hzgc.dubbo.dynamicrepo.*;
+import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
-import com.hzgc.hbase.util.FtpUtil;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -14,7 +14,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 class CaptureHistory {
@@ -53,6 +52,16 @@ class CaptureHistory {
         LOG.info("offset is:" + offset);
         int count = option.getCount();
         LOG.info("count is:" + count);
+        //排序条件
+        String sortParams = option.getSortParams();
+        String flag = String.valueOf(sortParams.charAt(0));
+        String sortparam = sortParams.substring(1);
+        String px ;
+        if (flag.equals("-")){
+            px = "desc";
+        }else {
+            px = "asc";
+        }
 
         // 搜索类型为人的情况下
         if (SearchType.PERSON.equals(searchType)) {
@@ -123,7 +132,7 @@ class CaptureHistory {
                 .setTypes(type)
                 .setFrom(offset)
                 .setSize(count)
-                .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC);
+                .addSort(sortparam, SortOrder.fromString(px));
         return requestBuilder.setQuery(totalBQ);
     }
 

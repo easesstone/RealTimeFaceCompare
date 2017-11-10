@@ -1093,6 +1093,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (searchResult != null) {
             List<Map<String, Object>> persons = searchResult.getResults();
             if (persons != null) {
+                // 保存的数据中去掉feature，历史结果中不用保存feature
                 for (Map<String, Object> person : persons) {
                     Iterator<Map.Entry<String, Object>> it = person.entrySet().iterator();
                     while (it.hasNext()) {
@@ -1106,8 +1107,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             try {
                 oout = new ObjectOutputStream(bout);
-                oout.writeObject(new ArrayList(searchResult.getResults()));
-                results = bout.toByteArray();
+                List<Map<String, Object>> persons_tmp = searchResult.getResults();
+                if (persons_tmp != null){
+                    oout.writeObject(new ArrayList(searchResult.getResults()));
+                    results = bout.toByteArray();
+                }
                 oout.flush();
                 bout = new ByteArrayOutputStream();
                 oout = new ObjectOutputStream(bout);

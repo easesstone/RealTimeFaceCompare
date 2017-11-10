@@ -63,9 +63,9 @@
             <version>1.2.1.spark2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.ftpserver</groupId>
-            <artifactId>ftpserver-core</artifactId>
-            <version>${ftplet.version}</version>
+            <groupId>com.hzgc</groupId>
+            <artifactId>ftp</artifactId>
+            <version>1.5.0</version>
         </dependency>
     </dependencies>
     <build>

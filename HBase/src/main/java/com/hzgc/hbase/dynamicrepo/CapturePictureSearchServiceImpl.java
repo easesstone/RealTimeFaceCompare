@@ -1,6 +1,6 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.*;
+import com.hzgc.dubbo.attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
@@ -325,6 +325,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public SearchResult getCaptureHistory(SearchOption option) {
         CaptureHistory captureHistory = new CaptureHistory();
+        option.setSearchType(SearchType.PERSON);
         long esStartTime = System.currentTimeMillis();
         SearchResult searchResult = captureHistory.getRowKey_history(option);
         long esEndTime = System.currentTimeMillis();
