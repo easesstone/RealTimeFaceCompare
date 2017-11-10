@@ -21,6 +21,17 @@ LOG_FILE=${LOG_DIR}/merge-parquet-files.log        ##  log 日记文件
 
 mkdir -p ${LOG_DIR}
 
+SPARK_STREAMING_KAFKA=1.6.2
+RELEASE_VERSION=1.5.0
+KAFKA_VERSION=0.8.2.1
+SCALA_VERSION=2.11
+
+
+
+spark-streaming-kafka
+
+source /opt/hzgc/env_bigdata.sh
+
 if [[ ($# -ne 4)  &&  ($# -ne 5) ]];then
     echo "Usage: sh merget-parquest-files.sh <hdfsClusterName> <tmpTableHdfsPath> <hisTableHdfsPath> <tableName>"
     echo "<hdfsClusterName> 例如：hdfs://hacluster或者hdfs://hzgc "
@@ -52,8 +63,19 @@ function merge_parquet()
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
-    nohup java -server -Xms5g -Xmx8g  -XX:PermSize=512m -XX:MaxPermSize=512m  -classpath $CONF_DIR:$LIB_JARS \
-    com.hzgc.cluster.smallfile.MergeParquetFile ${hdfsClusterName} ${tmpTableHdfsPath} \
+    spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
+    --master local[*] \
+    --driver-memory 4g \
+    --jars ${LIB_DIR}/spark-streaming-kafka_${SCALA_VERSION}-${SPARK_STREAMING_KAFKA}.jar,\
+    ${LIB_DIR}/jni-${RELEASE_VERSION}.jar,\
+    ${LIB_DIR}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.jar,\
+    ${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
+    ${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
+    ${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
+    ${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
+    ${LIB_DIR}/hbase-${RELEASE_VERSION}.jar \
+    ${LIB_DIR}/streaming-${RELEASE_VERSION}.jar \
+    ${hdfsClusterName} ${tmpTableHdfsPath} \
     ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 

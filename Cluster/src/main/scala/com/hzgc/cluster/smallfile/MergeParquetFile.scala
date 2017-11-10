@@ -135,7 +135,7 @@ object MergeParquetFile {
                 if (!setOfFinalTable.contains(dateOfIpcId)) {
                     sql("set hive.exec.dynamic.partition=true;")
                     sql("set hive.exec.dynamic.partition.mode=nonstrict;")
-                    sql("alter table " + tableName + " add partition(date=" + date + ",ipcid=" + ipcId + ")")
+                    sql("alter table " + tableName + " add partition(date='" + date + "',ipcid='" + ipcId + "')")
                 }
             }
         } else {
