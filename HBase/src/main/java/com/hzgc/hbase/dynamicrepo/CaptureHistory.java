@@ -158,8 +158,8 @@ class CaptureHistory {
                 String burl = FtpUtil.surlToBurl(surl);
                 String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
                 String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
-                capturePicture.setSurl(surl);
-                capturePicture.setBurl(burl);
+                capturePicture.setSurl(FtpUtil.getFtpUrl(surl));
+                capturePicture.setBurl(FtpUtil.getFtpUrl(burl));
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setTimeStamp(timestamp);
                 persons.add(capturePicture);

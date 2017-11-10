@@ -5,6 +5,7 @@ import java.util.Properties
 
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
+import com.hzgc.hbase.util.FtpUtil
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -56,7 +57,7 @@ object kafkaToParquet {
       if (status != 1) {
         println("Put data to es failed!")
       }
-      Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
+      Picture(FtpUtil.getFtpUrl(faceobject._1), faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
         faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
         faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
         faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
