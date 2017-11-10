@@ -65,9 +65,6 @@ object kafkaToParquet {
       )
     })
     kafkaDF.foreachRDD(rdd => {
-      rdd.foreachPartition(par => {
-        par.foreach(println)
-      })
       import spark.implicits._
       rdd.coalesce(1).toDF().cache().checkpoint().write.mode(SaveMode.Append).parquet(storeAddress)
     })
