@@ -28,7 +28,6 @@ SCALA_VERSION=2.11
 
 
 
-spark-streaming-kafka
 
 source /opt/hzgc/env_bigdata.sh
 
@@ -60,6 +59,7 @@ fi
 #####################################################################
 function merge_parquet()
 {
+    echo "$LIB_DIR ===================================================== NIMA "
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
@@ -67,16 +67,14 @@ function merge_parquet()
     --master local[*] \
     --driver-memory 4g \
     --jars ${LIB_DIR}/spark-streaming-kafka_${SCALA_VERSION}-${SPARK_STREAMING_KAFKA}.jar,\
-    ${LIB_DIR}/jni-${RELEASE_VERSION}.jar,\
-    ${LIB_DIR}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.jar,\
-    ${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
-    ${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
-    ${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
-    ${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
-    ${LIB_DIR}/hbase-${RELEASE_VERSION}.jar \
-    ${LIB_DIR}/streaming-${RELEASE_VERSION}.jar \
-    ${hdfsClusterName} ${tmpTableHdfsPath} \
-    ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
+${LIB_DIR}/jni-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.jar,\
+${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
+${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/hbase-${RELEASE_VERSION}.jar \
+${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 
 #####################################################################
