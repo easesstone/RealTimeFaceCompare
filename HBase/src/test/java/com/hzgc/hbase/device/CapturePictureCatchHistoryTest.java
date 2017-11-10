@@ -1,6 +1,6 @@
 package com.hzgc.hbase.device;
 
-import com.hzgc.dubbo.Attribute.*;
+import com.hzgc.dubbo.attribute.*;
 import com.hzgc.dubbo.dynamicrepo.SearchOption;
 import com.hzgc.dubbo.dynamicrepo.SearchResult;
 import com.hzgc.hbase.dynamicrepo.CapturePictureSearchServiceImpl;

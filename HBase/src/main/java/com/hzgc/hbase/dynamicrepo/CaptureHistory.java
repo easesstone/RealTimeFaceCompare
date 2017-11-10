@@ -1,7 +1,7 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.Attribute;
-import com.hzgc.dubbo.Attribute.AttributeValue;
+import com.hzgc.dubbo.attribute.Attribute;
+import com.hzgc.dubbo.attribute.AttributeValue;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.FtpUtil;
@@ -14,7 +14,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 class CaptureHistory {

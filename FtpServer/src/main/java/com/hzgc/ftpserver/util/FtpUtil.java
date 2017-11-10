@@ -115,7 +115,6 @@ public class FtpUtil implements Serializable {
             String timeSlot = filePathMap.get("sj");
             map.put("ip", ip);
             map.put("hostname", hostName);
-            map.put("filepath",filePath);
             map.put("ipcid", ipcID);
             map.put("timestamp", timeStamp);
             map.put("date", date);

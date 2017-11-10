@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.producer;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.jni.FaceAttribute;
+import com.hzgc.dubbo.feature.FaceAttribute;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -19,7 +19,7 @@ public class FaceObject implements Serializable {
      */
     private String timeStamp;
     /**
-     * 文件类型
+     * 文件类型(区分人/车)
      */
     private SearchType type;
     /**

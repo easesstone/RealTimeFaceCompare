@@ -1,5 +1,7 @@
 package com.hzgc.jni;
 
+import com.hzgc.dubbo.feature.FaceAttribute;
+import com.hzgc.dubbo.feature.FaceExtract;
 import org.apache.log4j.Logger;
 
 public class FaceExtractImpl implements FaceExtract {

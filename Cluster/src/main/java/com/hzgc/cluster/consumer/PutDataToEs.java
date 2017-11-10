@@ -3,7 +3,7 @@ package com.hzgc.cluster.consumer;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.hbase.dynamicrepo.DynamicTable;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
-import com.hzgc.jni.FaceAttribute;
+import com.hzgc.dubbo.feature.FaceAttribute;
 import org.elasticsearch.action.index.IndexResponse;
 
 import java.io.Serializable;
