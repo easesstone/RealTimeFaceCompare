@@ -930,11 +930,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                          float threshold, String feature) {
         long start_time = System.currentTimeMillis();
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
-        if (filteredMap != null && filteredMap.size() > 0 && feature.length() == 2048){
+        if (filteredMap != null && filteredMap.size() > 0 ){
             Set<String> tempSet = filteredMap.keySet();
             for (String rk : tempSet) {
                 String histFeature = (String) filteredMap.get(rk).get(ObjectInfoTable.FEATURE);
-                if (histFeature != null && histFeature.length() == 2048) {
+                if (histFeature != null) {
                     float sim = FaceFunction.featureCompare(feature, histFeature);
                     boolean pp = sim > threshold;
                     if (pp) {
