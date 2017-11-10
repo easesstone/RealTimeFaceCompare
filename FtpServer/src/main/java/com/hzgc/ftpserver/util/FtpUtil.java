@@ -2,21 +2,38 @@ package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.local.FileType;
 import com.hzgc.util.FileUtil;
-import com.hzgc.util.IOUtil;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
-import org.apache.commons.net.ftp.FTPReply;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 public class FtpUtil implements Serializable {
     private static Logger LOG = Logger.getLogger(FtpUtil.class);
+
+    private static Properties properties = new Properties();
+    private static String ftpServerIP;
+    private static int ftpServerPort;
+    private static String ftpServerUser;
+    private static String ftpServerPassword;
+
+    static {
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties"));
+            properties.load(in);
+            ftpServerIP = properties.getProperty("ip");
+            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
+            ftpServerUser = properties.getProperty("user");
+            ftpServerPassword = properties.getProperty("password");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IoUtils.close(in);
+        }
+    }
 
     public static boolean checkPort(int checkPort) throws Exception {
         return checkPort > 1024;
@@ -153,19 +170,8 @@ public class FtpUtil implements Serializable {
         String postId = rowkey1.substring(rowkey1.indexOf("_") + 14, rowkey1.lastIndexOf("_"));
         int numType = Integer.parseInt(rowkey1.substring(rowkey1.lastIndexOf("_") + 1, rowkey1.length()));
 
-        String ftpServerIP = "";
-        int ftpServerPort = 0;
         String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
-        Properties properties = new Properties();
-        try {
-            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-            properties.load(in);
-            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
-            ftpServerIP = properties.getProperty(hostName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        String ftpServerIP = properties.getProperty(hostName);
         url = url.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
                 append("/20").append(year).append("/").append(month).append("/").append(day).
                 append("/").append(hour).append("/").
@@ -197,16 +203,7 @@ public class FtpUtil implements Serializable {
      */
     public static String filePath2absolutePath(String filePath) {
         StringBuilder url = new StringBuilder();
-        int ftpServerPort = 0;
         String hostName = IpAddressUtil.getHostName();
-        Properties properties = new Properties();
-        try {
-            InputStream in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-            properties.load(in);
-            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         url = url.append("ftp://").append(hostName).append(":").append(ftpServerPort).append(filePath);
         return url.toString();
     }
@@ -227,24 +224,11 @@ public class FtpUtil implements Serializable {
         String month = timeStr.substring(2, 4);
         String day = timeStr.substring(4, 6);
         String hour = timeStr.substring(6, 8);
-        String minute = timeStr.substring(8, 10);
+        //String minute = timeStr.substring(8, 10);
         //String second = timeStr.substring(10, 12);
 
-        String ftpServerIP = "";
-        int ftpServerPort = 0;
         String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
-        Properties properties = new Properties();
-        InputStream in = null;
-        try {
-            in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-            properties.load(in);
-            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
-            ftpServerIP = properties.getProperty(hostName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            IoUtils.close(in);
-        }
+        String ftpServerIP = properties.getProperty(hostName);
 
         filePath = filePath.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
                 append("/20").append(year).append("/").append(month).append("/").append(day).append("/").append(hour);
@@ -297,105 +281,6 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     * 获取FTPClient对象
-     *
-     * @param ftpHost     FTP主机服务器
-     * @param ftpPassword FTP 登录密码
-     * @param ftpUserName FTP登录用户名
-     * @param ftpPort     FTP端口 默认为21
-     * @return
-     */
-    public static FTPClient getFTPClient(String ftpHost, String ftpUserName,
-                                         String ftpPassword, int ftpPort) {
-        FTPClient ftpClient = new FTPClient();
-        try {
-            ftpClient.connect(ftpHost, ftpPort);// 连接FTP服务器
-            ftpClient.login(ftpUserName, ftpPassword);// 登陆FTP服务器
-            FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX); //设置linux环境
-            ftpClient.configure(conf);
-            if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) { //判断是否连接成功
-                LOG.info("Failed to connect to FTPClient, user name or password error.");
-                ftpClient.disconnect();
-            } else {
-                LOG.info("FTPClient connection successful.");
-            }
-        } catch (SocketException e) {
-            LOG.info("FTP IP address may be incorrect, please configure correctly.");
-            e.printStackTrace();
-        } catch (IOException e) {
-            LOG.info("FTP port error, please configure correctly.");
-            e.printStackTrace();
-        }
-        return ftpClient;
-    }
-
-    /**
-     * 从FTP服务器下载文件并转为字节数组
-     *
-     * @param ftpUrl      FTP地址
-     * @return 文件的字节数组
-     */
-    public static byte[] downloadftpFile2Bytes(String ftpUrl) {
-        byte[] ftpFileBytes = null;
-        if (!ftpUrl.isEmpty()) {
-            //解析FTP地址，得到ftpAddress、ftpPort、ftpFilePath、ftpFileName
-            String ftpAddress = ftpUrl.substring(ftpUrl.indexOf("/") + 2, ftpUrl.lastIndexOf(":"));
-            String path = ftpUrl.substring(ftpUrl.lastIndexOf(":") + 1);
-            int ftpPort = Integer.parseInt(path.substring(0, path.indexOf("/")));
-            String ftpFilePath = path.substring(path.indexOf("/"), path.lastIndexOf("/"));
-            String ftpFileName = path.substring(path.lastIndexOf("/") + 1);
-
-            //通过ftpAddress.properties配置文件，ftpUserName、ftpPassword
-            String ftpUserName = "";
-            String ftpPassword = "";
-            Properties properties = new Properties();
-            InputStream inputStream = null;
-            try {
-                inputStream = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-                properties.load(inputStream);
-                ftpUserName = properties.getProperty("user");
-                ftpPassword = properties.getProperty("password");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }finally {
-                IOUtil.closeStream(inputStream);
-            }
-
-            FTPClient ftpClient;
-            InputStream in;
-
-            try {
-                //连接FTPClient并转移到FTP服务器目录
-                ftpClient = getFTPClient(ftpAddress, ftpUserName, ftpPassword, ftpPort);
-                ftpClient.setControlEncoding("UTF-8"); // 中文支持
-                ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
-                ftpClient.enterLocalPassiveMode();
-                ftpClient.changeWorkingDirectory(ftpFilePath);//转移到FTP服务器目录
-
-                //通过FTPClient获取文件输入流并转为byte[]
-                in = ftpClient.retrieveFileStream(ftpFileName);
-                ftpFileBytes = inputStreamCacher(in).toByteArray();
-
-                in.close();
-                ftpClient.logout();
-
-            } catch (FileNotFoundException e) {
-                LOG.error("Failed to find the " + ftpFilePath + " file below");
-                e.printStackTrace();
-            } catch (SocketException e) {
-                LOG.error("Failed to connect FTPClient.");
-                e.printStackTrace();
-            } catch (IOException e) {
-                LOG.error("File read error.");
-                e.printStackTrace();
-            }
-        } else {
-            LOG.warn("method param is error.");
-        }
-        return ftpFileBytes;
-    }
-
-    /**
      * 小图ftpUrl转大图ftpUrl
      *
      * @param surl 小图ftpUrl
@@ -416,21 +301,8 @@ public class FtpUtil implements Serializable {
      * @return 带IP的ftpUrl
      */
     public static String getFtpUrl(String ftpUrl){
-        String url;
         String hostName = ftpUrl.substring(ftpUrl.indexOf("/") + 2 , ftpUrl.lastIndexOf(":"));
-        Properties properties = new Properties();
-        InputStream in = null;
-        String ftpServerIP = "";
-        try {
-            in = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-            properties.load(in);
-            ftpServerIP = properties.getProperty(hostName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            IoUtils.close(in);
-        }
-        url = ftpUrl.replace(hostName,ftpServerIP);
-        return url;
+        String ftpServerIP = properties.getProperty(hostName);
+        return ftpUrl.replace(hostName,ftpServerIP);
     }
 }

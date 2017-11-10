@@ -5,6 +5,7 @@ import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.jni.NativeFunction;
 import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
@@ -33,6 +34,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
+        NativeFunction.init();
     }
 
     /**
@@ -329,7 +331,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         long esStartTime = System.currentTimeMillis();
         SearchResult searchResult = captureHistory.getRowKey_history(option);
         long esEndTime = System.currentTimeMillis();
-        LOG.info("search" + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
+        LOG.info("search " + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
         return searchResult;
     }
 
