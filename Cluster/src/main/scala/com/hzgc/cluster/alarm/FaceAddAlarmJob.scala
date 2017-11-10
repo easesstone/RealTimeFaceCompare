@@ -98,7 +98,7 @@ object FaceAddAlarmJob {
             addAlarmMessage.setAlarmTime(dateStr)
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
             addAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
-            addAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(com.hzgc.hbase.util.FtpUtil.surlToBurl(result._1)).get("filepath"))
+            addAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(FtpUtil.surlToBurl(result._1)).get("filepath"))
             addAlarmMessage.setDynamicDeviceID(result._2)
             addAlarmMessage.setHostName(ftpMess.get("hostname"))
             println("告警："+gson.toJson(addAlarmMessage))

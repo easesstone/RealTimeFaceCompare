@@ -38,7 +38,7 @@ object FaceRecognizeAlarmJob {
     val timeInterval = Durations.seconds(properties.getProperty("job.recognizeAlarm.timeInterval").toLong)
     val conf = new SparkConf()
       .setAppName(appName)
-//      .setMaster("local[*]")
+    //      .setMaster("local[*]")
     val ssc = new StreamingContext(conf, timeInterval)
 
     val kafkaGroupId = properties.getProperty("kafka.FaceRecognizeAlarmJob.group.id")
@@ -58,12 +58,18 @@ object FaceRecognizeAlarmJob {
       val alarmRule = deviceUtilI.isWarnTypeBinding(ipcID)
       val filterResult = new ArrayBuffer[Json]()
       if (platID != null && platID.length > 0) {
+        println("platID:" + platID)
         if (alarmRule != null && !alarmRule.isEmpty) {
+          println("alarmRule:" + alarmRule)
           val recognizeWarnRule = alarmRule.get(DeviceTable.IDENTIFY)
           if (recognizeWarnRule != null && !recognizeWarnRule.isEmpty) {
+            println("识别规则：" + recognizeWarnRule)
+            println("totalList:"+totalList.length)
             totalList.foreach(record => {
+              println("record(1):"+record(1))
               if (recognizeWarnRule.containsKey(record(1))) {
                 val threshold = FaceFunction.featureCompare(record(2), FaceFunction.floatArray2string(faceObj.getAttribute.getFeature))
+                println("threshold:" + threshold)
                 if (threshold > recognizeWarnRule.get(record(1))) {
                   filterResult += Json(record(0), record(1), threshold)
                 }
@@ -79,6 +85,7 @@ object FaceRecognizeAlarmJob {
         println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
       }
       val finalResult = filterResult.sortWith(_.sim > _.sim).take(itemNum)
+      println("[[[[111111]]]]:" + finalResult.toList)
       val updateTimeList = new util.ArrayList[String]()
       if (alarmRule != null && platID != null) {
         val offLineWarnRule = alarmRule.get(DeviceTable.OFFLINE)
@@ -108,7 +115,7 @@ object FaceRecognizeAlarmJob {
           recognizeAlarmMessage.setDynamicDeviceID(result._2)
           recognizeAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
           recognizeAlarmMessage.setAlarmTime(dateStr)
-          recognizeAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(com.hzgc.hbase.util.FtpUtil.surlToBurl(result._1)).get("filepath"))
+          recognizeAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(FtpUtil.surlToBurl(result._1)).get("filepath"))
           recognizeAlarmMessage.setHostName(ftpMess.get("hostname"))
           result._4.foreach(record => {
             val item = new Item()
@@ -117,7 +124,7 @@ object FaceRecognizeAlarmJob {
             items += item
           })
           recognizeAlarmMessage.setItems(items.toArray)
-          println("告警："+gson.toJson(recognizeAlarmMessage))
+          println("告警：" + gson.toJson(recognizeAlarmMessage))
           rocketMQProducer.send(result._3,
             "alarm_" + DeviceTable.IDENTIFY.toString,
             result._1,
