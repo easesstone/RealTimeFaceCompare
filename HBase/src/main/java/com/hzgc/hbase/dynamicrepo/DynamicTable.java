@@ -50,7 +50,7 @@ public class DynamicTable implements Serializable {
     //时间区间 数据格式 小时+分钟 例如:11:30用1130表示
     public static final String TIMESLOT = "timeslot";
     //时间戳 数据格式 xxxx-xx-xx xx:xx:xx(年-月-日 时:分:秒)
-    public static final String TIMESTAMP = "timestamp";
+    public static final String TIMESTAMP = "exacttime";
     //图片类型
     public static final String SEARCHTYPE = "searchtype";
     //日期 分区字段 数据格式 xxxx-xx-xx(年-月-日)
