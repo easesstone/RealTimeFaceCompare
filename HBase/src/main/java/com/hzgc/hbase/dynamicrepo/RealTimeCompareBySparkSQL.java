@@ -2,6 +2,7 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
+import com.hzgc.ftpserver.util.Download;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
@@ -10,6 +11,9 @@ import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.UuidUtil;
 import org.apache.log4j.Logger;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,7 +116,7 @@ class RealTimeCompareBySparkSQL {
             image = option.getImage();
             searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         } else {
-            image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
+            image = Download.downloadftpFile2Bytes(option.getImageId());
             if (image == null) {
                 return new SearchResult();
             }
@@ -134,28 +138,36 @@ class RealTimeCompareBySparkSQL {
                 LOG.warn("the threshold is null");
                 return searchResult;
             }
+            System.out.println("*******");
+            System.out.println(selectBySparkSQL);
+            System.out.println("*******");
             //特征值比对，根据条件过滤
-            jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
-                while (rs.next()) {
+            ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+            try {
+                while (resultSet.next()) {
                     //小图ftpurl
-                    String surl = rs.getString(DynamicTable.FTPURL);
+                    String surl = resultSet.getString(DynamicTable.FTPURL);
                     //设备id
-                    String ipcid = rs.getString(DynamicTable.IPCID);
+                    String ipcid = resultSet.getString(DynamicTable.IPCID);
                     //相似度
-                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
+                    Float similaritys = resultSet.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
-                    String timestamp = rs.getString(DynamicTable.TIMESTAMP);
+                    Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
                     //大图ftpurl
                     String burl = FtpUtil.surlToBurl(surl);
                     capturedPicture = new CapturedPicture();
                     capturedPicture.setSurl(surl);
                     capturedPicture.setBurl(burl);
                     capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
+                    capturedPicture.setTimeStamp(timestamp.toString());
                     capturedPicture.setSimilarity(similaritys);
                     capturedPictureList.add(capturedPicture);
                 }
-            });
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                jdbcUtil.close();
+            }
             searchResult = sortAndSplit(capturedPictureList,
                     option.getSortParams(),
                     option.getOffset(),
@@ -164,6 +176,7 @@ class RealTimeCompareBySparkSQL {
             LOG.error("extract the feature is faild");
         }
         return searchResult;
+
     }
 
     /**
@@ -175,7 +188,7 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
 
         //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = FtpUtil.downloadftpFile2Bytes(option.getImageId());
+        byte[] image = Download.downloadftpFile2Bytes(option.getImageId());
         if (image != null && image.length > 0) {
             //提取上传图片的特征值
             float[] searchFea = FaceFunction.featureExtract(image).getFeature();
@@ -183,25 +196,33 @@ class RealTimeCompareBySparkSQL {
                 //将float[]特征值转为String特征值
                 String searchFeaStr = FaceFunction.floatArray2string(searchFea);
                 String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
-                jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
-                    //图片ftpurl
-                    String surl = rs.getString(DynamicTable.FTPURL);
-                    //设备id
-                    String ipcid = rs.getString(DynamicTable.IPCID);
-                    //相似度
-                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
-                    //时间戳
-                    String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //大图ftpurl
-                    String burl = FtpUtil.surlToBurl(surl);
-                    capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(surl);
-                    capturedPicture.setBurl(burl);
-                    capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
-                    capturedPicture.setSimilarity(similaritys);
-                });
-                capturedPictureList.add(capturedPicture);
+                System.out.println(selectBySparkSQL);
+                ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+                try {
+                    while (resultSet.next()) {
+                        //图片ftpurl
+                        String surl = resultSet.getString(DynamicTable.FTPURL);
+                        //设备id
+                        String ipcid = resultSet.getString(DynamicTable.IPCID);
+                        //相似度
+                        Float similaritys = resultSet.getFloat(DynamicTable.SIMILARITY);
+                        //时间戳
+                        Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
+                        //大图ftpurl
+                        String burl = FtpUtil.surlToBurl(surl);
+                        capturedPicture = new CapturedPicture();
+                        capturedPicture.setSurl(surl);
+                        capturedPicture.setBurl(burl);
+                        capturedPicture.setIpcId(ipcid);
+                        capturedPicture.setTimeStamp(timestamp.toString());
+                        capturedPicture.setSimilarity(similaritys);
+                        capturedPictureList.add(capturedPicture);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    jdbcUtil.close();
+                }
                 searchResult = sortAndSplit(capturedPictureList,
                         option.getSortParams(),
                         option.getOffset(),

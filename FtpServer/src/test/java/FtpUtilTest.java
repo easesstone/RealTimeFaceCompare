@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class FtpUtilTest {
     public static void main(String[] args) {
-        String key = "DS-2DE72XYZIW-ABCVS20160823CCCH_171109111223_1844_1_lemon";
+        String key = "DS-2DE72XYZIW-ABCVS20160823CCCH_171109111223_1844_1_s105";
         String filePath = "/DS-2DE72XYZIW-ABCVS20160823CCCH/2017_11_09_11_12_23_1844_1.jpg";
         String url = "ftp://192.168.1.28:2121/3B0383FPAG00883/2017/05/23/16/2017_05_23_16_00_15_5704_1.jpg";
 
@@ -37,8 +37,8 @@ public class FtpUtilTest {
         System.out.println("json     Name : " + jsonName);
         System.out.println("---------------------------------------------------------------------------");
 
-        System.out.println("----------------------------getRowKeyMessage-------------------------------");
-        Map<String, String> map = FtpUtil.getFtpPathMessage(key);
+        System.out.println("----------------------------getFtpPathMessage------------------------------");
+        Map<String, String> map = FtpUtil.getFtpPathMessage(filePath);
         System.out.println(map.toString());
         System.out.println("---------------------------------------------------------------------------");
 
