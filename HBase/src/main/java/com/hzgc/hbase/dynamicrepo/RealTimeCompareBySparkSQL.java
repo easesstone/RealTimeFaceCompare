@@ -138,7 +138,11 @@ class RealTimeCompareBySparkSQL {
                 LOG.warn("the threshold is null");
                 return searchResult;
             }
-            LOG.info("query sql:" + selectBySparkSQL);
+            System.out.println(selectBySparkSQL.substring(0, selectBySparkSQL.indexOf("'")));
+            System.out.println(selectBySparkSQL.substring(selectBySparkSQL.indexOf("e)") + 1));
+            LOG.info("query sql:" +
+                    selectBySparkSQL.substring(selectBySparkSQL.indexOf("'")) +
+                    selectBySparkSQL.substring(selectBySparkSQL.indexOf("e)") + 1));
             //特征值比对，根据条件过滤
             jdbcUtil.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
                     "; REFRESH TABLE" + DynamicTable.PERSON_TABLE + ";");
