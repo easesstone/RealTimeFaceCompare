@@ -18,7 +18,7 @@ class ParseByOption {
      */
     String getFinalSQLwithOption(String searchFeaStr, SearchOption option) {
         return getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option) +
-                " union " +
+                " union all " +
                 getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option) +
                 " order by "
                 + DynamicTable.SIMILARITY

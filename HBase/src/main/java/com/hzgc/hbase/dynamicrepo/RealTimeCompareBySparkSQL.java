@@ -85,7 +85,7 @@ class RealTimeCompareBySparkSQL {
                     } else {
                         //无图片，有imageId,相当于ftpurl
                         if (null != option.getImageId()) {
-                            searchResult = compareByImageIdBySparkSQL(option);
+                            searchResult = compareByImageBySparkSQL(searchType, option);
                         } else {
                             //无图无imageId,通过其他参数查询
                             searchResult = capturePictureSearchService.getCaptureHistory(option);
@@ -138,69 +138,19 @@ class RealTimeCompareBySparkSQL {
                 LOG.warn("the threshold is null");
                 return searchResult;
             }
-            System.out.println("*******");
-            System.out.println(selectBySparkSQL);
-            System.out.println("*******");
+            System.out.println(selectBySparkSQL.substring(0, selectBySparkSQL.indexOf("'")));
+            System.out.println(selectBySparkSQL.substring(selectBySparkSQL.indexOf("e)") + 1));
+            LOG.info("query sql:" +
+                    selectBySparkSQL.substring(selectBySparkSQL.indexOf("'")) +
+                    selectBySparkSQL.substring(selectBySparkSQL.indexOf("e)") + 1));
             //特征值比对，根据条件过滤
+            jdbcUtil.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
+                    "; REFRESH TABLE" + DynamicTable.PERSON_TABLE + ";");
             ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
-            try {
-                while (resultSet.next()) {
-                    //小图ftpurl
-                    String surl = resultSet.getString(DynamicTable.FTPURL);
-                    //设备id
-                    String ipcid = resultSet.getString(DynamicTable.IPCID);
-                    //相似度
-                    Float similaritys = resultSet.getFloat(DynamicTable.SIMILARITY);
-                    //时间戳
-                    Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
-                    //大图ftpurl
-                    String burl = FtpUtil.surlToBurl(surl);
-                    capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(surl);
-                    capturedPicture.setBurl(burl);
-                    capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp.toString());
-                    capturedPicture.setSimilarity(similaritys);
-                    capturedPictureList.add(capturedPicture);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                jdbcUtil.close();
-            }
-            searchResult = sortAndSplit(capturedPictureList,
-                    option.getSortParams(),
-                    option.getOffset(),
-                    option.getCount());
-        } else {
-            LOG.error("extract the feature is faild");
-        }
-        return searchResult;
-
-    }
-
-    /**
-     * 以图搜图，图片为空,通过图片id的查询方法
-     *
-     * @param option 过滤条件
-     * @return 返回所有满足查询条件的图片
-     */
-    private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
-
-        //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = Download.downloadftpFile2Bytes(option.getImageId());
-        if (image != null && image.length > 0) {
-            //提取上传图片的特征值
-            float[] searchFea = FaceFunction.featureExtract(image).getFeature();
-            if (null != searchFea && searchFea.length == 512) {
-                //将float[]特征值转为String特征值
-                String searchFeaStr = FaceFunction.floatArray2string(searchFea);
-                String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
-                System.out.println(selectBySparkSQL);
-                ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+            if (resultSet != null) {
                 try {
                     while (resultSet.next()) {
-                        //图片ftpurl
+                        //小图ftpurl
                         String surl = resultSet.getString(DynamicTable.FTPURL);
                         //设备id
                         String ipcid = resultSet.getString(DynamicTable.IPCID);
@@ -223,17 +173,18 @@ class RealTimeCompareBySparkSQL {
                 } finally {
                     jdbcUtil.close();
                 }
-                searchResult = sortAndSplit(capturedPictureList,
-                        option.getSortParams(),
-                        option.getOffset(),
-                        option.getCount());
             } else {
-                LOG.error("search feature is null or short than 512");
+                jdbcUtil.close();
             }
+            searchResult = sortAndSplit(capturedPictureList,
+                    option.getSortParams(),
+                    option.getOffset(),
+                    option.getCount());
         } else {
-            LOG.error("search image is null with [" + option.getImageId() + "] ");
+            LOG.error("extract the feature is faild");
         }
         return searchResult;
+
     }
 
     /**
