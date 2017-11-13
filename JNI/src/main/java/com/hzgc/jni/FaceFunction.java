@@ -1,5 +1,7 @@
 package com.hzgc.jni;
 
+import com.hzgc.dubbo.feature.FaceAttribute;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -7,6 +9,28 @@ import java.math.BigDecimal;
 
 public class FaceFunction {
     private static final String SPLIT = ":";
+
+    public static byte[] inputPicture(String picPath) {
+        File imageFile;
+        ByteArrayOutputStream baos = null;
+        FileInputStream fis = null;
+        byte[] buffer = new byte[1024];
+        try {
+            imageFile = new File(picPath);
+            if (imageFile.exists()) {
+                baos = new ByteArrayOutputStream();
+                fis = new FileInputStream(imageFile);
+                int len;
+                while ((len = fis.read(buffer)) > -1) {
+                    baos.write(buffer, 0, len);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assert baos != null;
+        return baos.toByteArray();
+    }
 
     /**
      * 特征提取方法 （内）（赵喆）

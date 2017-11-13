@@ -1,11 +1,12 @@
-package com.hzgc.dubbo.Attribute;
+package com.hzgc.dubbo.attribute;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
- * 属性统计
+ *
  */
-public class AttributeCount {
+public class AttributeCount implements Serializable {
     /**
      * 设备ID
      */

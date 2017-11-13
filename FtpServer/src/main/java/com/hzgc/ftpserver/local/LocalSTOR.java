@@ -1,14 +1,12 @@
 package com.hzgc.ftpserver.local;
 
-import com.hzgc.dubbo.dynamicrepo.PictureType;
+import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
-import com.hzgc.ftpserver.util.BeanUtils;
 import com.hzgc.ftpserver.util.FtpUtil;
-import com.hzgc.jni.FaceAttribute;
+import com.hzgc.ftpserver.util.IpAddressUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.rocketmq.util.RocketMQProducer;
-import com.hzgc.util.ObjectUtil;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
@@ -120,46 +118,49 @@ public class LocalSTOR extends AbstractCommand {
             OutputStream outStream = null;
             try {
                 outStream = file.createOutputStream(skipLen);
-                ByteArrayOutputStream baos = null;
-                ByteArrayInputStream bais = null;
                 ProducerOverFtp kafkaProducer = localContext.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = localContext.getProducerRocketMQ();
-                long transSz;
                 InputStream is = dataConnection.getDataInputStream();
-                baos = FtpUtil.inputStreamCacher(is);
+                ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
                 byte[] data = baos.toByteArray();
 
-                String rowKey = FtpUtil.transformNameToKey(fileName);
                 int faceNum = FtpUtil.pickPicture(fileName);
 
-                if (rowKey.contains("unknown")) {
-                    LOG.error(rowKey + ": unknown ipcID, Not send to Kafka!");
+                if (fileName.contains("unknown")) {
+                    LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
                 } else {
+                    //当FTP接收到小图
                     if (fileName.contains(".jpg") && faceNum > 0) {
-                        String faceRowKey = FtpUtil.faceKey(faceNum, rowKey);
-                        Map<String, String> map = FtpUtil.getRowKeyMessage(faceRowKey);
-                        SendResult tempResult = rocketMQProducer.
-                                send(map.get("ipcID"), map.get("mqkey"), data);
-                        rocketMQProducer.send(rocketMQProducer.getMessTopic(), map.get("ipcID"),
-                                map.get("mqkey"), tempResult.getOffsetMsgId().getBytes(), null);
+                        Map<String, String> map = FtpUtil.getFtpPathMessage(fileName);
+                        //若获取不到信息，则不发rocketMQ和Kafka
+                        if (!map.isEmpty()) {
+                            String ipcID = map.get("ipcID");
+                            String timeStamp = map.get("time");
+                            String date = map.get("date");
+                            String timeSlot = map.get("sj");
 
-                        FaceObject faceObject = new FaceObject();
-                        faceObject.setIpcId(map.get("ipcID"));
-                        faceObject.setTimeStamp(map.get("time"));
-                        faceObject.setType(PictureType.SMALL_PERSON);
-                        faceObject.setTimeSlot(map.get("sj"));
-                        faceObject.setDate(map.get("date"));
-                        FaceAttribute attribute = FaceFunction.featureExtract(data);
-                        faceObject.setAttribute(attribute);
+                            //发送到rocketMQ
+                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, data);
+                            rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
 
-                        String filePath = FtpUtil.filePath2absolutePath(fileName);
-                        kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), filePath,faceObject);
+                            FaceObject faceObject = new FaceObject();
+                            faceObject.setIpcId(ipcID);
+                            faceObject.setTimeStamp(timeStamp);
+                            faceObject.setTimeSlot(timeSlot);
+                            faceObject.setDate(date);
+                            faceObject.setType(SearchType.PERSON);
+                            faceObject.setAttribute(FaceFunction.featureExtract(data));
+
+                            //发送到kafka
+                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
+                            LOG.info("send to kafka successfully! {}", ftpUrl);
+                        }
                     }
                 }
 
-                bais = new ByteArrayInputStream(data);
-                LOG.info(fileName + " to ByteArrayInputStream size is： " + bais.available());
-                transSz = dataConnection.transferFromClient(session.getFtpletSession(), new BufferedInputStream(bais), outStream);
+                ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                long transSz = dataConnection.transferFromClient(session.getFtpletSession(), new BufferedInputStream(bais), outStream);
 
                 // attempt to close the output stream so that errors in
                 // closing it will return an error to the client (FTPSERVER-119)

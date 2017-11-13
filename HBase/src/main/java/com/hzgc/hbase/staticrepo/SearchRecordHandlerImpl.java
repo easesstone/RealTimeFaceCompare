@@ -49,6 +49,8 @@ public class SearchRecordHandlerImpl implements SearchRecordHandler {
         try {
             ois = new ObjectInputStream(new ByteArrayInputStream(searchModelByte));
             pSearchArgsModel = (PSearchArgsModel) ois.readObject();
+            pSearchArgsModel.setStart(from);
+            pSearchArgsModel.setPageSize(size);
             objectSearchResult = objectInfoHandler.getObjectInfo(pSearchArgsModel);
         } catch (IOException e) {
             e.printStackTrace();

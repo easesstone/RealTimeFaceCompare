@@ -1,11 +1,11 @@
 package com.hzgc.hbase.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.*;
+import com.hzgc.dubbo.attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
-import com.hzgc.util.DateUtil;
+import com.hzgc.jni.NativeFunction;
 import com.hzgc.util.ObjectUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
@@ -34,6 +34,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
+        NativeFunction.init();
     }
 
     /**
@@ -82,7 +83,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 String searchType = Bytes.toString(result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHTYPE));
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 capturedPictureList = (List<CapturedPicture>) ObjectUtil.byteToObject(searchMessage);
-                DynamicPhotoService dynamicPhotoService = new DynamicPhotoServiceImpl();
                 switch (searchType) {
                     case DynamicTable.PERSON_TYPE:
                         //结果集（capturedPictureList）分页返回
@@ -293,21 +293,20 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                 returnresult.setTotalresultcount(totalresultcount);
                 returnresult.setLastcapturetime("None");
             } else {
-              
-                /**
-                 * 获取该时间段内设备最后一次抓拍时间：
-                 * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-                 * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-                 * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-                 * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
-                 **/
+                /*
+                  获取该时间段内设备最后一次抓拍时间：
+                  返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+                  因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+                  例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+                  将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+                 */
 
                 //获取最后一次抓拍时间
                 String lastcapturetime = (String) searchHits[0].getSourceAsMap().get(DynamicTable.TIMESTAMP);
 
-                /**
-                 * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
-                 **/
+                /*
+                  返回值为：设备抓拍张数、设备最后一次抓拍时间。
+                 */
                 returnresult.setTotalresultcount(totalresultcount);
                 returnresult.setLastcapturetime(lastcapturetime);
             }
@@ -320,6 +319,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     /**
      * 查询抓拍历史记录（陈柯）
      * 根据条件筛选抓拍图片，并返回图片对象
+     *
      * @param option option中包含count、时间段、时间戳、人脸属性等值，根据这些值去筛选
      *               符合条件的图片对象并返回
      * @return SearchResult符合条件的图片对象
@@ -331,7 +331,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         long esStartTime = System.currentTimeMillis();
         SearchResult searchResult = captureHistory.getRowKey_history(option);
         long esEndTime = System.currentTimeMillis();
-        LOG.info("search" + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
+        LOG.info("search " + searchResult.getTotal() + " history image from es takes:" + (esEndTime - esStartTime) + "ms");
         return searchResult;
     }
 
@@ -365,7 +365,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         for (AttributeValue attributeValue : values) {
                             BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
                             FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
-                            FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP ).gt(startTime).lt(endTime));
+                            FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
                             FilterIpcId.must(QueryBuilders.matchQuery(attribute.getIdentify().toLowerCase(), attributeValue.getValue()));
                             SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                     .prepareSearch(DynamicTable.DYNAMIC_INDEX)

@@ -2,20 +2,20 @@ package com.hzgc.hbase.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.hbase.util.FtpImageUtil;
+import com.hzgc.ftpserver.util.Download;
+import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.FileUtil;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.UuidUtil;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -24,30 +24,10 @@ import java.util.Properties;
 class RealTimeCompareBySparkSQL {
 
     private Logger LOG = Logger.getLogger(RealTimeCompareBySparkSQL.class);
-    /***
+    /**
      * 获取jdbc连接
      */
     private JDBCUtil jdbcUtil = JDBCUtil.getInstance();
-    /**
-     * 图片的二进制数据
-     */
-    private byte[] image;
-    /**
-     * 图片 id ,优先使用图片流数组
-     */
-    private String imageId;
-    /**
-     * 排序参数
-     */
-    private String sortParams;
-    /**
-     * 分页查询开始行
-     */
-    private int offset;
-    /**
-     * 分页查询条数
-     */
-    private int count;
     /**
      * 查询Id 由UUID生成
      */
@@ -59,13 +39,16 @@ class RealTimeCompareBySparkSQL {
     /**
      * 图片对象列表
      */
-    private List<CapturedPicture> capturedPictureList;
+    private List<CapturedPicture> capturedPictureList = new ArrayList<>();
     /**
      * 图片对象
      */
     private CapturedPicture capturedPicture;
+    /**
+     * SQL语句生成器
+     */
+    private ParseByOption parseByOption = new ParseByOption();
     private String insertType;
-    private Properties propertie = new Properties();
     private DynamicPhotoService dynamicPhotoService;
     private CapturePictureSearchServiceImpl capturePictureSearchService;
 
@@ -73,60 +56,35 @@ class RealTimeCompareBySparkSQL {
 
         dynamicPhotoService = new DynamicPhotoServiceImpl();
         capturePictureSearchService = new CapturePictureSearchServiceImpl();
-        //获取ftp配置文件,并初始化propertie
-        try {
-            File resourceFile = FileUtil.loadResourceFile("ftp.properties");
-            if (resourceFile != null) {
-                propertie.load(new FileInputStream(resourceFile));
-            }
-        } catch (Exception e) {
-            LOG.error("get ftp.properties failure");
-        }
-
     }
 
     SearchResult pictureSearchBySparkSQL(SearchOption option) {
         if (null != option) {
             //搜索类型 是人还是车
             SearchType searchType = option.getSearchType();
-            //排序参数
-            sortParams = option.getSortParams();
-            //上传图片数据
-            image = option.getImage();
-            imageId = option.getImageId();
-            //分页查询开始行
-            offset = option.getOffset();
-            //分页查询数
-            count = option.getCount();
             //设置查询Id
             searchId = UuidUtil.setUuid();
             if (null != searchType) {
                 //查询的对象库是人
                 if (searchType == SearchType.PERSON) {
                     insertType = DynamicTable.PERSON_TYPE;
-                    PictureType pictureType = PictureType.SMALL_PERSON;
-                    if (null != image && image.length > 0) {
-                        searchResult = compareByImageBySparkSQL(pictureType, option);
+                    if (option.getImage() != null || option.getImageId() != null) {
+                        //根据上传的图片查询
+                        searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
-                        //无图片，有imageId,相当于ftpurl
-                        if (null != imageId) {
-                            searchResult = compareByImageIdBySparkSQL(option);
-                        } else {
-                            //无图无imageId,通过其他参数查询
-                            searchResult = capturePictureSearchService.getCaptureHistory(option);
-                        }
+                        //无图无imageId,通过其他参数查询
+                        searchResult = capturePictureSearchService.getCaptureHistory(option);
                     }
                 }
                 //查询的对象库是车
                 else if (searchType == SearchType.CAR) {
                     insertType = DynamicTable.CAR_TYPE;
-                    PictureType pictureType = PictureType.SMALL_CAR;
                     //平台上传的参数中有图片
-                    if (null != image && image.length > 0) {
-                        searchResult = compareByImageBySparkSQL(pictureType, option);
+                    if (null != option.getImage() && option.getImage().length > 0) {
+                        searchResult = compareByImageBySparkSQL(searchType, option);
                     } else {
                         //无图片，有imageId,相当于ftpurl
-                        if (null != imageId) {
+                        if (null != option.getImageId()) {
                             searchResult = compareByImageIdBySparkSQL(option);
                         } else {
                             //无图无imageId,通过其他参数查询
@@ -147,14 +105,25 @@ class RealTimeCompareBySparkSQL {
     /**
      * 以图搜图，图片不为空的查询方法
      *
-     * @param pictureType 图片类型（人、车）SearchOption 过滤条件
+     * @param type 图片类型（人、车）SearchOption 过滤条件
      * @return 返回所有满足查询条件的图片
      */
-    private SearchResult compareByImageBySparkSQL(PictureType pictureType, SearchOption option) {
+    private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option) {
         //提取上传图片的特征值
-        float[] searchFea = FaceFunction.featureExtract(image).getFeature();
+        float[] searchFea;
+        byte[] image;
+        if (option.getImage() != null) {
+            image = option.getImage();
+            searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
+        } else {
+            image = Download.downloadftpFile2Bytes(option.getImageId());
+            if (image == null) {
+                return new SearchResult();
+            }
+            searchFea = FaceFunction.featureExtract(image).getFeature();
+        }
         //将图片特征插入到特征库
-        boolean insertStatus = dynamicPhotoService.upPictureInsert(pictureType, searchId, searchFea, image);
+        boolean insertStatus = dynamicPhotoService.upPictureInsert(type, searchId, searchFea, image);
         if (insertStatus) {
             LOG.info("feature[" + searchId + "]insert into HBase successful");
         } else {
@@ -164,35 +133,50 @@ class RealTimeCompareBySparkSQL {
         if (null != searchFea && searchFea.length == 512) {
             //将float[]特征值转为String特征值
             String searchFeaStr = FaceFunction.floatArray2string(searchFea);
+            String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
+            if (selectBySparkSQL.length() == 0) {
+                LOG.warn("the threshold is null");
+                return searchResult;
+            }
+            System.out.println("*******");
+            System.out.println(selectBySparkSQL);
+            System.out.println("*******");
             //特征值比对，根据条件过滤
-            String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
-            jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
-                while (rs.next()) {
-                    //图片ftpurl
-                    String imageid = rs.getString(DynamicTable.FTPURL);
+            ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+            try {
+                while (resultSet.next()) {
+                    //小图ftpurl
+                    String surl = resultSet.getString(DynamicTable.FTPURL);
                     //设备id
-                    String ipcid = rs.getString(DynamicTable.IPCID);
+                    String ipcid = resultSet.getString(DynamicTable.IPCID);
                     //相似度
-                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
+                    Float similaritys = resultSet.getFloat(DynamicTable.SIMILARITY);
                     //时间戳
-                    Long timestamp = rs.getLong(DynamicTable.TIMESTAMP);
-                    //图片类型
-                    String pic_type = rs.getString(DynamicTable.PICTYPE);
+                    Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
+                    //大图ftpurl
+                    String burl = FtpUtil.surlToBurl(surl);
                     capturedPicture = new CapturedPicture();
-                    capturedPicture.setId(imageid);
+                    capturedPicture.setSurl(surl);
+                    capturedPicture.setBurl(burl);
                     capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
+                    capturedPicture.setTimeStamp(timestamp.toString());
                     capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
+                    capturedPictureList.add(capturedPicture);
                 }
-            });
-            capturedPictureList = new ArrayList<>();
-            capturedPictureList.add(capturedPicture);
-            searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                jdbcUtil.close();
+            }
+            searchResult = sortAndSplit(capturedPictureList,
+                    option.getSortParams(),
+                    option.getOffset(),
+                    option.getCount());
         } else {
-            LOG.error("search feature is null or short than 512");
+            LOG.error("extract the feature is faild");
         }
         return searchResult;
+
     }
 
     /**
@@ -204,58 +188,52 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
 
         //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = FtpImageUtil.downloadftpFile2Bytes(
-                propertie.getProperty("ftpuser"),
-                propertie.getProperty("ftppassword"),
-                imageId);
+        byte[] image = Download.downloadftpFile2Bytes(option.getImageId());
         if (image != null && image.length > 0) {
             //提取上传图片的特征值
             float[] searchFea = FaceFunction.featureExtract(image).getFeature();
             if (null != searchFea && searchFea.length == 512) {
                 //将float[]特征值转为String特征值
                 String searchFeaStr = FaceFunction.floatArray2string(searchFea);
-                String selectBySparkSQL = getSQLwithOption(searchFeaStr, option);
-                jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
-                    //图片ftpurl
-                    String imageid = rs.getString(DynamicTable.FTPURL);
-                    //设备id
-                    String ipcid = rs.getString(DynamicTable.IPCID);
-                    //相似度
-                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
-                    //时间戳
-                    Long timestamp = rs.getLong(DynamicTable.TIMESTAMP);
-                    //图片类型
-                    String pic_type = rs.getString(DynamicTable.PICTYPE);
-
-                    capturedPicture = new CapturedPicture();
-                    capturedPicture.setId(imageid);
-                    capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
-                    capturedPicture.setSimilarity(similaritys);
-                    capturedPicture.setPictureType(PictureType.valueOf(pic_type));
-                });
-                capturedPictureList = new ArrayList<>();
-                capturedPictureList.add(capturedPicture);
-                searchResult = sortAndSplit(capturedPictureList, sortParams, offset, count);
+                String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
+                System.out.println(selectBySparkSQL);
+                ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+                try {
+                    while (resultSet.next()) {
+                        //图片ftpurl
+                        String surl = resultSet.getString(DynamicTable.FTPURL);
+                        //设备id
+                        String ipcid = resultSet.getString(DynamicTable.IPCID);
+                        //相似度
+                        Float similaritys = resultSet.getFloat(DynamicTable.SIMILARITY);
+                        //时间戳
+                        Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
+                        //大图ftpurl
+                        String burl = FtpUtil.surlToBurl(surl);
+                        capturedPicture = new CapturedPicture();
+                        capturedPicture.setSurl(surl);
+                        capturedPicture.setBurl(burl);
+                        capturedPicture.setIpcId(ipcid);
+                        capturedPicture.setTimeStamp(timestamp.toString());
+                        capturedPicture.setSimilarity(similaritys);
+                        capturedPictureList.add(capturedPicture);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    jdbcUtil.close();
+                }
+                searchResult = sortAndSplit(capturedPictureList,
+                        option.getSortParams(),
+                        option.getOffset(),
+                        option.getCount());
             } else {
                 LOG.error("search feature is null or short than 512");
             }
         } else {
-            LOG.error("search image is null with [" + imageId + "] ");
+            LOG.error("search image is null with [" + option.getImageId() + "] ");
         }
         return searchResult;
-    }
-
-    /**
-     * 获取根据过滤条件拼接成的sql
-     *
-     * @param searchFeaStr 通过图片获取的特征值
-     * @param option    过滤条件
-     * @return 拼接的sql
-     */
-    private String getSQLwithOption(String searchFeaStr, SearchOption option) {
-        ParseByOption parseByOption = new ParseByOption();
-        return parseByOption.getSQLwithOption(searchFeaStr, option);
     }
 
     /**

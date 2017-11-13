@@ -16,7 +16,8 @@ public class FileUtil {
                 LOG.info("Load resource file:" + url.getPath() + " successful!");
                 return file;
             } else {
-                LOG.error("Resource file:" + resourceName + " is not exist!");
+                LOG.error("Resource file:" +
+                        ClassLoader.getSystemResource("") + resourceName + " is not exist!");
                 System.exit(1);
             }
         } else {
