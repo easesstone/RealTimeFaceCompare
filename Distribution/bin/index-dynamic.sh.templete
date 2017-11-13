@@ -58,12 +58,12 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                                            "type" : "text"
                               },
                               "timeslot" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "date" : {
                                             "type" : "text"
                               },
-                              "timestamp" : {
+                              "exacttime" : {
                                   "type" : "date",
                                   "format": "yyyy-MM-dd HH:mm:ss"
                               },
