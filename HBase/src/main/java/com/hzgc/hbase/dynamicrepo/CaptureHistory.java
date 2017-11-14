@@ -126,7 +126,6 @@ class CaptureHistory {
         } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
 
         }
-        LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
                 .setTypes(type)
