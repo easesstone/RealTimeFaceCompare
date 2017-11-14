@@ -4,8 +4,6 @@ import com.hzgc.dubbo.attribute.Attribute;
 import com.hzgc.dubbo.dynamicrepo.SearchOption;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
-
 
 class ParseByOption {
 
@@ -16,7 +14,7 @@ class ParseByOption {
      * @param option       搜索条件
      * @return 返回拼接的sql
      */
-    String getFinalSQLwithOption(String searchFeaStr, SearchOption option) {
+    static String getFinalSQLwithOption(String searchFeaStr, SearchOption option) {
         StringBuilder finaSql = new StringBuilder();
         finaSql.append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
                 .append(" union all ")
@@ -43,13 +41,12 @@ class ParseByOption {
         return finaSql.toString();
     }
 
-    private String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
+    private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //无阈值不进行比对
         if (option.getThreshold() == 0.0) {
             return "";
         }
         //date分区字段
-        SimpleDateFormat dateFormat_date = new SimpleDateFormat("yyyy-MM-dd");
         StringBuilder finalSql = new StringBuilder();
         finalSql
                 .append("select * from (select *, ")

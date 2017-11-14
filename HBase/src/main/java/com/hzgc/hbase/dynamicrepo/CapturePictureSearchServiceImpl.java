@@ -54,6 +54,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             e.printStackTrace();
         }
         LOG.info("search total time is:" + (System.currentTimeMillis() - start));
+        LOG.info("search id is:" + searchResult.getSearchId());
         return searchResult;
     }
 
