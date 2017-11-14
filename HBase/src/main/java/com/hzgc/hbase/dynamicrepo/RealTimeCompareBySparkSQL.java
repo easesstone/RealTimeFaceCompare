@@ -11,6 +11,10 @@ import com.hzgc.util.ObjectListSort.SortParam;
 import com.hzgc.util.UuidUtil;
 import org.apache.log4j.Logger;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +41,6 @@ class RealTimeCompareBySparkSQL {
      * 图片对象列表
      */
     private List<CapturedPicture> capturedPictureList = new ArrayList<>();
-    /**
-     * 图片对象
-     */
-    private CapturedPicture capturedPicture;
     /**
      * SQL语句生成器
      */
@@ -82,7 +82,7 @@ class RealTimeCompareBySparkSQL {
                     } else {
                         //无图片，有imageId,相当于ftpurl
                         if (null != option.getImageId()) {
-                            searchResult = compareByImageIdBySparkSQL(option);
+                            searchResult = compareByImageBySparkSQL(searchType, option);
                         } else {
                             //无图无imageId,通过其他参数查询
                             searchResult = capturePictureSearchService.getCaptureHistory(option);
@@ -135,86 +135,84 @@ class RealTimeCompareBySparkSQL {
                 LOG.warn("the threshold is null");
                 return searchResult;
             }
+            LOG.info("query sql:" + parseByOption.getFinalSQLwithOption("", option));
             //特征值比对，根据条件过滤
-            jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
-                while (rs.next()) {
-                    //小图ftpurl
-                    String surl = rs.getString(DynamicTable.FTPURL);
-                    //设备id
-                    String ipcid = rs.getString(DynamicTable.IPCID);
-                    //相似度
-                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
-                    //时间戳
-                    String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //大图ftpurl
-                    String burl = FtpUtil.surlToBurl(surl);
-                    capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(surl);
-                    capturedPicture.setBurl(burl);
-                    capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
-                    capturedPicture.setSimilarity(similaritys);
-                    capturedPictureList.add(capturedPicture);
+            long start = System.currentTimeMillis();
+            jdbcUtil.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
+                    "; REFRESH TABLE" + DynamicTable.PERSON_TABLE + ";");
+            ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+            long mid = System.currentTimeMillis();
+            LOG.info("executeQuery total time is:" + (mid - start));
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if (resultSet != null) {
+                try {
+                    while (resultSet.next()) {
+                        //小图ftpurl
+                        String surl = resultSet.getString(DynamicTable.FTPURL);
+                        //设备id
+                        String ipcid = resultSet.getString(DynamicTable.IPCID);
+                        //相似度
+                        Float similaritys = resultSet.getFloat(DynamicTable.SIMILARITY);
+                        //时间戳
+                        Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
+                        //大图ftpurl
+                        String burl = FtpUtil.surlToBurl(surl);
+                        //图片对象
+                        CapturedPicture capturedPicture = new CapturedPicture();
+                        capturedPicture.setSurl(FtpUtil.getFtpUrl(surl));
+                        capturedPicture.setBurl(FtpUtil.getFtpUrl(burl));
+                        capturedPicture.setIpcId(ipcid);
+                        capturedPicture.setTimeStamp(format.format(timestamp));
+                        capturedPicture.setSimilarity(similaritys);
+                        capturedPictureList.add(capturedPicture);
+                    }
+                    searchResult = saveResults(capturedPictureList,
+                            option.getOffset(),
+                            option.getCount());
+                    LOG.info("saveResult time is:" + (System.currentTimeMillis() - mid));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    jdbcUtil.close();
                 }
-            });
-            searchResult = sortAndSplit(capturedPictureList,
-                    option.getSortParams(),
-                    option.getOffset(),
-                    option.getCount());
+            } else {
+                jdbcUtil.close();
+                LOG.info("result set is null");
+            }
         } else {
             LOG.error("extract the feature is faild");
         }
         return searchResult;
+
     }
 
     /**
-     * 以图搜图，图片为空,通过图片id的查询方法
+     * 经过阈值过滤以及根据排序参数重新生成的结果
      *
-     * @param option 过滤条件
-     * @return 返回所有满足查询条件的图片
+     * @param capturedPictures 抓拍图片信息的封装对象
+     * @param offset           分页偏移量
+     * @param count            分页读取的数量
+     * @return 返回结果集
      */
-    private SearchResult compareByImageIdBySparkSQL(SearchOption option) {
-
-        //通过imageId，到ftp找到对应图片的二进制数据
-        byte[] image = Download.downloadftpFile2Bytes(option.getImageId());
-        if (image != null && image.length > 0) {
-            //提取上传图片的特征值
-            float[] searchFea = FaceFunction.featureExtract(image).getFeature();
-            if (null != searchFea && searchFea.length == 512) {
-                //将float[]特征值转为String特征值
-                String searchFeaStr = FaceFunction.floatArray2string(searchFea);
-                String selectBySparkSQL = parseByOption.getFinalSQLwithOption(searchFeaStr, option);
-                jdbcUtil.executeQuery(selectBySparkSQL, null, rs -> {
-                    //图片ftpurl
-                    String surl = rs.getString(DynamicTable.FTPURL);
-                    //设备id
-                    String ipcid = rs.getString(DynamicTable.IPCID);
-                    //相似度
-                    Float similaritys = rs.getFloat(DynamicTable.SIMILARITY);
-                    //时间戳
-                    String timestamp = rs.getString(DynamicTable.TIMESTAMP);
-                    //大图ftpurl
-                    String burl = FtpUtil.surlToBurl(surl);
-                    capturedPicture = new CapturedPicture();
-                    capturedPicture.setSurl(surl);
-                    capturedPicture.setBurl(burl);
-                    capturedPicture.setIpcId(ipcid);
-                    capturedPicture.setTimeStamp(timestamp);
-                    capturedPicture.setSimilarity(similaritys);
-                });
-                capturedPictureList.add(capturedPicture);
-                searchResult = sortAndSplit(capturedPictureList,
-                        option.getSortParams(),
-                        option.getOffset(),
-                        option.getCount());
+    private SearchResult saveResults(List<CapturedPicture> capturedPictures, int offset, int count) {
+        SearchResult searchResultTemp = new SearchResult();
+        if (null != capturedPictures && capturedPictures.size() > 0) {
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictures, insertType);
+            if (flag) {
+                LOG.info("The search history of: [" + searchId + "] saved successful");
             } else {
-                LOG.error("search feature is null or short than 512");
+                LOG.error("The search history of: [" + searchId + "] saved failure");
             }
+            List<CapturedPicture> subCapturedPictures = pageSplit(capturedPictures, offset, count);
+            searchResultTemp.setPictures(subCapturedPictures);
+            searchResultTemp.setSearchId(searchId);
+            searchResultTemp.setTotal(capturedPictures.size());
         } else {
-            LOG.error("search image is null with [" + option.getImageId() + "] ");
+            LOG.error("Find no image by deviceIds or timeStamp");
         }
-        return searchResult;
+        return searchResultTemp;
     }
+
 
     /**
      * 根据阈值过滤后的imageIdList批量查询数据对象分组排序

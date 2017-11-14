@@ -126,7 +126,6 @@ class CaptureHistory {
         } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
 
         }
-        LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
                 .setTypes(type)
@@ -157,10 +156,9 @@ class CaptureHistory {
                 String surl = hit.getId();
                 String burl = FtpUtil.surlToBurl(surl);
                 String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
-                System.out.println(hit.getSourceAsString());
                 String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
-                capturePicture.setSurl(surl);
-                capturePicture.setBurl(burl);
+                capturePicture.setSurl(FtpUtil.getFtpUrl(surl));
+                capturePicture.setBurl(FtpUtil.getFtpUrl(burl));
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setTimeStamp(timestamp);
                 persons.add(capturePicture);

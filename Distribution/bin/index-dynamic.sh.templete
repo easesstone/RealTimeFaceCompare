@@ -58,12 +58,12 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                                            "type" : "text"
                               },
                               "timeslot" : {
-                                           "type" : "text"
+                                           "type" : "long"
                               },
                               "date" : {
                                             "type" : "text"
                               },
-                              "timestamp" : {
+                              "exacttime" : {
                                   "type" : "date",
                                   "format": "yyyy-MM-dd HH:mm:ss"
                               },
@@ -75,3 +75,9 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
         }
     }
 '
+
+curl -XPUT 's109:9200/dynamic/_settings' -d '{
+    "index": {
+        "max_result_window": 1000000000
+    }
+}'

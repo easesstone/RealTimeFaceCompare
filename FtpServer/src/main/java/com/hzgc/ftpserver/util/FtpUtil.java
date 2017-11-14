@@ -119,16 +119,16 @@ public class FtpUtil implements Serializable {
 
     /**
      * 根据ftpUrl获取到IP、HostName、ipcID、TimeStamp、Date、TimeSlot
-     *
      * @param ftpUrl ftp地址 例如：ftp://172.18.18.109:2121/ABCVS20160823CCCH/2017_11_09_10_53_35_2_0.jpg
-     * @return 设备、时间等信息 例如：{date=2017-11-09, hostname=:2121, ip=172.18.18.109, timeslot=1053, ipcid=ABCVS20160823CCCH, timestamp=2017-11-09 10:53:35}
+     * @return 设备、时间等信息 例如：{date=2017-11-09, filepath=/ABCVS20160823CCCH/2017_11_09_10_53_35_2_0.jpg, port=2121, ip=172.18.18.109
+     * , timeslot=1053, ipcid=ABCVS20160823CCCH, timestamp=2017-11-09 10:53:35}
      */
     public static Map<String, String> getFtpUrlMessage(String ftpUrl) {
         Map<String, String> map = new HashMap<>();
         String ip = ftpUrl.substring(ftpUrl.indexOf(":") + 3, ftpUrl.lastIndexOf(":"));
-        String hostnameStr = ftpUrl.substring(ftpUrl.lastIndexOf(":"));
-        String hostName = hostnameStr.substring(0, hostnameStr.indexOf("/"));
-        String filePath = hostnameStr.substring(hostnameStr.indexOf("/"));
+        String portStr = ftpUrl.substring(ftpUrl.lastIndexOf(":") + 1);
+        String port = portStr.substring(0, portStr.indexOf("/"));
+        String filePath = portStr.substring(portStr.indexOf("/"));
         Map<String, String> filePathMap = getFtpPathMessage(filePath);
         if (!filePathMap.isEmpty()) {
             String ipcID = filePathMap.get("ipcID");
@@ -136,7 +136,7 @@ public class FtpUtil implements Serializable {
             String date = filePathMap.get("date");
             String timeSlot = filePathMap.get("sj");
             map.put("ip", ip);
-            map.put("hostname", hostName);
+            map.put("port", port);
             map.put("filepath", filePath);
             map.put("ipcid", ipcID);
             map.put("timestamp", timeStamp);
