@@ -930,11 +930,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                                          float threshold, String feature) {
         long start_time = System.currentTimeMillis();
         List<Map<String, Object>> resultsFinal = new ArrayList<>();
-        if (filteredMap != null && filteredMap.size() > 0 && feature.length() == 2048){
+        if (filteredMap != null && filteredMap.size() > 0 ){
             Set<String> tempSet = filteredMap.keySet();
             for (String rk : tempSet) {
                 String histFeature = (String) filteredMap.get(rk).get(ObjectInfoTable.FEATURE);
-                if (histFeature != null && histFeature.length() == 2048) {
+                if (histFeature != null) {
                     float sim = FaceFunction.featureCompare(feature, histFeature);
                     boolean pp = sim > threshold;
                     if (pp) {
@@ -1093,6 +1093,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (searchResult != null) {
             List<Map<String, Object>> persons = searchResult.getResults();
             if (persons != null) {
+                // 保存的数据中去掉feature，历史结果中不用保存feature
                 for (Map<String, Object> person : persons) {
                     Iterator<Map.Entry<String, Object>> it = person.entrySet().iterator();
                     while (it.hasNext()) {
@@ -1106,8 +1107,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             try {
                 oout = new ObjectOutputStream(bout);
-                oout.writeObject(new ArrayList(searchResult.getResults()));
-                results = bout.toByteArray();
+                List<Map<String, Object>> persons_tmp = searchResult.getResults();
+                if (persons_tmp != null){
+                    oout.writeObject(new ArrayList(searchResult.getResults()));
+                    results = bout.toByteArray();
+                }
                 oout.flush();
                 bout = new ByteArrayOutputStream();
                 oout = new ObjectOutputStream(bout);

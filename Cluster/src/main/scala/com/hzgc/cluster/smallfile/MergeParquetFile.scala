@@ -135,7 +135,7 @@ object MergeParquetFile {
                 if (!setOfFinalTable.contains(dateOfIpcId)) {
                     sql("set hive.exec.dynamic.partition=true;")
                     sql("set hive.exec.dynamic.partition.mode=nonstrict;")
-                    sql("alter table " + tableName + " add partition(date=" + date + ",ipcid=" + ipcId + ")")
+                    sql("alter table " + tableName + " add partition(date='" + date + "',ipcid='" + ipcId + "')")
                 }
             }
         } else {
@@ -155,6 +155,12 @@ object MergeParquetFile {
 
         // 7,删除原来的文件
         ReadWriteHDFS.del(pathArr, fs);
+
+        // 8, Reflesh spark store crash table data
+        if (dateString == null || "".equals(dateString)) {
+            sql("REFRESH TABLE " + tmpTableHdfsPath.substring(tmpTableHdfsPath.lastIndexOf("/") + 1))
+        }
+        sql("REFRESH TABLE " + tableName)
 
         sparkSession.close()
     }
@@ -182,7 +188,6 @@ object SparkSessionSingleton {
         if (instance == null) {
             instance = SparkSession.builder()
                 .appName("combine-parquest-demo")
-                .master("local[*]")
                 .config("spark.sql.parquet.compression.codec", "snappy")
                 .config("spark.sql.warehouse.dir", warehouseLocation)
                 .enableHiveSupport()

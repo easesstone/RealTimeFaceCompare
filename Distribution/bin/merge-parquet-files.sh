@@ -9,6 +9,7 @@
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
 
+source /etc/profile
 cd `dirname $0`
 BIN_DIR=`pwd`    ### bin目录
 cd ..
@@ -20,6 +21,16 @@ LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
 LOG_FILE=${LOG_DIR}/merge-parquet-files.log        ##  log 日记文件
 
 mkdir -p ${LOG_DIR}
+
+SPARK_STREAMING_KAFKA=1.6.2
+RELEASE_VERSION=1.5.0
+KAFKA_VERSION=0.8.2.1
+SCALA_VERSION=2.11
+
+
+
+
+source /opt/hzgc/env_bigdata.sh
 
 if [[ ($# -ne 4)  &&  ($# -ne 5) ]];then
     echo "Usage: sh merget-parquest-files.sh <hdfsClusterName> <tmpTableHdfsPath> <hisTableHdfsPath> <tableName>"
@@ -49,12 +60,22 @@ fi
 #####################################################################
 function merge_parquet()
 {
+    echo "$LIB_DIR ===================================================== NIMA "
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
-    nohup java -server -Xms5g -Xmx8g  -XX:PermSize=512m -XX:MaxPermSize=512m  -classpath $CONF_DIR:$LIB_JARS \
-    com.hzgc.cluster.smallfile.MergeParquetFile ${hdfsClusterName} ${tmpTableHdfsPath} \
-    ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
+    spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
+    --master local[*] \
+    --driver-memory 4g \
+    --jars ${LIB_DIR}/spark-streaming-kafka_${SCALA_VERSION}-${SPARK_STREAMING_KAFKA}.jar,\
+${LIB_DIR}/jni-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.jar,\
+${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
+${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
+${LIB_DIR}/hbase-${RELEASE_VERSION}.jar \
+${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 
 #####################################################################

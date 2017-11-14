@@ -85,3 +85,9 @@ curl -XPUT 's100:9200/objectinfo?pretty' -H 'Content-Type: application/json' -d'
     }
 }
 '
+
+curl -XPUT 's105:9200/objectinfo/_settings' -d '{
+    "index": {
+        "max_result_window": 1000000000
+    }
+}'

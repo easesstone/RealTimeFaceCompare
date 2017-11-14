@@ -5,6 +5,7 @@ import com.hzgc.dubbo.feature.FaceAttribute;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * 人脸对象
@@ -19,7 +20,7 @@ public class FaceObject implements Serializable {
      */
     private String timeStamp;
     /**
-     * 文件类型
+     * 文件类型(区分人/车)
      */
     private SearchType type;
     /**
@@ -38,6 +39,8 @@ public class FaceObject implements Serializable {
      * 小图
      */
     private byte[] image;
+
+    private String startTime;
 
     public String getIpcId() {
         return ipcId;
@@ -93,6 +96,14 @@ public class FaceObject implements Serializable {
 
     public void setImage(byte[] image) {
         this.image = image;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
     @Override
