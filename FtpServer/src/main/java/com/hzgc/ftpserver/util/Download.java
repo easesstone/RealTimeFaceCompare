@@ -112,7 +112,9 @@ public class Download {
      * @param localFileName 下载到本地的文件名称
      */
     public static void downloadFtpFile(String ftpUrl, String localPath, String localFileName) {
-        if (!ftpUrl.isEmpty() && !localPath.isEmpty() && !localFileName.isEmpty()) {
+        if (ftpUrl != null && ftpUrl.length() > 0 &&
+                localPath != null && localPath.length() > 0 &&
+                localFileName != null && localFileName.length() > 0) {
             //解析FTP地址，得到ftpAddress、ftpPort、ftpFilePath、ftpFileName
             String ftpAddress = ftpUrl.substring(ftpUrl.indexOf("/") + 2, ftpUrl.lastIndexOf(":"));
             String path = ftpUrl.substring(ftpUrl.lastIndexOf(":") + 1);
@@ -148,7 +150,7 @@ public class Download {
      */
     public static byte[] downloadftpFile2Bytes(String ftpUrl) {
         byte[] ftpFileBytes = null;
-        if (!ftpUrl.isEmpty()) {
+        if (ftpUrl != null && ftpUrl.length() > 0) {
             //解析FTP地址，得到ftpAddress、ftpPort、ftpFilePath、ftpFileName
             String ftpAddress = ftpUrl.substring(ftpUrl.indexOf("/") + 2, ftpUrl.lastIndexOf(":"));
             String path = ftpUrl.substring(ftpUrl.lastIndexOf(":") + 1);
