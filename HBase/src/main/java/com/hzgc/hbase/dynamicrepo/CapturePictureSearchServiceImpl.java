@@ -45,6 +45,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      */
     @Override
     public SearchResult search(SearchOption option) {
+        long start = System.currentTimeMillis();
         RealTimeCompareBySparkSQL realTimeCompareBySparkSQL = new RealTimeCompareBySparkSQL();
         SearchResult searchResult = null;
         try {
@@ -52,6 +53,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         } catch (Exception e) {
             e.printStackTrace();
         }
+        LOG.info("search total time is:" + (System.currentTimeMillis() - start));
         return searchResult;
     }
 

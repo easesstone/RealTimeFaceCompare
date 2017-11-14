@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,10 +41,6 @@ class RealTimeCompareBySparkSQL {
      * 图片对象列表
      */
     private List<CapturedPicture> capturedPictureList = new ArrayList<>();
-    /**
-     * 图片对象
-     */
-    private CapturedPicture capturedPicture;
     /**
      * SQL语句生成器
      */
@@ -138,15 +135,15 @@ class RealTimeCompareBySparkSQL {
                 LOG.warn("the threshold is null");
                 return searchResult;
             }
-            System.out.println(selectBySparkSQL.substring(0, selectBySparkSQL.indexOf("'")));
-            System.out.println(selectBySparkSQL.substring(selectBySparkSQL.indexOf("e)") + 1));
-            LOG.info("query sql:" +
-                    selectBySparkSQL.substring(selectBySparkSQL.indexOf("'")) +
-                    selectBySparkSQL.substring(selectBySparkSQL.indexOf("e)") + 1));
+            LOG.info("query sql:" + parseByOption.getFinalSQLwithOption("", option));
             //特征值比对，根据条件过滤
+            long start = System.currentTimeMillis();
             jdbcUtil.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
                     "; REFRESH TABLE" + DynamicTable.PERSON_TABLE + ";");
             ResultSet resultSet = jdbcUtil.executeQuery(selectBySparkSQL);
+            long mid = System.currentTimeMillis();
+            LOG.info("executeQuery total time is:" + (mid - start));
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             if (resultSet != null) {
                 try {
                     while (resultSet.next()) {
@@ -160,14 +157,19 @@ class RealTimeCompareBySparkSQL {
                         Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
                         //大图ftpurl
                         String burl = FtpUtil.surlToBurl(surl);
-                        capturedPicture = new CapturedPicture();
-                        capturedPicture.setSurl(surl);
-                        capturedPicture.setBurl(burl);
+                        //图片对象
+                        CapturedPicture capturedPicture = new CapturedPicture();
+                        capturedPicture.setSurl(FtpUtil.getFtpUrl(surl));
+                        capturedPicture.setBurl(FtpUtil.getFtpUrl(burl));
                         capturedPicture.setIpcId(ipcid);
-                        capturedPicture.setTimeStamp(timestamp.toString());
+                        capturedPicture.setTimeStamp(format.format(timestamp));
                         capturedPicture.setSimilarity(similaritys);
                         capturedPictureList.add(capturedPicture);
                     }
+                    searchResult = saveResults(capturedPictureList,
+                            option.getOffset(),
+                            option.getCount());
+                    LOG.info("saveResult time is:" + (System.currentTimeMillis() - mid));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 } finally {
@@ -175,17 +177,42 @@ class RealTimeCompareBySparkSQL {
                 }
             } else {
                 jdbcUtil.close();
+                LOG.info("result set is null");
             }
-            searchResult = sortAndSplit(capturedPictureList,
-                    option.getSortParams(),
-                    option.getOffset(),
-                    option.getCount());
         } else {
             LOG.error("extract the feature is faild");
         }
         return searchResult;
 
     }
+
+    /**
+     * 经过阈值过滤以及根据排序参数重新生成的结果
+     *
+     * @param capturedPictures 抓拍图片信息的封装对象
+     * @param offset           分页偏移量
+     * @param count            分页读取的数量
+     * @return 返回结果集
+     */
+    private SearchResult saveResults(List<CapturedPicture> capturedPictures, int offset, int count) {
+        SearchResult searchResultTemp = new SearchResult();
+        if (null != capturedPictures && capturedPictures.size() > 0) {
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictures, insertType);
+            if (flag) {
+                LOG.info("The search history of: [" + searchId + "] saved successful");
+            } else {
+                LOG.error("The search history of: [" + searchId + "] saved failure");
+            }
+            List<CapturedPicture> subCapturedPictures = pageSplit(capturedPictures, offset, count);
+            searchResultTemp.setPictures(subCapturedPictures);
+            searchResultTemp.setSearchId(searchId);
+            searchResultTemp.setTotal(capturedPictures.size());
+        } else {
+            LOG.error("Find no image by deviceIds or timeStamp");
+        }
+        return searchResultTemp;
+    }
+
 
     /**
      * 根据阈值过滤后的imageIdList批量查询数据对象分组排序
