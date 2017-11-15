@@ -56,10 +56,10 @@ class CaptureHistory {
         String sortParams = option.getSortParams();
         String flag = String.valueOf(sortParams.charAt(0));
         String sortparam = sortParams.substring(1);
-        String px ;
-        if (flag.equals("-")){
+        String px;
+        if (flag.equals("-")) {
             px = "desc";
-        }else {
+        } else {
             px = "asc";
         }
 
@@ -96,7 +96,7 @@ class CaptureHistory {
             // 设备ID 存在的时候的处理
             if (deviceId != null) {
                 for (Object t : deviceId) {
-                        devicdIdBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, t).analyzer("standard"));
+                    devicdIdBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, t).analyzer("standard"));
                 }
                 totalBQ.must(devicdIdBQ);
             }
@@ -111,13 +111,13 @@ class CaptureHistory {
             // 对时间段的处理
             if (timeIntervals != null) {
                 for (TimeInterval timeInterval1 : timeIntervals) {
-                        timeInterval = timeInterval1;
-                        int start_sj = timeInterval.getStart();
-                        String start_ts = String.valueOf(start_sj * 100 / 60 + start_sj % 60);
-                        int end_sj = timeInterval.getEnd();
-                        String end_ts = String.valueOf(end_sj * 100 / 60 + end_sj % 60);
-                        timeInQB.should(QueryBuilders.rangeQuery(DynamicTable.TIMESLOT).gte(start_ts).lte(end_ts));
-                        totalBQ.must(timeInQB);
+                    timeInterval = timeInterval1;
+                    int start_sj = timeInterval.getStart();
+                    String start_ts = String.valueOf(start_sj * 100 / 60 + start_sj % 60);
+                    int end_sj = timeInterval.getEnd();
+                    String end_ts = String.valueOf(end_sj * 100 / 60 + end_sj % 60);
+                    timeInQB.should(QueryBuilders.rangeQuery(DynamicTable.TIMESLOT).gte(start_ts).lte(end_ts));
+                    totalBQ.must(timeInQB);
                 }
             }
             //索引和类型

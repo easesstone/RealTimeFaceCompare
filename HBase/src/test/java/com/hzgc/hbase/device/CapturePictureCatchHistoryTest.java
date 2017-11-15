@@ -62,10 +62,6 @@ public class CapturePictureCatchHistoryTest {
         a.add(b);
         a.add(c);
         a.add(d);
-        List<TimeInterval> timeIntervals = new ArrayList<>();
-        TimeInterval timeInterval = new TimeInterval();
-        timeIntervals.add(timeInterval);
-        searchOption.setIntervals(timeIntervals);
         searchOption.setDeviceIds(a);
         searchOption.setSortParams("-timestamp");
         searchOption.setThreshold(0.0f);
@@ -76,7 +72,7 @@ public class CapturePictureCatchHistoryTest {
         searchOption.setStartDate(null);
         searchOption.setPlatformId(null);
         searchOption.setPlateNumber(null);
-
+        searchOption.setIntervals(null);
         searchOption.setAttributes(null);
 //        List<Attribute> attributes = new ArrayList<>();
 //        Attribute attribute = new Attribute();
