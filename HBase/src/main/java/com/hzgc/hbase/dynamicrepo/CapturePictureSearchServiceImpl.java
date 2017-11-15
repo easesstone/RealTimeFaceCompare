@@ -5,8 +5,10 @@ import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.util.ObjectUtil;
+import com.hzgc.util.UuidUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -32,6 +34,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
 
     static {
+        JDBCUtil.getInstance();
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
         NativeFunction.init();
@@ -46,12 +49,24 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public SearchResult search(SearchOption option) {
         long start = System.currentTimeMillis();
-        RealTimeCompareBySparkSQL realTimeCompareBySparkSQL = new RealTimeCompareBySparkSQL();
         SearchResult searchResult = null;
-        try {
-            searchResult = realTimeCompareBySparkSQL.pictureSearchBySparkSQL(option);
-        } catch (Exception e) {
-            e.printStackTrace();
+        RealTimeCompareBySparkSQL realTimeCompareBySparkSQL;
+        if (null != option) {
+            realTimeCompareBySparkSQL = new RealTimeCompareBySparkSQL();
+            //搜索类型 是人还是车
+            //设置查询Id
+            String searchId = UuidUtil.setUuid();
+            LOG.info("generate current query id:[" + searchId + "]");
+            //查询的对象库是人
+            if (option.getImage() != null || option.getImageId() != null) {
+                //根据上传的图片查询
+                searchResult = realTimeCompareBySparkSQL.pictureSearchBySparkSQL(option, searchId);
+            } else {
+                //无图无imageId,通过其他参数查询
+                searchResult = getCaptureHistory(option);
+            }
+        } else {
+            LOG.error("search parameter option is null");
         }
         LOG.info("search total time is:" + (System.currentTimeMillis() - start));
         return searchResult;
