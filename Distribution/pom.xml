@@ -43,11 +43,6 @@
             <artifactId>streaming</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.hzgc</groupId>
-            <artifactId>hbase2es</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

@@ -43,7 +43,6 @@ public class ElasticSearchHelper implements Serializable{
         for (String host: es_hosts.split(",")){
             try {
                 client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), es_port));
-                System.out.println("================" + host);
                 LOG.info("Address addition successed!");
             } catch (UnknownHostException e) {
                 LOG.error("Host can not be identify!");

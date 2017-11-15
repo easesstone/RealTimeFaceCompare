@@ -18,11 +18,14 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 public class LocalSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(LocalSTOR.class);
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * Execute command.
      */
@@ -150,6 +153,7 @@ public class LocalSTOR extends AbstractCommand {
                             faceObject.setDate(date);
                             faceObject.setType(SearchType.PERSON);
                             faceObject.setAttribute(FaceFunction.featureExtract(data));
+                            faceObject.setStartTime(sdf.format(new Date()));
 
                             //发送到kafka
                             String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
