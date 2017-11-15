@@ -9,9 +9,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 
 /**
@@ -22,17 +20,13 @@ public class JDBCUtil {
     private static JDBCUtil instance = null;
     private static Logger log = Logger.getLogger(JDBCUtil.class);
     private static DataSource dataSource = new DruidDataSource();
-    private static Connection conn;
     private static Properties propertie = new Properties();
-    private static ResultSet rs;
-    private static Statement stmt;
 
     private JDBCUtil() {
     }
 
-    /**
-     * 加载数据源配置信息
-     *
+    /*
+      加载数据源配置信息
      */
     static {
         try {
@@ -41,6 +35,7 @@ public class JDBCUtil {
                 propertie.load(new FileInputStream(resourceFile));
             }
             dataSource = DruidDataSourceFactory.createDataSource(propertie);
+            dataSource.getConnection().close();
         } catch (Exception e) {
             log.info("get jdbc.properties failure");
         }
@@ -69,42 +64,10 @@ public class JDBCUtil {
      */
     public Connection getConnection() {
         try {
-            conn = dataSource.getConnection();
+            return dataSource.getConnection();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return conn;
-    }
-
-    /**
-     * 执行查询SQL语句
-     *
-     * @param sql 查询语句
-     * @return rs
-     */
-    public ResultSet executeQuery(String sql) {
-        try {
-            conn = getConnection();
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return rs;
-    }
-
-    /**
-     * 关闭连接
-     */
-    public void close() {
-        if (conn != null && stmt != null && rs != null) {
-            try {
-                conn.close();
-                stmt.close();
-                rs.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        return null;
     }
 }

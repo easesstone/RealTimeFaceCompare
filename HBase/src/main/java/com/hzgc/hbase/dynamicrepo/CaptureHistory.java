@@ -56,10 +56,10 @@ class CaptureHistory {
         String sortParams = option.getSortParams();
         String flag = String.valueOf(sortParams.charAt(0));
         String sortparam = sortParams.substring(1);
-        String px ;
-        if (flag.equals("-")){
+        String px;
+        if (flag.equals("-")) {
             px = "desc";
-        }else {
+        } else {
             px = "asc";
         }
 
@@ -101,7 +101,7 @@ class CaptureHistory {
                 totalBQ.must(devicdIdBQ);
             }
             // 开始时间和结束时间存在的时候的处理
-            if (startTime != null && endTime != null) {
+            if (startTime != null && endTime != null && !startTime.equals("") && !endTime.equals("")) {
                 totalBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
             }
             //TimeIntervals 时间段的封装类
@@ -126,7 +126,6 @@ class CaptureHistory {
         } else if (SearchType.CAR.equals(searchType)) {     // 搜索的是车的情况下
 
         }
-        LOG.info("================================================");
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(index)
                 .setTypes(type)
