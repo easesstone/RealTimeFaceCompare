@@ -36,7 +36,7 @@ public class FtpAddressServiceImpl implements FtpAddressService, Serializable {
     @Override
     public String getIPAddress(String hostname) {
         String ftpIpAddress = "";
-        if (!hostname.isEmpty()){
+        if (hostname != null && hostname.length() > 0) {
             Properties properties = new Properties();
             InputStream inputStream = null;
             try {
@@ -45,7 +45,7 @@ public class FtpAddressServiceImpl implements FtpAddressService, Serializable {
                 ftpIpAddress = properties.getProperty(hostname);
             } catch (IOException e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 IOUtil.closeStream(inputStream);
             }
         }

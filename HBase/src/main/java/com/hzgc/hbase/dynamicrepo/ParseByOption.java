@@ -4,8 +4,6 @@ import com.hzgc.dubbo.attribute.Attribute;
 import com.hzgc.dubbo.dynamicrepo.SearchOption;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
-
 
 class ParseByOption {
 
@@ -16,20 +14,39 @@ class ParseByOption {
      * @param option       搜索条件
      * @return 返回拼接的sql
      */
-    String getFinalSQLwithOption(String searchFeaStr, SearchOption option) {
-        return getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option) +
-                " union all " +
-                getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option) +
-                " order by "
-                + DynamicTable.SIMILARITY
-                + " limit 1000";
+    static String getFinalSQLwithOption(String searchFeaStr, SearchOption option) {
+        StringBuilder finaSql = new StringBuilder();
+        finaSql.append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
+                .append(" union all ")
+                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option));
+        if (option.getSortParams() != null && option.getSortParams().length() > 0) {
+            finaSql.append(" order by ");
+            String[] splitStr = option.getSortParams().split(",");
+            for (int i = 0; i < splitStr.length; i++) {
+                if (splitStr[i].startsWith("+")) {
+                    finaSql.append(splitStr[i].substring(1));
+                    if (splitStr.length - 1 > i) {
+                        finaSql.append(",");
+                    }
+                } else if (splitStr[i].startsWith("-")) {
+                    finaSql.append(splitStr[i].substring(1))
+                            .append(" desc");
+                    if (splitStr.length - 1 > i) {
+                        finaSql.append(",");
+                    }
+                }
+            }
+        }
+        finaSql.append(" limit 1000");
+        return finaSql.toString();
     }
 
-    private String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
+    private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //无阈值不进行比对
         if (option.getThreshold() == 0.0) {
             return "";
         }
+        //date分区字段
         StringBuilder finalSql = new StringBuilder();
         finalSql
                 .append("select * from (select *, ")
