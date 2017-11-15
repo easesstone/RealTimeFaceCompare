@@ -35,6 +35,7 @@ public class JDBCUtil {
                 propertie.load(new FileInputStream(resourceFile));
             }
             dataSource = DruidDataSourceFactory.createDataSource(propertie);
+            dataSource.getConnection().close();
         } catch (Exception e) {
             log.info("get jdbc.properties failure");
         }

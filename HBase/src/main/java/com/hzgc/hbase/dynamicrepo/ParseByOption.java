@@ -6,7 +6,19 @@ import com.hzgc.dubbo.dynamicrepo.SearchOption;
 import java.sql.Date;
 
 class ParseByOption {
-
+    private static String FTIEL = null;
+    static {
+        StringBuilder field = new StringBuilder();
+        FTIEL = field.append(DynamicTable.FTPURL)
+                .append(",")
+                .append(DynamicTable.IPCID)
+                .append(",")
+                .append(DynamicTable.TIMESLOT)
+                .append(",")
+                .append(DynamicTable.TIMESTAMP)
+                .append(",")
+                .append(DynamicTable.DATE).toString();
+    }
     /**
      * 获取拼接sql
      *
@@ -15,54 +27,21 @@ class ParseByOption {
      * @return 返回拼接的sql
      */
     static String getFinalSQLwithOption(String searchFeaStr, SearchOption option) {
-        StringBuilder finaSql = new StringBuilder();
-        finaSql.append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
-                .append(" union all ")
-                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option));
-        if (option.getSortParams() != null && option.getSortParams().length() > 0) {
-            finaSql.append(" order by ");
-            String[] splitStr = option.getSortParams().split(",");
-            for (int i = 0; i < splitStr.length; i++) {
-                if (splitStr[i].startsWith("+")) {
-                    finaSql.append(splitStr[i].substring(1));
-                    if (splitStr.length - 1 > i) {
-                        finaSql.append(",");
-                    }
-                } else if (splitStr[i].startsWith("-")) {
-                    finaSql.append(splitStr[i].substring(1))
-                            .append(" desc");
-                    if (splitStr.length - 1 > i) {
-                        finaSql.append(",");
-                    }
-                }
-            }
-        }
-        finaSql.append(" limit 1000");
-        return finaSql.toString();
-    }
-
-    private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //无阈值不进行比对
         if (option.getThreshold() == 0.0) {
             return "";
         }
-        //date分区字段
         StringBuilder finalSql = new StringBuilder();
-        finalSql
-                .append("select * from (select *, ")
-                .append(DynamicTable.FUNCTION_NAME)
-                .append("('")
-                .append(searchFeaStr)
-                .append("', ")
-                .append(DynamicTable.FEATURE)
-                .append(") as ")
-                .append(DynamicTable.SIMILARITY)
-                .append(" from ")
-                .append(tableName)
+        finalSql.append("select ")
+                .append(FTIEL)
+                .append(" from (")
+                .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
+                .append(" union all ")
+                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option))
                 .append(") temp_table where ")
                 .append(DynamicTable.SIMILARITY)
-                .append(">=").append(option.getThreshold());
-
+                .append(">=")
+                .append(option.getThreshold());
         //判断人脸对象属性
         if (option.getAttributes() != null && option.getAttributes().size() > 0) {
             for (Attribute attribute : option.getAttributes()) {
@@ -164,6 +143,44 @@ class ParseByOption {
                 }
             }
         }
+        if (option.getSortParams() != null && option.getSortParams().length() > 0) {
+            finalSql.append(" order by ");
+            String[] splitStr = option.getSortParams().split(",");
+            for (int i = 0; i < splitStr.length; i++) {
+                if (splitStr[i].startsWith("+")) {
+                    finalSql.append(splitStr[i].substring(1));
+                    if (splitStr.length - 1 > i) {
+                        finalSql.append(",");
+                    }
+                } else if (splitStr[i].startsWith("-")) {
+                    finalSql.append(splitStr[i].substring(1))
+                            .append(" desc");
+                    if (splitStr.length - 1 > i) {
+                        finalSql.append(",");
+                    }
+                }
+            }
+        }
+        finalSql.append(" limit 1000");
+        return finalSql.toString();
+    }
+
+    private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
+        //date分区字段
+        StringBuilder finalSql = new StringBuilder();
+        finalSql
+                .append("select ")
+                .append(FTIEL)
+                .append(",")
+                .append(DynamicTable.FUNCTION_NAME)
+                .append("('")
+                .append(searchFeaStr)
+                .append("', ")
+                .append(DynamicTable.FEATURE)
+                .append(") as ")
+                .append(DynamicTable.SIMILARITY)
+                .append(" from ")
+                .append(tableName);
         return finalSql.toString();
     }
 }
