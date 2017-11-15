@@ -89,13 +89,14 @@ class ParseByOption {
         }
         //判断一个或多个时间区间 数据格式 小时+分钟 例如:1122
         if (option.getIntervals() != null && option.getIntervals().size() > 0) {
+            finalSql.append(" and ");
             for (int i = 0; option.getIntervals().size() > i; i++) {
                 int start_sj = option.getIntervals().get(i).getStart();
                 int start_st = (start_sj / 60) * 100 + start_sj % 60;
                 int end_sj = option.getIntervals().get(i).getEnd();
                 int end_st = (end_sj / 60) * 100 + end_sj % 60;
                 if (option.getIntervals().size() - 1 > i) {
-                    finalSql.append(" and ")
+                    finalSql
                             .append(DynamicTable.TIMESLOT)
                             .append(" between ")
                             .append(start_st)
@@ -112,8 +113,8 @@ class ParseByOption {
                 }
             }
         }
-        //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒
         if (option.getStartDate() != null && option.getEndDate() != null) {
+            //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒
             finalSql
                     .append(" and ")
                     .append(DynamicTable.TIMESTAMP)
@@ -127,9 +128,7 @@ class ParseByOption {
                     .append("'")
                     .append(option.getEndDate())
                     .append("'");
-        }
-        //判断日期分区 数据格式 年-月-日
-        if (option.getStartDate() != null && option.getEndDate() != null) {
+            //判断日期分区 数据格式 年-月-日
             finalSql
                     .append(" and ")
                     .append(DynamicTable.DATE)
