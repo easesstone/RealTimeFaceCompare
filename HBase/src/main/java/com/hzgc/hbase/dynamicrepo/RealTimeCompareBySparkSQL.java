@@ -8,7 +8,6 @@ import com.hzgc.hbase.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.util.ObjectListSort.ListUtils;
 import com.hzgc.util.ObjectListSort.SortParam;
-import com.hzgc.util.UuidUtil;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
@@ -22,56 +21,28 @@ import java.util.List;
  */
 class RealTimeCompareBySparkSQL {
     private Logger LOG = Logger.getLogger(RealTimeCompareBySparkSQL.class);
-    private String insertType;
     private DynamicPhotoService dynamicPhotoService;
-    private CapturePictureSearchServiceImpl capturePictureSearchService;
 
     RealTimeCompareBySparkSQL() {
-        JDBCUtil.getInstance();
         dynamicPhotoService = new DynamicPhotoServiceImpl();
-        capturePictureSearchService = new CapturePictureSearchServiceImpl();
     }
 
-    SearchResult pictureSearchBySparkSQL(SearchOption option) {
-        SearchResult searchResult = null;
-        if (null != option) {
-            //搜索类型 是人还是车
-            SearchType searchType = option.getSearchType();
-            //设置查询Id
-            String searchId = UuidUtil.setUuid();
-            if (null != searchType) {
-                //查询的对象库是人
-                if (searchType == SearchType.PERSON) {
-                    insertType = DynamicTable.PERSON_TYPE;
-                    if (option.getImage() != null || option.getImageId() != null) {
-                        //根据上传的图片查询
-                        searchResult = compareByImageBySparkSQL(searchType, option, searchId);
-                    } else {
-                        //无图无imageId,通过其他参数查询
-                        searchResult = capturePictureSearchService.getCaptureHistory(option);
-                    }
-                }
+    SearchResult pictureSearchBySparkSQL(SearchOption option, String searchId) {
+        //搜索类型 是人还是车
+        SearchType searchType = option.getSearchType();
+        //设置查询Id
+        if (null != searchType) {
+            //查询的对象库是人
+            if (searchType == SearchType.PERSON) {
+                //根据上传的图片查询
+                return compareByImageBySparkSQL(searchType, option, searchId);
                 //查询的对象库是车
-                else if (searchType == SearchType.CAR) {
-                    insertType = DynamicTable.CAR_TYPE;
-                    //平台上传的参数中有图片
-                    if (null != option.getImage() && option.getImage().length > 0) {
-                        searchResult = compareByImageBySparkSQL(searchType, option, searchId);
-                    } else {
-                        //无图片，有imageId,相当于ftpurl
-                        if (null != option.getImageId()) {
-                            searchResult = compareByImageBySparkSQL(searchType, option, searchId);
-                        } else {
-                            //无图无imageId,通过其他参数查询
-                            searchResult = capturePictureSearchService.getCaptureHistory(option);
-                        }
-                    }
-                }
+            } else if (searchType == SearchType.CAR) {
+                //平台上传的参数中有图片
+                return compareByImageBySparkSQL(searchType, option, searchId);
             }
-        } else {
-            LOG.error("search parameter option is null");
         }
-        return searchResult;
+        return new SearchResult();
     }
 
     /**
@@ -81,12 +52,19 @@ class RealTimeCompareBySparkSQL {
      * @return 返回所有满足查询条件的图片
      */
     private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option, String searchId) {
+        String typeStr = null;
         Connection conn = null;
         Statement statement = null;
         ResultSet resultSet = null;
+        SearchResult searchResult = null;
         //提取上传图片的特征值
         float[] searchFea;
         byte[] image;
+        if (type == SearchType.PERSON) {
+            typeStr = DynamicTable.PERSON_TYPE;
+        } else if (type == SearchType.CAR) {
+            typeStr = DynamicTable.CAR_TYPE;
+        }
         if (option.getImage() != null) {
             image = option.getImage();
             searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
@@ -117,10 +95,10 @@ class RealTimeCompareBySparkSQL {
             //特征值比对，根据条件过滤
             try {
                 long start = System.currentTimeMillis();
-                conn = JDBCUtil.getConnection();
+                conn = JDBCUtil.getInstance().getConnection();
                 statement = conn.createStatement();
-                statement.executeUpdate("REFRESH TABLE " + DynamicTable.MID_TABLE +
-                        "; REFRESH TABLE" + DynamicTable.PERSON_TABLE + ";");
+                statement.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
+                        ";REFRESH TABLE " + DynamicTable.PERSON_TABLE + ";");
                 resultSet = statement.executeQuery(selectBySparkSQL);
                 long mid = System.currentTimeMillis();
                 LOG.info("executeQuery total time is:" + (mid - start));
@@ -149,7 +127,9 @@ class RealTimeCompareBySparkSQL {
                     }
                     searchResult = saveResults(capturedPictureList,
                             option.getOffset(),
-                            option.getCount());
+                            option.getCount(),
+                            searchId,
+                            typeStr);
                     LOG.info("saveResult time is:" + (System.currentTimeMillis() - mid));
                 } else {
                     LOG.info("result set is null");
@@ -179,10 +159,11 @@ class RealTimeCompareBySparkSQL {
                     e.printStackTrace();
                 }
             }
+            return searchResult;
         } else {
             LOG.error("extract the feature is faild");
+            return new SearchResult();
         }
-        return searchResult;
     }
 
     /**
@@ -193,10 +174,10 @@ class RealTimeCompareBySparkSQL {
      * @param count            分页读取的数量
      * @return 返回结果集
      */
-    private SearchResult saveResults(List<CapturedPicture> capturedPictures, int offset, int count, String searchId) {
+    private SearchResult saveResults(List<CapturedPicture> capturedPictures, int offset, int count, String searchId, String typeStr) {
         SearchResult searchResultTemp = new SearchResult();
         if (null != capturedPictures && capturedPictures.size() > 0) {
-            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictures, insertType);
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPictures, typeStr);
             if (flag) {
                 LOG.info("The search history of: [" + searchId + "] saved successful");
             } else {
@@ -223,12 +204,13 @@ class RealTimeCompareBySparkSQL {
                                       String sortParams,
                                       int offset,
                                       int count,
-                                      String searchId) {
+                                      String searchId,
+                                      String typeStr) {
         SearchResult searchResultTemp = new SearchResult();
         List<CapturedPicture> capturedPicturesSorted;
         if (null != capturedPictures && capturedPictures.size() > 0) {
             capturedPicturesSorted = sortByParams(capturedPictures, sortParams);
-            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPicturesSorted, insertType);
+            boolean flag = dynamicPhotoService.insertSearchRes(searchId, capturedPicturesSorted, typeStr);
             if (flag) {
                 LOG.info("The search history of: [" + searchId + "] saved successful");
             } else {
