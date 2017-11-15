@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
@@ -36,6 +37,16 @@ public class HBaseHelper implements Serializable {
             innerHBaseConf.addResource(hbaseFile.getPath());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void closeInnerHbaseConn() {
+        if (innerHBaseConnection != null) {
+            try {
+                innerHBaseConnection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -216,4 +227,44 @@ public class HBaseHelper implements Serializable {
             }
         }
     }
+
+    public static Table createTable(String tableName, int maxVersion, String... colfams) {
+        return createTable(tableName, maxVersion, Integer.MAX_VALUE, colfams);
+    }
+
+    public static Table createTable(String tableName, int maxVersion, int timeToLive, String... colfams) {
+        HTableDescriptor tableDescriptor = null;
+        Admin admin = null;
+        Table table = null;
+        // 创建表格
+        try {
+            admin = HBaseHelper.getHBaseConnection().getAdmin();
+            if (admin.tableExists(TableName.valueOf(tableName))) {
+                LOG.info("Table: " + tableName + " have already exit, quit with status 0.");
+                return getTable(tableName);
+            }
+            tableDescriptor = new HTableDescriptor(TableName.valueOf(tableName));
+            for (String columnFamily : colfams) {
+                HColumnDescriptor columnDescriptor = new HColumnDescriptor(columnFamily);
+                columnDescriptor.setMaxVersions(maxVersion);
+                columnDescriptor.setTimeToLive(timeToLive);
+                tableDescriptor.addFamily(columnDescriptor);
+            }
+            LOG.info("start creating table " + tableName);
+            admin.createTable(tableDescriptor);
+            LOG.info("crate table done.....");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 关闭admin 对象。
+        try {
+            if (admin != null) {
+                admin.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return table;
+    }
+
 }

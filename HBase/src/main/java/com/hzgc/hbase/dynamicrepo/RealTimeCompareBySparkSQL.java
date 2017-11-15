@@ -102,7 +102,7 @@ class RealTimeCompareBySparkSQL {
                 resultSet = statement.executeQuery(selectBySparkSQL);
                 long mid = System.currentTimeMillis();
                 LOG.info("executeQuery total time is:" + (mid - start));
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 if (resultSet != null) {
                     List<CapturedPicture> capturedPictureList = new ArrayList<>();
                     while (resultSet.next()) {
