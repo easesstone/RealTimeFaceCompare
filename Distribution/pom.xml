@@ -35,12 +35,12 @@
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
-            <artifactId>rocketmq</artifactId>
+            <artifactId>streaming</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
-            <artifactId>streaming</artifactId>
+            <artifactId>udf</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
@@ -60,7 +60,7 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                                <descriptor>src/assembly/assembly.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
