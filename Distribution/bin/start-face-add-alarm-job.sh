@@ -59,7 +59,9 @@ BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_
 ## spark bin dir
 SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
 ## spark master
-SPARK_MASTER_PARAM=yarn-cluster
+SPARK_MASTER=yarn
+## spark mode
+SPARK_MODE=cluster
 ## spark executor-memory
 SPARK_EXECUTOR_MEMORY=5g
 ## spark executor-cores
@@ -221,7 +223,8 @@ fi
 ## 新增告警任务
 source ${ETC_PROFILE}
 nohup ${SPARK_HOME}/spark-submit \
---master ${SPARK_MASTER_PARAM} \
+--master ${SPARK_MASTER} \
+--deploy-mode ${SPARK_MODE} \
 --executor-memory ${SPARK_EXECUTOR_MEMORY} \
 --executor-cores ${SPARK_EXECUTOR_CORES} \
 --class ${SPARK_CLASS_PARAM} \

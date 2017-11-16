@@ -15,6 +15,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -22,7 +23,7 @@ import java.util.*;
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
-public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable{
+public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoInnerHandlerImpl.class);
     private static ObjectInfoInnerHandlerImpl instance;
@@ -32,7 +33,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
     /**
      * 接口实现使用单例模式
      */
-    private ObjectInfoInnerHandlerImpl(){
+    private ObjectInfoInnerHandlerImpl() {
         ElasticSearchHelper.getEsClient();
     }
 
@@ -55,12 +56,14 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
     /**
      * 用于判断HBase 中的静态信息库数据量是否有改变
      *
-     * @return true表示有变化,false 表示没有变化
+     * @return true表示有变化, false 表示没有变化
      */
-    private boolean totalNumIsChange(){
+    private boolean totalNumIsChange() {
         long newTotalNums = getTotalNums();
-        if (totalNums == newTotalNums){
-            System.out.println("totalNums is not change, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateStr = df.format(new Date());
+        if (totalNums == newTotalNums) {
+            System.out.println("TotalNums no change,current time:[ " + dateStr + " ]");
             return false;
         } else {
             System.out.println("totalNums has changed, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
@@ -90,7 +93,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      *
      * @param newToalNums 底库中最新总数信息
      */
-    private static void setTotalNums(long newToalNums){
+    private static void setTotalNums(long newToalNums) {
         totalNums = newToalNums;
         LOG.info("set new number successfull, new number is:" + totalNums);
     }
@@ -100,7 +103,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      *
      * @return 最新总数信息
      */
-    private static long getTotalNums(){
+    private static long getTotalNums() {
         Get get = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         try {
@@ -116,7 +119,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
     /**
      * 查询所有的数据
      *
-     * @return 返回其中的rowkey,pkey,feature
+     * @return 返回其中的rowkey, pkey, feature
      */
     private List<String[]> searchByPkeys() {
         List<String[]> findResult = new ArrayList<>();
@@ -132,7 +135,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                         Bytes.toBytes(ObjectInfoTable.PKEY)));
                 byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.FEATURE));
-                if (null != feature ) {
+                if (null != feature) {
                     //将人员类型rowkey和特征值进行拼接
                     String feature_str = new String(feature, "ISO8859-1");
                     String[] result1 = new String[3];
@@ -145,7 +148,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             HBaseUtil.closTable(objectinfo);
         }
         return findResult;
@@ -159,7 +162,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      */
     @Override
     public List<String[]> searchByPkeys(List<String> pkeys) {
-        if (pkeys == null){
+        if (pkeys == null) {
             return null;
         }
         //遍历人员类型
@@ -222,7 +225,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      *
      * @return 返回符合条件的数据
      */
-    public List<String> searchByPkeysUpdateTime(){
+    public List<String> searchByPkeysUpdateTime() {
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = matchAllQuery();
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -244,7 +247,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                     //得到每个人员类型对应的特征值
                     Map<String, Object> sourceList = hit.getSource();
                     String updatetime = (String) sourceList.get("updatetime");
-                    String pkey = (String)sourceList.get("pkey");
+                    String pkey = (String) sourceList.get("pkey");
                     //将人员类型、rowkey和特征值进行拼接
                     String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
                     //将结果添加到集合中
@@ -265,7 +268,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      * @param pkeys 对象类型列表
      * @return 返回符合条件的数据
      */
-    public  List<String> searchByPkeysUpdateTime(List<String> pkeys){
+    public List<String> searchByPkeysUpdateTime(List<String> pkeys) {
         List<String> findResult = new ArrayList<>();
         QueryBuilder qb = QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys);
         SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
@@ -287,7 +290,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                     //得到每个人员类型对应的特征值
                     Map<String, Object> sourceList = hit.getSource();
                     String updatetime = (String) sourceList.get("updatetime");
-                    String pkey = (String)sourceList.get("pkey");
+                    String pkey = (String) sourceList.get("pkey");
                     //将人员类型、rowkey和特征值进行拼接
                     String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
                     //将结果添加到集合中
@@ -306,7 +309,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      * 更新此List中的人员最新出现时间
      *
      * @param rowkeys 对象类型列表
-     * @return 0成功,1失败
+     * @return 0成功, 1失败
      */
     public int updateObjectInfoTime(List<String> rowkeys) {
         if (rowkeys == null || rowkeys.size() <= 0) {
@@ -316,26 +319,26 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         List<Put> puts = new ArrayList<>();
         try {
-           for(int i = 0;i < rowkeys.size(); i++){
-               Put put = new Put(Bytes.toBytes(rowkeys.get(i)));
-               put.setDurability(Durability.ASYNC_WAL);
-               // 获取系统当前时间
-               Date date = new Date();
-               SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-               String dateString = format.format(date);
-               // 构造一个更新对象信息中的更新时间段的put
-               put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                       Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
-               puts.add(put);
-               if (i % 10000 == 0){
-                   table.put(puts);
-                   puts.clear();
-               }
-           }
-           if (puts.size() > 0){
-               table.put(puts);
-           }
-           return 0;
+            for (int i = 0; i < rowkeys.size(); i++) {
+                Put put = new Put(Bytes.toBytes(rowkeys.get(i)));
+                put.setDurability(Durability.ASYNC_WAL);
+                // 获取系统当前时间
+                Date date = new Date();
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String dateString = format.format(date);
+                // 构造一个更新对象信息中的更新时间段的put
+                put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
+                puts.add(put);
+                if (i % 10000 == 0) {
+                    table.put(puts);
+                    puts.clear();
+                }
+            }
+            if (puts.size() > 0) {
+                table.put(puts);
+            }
+            return 0;
         } catch (IOException e) {
             e.printStackTrace();
             return 1;
