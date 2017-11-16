@@ -34,7 +34,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
 
     static {
-        JDBCUtil.getInstance();
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
         NativeFunction.init();
