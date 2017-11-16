@@ -13,7 +13,6 @@
         <module>HBase</module>
         <module>Dubbo</module>
         <module>Cluster</module>
-        <module>RocketMQ</module>
         <module>Distribution</module>
         <module>JNI</module>
         <module>UDF</module>

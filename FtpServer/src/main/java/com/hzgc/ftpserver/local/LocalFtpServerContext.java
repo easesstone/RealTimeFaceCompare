@@ -2,8 +2,8 @@ package com.hzgc.ftpserver.local;
 
 
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
+import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.jni.NativeFunction;
-import com.hzgc.rocketmq.util.RocketMQProducer;
 import org.apache.ftpserver.impl.DefaultFtpServerContext;
 import org.apache.log4j.Logger;
 
