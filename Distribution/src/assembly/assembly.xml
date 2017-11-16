@@ -20,28 +20,28 @@
             <includes>
                 <include>**</include>
             </includes>
-            <outputDirectory>Cluster</outputDirectory>
+            <outputDirectory>cluster</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Dubbo/target/bigdata-api-1.5.0</directory>
             <includes>
                 <include>**</include>
             </includes>
-            <outputDirectory>Dubbo</outputDirectory>
+            <outputDirectory>dubbo</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../FtpServer/target/ftp-1.5.0</directory>
             <includes>
                 <include>**</include>
             </includes>
-            <outputDirectory>FtpServer</outputDirectory>
+            <outputDirectory>ftp</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Service/target/service-1.5.0</directory>
             <includes>
                 <include>**</include>
             </includes>
-            <outputDirectory>Service</outputDirectory>
+            <outputDirectory>service</outputDirectory>
         </fileSet>
         <!--项目公共脚本-->
         <fileSet>
@@ -50,7 +50,7 @@
                 <include>**</include>
             </includes>
             <fileMode>0755</fileMode>
-            <outputDirectory>Common/bin</outputDirectory>
+            <outputDirectory>common/bin</outputDirectory>
         </fileSet>
         <!--项目jar包-->
         <fileSet>
@@ -58,49 +58,49 @@
             <includes>
                 <include>streaming-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Dubbo/target</directory>
             <includes>
                 <include>bigdata-api-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../FtpServer/target</directory>
             <includes>
                 <include>ftp-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Service/target</directory>
             <includes>
                 <include>service-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../JNI/target</directory>
             <includes>
                 <include>jni-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../UDF/target</directory>
             <includes>
                 <include>udf-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Util/target</directory>
             <includes>
                 <include>util-1.5.0.jar</include>
             </includes>
-            <outputDirectory>Common/lib</outputDirectory>
+            <outputDirectory>common/lib</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>
