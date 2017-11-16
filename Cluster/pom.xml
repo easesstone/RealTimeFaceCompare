@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
-            <artifactId>hbase</artifactId>
+            <artifactId>service</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
