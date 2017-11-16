@@ -46,12 +46,15 @@ object FaceRecognizeAlarmJob {
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
+    val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val kafkaDynamicPhoto = KafkaUtils.
       createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
     val jsonResult = kafkaDynamicPhoto.
-      filter(obj => (obj._2.getAttribute.getFeature) != null).
+      filter(filter => filter._2.getAttribute.getFeature != null).
+      filter(elem => elem._2.getAttribute.getFeature.length == 512).
       map(message => {
-        val totalList = JavaConverters.asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
+        val totalList = JavaConverters.
+          asScalaBufferConverter(ObjectInfoInnerHandlerImpl.getInstance().getTotalList).asScala
         val faceObj = message._2
         val ipcID = faceObj.getIpcId
         val platID = deviceUtilI.getplatfromID(ipcID)
@@ -70,13 +73,13 @@ object FaceRecognizeAlarmJob {
                 }
               })
             } else {
-              println("This device [" + ipcID + "] does not bind to recognize the alarm rule, which is not calculated by default")
+              println("Device [" + ipcID + "] does not bind recognize rule,current time [" + df.format(new Date()) + "]")
             }
           } else {
-            println("This device [" + ipcID + "] does not bind the alarm rules and is not calculated by default")
+            println("Device [" + ipcID + "] does not bind alarm rules,current time [" + df.format(new Date()) + "]")
           }
         } else {
-          println("This device [" + ipcID + "] does not have a binding platform ID, which is not calculated by default")
+          println("Device [" + ipcID + "] does not bind platform ID,current time [" + df.format(new Date()) + "]")
         }
         val finalResult = filterResult.sortWith(_.sim > _.sim).take(itemNum)
         val updateTimeList = new util.ArrayList[String]()
@@ -98,7 +101,6 @@ object FaceRecognizeAlarmJob {
       resultRDD.foreachPartition(parRDD => {
         val rocketMQProducer = RocketMQProducer.getInstance()
         val gson = new Gson()
-        val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         parRDD.foreach(result => {
           val recognizeAlarmMessage = new RecognizeAlarmMessage()
           val items = new ArrayBuffer[Item]()
@@ -109,7 +111,7 @@ object FaceRecognizeAlarmJob {
           recognizeAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
           recognizeAlarmMessage.setAlarmTime(dateStr)
           recognizeAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(FtpUtil.surlToBurl(result._1)).get("filepath"))
-          recognizeAlarmMessage.setHostName(ftpMess.get("hostname"))
+          recognizeAlarmMessage.setHostName(ftpMess.get("ip"))
           result._4.foreach(record => {
             val item = new Item()
             item.setSimilarity(record.sim.toString)
@@ -117,7 +119,6 @@ object FaceRecognizeAlarmJob {
             items += item
           })
           recognizeAlarmMessage.setItems(items.toArray)
-          println("告警：" + gson.toJson(recognizeAlarmMessage))
           rocketMQProducer.send(result._3,
             "alarm_" + DeviceTable.IDENTIFY.toString,
             result._1,
