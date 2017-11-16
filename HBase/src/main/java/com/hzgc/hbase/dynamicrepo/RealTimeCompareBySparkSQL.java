@@ -97,7 +97,7 @@ class RealTimeCompareBySparkSQL {
                 long start = System.currentTimeMillis();
                 conn = JDBCUtil.getInstance().getConnection();
                 statement = conn.createStatement();
-                statement.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
+                statement.execute("REFRESH TABLE " + DynamicTable.MID_TABLE +
                         ";REFRESH TABLE " + DynamicTable.PERSON_TABLE + ";");
                 resultSet = statement.executeQuery(selectBySparkSQL);
                 long mid = System.currentTimeMillis();
