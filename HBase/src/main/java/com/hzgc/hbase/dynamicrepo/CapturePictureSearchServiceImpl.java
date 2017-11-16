@@ -292,7 +292,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
 	    BoolQueryBuilder ipcIdBQ = QueryBuilders.boolQuery();
         //设备ID存在时的查询条件
 	    if (ipcId != null && !ipcId.equals("")) {
-		    ipcIdBQ.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId)); //暂支持只传一个设备
+		    ipcIdBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcId)); //暂支持只传一个设备
 		    totalBQ.must(ipcIdBQ);
 	    }
 
