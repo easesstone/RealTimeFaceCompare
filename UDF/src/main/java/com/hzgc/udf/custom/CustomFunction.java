@@ -1,19 +1,17 @@
 package com.hzgc.udf.custom;
 
-import org.apache.hadoop.io.DoubleWritable;
-
 import java.math.BigDecimal;
 
 public class CustomFunction {
     private static final String SPLIT = ":";
 
-    public DoubleWritable featureCompare(String currentFeatureStr, String historyFeatureStr) {
+    public double featureCompare(String currentFeatureStr, String historyFeatureStr) {
         float[] currentFeature = string2floatArray(currentFeatureStr);
         float[] historyFeature = string2floatArray(historyFeatureStr);
         if (currentFeature.length == 512 && historyFeature.length == 512) {
             return featureCompare(currentFeature, historyFeature);
         }
-        return new DoubleWritable(0);
+        return 0;
     }
 
     private static float[] string2floatArray(String feature) {
@@ -31,7 +29,7 @@ public class CustomFunction {
         }
         return new float[0];
     }
-    private DoubleWritable featureCompare(float[] currentFeature, float[] historyFeature) {
+    private double featureCompare(float[] currentFeature, float[] historyFeature) {
         double similarityDegree = 0;
         double currentFeatureMultiple = 0;
         double historyFeatureMultiple = 0;
@@ -46,10 +44,10 @@ public class CustomFunction {
                     setScale(2, BigDecimal.ROUND_HALF_UP).
                     doubleValue();
             if (actualValue >= 100) {
-                return new DoubleWritable(100);
+                return 100;
             }
-            return new DoubleWritable(actualValue);
+            return actualValue;
         }
-        return new DoubleWritable(0);
+        return 0;
     }
 }
