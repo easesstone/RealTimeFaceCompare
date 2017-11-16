@@ -61,6 +61,27 @@ public class LocalIODataConnection implements DataConnection, Serializable {
         }
     }
 
+    public InputStream getDataInputStream(InputStream is) throws IOException {
+        try {
+
+            // get data socket
+            Socket dataSoc = socket;
+            if (dataSoc == null) {
+                throw new IOException("Cannot open data connection.");
+            }
+
+            // create input stream
+            InputStream ins = is;
+            if (factory.isZipMode()) {
+                ins = new InflaterInputStream(ins);
+            }
+            return ins;
+        } catch (IOException ex) {
+            factory.closeDataConnection();
+            throw ex;
+        }
+    }
+
     /**
      * Get data output stream. The return value will never be null.
      */
@@ -119,10 +140,11 @@ public class LocalIODataConnection implements DataConnection, Serializable {
             maxRate = transferRateRequest.getMaxUploadRate();
         }
 
+        InputStream ins = getDataInputStream(is);
         try {
-            return transfer(session, false, is, out, maxRate);
+            return transfer(session, false, ins, out, maxRate);
         } finally {
-            IoUtils.close(is);
+            IoUtils.close(ins);
         }
     }
 

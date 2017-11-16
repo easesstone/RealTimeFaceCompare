@@ -8,7 +8,7 @@
         <version>1.5.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>hbase</artifactId>
+    <artifactId>service</artifactId>
 
     <dependencies>
         <dependency>
@@ -107,7 +107,7 @@
                 <version>3.0.0</version>
                 <executions>
                     <execution>
-                        <id>HBase</id>
+                        <id>Service</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>

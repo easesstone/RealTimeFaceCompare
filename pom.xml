@@ -10,7 +10,7 @@
     <version>1.5.0</version>
     <modules>
         <module>FtpServer</module>
-        <module>HBase</module>
+        <module>Service</module>
         <module>Dubbo</module>
         <module>Cluster</module>
         <module>Distribution</module>
