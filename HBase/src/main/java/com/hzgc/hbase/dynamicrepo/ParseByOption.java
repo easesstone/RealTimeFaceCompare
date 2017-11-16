@@ -6,10 +6,12 @@ import com.hzgc.dubbo.dynamicrepo.SearchOption;
 import java.sql.Date;
 
 class ParseByOption {
-    private static String FTIEL = null;
+    private static String MID_FIELD = null;
+    private static String FINAL_FTIEL = null;
+
     static {
         StringBuilder field = new StringBuilder();
-        FTIEL = field.append(DynamicTable.FTPURL)
+        field.append(DynamicTable.FTPURL)
                 .append(",")
                 .append(DynamicTable.IPCID)
                 .append(",")
@@ -17,8 +19,13 @@ class ParseByOption {
                 .append(",")
                 .append(DynamicTable.TIMESTAMP)
                 .append(",")
-                .append(DynamicTable.DATE).toString();
+                .append(DynamicTable.DATE);
+        MID_FIELD = field.toString();
+
+        FINAL_FTIEL = field.append(",")
+                .append(DynamicTable.SIMILARITY).toString();
     }
+
     /**
      * 获取拼接sql
      *
@@ -33,7 +40,7 @@ class ParseByOption {
         }
         StringBuilder finalSql = new StringBuilder();
         finalSql.append("select ")
-                .append(FTIEL)
+                .append(FINAL_FTIEL)
                 .append(" from (")
                 .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
                 .append(" union all ")
@@ -170,7 +177,7 @@ class ParseByOption {
         StringBuilder finalSql = new StringBuilder();
         finalSql
                 .append("select ")
-                .append(FTIEL)
+                .append(MID_FIELD)
                 .append(",")
                 .append(DynamicTable.FUNCTION_NAME)
                 .append("('")

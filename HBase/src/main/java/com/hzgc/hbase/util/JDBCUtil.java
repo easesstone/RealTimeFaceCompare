@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -16,29 +17,28 @@ import java.util.Properties;
  * JDBC工具类 乔凯峰（内）
  */
 public class JDBCUtil {
+    private static Logger LOG = Logger.getLogger(JDBCUtil.class);
+//    private static JDBCUtil instance = null;
+//    private static DataSource dataSource = new DruidDataSource();
+//    private static Properties propertie = new Properties();
 
-    private static JDBCUtil instance = null;
-    private static Logger log = Logger.getLogger(JDBCUtil.class);
-    private static DataSource dataSource = new DruidDataSource();
-    private static Properties propertie = new Properties();
-
-    private JDBCUtil() {
-    }
+//    private JDBCUtil() {
+//    }
 
     /*
       加载数据源配置信息
      */
     static {
-        try {
-            File resourceFile = FileUtil.loadResourceFile("jdbc.properties");
-            if (resourceFile != null) {
-                propertie.load(new FileInputStream(resourceFile));
-            }
-            dataSource = DruidDataSourceFactory.createDataSource(propertie);
-            dataSource.getConnection().close();
-        } catch (Exception e) {
-            log.info("get jdbc.properties failure");
-        }
+//        try {
+//            File resourceFile = FileUtil.loadResourceFile("jdbc.properties");
+//            if (resourceFile != null) {
+//                propertie.load(new FileInputStream(resourceFile));
+//            }
+//            dataSource = DruidDataSourceFactory.createDataSource(propertie);
+//            dataSource.getConnection().close();
+//        } catch (Exception e) {
+//            log.info("get jdbc.properties failure");
+//        }
     }
 
     /**
@@ -46,28 +46,41 @@ public class JDBCUtil {
      *
      * @return 返回JDBCUtil单例对象
      */
-    public static JDBCUtil getInstance() {
-        if (instance == null) {
-            synchronized (JDBCUtil.class) {
-                if (instance == null) {
-                    instance = new JDBCUtil();
-                }
-            }
-        }
-        return instance;
-    }
+//    public static JDBCUtil getInstance() {
+//        if (instance == null) {
+//            synchronized (JDBCUtil.class) {
+//                if (instance == null) {
+//                    instance = new JDBCUtil();
+//                }
+//            }
+//        }
+//        return instance;
+//    }
 
     /**
      * 获取数据库连接池连接
      *
      * @return 返回Connection对象
      */
-    public Connection getConnection() {
+    public static Connection getConnection() {
+        long start = System.currentTimeMillis();
+        Connection conn = null;
+//        try {
+//            return dataSource.getConnection();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
         try {
-            return dataSource.getConnection();
+            Class.forName("org.apache.hive.jdbc.HiveDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            conn = DriverManager.getConnection("jdbc:hive2://172.18.18.105:23040/");
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        LOG.info("get jdbc connection time is:" + (System.currentTimeMillis() - start));
+        return conn;
     }
 }

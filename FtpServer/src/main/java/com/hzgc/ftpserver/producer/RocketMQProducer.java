@@ -1,4 +1,4 @@
-package com.hzgc.rocketmq.util;
+package com.hzgc.ftpserver.producer;
 
 import com.hzgc.util.FileUtil;
 import com.hzgc.util.IOUtil;

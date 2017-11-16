@@ -54,7 +54,8 @@ class RealTimeCompareBySparkSQL {
     private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option, String searchId) {
         String typeStr = null;
         Connection conn = null;
-        Statement statement = null;
+        Statement statement1 = null;
+        Statement statement2 = null;
         ResultSet resultSet = null;
         SearchResult searchResult = null;
         //提取上传图片的特征值
@@ -95,11 +96,12 @@ class RealTimeCompareBySparkSQL {
             //特征值比对，根据条件过滤
             try {
                 long start = System.currentTimeMillis();
-                conn = JDBCUtil.getInstance().getConnection();
-                statement = conn.createStatement();
-                statement.executeQuery("REFRESH TABLE " + DynamicTable.MID_TABLE +
+                conn = JDBCUtil.getConnection();
+                statement1 = conn.createStatement();
+                statement1.execute("REFRESH TABLE " + DynamicTable.MID_TABLE +
                         ";REFRESH TABLE " + DynamicTable.PERSON_TABLE + ";");
-                resultSet = statement.executeQuery(selectBySparkSQL);
+                statement2 = conn.createStatement();
+                resultSet = statement2.executeQuery(selectBySparkSQL);
                 long mid = System.currentTimeMillis();
                 LOG.info("executeQuery total time is:" + (mid - start));
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -138,15 +140,15 @@ class RealTimeCompareBySparkSQL {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (resultSet != null && !resultSet.isClosed()) {
-                        resultSet.close();
+                    if (statement1 != null && !statement1.isClosed()) {
+                        statement1.close();
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
                 try {
-                    if (statement != null && !statement.isClosed()) {
-                        statement.close();
+                    if (statement2 != null && !statement2.isClosed()) {
+                        statement2.close();
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();

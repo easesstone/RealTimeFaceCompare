@@ -34,7 +34,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     private static Logger LOG = Logger.getLogger(CapturePictureSearchServiceImpl.class);
 
     static {
-        JDBCUtil.getInstance();
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
         NativeFunction.init();
@@ -282,55 +281,73 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     public CaptureCount captureCountQuery(String startTime, String endTime, String ipcId) {
 
         //CaptureCount是一个封装类，用于封装返回的结果。
-        CaptureCount returnresult = new CaptureCount();
-        if (null != startTime && startTime.length() > 0
-                && null != endTime && endTime.length() > 0
-                && null != ipcId && ipcId.length() > 0) {
+        CaptureCount result = new CaptureCount();
 
-            //设定查询条件：指定时间段startTime至endTime，指定设备ipcId
-            QueryBuilder qb = boolQuery()
-                    .must(matchQuery(DynamicTable.IPCID, ipcId))
-                    .must(rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));//gte: >= 大于或等于；lte: <= 小于或等于
+	    // 最终封装成的boolQueryBuilder 对象。
+	    BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
+	    //totalBQ = ;
 
-            SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
-                    .prepareSearch(DynamicTable.DYNAMIC_INDEX) //指定要查询的索引名称
-                    .setTypes(DynamicTable.PERSON_INDEX_TYPE) //指定要查询的类型名称
-                    .setQuery(qb) //根据查询条件qb设置查询
-                    .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC) //以时间字段降序排序
-                    .get();
+	    // 设备ID 的的boolQueryBuilder
+	    BoolQueryBuilder ipcIdBQ = QueryBuilders.boolQuery();
+        //设备ID存在时的查询条件
+	    if (ipcId != null && !ipcId.equals("")) {
+		    ipcIdBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcId)); //暂支持只传一个设备
+		    totalBQ.must(ipcIdBQ);
+	    }
 
-            SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
-            long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
+	    // 开始时间 的boolQueryBuilder
+	    BoolQueryBuilder startTimeBQ = QueryBuilders.boolQuery();
+	    //开始时间 存在时的查询条件
+	    if (null != startTime && !startTime.equals("")) {
+		    startTimeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime));//gte: >= 大于或等于
+		    totalBQ.must(startTimeBQ);
+	    }
 
-            //返回结果包含的文档放在数组hits中
-            SearchHit[] searchHits = hits.hits();
-            //若不存在符合条件的查询结果
-            if (totalresultcount == 0) {
-                LOG.error("The result count is 0! Last capture time does not exist!");
-                returnresult.setTotalresultcount(totalresultcount);
-                returnresult.setLastcapturetime("None");
-            } else {
-                /*
-                  获取该时间段内设备最后一次抓拍时间：
-                  返回结果包含的文档放在数组hits中，由于结果按照降序排列，
-                  因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
-                  例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
-                  将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
+	    // 结束时间 的boolQueryBuilder
+	    BoolQueryBuilder endTimeBQ = QueryBuilders.boolQuery();
+	    // 结束时间 存在时的查询条件
+	    if (null != endTime && !endTime.equals("")) {
+		    startTimeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).lte(endTime)); //lte: <= 小于或等于
+		    totalBQ.must(endTimeBQ);
+	    }
+
+        //所有判断结束后
+	    SearchResponse searchResponse = ElasticSearchHelper.getEsClient() //启动Es Java客户端
+			    .prepareSearch(DynamicTable.DYNAMIC_INDEX) //指定要查询的索引名称
+			    .setTypes(DynamicTable.PERSON_INDEX_TYPE) //指定要查询的类型名称
+			    .setQuery(totalBQ) //根据查询条件qb设置查询
+			    .addSort(DynamicTable.TIMESTAMP, SortOrder.DESC) //以时间字段降序排序
+			    .get();
+
+	    SearchHits hits = searchResponse.getHits(); //返回结果包含的文档放在数组hits中
+	    long totalresultcount = hits.getTotalHits(); //符合qb条件的结果数量
+
+	    //返回结果包含的文档放在数组hits中
+	    SearchHit[] searchHits = hits.hits();
+	    //若不存在符合条件的查询结果
+	    if (totalresultcount == 0) {
+		    LOG.error("The result count is 0! Last capture time does not exist!");
+		    result.setTotalresultcount(totalresultcount);
+		    result.setLastcapturetime("None");
+	    } else {
+                /**
+                 * 获取该时间段内设备最后一次抓拍时间：
+                 * 返回结果包含的文档放在数组hits中，由于结果按照降序排列，
+                 * 因此hits数组里的第一个值代表了该设备最后一次抓拍的具体信息
+                 * 例如{"s":"XXXX","t":"2017-09-20 15:55:06","sj":"1555"}
+                 * 将该信息以Map形式读取，再获取到key="t“的值，即最后一次抓拍时间。
                  */
 
-                //获取最后一次抓拍时间
-                String lastcapturetime = (String) searchHits[0].getSourceAsMap().get(DynamicTable.TIMESTAMP);
+		    //获取最后一次抓拍时间
+		    String lastcapturetime = (String) searchHits[0].getSourceAsMap().get(DynamicTable.TIMESTAMP);
 
-                /*
-                  返回值为：设备抓拍张数、设备最后一次抓拍时间。
-                 */
-                returnresult.setTotalresultcount(totalresultcount);
-                returnresult.setLastcapturetime(lastcapturetime);
-            }
-        } else {
-            LOG.error("The Input parameters are wrong!");
-        }
-        return returnresult;
+		    /**
+		     * 返回值为：设备抓拍张数、设备最后一次抓拍时间。
+            */
+		    result.setTotalresultcount(totalresultcount);
+		    result.setLastcapturetime(lastcapturetime);
+	    }
+        return result;
     }
 
     /**
