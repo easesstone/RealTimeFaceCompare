@@ -18,6 +18,7 @@ import java.util.Properties;
  */
 public class JDBCUtil {
     private static Logger LOG = Logger.getLogger(JDBCUtil.class);
+    private static Properties propertie;
 //    private static JDBCUtil instance = null;
 //    private static DataSource dataSource = new DruidDataSource();
 //    private static Properties propertie = new Properties();
@@ -29,16 +30,16 @@ public class JDBCUtil {
       加载数据源配置信息
      */
     static {
-//        try {
-//            File resourceFile = FileUtil.loadResourceFile("jdbc.properties");
-//            if (resourceFile != null) {
-//                propertie.load(new FileInputStream(resourceFile));
-//            }
+        try {
+            File resourceFile = FileUtil.loadResourceFile("jdbc.properties");
+            if (resourceFile != null) {
+                propertie.load(new FileInputStream(resourceFile));
+            }
 //            dataSource = DruidDataSourceFactory.createDataSource(propertie);
 //            dataSource.getConnection().close();
-//        } catch (Exception e) {
-//            log.info("get jdbc.properties failure");
-//        }
+        } catch (Exception e) {
+            LOG.info("get jdbc.properties failure");
+        }
     }
 
     /**
@@ -76,7 +77,7 @@ public class JDBCUtil {
             e.printStackTrace();
         }
         try {
-            conn = DriverManager.getConnection("jdbc:hive2://172.18.18.105:23040/");
+            conn = DriverManager.getConnection(propertie.getProperty("url"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
