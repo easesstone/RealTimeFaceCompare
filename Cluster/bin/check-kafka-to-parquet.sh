@@ -12,7 +12,7 @@
 cd /opt
 CKTOTALINFOR="/opt/cktot.txt"
 CKAPPINFOR="/opt/ckapp.txt"
-chmod 777 /opt/RealTimeCompare/bin/check-kafka-to-parquet.sh
+chmod 777 /opt/RealTimeCompare/cluster/bin/check-kafka-to-parquet.sh
 #判断信息文件是否存在
 if [ ! -f "$CKTOTALINFOR" ];then
     touch "$CKTOTALINFOR"
@@ -27,5 +27,5 @@ cut -b 1-30 $CKTOTALINFOR > $CKAPPINFOR
 APP=`cat $CKAPPINFOR`
 echo ${APP}
 if [ ! -s $CKAPPINFOR ];then
-   sh /opt/RealTimeCompare/bin/start-kafka-to-parquet.sh
+   sh /opt/RealTimeCompare/cluster/bin/start-kafka-to-parquet.sh
 fi
