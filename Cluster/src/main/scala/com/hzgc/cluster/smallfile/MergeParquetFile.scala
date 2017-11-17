@@ -232,7 +232,7 @@ object ReadWriteHDFS {
             for (fileStatus <- fileStatusArr) {
                 if (fileStatus.isDirectory()) {
                     getParquetFiles(fileStatus.getPath, fs, files)
-                } else if (fileStatus.isFile && fileStatus.getPath.toString.endsWith(".snappy.parquet")){
+                } else if (fileStatus.isFile && fileStatus.getPath.toString.endsWith(".parquet")){
                     files.add(fileStatus.getPath.toString)
                 }
             }
@@ -253,7 +253,7 @@ object ReadWriteHDFS {
                 val finalPathString = fileStatus.getPath.toString
                 if (fileStatus.isDirectory()) {
                     getParquetFiles(dateString, fileStatus.getPath, fs, files)
-                } else if (fileStatus.isFile && finalPathString.endsWith(".snappy.parquet")
+                } else if (fileStatus.isFile && finalPathString.endsWith(".parquet")
                     && finalPathString.contains(dateString)){
                     files.add(finalPathString)
                 }
