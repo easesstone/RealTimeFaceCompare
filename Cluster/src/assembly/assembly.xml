@@ -21,6 +21,14 @@
            </includes>
             <outputDirectory>conf</outputDirectory>
         </fileSet>
+        <!--添加本模块jar到lib目录-->
+        <fileSet>
+            <directory>${project.basedir}/target</directory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <outputDirectory>lib</outputDirectory>
+        </fileSet>
     </fileSets>
     <dependencySets>
         <dependencySet>
