@@ -3,10 +3,10 @@ package com.hzgc.ftpserver.local;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
+import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.ftpserver.util.IpAddressUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.rocketmq.util.RocketMQProducer;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.impl.*;
@@ -25,6 +25,7 @@ import java.util.Map;
 public class LocalSTOR extends AbstractCommand {
     private final Logger LOG = LoggerFactory.getLogger(LocalSTOR.class);
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * Execute command.
      */
@@ -152,7 +153,6 @@ public class LocalSTOR extends AbstractCommand {
                             faceObject.setDate(date);
                             faceObject.setType(SearchType.PERSON);
                             faceObject.setAttribute(FaceFunction.featureExtract(data));
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             faceObject.setStartTime(sdf.format(new Date()));
 
                             //发送到kafka

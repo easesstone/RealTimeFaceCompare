@@ -1,6 +1,5 @@
 package com.hzgc.ftpserver.util;
 
-import com.hzgc.ftpserver.local.FileType;
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.log4j.Logger;
@@ -14,20 +13,14 @@ public class FtpUtil implements Serializable {
     private static Logger LOG = Logger.getLogger(FtpUtil.class);
 
     private static Properties properties = new Properties();
-    private static String ftpServerIP;
     private static int ftpServerPort;
-    private static String ftpServerUser;
-    private static String ftpServerPassword;
 
     static {
         FileInputStream in = null;
         try {
             in = new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties"));
             properties.load(in);
-            ftpServerIP = properties.getProperty("ip");
             ftpServerPort = Integer.parseInt(properties.getProperty("port"));
-            ftpServerUser = properties.getProperty("user");
-            ftpServerPassword = properties.getProperty("password");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -119,6 +112,7 @@ public class FtpUtil implements Serializable {
 
     /**
      * 根据ftpUrl获取到IP、HostName、ipcID、TimeStamp、Date、TimeSlot
+     *
      * @param ftpUrl ftp地址 例如：ftp://172.18.18.109:2121/ABCVS20160823CCCH/2017_11_09_10_53_35_2_0.jpg
      * @return 设备、时间等信息 例如：{date=2017-11-09, filepath=/ABCVS20160823CCCH/2017_11_09_10_53_35_2_0.jpg, port=2121, ip=172.18.18.109
      * , timeslot=1053, ipcid=ABCVS20160823CCCH, timestamp=2017-11-09 10:53:35}
@@ -147,55 +141,6 @@ public class FtpUtil implements Serializable {
     }
 
     /**
-     * 通过rowKey解析到文件保存的绝对路径
-     *
-     * @param rowKey rowKey
-     * @param type   文件类型
-     * @return 绝对路径
-     */
-    //TODO 后续需要通过ftp上传路径来解析，取消rowkey字段
-    public static String key2absolutePath(String rowKey, FileType type) {
-        StringBuilder url = new StringBuilder();
-
-        String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
-        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
-        String year = timeStr.substring(0, 2);
-        String month = timeStr.substring(2, 4);
-        String day = timeStr.substring(4, 6);
-        String hour = timeStr.substring(6, 8);
-        String minute = timeStr.substring(8, 10);
-        String second = timeStr.substring(10, 12);
-
-        String rowkey1 = rowKey.substring(0, rowKey.lastIndexOf("_"));
-        String postId = rowkey1.substring(rowkey1.indexOf("_") + 14, rowkey1.lastIndexOf("_"));
-        int numType = Integer.parseInt(rowkey1.substring(rowkey1.lastIndexOf("_") + 1, rowkey1.length()));
-
-        String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
-        String ftpServerIP = properties.getProperty(hostName);
-        url = url.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
-                append("/20").append(year).append("/").append(month).append("/").append(day).
-                append("/").append(hour).append("/").
-                append("20").append(year).append("_").append(month).append("_").append(day).
-                append("_").append(hour).append("_").append(minute).append("_").append(second).
-                append("_").append(postId);
-
-        if (type == FileType.PICTURE) {
-            url = url.append("_0").append(".jpg");
-        } else if (type == FileType.FACE) {
-            if (numType == 0) {
-                LOG.info("picture rowKey cannot analysis to face filePath !");
-            } else if (numType > 0) {
-                url = url.append("_").append(numType).append(".jpg");
-            } else {
-                LOG.warn("rowKey format error :" + rowKey);
-            }
-        } else if (type == FileType.JSON) {
-            url = url.append("_0").append(".json");
-        }
-        return url.toString();
-    }
-
-    /**
      * 通过上传文件路径解析到文件的ftp地址（ftp发送至kafka的key）
      *
      * @param filePath ftp接收数据路径
@@ -208,77 +153,6 @@ public class FtpUtil implements Serializable {
         return url.toString();
     }
 
-    /**
-     * 通过rowKey解析文件保存相对路径
-     *
-     * @param rowKey rowKey
-     * @return 相对路径
-     */
-    //TODO 后续需要通过ftp上传路径来解析，取消rowkey字段
-    public static String key2relativePath(String rowKey) {
-        StringBuilder filePath = new StringBuilder();
-
-        String ipcId = rowKey.substring(0, rowKey.indexOf("_"));
-        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
-        String year = timeStr.substring(0, 2);
-        String month = timeStr.substring(2, 4);
-        String day = timeStr.substring(4, 6);
-        String hour = timeStr.substring(6, 8);
-        //String minute = timeStr.substring(8, 10);
-        //String second = timeStr.substring(10, 12);
-
-        String hostName = rowKey.substring(rowKey.lastIndexOf("_") + 1, rowKey.length());
-        String ftpServerIP = properties.getProperty(hostName);
-
-        filePath = filePath.append("ftp://").append(ftpServerIP).append(":").append(ftpServerPort).append("/").append(ipcId).
-                append("/20").append(year).append("/").append(month).append("/").append(day).append("/").append(hour);
-        return filePath.toString();
-    }
-
-    /**
-     * 通过rowKey解析文件名称
-     *
-     * @param rowKey rowKey
-     * @param type   文件类型
-     * @return 文件名称
-     */
-    //TODO 后续需要通过ftp上传路径来解析，取消rowkey字段
-    public static String key2fileName(String rowKey, FileType type) {
-        StringBuilder fileName = new StringBuilder();
-
-        String timeStr = rowKey.substring(rowKey.indexOf("_") + 1, rowKey.length());
-        String year = timeStr.substring(0, 2);
-        String month = timeStr.substring(2, 4);
-        String day = timeStr.substring(4, 6);
-        String hour = timeStr.substring(6, 8);
-        String minute = timeStr.substring(8, 10);
-        String second = timeStr.substring(10, 12);
-
-        String rowkey1 = rowKey.substring(0, rowKey.lastIndexOf("_"));
-        String postId = rowkey1.substring(rowkey1.indexOf("_") + 14, rowkey1.lastIndexOf("_"));
-        int numType = Integer.parseInt(rowkey1.substring(rowkey1.lastIndexOf("_") + 1, rowkey1.length()));
-
-        fileName = fileName.append("20").append(year).append("_").append(month)
-                .append("_").append(day).append("_").append(hour)
-                .append("_").append(minute).append("_").append(second).append("_").append(postId);
-
-        if (type == FileType.PICTURE) {
-            fileName = fileName.append("_0").append(".jpg");
-        } else if (type == FileType.FACE) {
-            if (numType == 0) {
-                LOG.info("picture rowKey cannot analysis to face fileName !");
-            } else if (numType > 0) {
-                fileName = fileName.append("_").append(numType).append(".jpg");
-            } else {
-                LOG.warn("rowKey format error :" + rowKey);
-            }
-        } else if (type == FileType.JSON) {
-            fileName = fileName.append("_0").append(".json");
-        } else {
-            LOG.warn("method param is error.");
-        }
-        return fileName.toString();
-    }
 
     /**
      * 小图ftpUrl转大图ftpUrl
@@ -300,9 +174,11 @@ public class FtpUtil implements Serializable {
      * @param ftpUrl 带HostName的ftpUrl
      * @return 带IP的ftpUrl
      */
-    public static String getFtpUrl(String ftpUrl){
-        String hostName = ftpUrl.substring(ftpUrl.indexOf("/") + 2 , ftpUrl.lastIndexOf(":"));
+    public static String getFtpUrl(String ftpUrl) {
+        String hostName = ftpUrl.substring(ftpUrl.indexOf("/") + 2, ftpUrl.lastIndexOf(":"));
         String ftpServerIP = properties.getProperty(hostName);
-        return ftpUrl.replace(hostName,ftpServerIP);
+        if (ftpServerIP != null && ftpServerIP.length() > 0)
+            return ftpUrl.replace(hostName, ftpServerIP);
+        return ftpUrl;
     }
 }
