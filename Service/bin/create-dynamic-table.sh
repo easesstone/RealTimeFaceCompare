@@ -3,7 +3,6 @@
 ## Copyright:    HZGOSUN Tech. Co, BigData
 ## Filename:     create-dynamic-table.sh
 ## Description:  创建动态库表(person_table,mid_table)
-## Version:      1.5.0
 ## Author:       qiaokaifeng
 ## Created:      2017-11-18
 ################################################################################
@@ -47,7 +46,16 @@ ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.pers
                                 searchtype    string) \
                                 partitioned by (date string,ipcid string) \
                                 STORED AS PARQUET \
-                                LOCATION '/user/hive/warehouse/person_table';"
+                                LOCATION '/user/hive/warehouse/person_table'"
+if [ $? == 0 ];then
+		echo "===================================="
+		echo "创建person_table成功......"
+		echo "===================================="
+	else
+		echo "===================================="
+		echo "创建person_table失败,请查找失败原因......"
+		echo "===================================="
+	fi
 ## 创建mid_table
 ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.mid_table( \
                                 ftpurl        string, \
@@ -65,4 +73,15 @@ ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.mid_
                                 date          string, \
                                 ipcid         string) \
                                 STORED AS PARQUET \
-                                LOCATION '/user/hive/warehouse/mid_table';"
+                                LOCATION '/user/hive/warehouse/mid_table'"
+if [ $? == 0 ];then
+		echo "===================================="
+		echo "创建mid_table成功......"
+		echo "===================================="
+	else
+		echo "===================================="
+		echo "创建mid_table失败,请查找失败原因......"
+		echo "===================================="
+	fi
+## 查看建表是否成功
+${SPARK_PATH}/bin/spark-sql -e "show tables"
