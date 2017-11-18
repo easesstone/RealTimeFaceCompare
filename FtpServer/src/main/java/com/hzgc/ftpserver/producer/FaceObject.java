@@ -1,10 +1,11 @@
 package com.hzgc.ftpserver.producer;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.jni.FaceAttribute;
+import com.hzgc.dubbo.feature.FaceAttribute;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * 人脸对象
@@ -19,7 +20,7 @@ public class FaceObject implements Serializable {
      */
     private String timeStamp;
     /**
-     * 文件类型
+     * 文件类型(区分人/车)
      */
     private SearchType type;
     /**
@@ -38,6 +39,8 @@ public class FaceObject implements Serializable {
      * 小图
      */
     private byte[] image;
+
+    private String startTime;
 
     public String getIpcId() {
         return ipcId;
@@ -95,6 +98,14 @@ public class FaceObject implements Serializable {
         this.image = image;
     }
 
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
     @Override
     public String toString() {
         return "FaceObject{" +
@@ -105,6 +116,7 @@ public class FaceObject implements Serializable {
                 ", timeSlot='" + timeSlot + '\'' +
                 ", attribute=" + attribute +
                 ", image=" + Arrays.toString(image) +
+                ", startTime='" + startTime + '\'' +
                 '}';
     }
 }

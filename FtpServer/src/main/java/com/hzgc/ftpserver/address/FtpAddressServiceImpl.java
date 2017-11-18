@@ -4,8 +4,7 @@ import com.hzgc.dubbo.address.FtpAddressService;
 import com.hzgc.util.FileUtil;
 import com.hzgc.util.IOUtil;
 
-import java.io.FileInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Properties;
 
 public class FtpAddressServiceImpl implements FtpAddressService, Serializable {
@@ -26,5 +25,30 @@ public class FtpAddressServiceImpl implements FtpAddressService, Serializable {
     @Override
     public Properties getFtpAddress() {
         return proper;
+    }
+
+    /**
+     * 通过主机名获取FTP的IP地址
+     *
+     * @param hostname 主机名
+     * @return IP地址
+     */
+    @Override
+    public String getIPAddress(String hostname) {
+        String ftpIpAddress = "";
+        if (hostname != null && hostname.length() > 0) {
+            Properties properties = new Properties();
+            InputStream inputStream = null;
+            try {
+                inputStream = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
+                properties.load(inputStream);
+                ftpIpAddress = properties.getProperty(hostname);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                IOUtil.closeStream(inputStream);
+            }
+        }
+        return ftpIpAddress;
     }
 }

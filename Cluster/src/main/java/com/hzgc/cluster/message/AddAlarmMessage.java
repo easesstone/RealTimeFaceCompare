@@ -13,11 +13,6 @@ public class AddAlarmMessage implements Serializable {
     private String alarmType;
 
     /**
-     * 动态抓取人脸id
-     */
-    private String dynamicID;
-
-    /**
      * 抓取人脸的设备id
      */
     private String dynamicDeviceID;
@@ -28,20 +23,35 @@ public class AddAlarmMessage implements Serializable {
     private String alarmTime;
 
     /**
+     * 动态抓取照片的存储主机名(新增字段)
+     */
+    private String hostName;
+
+    /**
+     * 动态抓取人脸大图URL(新增字段)
+     */
+    private String bigPictureURL;
+
+    /**
+     * 动态抓取人脸小图URL(新增字段)
+     */
+    private String smallPictureURL;
+
+    /**
      * 类构造函数
      *
      * @param alarmType
-     * @param dynamicID
      * @param dynamicDeviceID
      * @param alarmTime
      */
-    public AddAlarmMessage(String alarmType, String dynamicID, String dynamicDeviceID, String alarmTime) {
+    public AddAlarmMessage(String alarmType, String dynamicDeviceID, String alarmTime, String hostName, String bigPictureURL, String smallPictureURL) {
         this.alarmType = alarmType;
-        this.dynamicID = dynamicID;
         this.dynamicDeviceID = dynamicDeviceID;
         this.alarmTime = alarmTime;
+        this.hostName = hostName;
+        this.bigPictureURL = bigPictureURL;
+        this.smallPictureURL = smallPictureURL;
     }
-
     public AddAlarmMessage() {
     }
 
@@ -54,14 +64,6 @@ public class AddAlarmMessage implements Serializable {
 
     public void setAlarmType(String alarmType) {
         this.alarmType = alarmType;
-    }
-
-    public String getDynamicID() {
-        return dynamicID;
-    }
-
-    public void setDynamicID(String dynamicID) {
-        this.dynamicID = dynamicID;
     }
 
     public String getDynamicDeviceID() {
@@ -80,4 +82,27 @@ public class AddAlarmMessage implements Serializable {
         this.alarmTime = alarmTime;
     }
 
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    public String getBigPictureURL() {
+        return bigPictureURL;
+    }
+
+    public void setBigPictureURL(String bigPictureURL) {
+        this.bigPictureURL = bigPictureURL;
+    }
+
+    public String getSmallPictureURL() {
+        return smallPictureURL;
+    }
+
+    public void setSmallPictureURL(String smallPictureURL) {
+        this.smallPictureURL = smallPictureURL;
+    }
 }

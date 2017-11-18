@@ -1,10 +1,9 @@
 package com.hzgc.dubbo.dynamicrepo;
 
-import com.hzgc.dubbo.Attribute.Attribute;
-import com.hzgc.dubbo.Attribute.AttributeCount;
+import com.hzgc.dubbo.attribute.Attribute;
+import com.hzgc.dubbo.attribute.AttributeCount;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 以图搜图接口，内含四个方法（外）（彭聪）

@@ -1,5 +1,7 @@
 package com.hzgc.jni;
 
+import com.hzgc.dubbo.feature.FaceAttribute;
+
 import java.io.Serializable;
 
 public class NativeFunction implements Serializable {

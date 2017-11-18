@@ -4,6 +4,7 @@ import java.io.File
 import java.util
 
 import org.apache.hadoop.fs.{ContentSummary, FileSystem, Path}
+import org.apache.log4j.Logger
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
 /**
@@ -51,6 +52,7 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
   * 通过以上内容，每天，每个设备下，最多有2到3个文件，每个文件的大小为256 M
   */
 object MergeParquetFile {
+    val LOG = Logger.getLogger(MergeParquetFile.getClass)
     def main(args: Array[String]): Unit = {
         if (args.length != 4  && args.length != 5) {
             System.out.print(s"""
@@ -99,6 +101,7 @@ object MergeParquetFile {
             count = count + 1
         }
         if (parquetFiles.size() == 0) {
+            LOG.info("there is no parquet files in mid_table, please check the streaming store application.")
             System.exit(1)
         }
 
@@ -107,6 +110,8 @@ object MergeParquetFile {
         if (dateString == null || dateString.equals("")) {
             personDF.persist()
             if (personDF.count() == 0) {
+                LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
+                ReadWriteHDFS.del(pathArr, fs);
                 System.exit(2)
             }
             personDF.printSchema()
@@ -135,13 +140,15 @@ object MergeParquetFile {
                 if (!setOfFinalTable.contains(dateOfIpcId)) {
                     sql("set hive.exec.dynamic.partition=true;")
                     sql("set hive.exec.dynamic.partition.mode=nonstrict;")
-                    sql("alter table " + tableName + " add partition(date=" + date + ",ipcid=" + ipcId + ")")
+                    sql("alter table " + tableName + " add partition(date='" + date + "',ipcid='" + ipcId + "')")
                 }
             }
         } else {
             personDF = sql("select * from " + tableName + " where date='" +dateString +"'")
             personDF.persist()
             if (personDF.count() == 0) {
+                LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
+                ReadWriteHDFS.del(pathArr, fs);
                 System.exit(2)
             }
             personDF.printSchema()
@@ -155,6 +162,12 @@ object MergeParquetFile {
 
         // 7,删除原来的文件
         ReadWriteHDFS.del(pathArr, fs);
+
+        // 8, Reflesh spark store crash table data
+        if (dateString == null || "".equals(dateString)) {
+            sql("REFRESH TABLE " + tmpTableHdfsPath.substring(tmpTableHdfsPath.lastIndexOf("/") + 1))
+        }
+        sql("REFRESH TABLE " + tableName)
 
         sparkSession.close()
     }
@@ -182,7 +195,6 @@ object SparkSessionSingleton {
         if (instance == null) {
             instance = SparkSession.builder()
                 .appName("combine-parquest-demo")
-                .master("local[*]")
                 .config("spark.sql.parquet.compression.codec", "snappy")
                 .config("spark.sql.warehouse.dir", warehouseLocation)
                 .enableHiveSupport()
@@ -220,7 +232,7 @@ object ReadWriteHDFS {
             for (fileStatus <- fileStatusArr) {
                 if (fileStatus.isDirectory()) {
                     getParquetFiles(fileStatus.getPath, fs, files)
-                } else if (fileStatus.isFile && fileStatus.getPath.toString.endsWith(".snappy.parquet")){
+                } else if (fileStatus.isFile && fileStatus.getPath.toString.endsWith(".parquet")){
                     files.add(fileStatus.getPath.toString)
                 }
             }
@@ -241,7 +253,7 @@ object ReadWriteHDFS {
                 val finalPathString = fileStatus.getPath.toString
                 if (fileStatus.isDirectory()) {
                     getParquetFiles(dateString, fileStatus.getPath, fs, files)
-                } else if (fileStatus.isFile && finalPathString.endsWith(".snappy.parquet")
+                } else if (fileStatus.isFile && finalPathString.endsWith(".parquet")
                     && finalPathString.contains(dateString)){
                     files.add(finalPathString)
                 }
