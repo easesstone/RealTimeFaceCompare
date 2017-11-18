@@ -12,7 +12,7 @@
 cd /opt
 TOTALINFOR="/opt/tot.txt"
 APPINFOR="/opt/app.txt"
-chmod 777 /opt/RealTimeCompare/bin/restart-kafka-to-parquet.sh
+chmod 777 /opt/RealTimeCompare/cluster/bin/restart-kafka-to-parquet.sh
 #判断信息文件是否存在
 if [ ! -f "$TOTALINFOR" ];then
     touch "$TOTALINFOR"
@@ -27,8 +27,8 @@ cut -b 1-30 $TOTALINFOR > $APPINFOR
 APP=`cat $APPINFOR`
 echo ${APP}
 if [ ! -s $APPINFOR ];then
-   sh /opt/RealTimeCompare/bin/start-kafka-to-parquet.sh
+   sh /opt/RealTimeCompare/cluster/bin/start-kafka-to-parquet.sh
 else
   yarn application -kill $APP
-  sh /opt/RealTimeCompare/bin/start-kafka-to-parquet.sh
+  sh /opt/RealTimeCompare/cluster/bin/start-kafka-to-parquet.sh
 fi
