@@ -27,7 +27,7 @@
             <includes>
                 <include>**</include>
             </includes>
-            <outputDirectory>dubbo</outputDirectory>
+            <outputDirectory>service</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../FtpServer/target/ftp-1.5.0</directory>
@@ -56,49 +56,49 @@
         <fileSet>
             <directory>../Cluster/target</directory>
             <includes>
-                <include>streaming-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Dubbo/target</directory>
             <includes>
-                <include>bigdata-api-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../FtpServer/target</directory>
             <includes>
-                <include>ftp-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Service/target</directory>
             <includes>
-                <include>service-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../JNI/target</directory>
             <includes>
-                <include>jni-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../UDF/target</directory>
             <includes>
-                <include>udf-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../Util/target</directory>
             <includes>
-                <include>util-1.5.0.jar</include>
+                <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>

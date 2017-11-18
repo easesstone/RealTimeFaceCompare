@@ -33,11 +33,11 @@ MODULE_VERSION=1.5.0
 ## elasticsearch module
 ELASTICSEARCH_MODULE=1.0
 ## hbase client or server version
-HBASE_VERSION=1.0.2
+HBASE_VERSION=1.2.6
 ## hbase shaded miscellaneous version
 HBASE_SHADED_MISCELLANEOUS_VERSION=1.0.1
 ## ftp core version
-FTP_CORE_VERSION=1.0.6
+FTP_CORE_VERSION=1.1.1
 ## gson version
 GSON_VERSION=2.8.0
 ## jackson core version
@@ -127,8 +127,8 @@ if [ ! -e ${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar ];then
     echo "${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${LIB_DIR}/hbase-${MODULE_VERSION}.jar ];then
-    echo "${LIB_DIR}/hbase-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${LIB_DIR}/service-${MODULE_VERSION}.jar ];then
+    echo "${LIB_DIR}/service-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar ];then
@@ -165,10 +165,6 @@ if [ ! -e ${LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
 fi
 if [ ! -e $LIB_DIR/bigdata-api-${MODULE_VERSION}.jar ];then
     echo "$LIB_DIR/bigdata-api-${MODULE_VERSION}.jar does not exit!"
-    exit 0
-fi
-if [ ! -e ${LIB_DIR}/rocketmq-${MODULE_VERSION}.jar ];then
-    echo "${LIB_DIR}/rocketmq-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${LIB_DIR}/rocketmq-client-${ROCKETMQ_VERSION}-incubating.jar ];then
@@ -231,7 +227,7 @@ nohup ${SPARK_HOME}/spark-submit \
 --jars ${LIB_DIR}/gson-${GSON_VERSION}.jar,\
 ${LIB_DIR}/jackson-core-${JACKSON_CORE_VERSION}.jar,\
 ${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
-${LIB_DIR}/hbase-${MODULE_VERSION}.jar,\
+${LIB_DIR}/service-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-common-${HBASE_VERSION}.jar,\
@@ -243,7 +239,6 @@ ${LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar,\
 ${LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
 $LIB_DIR/bigdata-api-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/ftpserver-core-${FTP_CORE_VERSION}.jar,\
-${LIB_DIR}/rocketmq-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/rocketmq-client-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\

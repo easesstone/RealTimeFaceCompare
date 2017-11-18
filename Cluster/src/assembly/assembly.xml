@@ -21,6 +21,29 @@
            </includes>
             <outputDirectory>conf</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>../FtpServer/src/main/resources</directory>
+            <includes>
+                <include>ftpAddress.properties</include>
+                <include>rocketmq.properties</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../Service/src/main/resources</directory>
+            <includes>
+                <include>es-config.properties</include>
+            </includes>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+        <!--添加本模块jar到lib目录-->
+        <fileSet>
+            <directory>${project.basedir}/target</directory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <outputDirectory>lib</outputDirectory>
+        </fileSet>
     </fileSets>
     <dependencySets>
         <dependencySet>

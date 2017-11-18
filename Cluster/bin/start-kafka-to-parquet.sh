@@ -35,16 +35,13 @@ KAFKA_VERSION=2.11-${KAFKA_CLIENTS_VERSION}
 ## etc profile
 ETC_PROFILE=/etc/profile
 ## bigdata_env
-BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
+BIGDATA_ENV=/opt/env_bigdata.sh
 ## spark bin dir
 SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
 ## spark master
-SPARK_MASTER_PARAM=yarn-client
+SPARK_MASTER_PARAM=yarn-cluster
 ## spark num executors
 SPARK_EXECUTORS_NUM=3
-
-
-
 
 if [ ! -d ${LOG_DIR} ];then
     mkdir ${LOG_DIR}
@@ -95,7 +92,6 @@ if [ ! -e ${LIB_DIR}/elasticsearch-1.0.jar ];then
 fi
 if [ ! -e ${LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
    echo "${LIB_DIR}/ftp-${MODULE_VERSION}.jar does not exit!"
-   exit 1
 fi
 if [ ! -e ${LIB_DIR}/util-${MODULE_VERSION}.jar ];then
    echo "${LIB_DIR}/util-${MODULE_VERSION}.jar does not exit!"
@@ -105,8 +101,8 @@ if [ ! -e ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar ];then
    echo "${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar does not exit!"
    exit 1
 fi
-if [ ! -e ${LIB_DIR}/hbase-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/hbase-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${LIB_DIR}/service-${MODULE_VERSION}.jar ];then
+   echo "${LIB_DIR}/service-${MODULE_VERSION}.jar does not exit!"
    exit 1
 fi
 
@@ -125,7 +121,7 @@ ${LIB_DIR}/elasticsearch-1.0.jar,\
 ${LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
-${LIB_DIR}/hbase-${MODULE_VERSION}.jar \
+${LIB_DIR}/service-${MODULE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/sparkJob.properties \
 ${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
