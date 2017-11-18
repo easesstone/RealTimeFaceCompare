@@ -15,18 +15,13 @@ import java.util.Map;
 
 
 public class GetDataFromHBase {
-    public static void getJson(String fristjson, String secondjson) {
+    public static void getJson(String jsonFile) {
         Table table = HBaseHelper.getTable("objectinfo");
         Scan scan = new Scan();
         try {
-            File file = new File(fristjson);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
             MapToJson mapToJson = new MapToJson();
             ResultScanner resultScanner = table.getScanner(scan);
-            FileOutputStream fos = new FileOutputStream(file);
-            File file1 = new File(secondjson);
+            File file1 = new File(jsonFile);
             if (!file1.exists()) {
                 file1.createNewFile();
             }
@@ -47,22 +42,7 @@ public class GetDataFromHBase {
                 String creator = Bytes.toString(result.getValue(Bytes.toBytes("person"), Bytes.toBytes("creator")));
                 String cphone = Bytes.toString(result.getValue(Bytes.toBytes("person"), Bytes.toBytes("cphone")));
                 String name = Bytes.toString(result.getValue(Bytes.toBytes("person"), Bytes.toBytes("name")));
-                //写入第一个json文件,用来导HBase
-                map.put("rowkey", rowkey);
-                map.put("photo", photo);
-                map.put("platformid", platformid);
-                map.put("tag", tag);
-                map.put("pkey", pkey);
-                map.put("idcard", idcard);
-                map.put("sex", sex);
-                map.put("feature", feature);
-                map.put("creator", creator);
-                map.put("cphone", cphone);
-                map.put("name", name);
-                String newJson = mapToJson.mapToJson(map);
-                fos.write(newJson.getBytes());
-                fos.write("\n".getBytes());
-                //写入第二个json文件，用来导ES
+                //写入json文件，用来导ES
                 map2.put("_index", "objectinfo");
                 map2.put("_type", "person");
                 map2.put("_id", rowkey);
@@ -90,13 +70,12 @@ public class GetDataFromHBase {
     }
 
     public static void main(String[] args) {
-        if (args.length != 2) {
+        if (args.length != 1) {
             System.out.println("");
         }
-        String fristJson = args[0];
-        String secondJson = args[1];
+        String jsonFile = args[0];
         long a = System.currentTimeMillis();
-        getJson(fristJson, secondJson);
+        getJson(jsonFile);
         System.out.println(System.currentTimeMillis() - a);
     }
 }

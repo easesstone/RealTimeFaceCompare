@@ -22,20 +22,18 @@ LIB_JARS=`ls $LIB_DIR|grep .jar| grep -v elasticsearch-1.0.jar \
 | grep -v avro-ipc-1.7.7-tests.jar | grep -v avro-ipc-1.7.7.jar | grep -v spark-network-common_2.10-1.5.1.jar | \
 grep -v zookeeper-3.5.1-alpha.jar |awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`   ## jar包位置以及第三方依赖jar包，绝对路径
 LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
-if [ $# != 3 ]; then
-    echo "sh ***.sh fristjson secondjson ***.log";
+if [ $# != 2 ]; then
+    echo "sh ***.sh jsonfile ***.log";
     exit 0;
 fi
-FRIST_JSON=$1
-SECOND_JSON=$2
-LOG_FILE_NAME=$3
+JSONFILE=$1
+LOG_FILE_NAME=$2
 JSON_DIR=${DEPLOY_DIR}/json
 if [ ! -d $JSON_DIR ]; then
         mkdir $JSON_DIR;
 fi
 
-FRIST_JSON_FILE=$JSON_DIR/$1
-SECOND_JSON_FILE=$JSON_DIR/$2
+JSON_FILE=$JSON_DIR/$1
 LOG_FILE=${LOG_DIR}/${LOG_FILE_NAME}      ##  log 日记文件
 
 #####################################################################
@@ -50,7 +48,7 @@ function start_consumer()
    if [ ! -d $LOG_DIR ]; then
            mkdir $LOG_DIR;
        fi
-       java -classpath $CONF_DIR:$LIB_JARS com.hzgc.hbase.putdata.GetDataFromHBase  $FRIST_JSON_FILE  $SECOND_JSON_FILE | tee -a  ${LOG_FILE}
+       java -classpath $CONF_DIR:$LIB_JARS com.hzgc.hbase.getdata.GetDataFromHBase  $JSON_FILE | tee -a  ${LOG_FILE}
 }
 #####################################################################
 # 函数名: main
