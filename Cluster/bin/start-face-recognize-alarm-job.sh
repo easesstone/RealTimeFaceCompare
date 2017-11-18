@@ -33,11 +33,11 @@ MODULE_VERSION=1.5.0
 ## elasticsearch module
 ELASTICSEARCH_MODULE=1.0
 ## hbase client or server version
-HBASE_VERSION=1.0.2
+HBASE_VERSION=1.2.6
 ## hbase shaded miscellaneous version
 HBASE_SHADED_MISCELLANEOUS_VERSION=1.0.1
 ## ftp core version
-FTP_CORE_VERSION=1.0.6
+FTP_CORE_VERSION=1.1.1
 ## gson version
 GSON_VERSION=2.8.0
 ## jackson core version
