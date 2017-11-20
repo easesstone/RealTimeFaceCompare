@@ -60,7 +60,6 @@ fi
 #####################################################################
 function merge_parquet()
 {
-    echo "$LIB_DIR ===================================================== NIMA "
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
@@ -74,7 +73,7 @@ ${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
-${LIB_DIR}/hbase-${RELEASE_VERSION}.jar \
+${LIB_DIR}/service-${RELEASE_VERSION}.jar \
 ${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 

@@ -37,7 +37,8 @@ public class ElasticSearchHelper implements Serializable{
         String es_hosts = properties_es_config.getProperty("es.hosts").trim();
         Integer es_port = Integer.parseInt(properties_es_config.getProperty("es.cluster.port"));
         // 初始化配置文件
-        Settings settings = Settings.builder().put("cluster.name", es_cluster).build();
+        Settings settings = Settings.builder().put("cluster.name", es_cluster)
+            .put("client.transport.sniff", true).build();
         //初始化client
         client = new PreBuiltTransportClient(settings);
         for (String host: es_hosts.split(",")){
