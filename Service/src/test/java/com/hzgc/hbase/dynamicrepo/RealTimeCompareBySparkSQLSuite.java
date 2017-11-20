@@ -8,6 +8,8 @@ import com.hzgc.jni.FaceFunction;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RealTimeCompareBySparkSQLSuite {
     public static void main(String[] args) {
@@ -21,6 +23,11 @@ public class RealTimeCompareBySparkSQLSuite {
         option.setEndDate("2017-11-10 18:35:20");
         option.setCount(30);
         option.setSortParams("-similarity,+exacttime");
+        List<String> list = new ArrayList<>();
+        list.add("i1");
+        list.add("i2");
+        list.add("i3");
+        option.setDeviceIds(list);
         ParseByOption pp = new ParseByOption();
         System.out.println(pp.getFinalSQLwithOption("pp", option));
 //        SearchResult result = capture.search(option);

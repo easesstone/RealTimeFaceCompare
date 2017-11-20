@@ -9,7 +9,7 @@ import com.hzgc.jni.FaceFunction
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka.KafkaUtils
-import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
+import org.apache.spark.streaming.{Duration, Durations, Seconds, StreamingContext}
 
 object kafkaToParquet {
 
@@ -51,6 +51,7 @@ object kafkaToParquet {
       "group.id" -> kafkaGroupId
     )
     val kafkaDstream = KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
+    kafkaDstream.checkpoint(Seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong * 10))
     val kafkaDF = kafkaDstream.map(faceobject => {
       val putDataToEs = PutDataToEs.getInstance()
       val status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
@@ -66,7 +67,7 @@ object kafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.coalesce(1).toDF().cache().checkpoint().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.coalesce(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
     })
     ssc.start()
     ssc.awaitTermination()
