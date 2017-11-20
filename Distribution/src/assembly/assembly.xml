@@ -57,6 +57,9 @@
             <includes>
                 <include>**</include>
             </includes>
+            <excludes>
+                <exclude>env_RealTimeCompare.sh</exclude>
+            </excludes>
             <fileMode>0755</fileMode>
             <outputDirectory>common/bin</outputDirectory>
         </fileSet>
