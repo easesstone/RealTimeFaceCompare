@@ -54,7 +54,7 @@ ${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
-${LIB_DIR}/hbase-${RELEASE_VERSION}.jar \
+${LIB_DIR}/service-${RELEASE_VERSION}.jar \
 ${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${hdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
 }
 
