@@ -136,12 +136,14 @@ class ParseByOption {
             for (int i = 0; option.getDeviceIds().size() > i; i++) {
                 String ipcid = option.getDeviceIds().get(i);
                 if (option.getDeviceIds().size() - 1 > i) {
-                    finalSql
+                    finalSql.append("'")
                             .append(ipcid)
+                            .append("'")
                             .append(",");
                 } else {
-                    finalSql
+                    finalSql.append("'")
                             .append(ipcid)
+                            .append("'")
                             .append(")");
                 }
             }
@@ -170,20 +172,17 @@ class ParseByOption {
 
     private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //date分区字段
-        StringBuilder finalSql = new StringBuilder();
-        finalSql
-                .append("select ")
-                .append(MID_FIELD)
-                .append(",")
-                .append(DynamicTable.FUNCTION_NAME)
-                .append("('")
-                .append(searchFeaStr)
-                .append("', ")
-                .append(DynamicTable.FEATURE)
-                .append(") as ")
-                .append(DynamicTable.SIMILARITY)
-                .append(" from ")
-                .append(tableName);
-        return finalSql.toString();
+        return "select " +
+                MID_FIELD +
+                "," +
+                DynamicTable.FUNCTION_NAME +
+                "('" +
+                searchFeaStr +
+                "', " +
+                DynamicTable.FEATURE +
+                ") as " +
+                DynamicTable.SIMILARITY +
+                " from " +
+                tableName;
     }
 }
