@@ -129,24 +129,20 @@ class ParseByOption {
         }
         //判断一个或多个设备id
         if (option.getDeviceIds() != null) {
-            finalSql.append(" and ");
+            finalSql.append(" and ")
+            .append(DynamicTable.IPCID)
+            .append(" in ")
+            .append("(");
             for (int i = 0; option.getDeviceIds().size() > i; i++) {
                 String ipcid = option.getDeviceIds().get(i);
                 if (option.getDeviceIds().size() - 1 > i) {
                     finalSql
-                            .append(DynamicTable.IPCID)
-                            .append(" = ")
-                            .append("'")
                             .append(ipcid)
-                            .append("'")
-                            .append(" or ");
+                            .append(",");
                 } else {
                     finalSql
-                            .append(DynamicTable.IPCID)
-                            .append(" = ")
-                            .append("'")
                             .append(ipcid)
-                            .append("'");
+                            .append(")");
                 }
             }
         }
