@@ -177,6 +177,8 @@ public class FtpUtil implements Serializable {
     public static String getFtpUrl(String ftpUrl) {
         String hostName = ftpUrl.substring(ftpUrl.indexOf("/") + 2, ftpUrl.lastIndexOf(":"));
         String ftpServerIP = properties.getProperty(hostName);
-        return ftpUrl.replace(hostName, ftpServerIP);
+        if (ftpServerIP != null && ftpServerIP.length() > 0)
+            return ftpUrl.replace(hostName, ftpServerIP);
+        return ftpUrl;
     }
 }

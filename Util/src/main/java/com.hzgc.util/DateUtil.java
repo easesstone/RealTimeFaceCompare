@@ -13,7 +13,7 @@ public class DateUtil {
      * @return long类型时间
      */
     public static long dateToTimeStamp(String timeStamp) {
-        if (timeStamp != null) {
+        if (timeStamp != null && timeStamp.length() > 0) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
                 Date date = dateFormat.parse(timeStamp);

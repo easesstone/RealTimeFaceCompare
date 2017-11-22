@@ -116,6 +116,7 @@ public class FaceObject implements Serializable {
                 ", timeSlot='" + timeSlot + '\'' +
                 ", attribute=" + attribute +
                 ", image=" + Arrays.toString(image) +
+                ", startTime='" + startTime + '\'' +
                 '}';
     }
 }
