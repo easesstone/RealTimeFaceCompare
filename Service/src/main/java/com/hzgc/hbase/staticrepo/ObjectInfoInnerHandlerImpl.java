@@ -3,6 +3,7 @@ package com.hzgc.hbase.staticrepo;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.hbase.util.HBaseHelper;
 import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.jni.FaceFunction;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
@@ -28,7 +29,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
     private static Logger LOG = Logger.getLogger(ObjectInfoInnerHandlerImpl.class);
     private static ObjectInfoInnerHandlerImpl instance;
     private static long totalNums = getTotalNums();
-    private static List<String[]> totalList = null;
+    private static List<Object[]> totalList = null;
 
     /**
      * 接口实现使用单例模式
@@ -42,7 +43,7 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      *
      * @return 返回底库
      */
-    public List<String[]> getTotalList() {
+    public List<Object[]> getTotalList() {
         if (totalList == null || totalNumIsChange()) {
             System.out.println("start load static info repo...");
             totalList = searchByPkeys();
@@ -121,8 +122,8 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      *
      * @return 返回其中的rowkey, pkey, feature
      */
-    private List<String[]> searchByPkeys() {
-        List<String[]> findResult = new ArrayList<>();
+    private List<Object[]> searchByPkeys() {
+        List<Object[]> findResult = new ArrayList<>();
         Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
         Scan scan = new Scan();
         scan.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.FEATURE));
@@ -138,10 +139,10 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
                 if (null != feature) {
                     //将人员类型rowkey和特征值进行拼接
                     String feature_str = new String(feature, "ISO8859-1");
-                    String[] result1 = new String[3];
+                    Object[] result1 = new Object[3];
                     result1[0] = rowKey;
                     result1[1] = pkey;
-                    result1[2] = feature_str;
+                    result1[2] = FaceFunction.string2floatArray(feature_str);
                     //将结果添加到集合中
                     findResult.add(result1);
                 }

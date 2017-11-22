@@ -1,13 +1,11 @@
 package com.hzgc.hbase.util;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.hzgc.util.FileUtil;
 import org.apache.log4j.Logger;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,7 +16,7 @@ import java.util.Properties;
  */
 public class JDBCUtil {
     private static Logger LOG = Logger.getLogger(JDBCUtil.class);
-    private static Properties propertie;
+    private static Properties propertie = new Properties();
 //    private static JDBCUtil instance = null;
 //    private static DataSource dataSource = new DruidDataSource();
 //    private static Properties propertie = new Properties();
@@ -30,15 +28,26 @@ public class JDBCUtil {
       加载数据源配置信息
      */
     static {
+        FileInputStream fis = null;
         try {
             File resourceFile = FileUtil.loadResourceFile("jdbc.properties");
             if (resourceFile != null) {
+                fis = new FileInputStream(resourceFile);
                 propertie.load(new FileInputStream(resourceFile));
             }
 //            dataSource = DruidDataSourceFactory.createDataSource(propertie);
 //            dataSource.getConnection().close();
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.info("get jdbc.properties failure");
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
