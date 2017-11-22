@@ -129,24 +129,22 @@ class ParseByOption {
         }
         //判断一个或多个设备id
         if (option.getDeviceIds() != null) {
-            finalSql.append(" and ");
+            finalSql.append(" and ")
+            .append(DynamicTable.IPCID)
+            .append(" in ")
+            .append("(");
             for (int i = 0; option.getDeviceIds().size() > i; i++) {
                 String ipcid = option.getDeviceIds().get(i);
                 if (option.getDeviceIds().size() - 1 > i) {
-                    finalSql
-                            .append(DynamicTable.IPCID)
-                            .append(" = ")
-                            .append("'")
+                    finalSql.append("'")
                             .append(ipcid)
                             .append("'")
-                            .append(" or ");
+                            .append(",");
                 } else {
-                    finalSql
-                            .append(DynamicTable.IPCID)
-                            .append(" = ")
-                            .append("'")
+                    finalSql.append("'")
                             .append(ipcid)
-                            .append("'");
+                            .append("'")
+                            .append(")");
                 }
             }
         }
@@ -174,20 +172,17 @@ class ParseByOption {
 
     private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //date分区字段
-        StringBuilder finalSql = new StringBuilder();
-        finalSql
-                .append("select ")
-                .append(MID_FIELD)
-                .append(",")
-                .append(DynamicTable.FUNCTION_NAME)
-                .append("('")
-                .append(searchFeaStr)
-                .append("', ")
-                .append(DynamicTable.FEATURE)
-                .append(") as ")
-                .append(DynamicTable.SIMILARITY)
-                .append(" from ")
-                .append(tableName);
-        return finalSql.toString();
+        return "select " +
+                MID_FIELD +
+                "," +
+                DynamicTable.FUNCTION_NAME +
+                "('" +
+                searchFeaStr +
+                "', " +
+                DynamicTable.FEATURE +
+                ") as " +
+                DynamicTable.SIMILARITY +
+                " from " +
+                tableName;
     }
 }
