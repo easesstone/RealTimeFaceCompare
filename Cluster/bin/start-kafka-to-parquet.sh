@@ -39,9 +39,15 @@ BIGDATA_ENV=/opt/env_bigdata.sh
 ## spark bin dir
 SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
 ## spark master
-SPARK_MASTER_PARAM=yarn-cluster
+SPARK_MASTER_PARAM=yarn
+##deploy mode
+DEPLOY_MODE=cluster
 ## spark num executors
 SPARK_EXECUTORS_NUM=3
+##spark executor memory
+SPARK_EXECUTOR_MEMORY=5g
+##spark driver memory
+SPARK_DRIVER_MEMORY=5g
 
 if [ ! -d ${LOG_DIR} ];then
     mkdir ${LOG_DIR}
@@ -111,7 +117,10 @@ source ${ETC_PROFILE}
 source ${BIGDATA_ENV}
 nohup spark-submit \
 --master ${SPARK_MASTER_PARAM} \
---num-executors 3 \
+--deploy-mode ${DEPLOY_MODE} \
+--num-executors ${SPARK_EXECUTORS_NUM} \
+--executor-memory ${SPARK_EXECUTOR_MEMORY}\
+--driver-memory ${SPARK_DRIVER_MEMORY} \
 --class com.hzgc.cluster.consumer.kafkaToParquet \
 --jars ${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
 ${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
