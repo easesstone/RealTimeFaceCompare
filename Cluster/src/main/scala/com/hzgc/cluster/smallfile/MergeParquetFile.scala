@@ -155,7 +155,8 @@ object MergeParquetFile {
         }
 
         // 6, 根据加载的数据，进行分区，并且把数据存到Hive 的表格中,Hive 表格所处的根目录中
-        personDF.coalesce(1).repartition(takePartition(tmpTableHdfsPath, fs))
+        //personDF.coalesce(1).repartition(takePartition(tmpTableHdfsPath, fs))
+        personDF.coalesce(1)
             .write.mode(SaveMode.Append)
             .partitionBy("date", "ipcid")
             .parquet(hisTableHdfsPath)
@@ -232,7 +233,8 @@ object ReadWriteHDFS {
             for (fileStatus <- fileStatusArr) {
                 if (fileStatus.isDirectory()) {
                     getParquetFiles(fileStatus.getPath, fs, files)
-                } else if (fileStatus.isFile && fileStatus.getPath.toString.endsWith(".parquet")){
+                } else if (fileStatus.isFile && fileStatus.getPath.toString.endsWith(".parquet") &&
+                    !fileStatus.getPath.toString.contains("_temporary/")){
                     files.add(fileStatus.getPath.toString)
                 }
             }
@@ -254,7 +256,7 @@ object ReadWriteHDFS {
                 if (fileStatus.isDirectory()) {
                     getParquetFiles(dateString, fileStatus.getPath, fs, files)
                 } else if (fileStatus.isFile && finalPathString.endsWith(".parquet")
-                    && finalPathString.contains(dateString)){
+                    && finalPathString.contains(dateString) && !fileStatus.getPath.toString.contains("_temporary/")){
                     files.add(finalPathString)
                 }
             }

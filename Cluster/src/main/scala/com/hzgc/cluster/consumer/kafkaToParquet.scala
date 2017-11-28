@@ -33,7 +33,6 @@ object kafkaToParquet {
 
   val properties: Properties = StreamingUtils.getProperties
   val appname: String = getItem("job.faceObjectConsumer.appName", properties)
-  val master: String = getItem("job.faceObjectConsumer.master", properties)
   val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
   val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties)
   val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)
@@ -43,9 +42,9 @@ object kafkaToParquet {
   val backupAddress: String = getItem("job.backupAddress", properties)
 
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder().appName(appname).master(master).getOrCreate()
+    val spark = SparkSession.builder().appName(appname).getOrCreate()
     val ssc = new StreamingContext(spark.sparkContext, timeInterval)
-    spark.sparkContext.setCheckpointDir(backupAddress)
+    ssc.checkpoint(backupAddress)
     val kafkaParams = Map(
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
@@ -53,21 +52,25 @@ object kafkaToParquet {
     val kafkaDstream = KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
     kafkaDstream.checkpoint(Seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong * 10))
     val kafkaDF = kafkaDstream.map(faceobject => {
-      val putDataToEs = PutDataToEs.getInstance()
-      val status = putDataToEs.putDataToEs(faceobject._1, faceobject._2)
-      if (status != 1) {
-        println("Put data to es failed!")
-      }
-      Picture(faceobject._1, FaceFunction.floatArray2string(faceobject._2.getAttribute.getFeature), faceobject._2.getIpcId,
+      (Picture(faceobject._1, FaceFunction.floatArray2string(faceobject._2.getAttribute.getFeature), faceobject._2.getIpcId,
         faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
         faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
         faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
         faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie
-      )
+      ), faceobject._1, faceobject._2)
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.coalesce(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.foreachPartition(parData => {
+        val putDataToEs = PutDataToEs.getInstance()
+        parData.foreach(data => {
+          val status = putDataToEs.putDataToEs(data._2,data._3)
+          if (status != 1) {
+            println("Put data to es failed! And the failed ftpurl is " + data._2)
+          }
+        })
+      })
     })
     ssc.start()
     ssc.awaitTermination()

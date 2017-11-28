@@ -11,6 +11,9 @@
         <fileSet>
             <directory>${project.basedir}/bin</directory>
             <fileMode>0755</fileMode>
+            <excludes>
+                <exclude>facecomp-daemon.sh</exclude>
+            </excludes>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
         <!--项目resources目录-->
@@ -22,6 +25,7 @@
             <excludes>
                 <exclude>spring-context.xml</exclude>
                 <exclude>sql/**</exclude>
+                <exclude>ftp-hostnames.properties</exclude>
             </excludes>
             <outputDirectory>conf</outputDirectory>
         </fileSet>
