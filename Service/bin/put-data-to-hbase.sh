@@ -1,11 +1,11 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-consumer.sh
-## Description: to start consumer
+## Filename:    put-data-to-hbase.sh
+## Description: to put data to hbase
 ## Version:     1.0
-## Author:      lidiliang
-## Created:     2017-08-03
+## Author:      chenke
+## Created:     2017-11-28
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
 

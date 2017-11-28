@@ -1,8 +1,8 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-consumer.sh
-## Description: to start consumer
+## Filename:    put-resident-to-hbase.sh
+## Description: to put resident format to hbase
 ## Version:     1.0
 ## Author:      chenke
 ## Created:     2017-11-16
