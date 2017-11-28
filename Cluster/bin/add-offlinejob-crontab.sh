@@ -36,12 +36,6 @@ then
    service crond start
 fi
 
-##判断是否存在FI客户端
-if [ ! -d /opt/client ];then
-   echo "$/opt/client does not exit,please go to the node of the existing FI client !"
-   exit 0
-fi
-
 ##判断是否存在执行文件
 if [ ! -e $BIN_DIR/start-face-offline-alarm-job.sh ];then
     echo "$BIN_DIR/start-face-offline-alarm-job.sh does not exit!"
