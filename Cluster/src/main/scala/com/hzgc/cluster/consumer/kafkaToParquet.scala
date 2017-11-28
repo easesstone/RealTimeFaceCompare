@@ -67,7 +67,7 @@ object kafkaToParquet {
         parData.foreach(data => {
           val status = putDataToEs.putDataToEs(data._2,data._3)
           if (status != 1) {
-            println("Put data to es failed!")
+            println("Put data to es failed! And the failed ftpurl is " + data._2)
           }
         })
       })

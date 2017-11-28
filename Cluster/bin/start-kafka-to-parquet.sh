@@ -127,6 +127,7 @@ ${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
 ${LIB_DIR}/elasticsearch-1.0.jar,\
+${LIB_DIR}/metrics-core-2.2.0.jar,\
 ${LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
