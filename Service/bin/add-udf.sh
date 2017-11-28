@@ -37,7 +37,7 @@ HIVE_PATH=${BIGDATA_CLUSTER_PATH}/Hive/hive
 ## udf function name
 UDF_FUNCTION_NAME=compare
 ## udf class path
-UDF_CLASS_PATH=com.hzgc.udf.spark.FaceCompare
+UDF_CLASS_PATH=com.hzgc.udf.spark.UDFArrayCompare
 ## hdfs udf  path
 HDFS_UDF_PATH=/user/hive/udf
 ## hdfs udf Absolute path

@@ -65,12 +65,13 @@ ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.pers
                                 STORED AS PARQUET \
                                 LOCATION '/user/hive/warehouse/mid_table';
                                 show tables"
+
 if [ $? == 0 ];then
 		echo "===================================="
 		echo "创建person_table,mid_table成功"
 		echo "===================================="
-	else
+else
 		echo "========================================================="
 		echo "创建person_table,mid_table失败,请看日志查找失败原因......"
 		echo "========================================================="
-	fi
+fi

@@ -42,9 +42,9 @@ class ParseByOption {
         finalSql.append("select ")
                 .append(FINAL_FTIEL)
                 .append(" from (")
-                .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr))
+                .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
                 .append(" union all ")
-                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr))
+                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option))
                 .append(") temp_table where ")
                 .append(DynamicTable.SIMILARITY)
                 .append(">=")
@@ -170,7 +170,7 @@ class ParseByOption {
         return finalSql.toString();
     }
 
-    private static String getSQLbyOption(String tableName, String searchFeaStr) {
+    private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //date分区字段
         return "select " +
                 MID_FIELD +
