@@ -29,14 +29,8 @@ public class FaceCompare extends GenericUDF {
                     .getTypeName() + "\" is found");
         }
 
-        ObjectInspector leftValueOI = arguments[0];
         ListObjectInspector rightArrayOI = (ListObjectInspector) arguments[1];
         ObjectInspector rightArrayElementOI = rightArrayOI.getListElementObjectInspector();
-
-        if (!ObjectInspectorUtils.compareSupported(leftValueOI)) {
-            throw new UDFArgumentException("The function array_compare does not support comparison for \"" + leftValueOI
-                    .getTypeName() + "\" types");
-        }
 
         if (!ObjectInspectorUtils.compareSupported(rightArrayElementOI)) {
             throw new UDFArgumentException("The function array_compare does not support comparison for \"" + rightArrayElementOI
@@ -45,7 +39,7 @@ public class FaceCompare extends GenericUDF {
 
         ObjectInspector rightArrayElementValue = ObjectInspectorFactory.getStandardListObjectInspector
                 (PrimitiveObjectInspectorFactory.javaFloatObjectInspector);
-        if (rightArrayElementValue != arguments[1]){
+        if (rightArrayElementValue != rightArrayElementOI){
             this.result.set(0.0D);
         }
         this.result = new DoubleWritable(0.0D);
