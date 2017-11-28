@@ -42,9 +42,9 @@ class ParseByOption {
         finalSql.append("select ")
                 .append(FINAL_FTIEL)
                 .append(" from (")
-                .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
+                .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr))
                 .append(" union all ")
-                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr, option))
+                .append(getSQLbyOption(DynamicTable.MID_TABLE, searchFeaStr))
                 .append(") temp_table where ")
                 .append(DynamicTable.SIMILARITY)
                 .append(">=")
@@ -128,7 +128,7 @@ class ParseByOption {
                     .append("'");
         }
         //判断一个或多个设备id
-        if (option.getDeviceIds() != null) {
+        /*if (option.getDeviceIds() != null) {
             finalSql.append(" and ")
             .append(DynamicTable.IPCID)
             .append(" in ")
@@ -147,7 +147,7 @@ class ParseByOption {
                             .append(")");
                 }
             }
-        }
+        }*/
         if (option.getSortParams() != null && option.getSortParams().length() > 0) {
             finalSql.append(" order by ");
             String[] splitStr = option.getSortParams().split(",");
@@ -170,7 +170,7 @@ class ParseByOption {
         return finalSql.toString();
     }
 
-    private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
+    private static String getSQLbyOption(String tableName, String searchFeaStr) {
         //date分区字段
         return "select " +
                 MID_FIELD +

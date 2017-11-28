@@ -1,11 +1,11 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:    HZGOSUN Tech. Co, BigData
-## Filename:     add-udf-to-hive.sh
-## Description:  向hive中添加和注册udf函数
+## Filename:     add-udf.sh
+## Description:  向hive中添加并注册udf函数
 ## Version:      1.5.0
 ## Author:       qiaokaifeng
-## Created:      2017-11-17
+## Created:      2017-11-28
 ################################################################################
 
 #set -x
@@ -25,7 +25,7 @@ LIB_DIR=${DEPLOY_DIR}/lib
 ## log 日记目录
 LOG_DIR=${DEPLOY_DIR}/logs
 ##  log 日记文件
-LOG_FILE=${LOG_DIR}/add-udf-to-hive.log
+LOG_FILE=${LOG_DIR}/add-udf.log
 ## udf jar version
 UDF_VERSION=udf-1.5.0.jar
 ## bigdata cluster path
@@ -88,16 +88,10 @@ else
 fi
 
 ## 在hive中添加并注册udf函数
-${HIVE_PATH}/bin/hive -e "create function ${UDF_FUNCTION_NAME} as '${UDF_CLASS_PATH}' using jar '${HDFS_UDF_ABSOLUTE_PATH}'"
-
-## 查看udf函数是否添加并注册成功
-${HIVE_PATH}/bin/hive -e "show functions"
+${HIVE_PATH}/bin/hive -e "create function ${UDF_FUNCTION_NAME} as '${UDF_CLASS_PATH}' using jar '${HDFS_UDF_ABSOLUTE_PATH}';show functions"
 
 echo "================================================================================="
 echo "Please see if there is a UDF function with the function called default.${UDF_FUNCTION_NAME}!!!"
 echo "================================================================================="
 
-## 1.需要把udf-1.5.0.jar上传到hdfs上的/user/hive/udf目录。
-## 2.udf目录不存在要先创建
-## 3.执行hive的hql语句，创建函数并注册
 #set +x
