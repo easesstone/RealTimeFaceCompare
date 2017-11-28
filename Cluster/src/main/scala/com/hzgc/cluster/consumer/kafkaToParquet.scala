@@ -44,7 +44,7 @@ object kafkaToParquet {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder().appName(appname).getOrCreate()
     val ssc = new StreamingContext(spark.sparkContext, timeInterval)
-    spark.sparkContext.setCheckpointDir(backupAddress)
+    ssc.checkpoint(backupAddress)
     val kafkaParams = Map(
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
