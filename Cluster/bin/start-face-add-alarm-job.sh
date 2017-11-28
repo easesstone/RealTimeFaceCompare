@@ -34,8 +34,6 @@ MODULE_VERSION=1.5.0
 ELASTICSEARCH_MODULE=1.0
 ## hbase client or server version
 HBASE_VERSION=1.2.6
-## hbase shaded miscellaneous version
-HBASE_SHADED_MISCELLANEOUS_VERSION=1.0.1
 ## ftp core version
 FTP_CORE_VERSION=1.1.1
 ## gson version
@@ -55,9 +53,7 @@ FASTJSON_VERSION=1.2.29
 ## etc profile
 ETC_PROFILE=/etc/profile
 ## bigdata_env
-BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
-## spark bin dir
-SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
+BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
 SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceAddAlarmJob
 
@@ -96,7 +92,6 @@ cp ${CONF_DIR}/rocketmq.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/sparkJob.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/ftpAddress.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/hbase-site.xml  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
-#cp ${BIGDATA_CLUSTER_PATH}/HBase/hbase/lib/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ${LIB_DIR}
 
 ## 判断是否存在jar
 if [ ! -e ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar ];then
@@ -125,10 +120,6 @@ if [ ! -e ${LIB_DIR}/service-${MODULE_VERSION}.jar ];then
 fi
 if [ ! -e ${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar ];then
     echo "${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar does not exit!"
-    exit 0
-fi
-if [ ! -e ${LIB_DIR}/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ];then
-    echo "${LIB_DIR}/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar ];then
@@ -210,7 +201,8 @@ fi
 
 ############ 新增告警任务###############
 source ${ETC_PROFILE}
-nohup ${SPARK_HOME}/spark-submit \
+source ${BIGDATA_ENV}
+nohup spark-submit \
 --master yarn \
 --deploy-mode cluster \
 --executor-memory 4g \
@@ -224,7 +216,6 @@ ${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-common-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar,\
-${LIB_DIR}/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar,\
 ${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar,\
