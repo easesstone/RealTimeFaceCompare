@@ -1,11 +1,11 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    merge-parquet-files.sh
-## Description: 合并小文件
+## Filename:    load-parquet-files.sh
+## Description: 加载分区数据到peroson_table
 ## Version:     1.0
-## Author:      lidiliang
-## Created:     2017-11-06
+## Author:      qiaokaifeng
+## Created:     2017-11-18
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
 
@@ -18,8 +18,8 @@ CONF_DIR=$DEPLOY_DIR/conf    ### 项目根目录
 LIB_DIR=$DEPLOY_DIR/lib        ## Jar 包目录
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`   ## jar 包位置以及第三方依赖jar包，绝对路径
 LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
-LOG_FILE=${LOG_DIR}/merge-parquet-files.log        ##  log 日记文件
-
+LOG_FILE=${LOG_DIR}/load-parquet-files.log        ##  log 日记文件
+SPARK_HOME=/opt/hzgc/bigdata
 mkdir -p ${LOG_DIR}
 
 SPARK_STREAMING_KAFKA=1.6.2
@@ -27,43 +27,24 @@ RELEASE_VERSION=1.5.0
 KAFKA_VERSION=0.8.2.1
 SCALA_VERSION=2.11
 
-
-
-
-source /opt/hzgc/env_bigdata.sh
-
-if [[ ($# -ne 4)  &&  ($# -ne 5) ]];then
-    echo "Usage: sh merget-parquest-files.sh <hdfsClusterName> <tmpTableHdfsPath> <hisTableHdfsPath> <tableName>"
-    echo "<hdfsClusterName> 例如：hdfs://hacluster或者hdfs://hzgc "
-    echo "<tmpTableHdfsPath> 临时表的根目录，需要是绝对路径"
-    echo "<hisTableHdfsPath> 合并后的parquet文件，即总的或者历史文件的根目录，需要是绝对路径"
-    echo "<tableName> 表格名字，最终保存的动态信息库的表格名字"
-    echo "<dateString> 时间，根据某一天的时间进行合并parquet 文件。"
-    exit 1
-fi
-
-hdfsClusterName=$1
-tmpTableHdfsPath=$2
-hisTableHdfsPath=$3
-tableName=$4
-dateString=""
-if [ "$5" != "" ];then
-    dateString=$5
-fi
+hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/load-parquet-files.properties)
+hdfsPath=$(sed -n '2p' ${CONF_DIR}/load-parquet-files.properties)
+tableName=$(sed -n '3p' ${CONF_DIR}/load-parquet-files.properties)
 
 #####################################################################
-# 函数名: start_consumer
-# 描述: 把consumer 消费组启动起来
+# 函数名: start_load_data
+# 描述: 加载数据
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
 #####################################################################
-function merge_parquet()
+function load_parquet()
 {
+    echo "$LIB_DIR ===================================================== NIMA "
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
-    spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
+${SPARK_HOME}/Spark/spark/bin/spark-submit --class com.hzgc.cluster.loaddata.LoadParquetFile \
     --master local[*] \
     --driver-memory 4g \
     --jars ${LIB_DIR}/spark-streaming-kafka_${SCALA_VERSION}-${SPARK_STREAMING_KAFKA}.jar,\
@@ -74,7 +55,7 @@ ${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/service-${RELEASE_VERSION}.jar \
-${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
+${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${hdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
 }
 
 #####################################################################
@@ -90,7 +71,7 @@ function main()
     echo ""  | tee  -a  $LOG_FILE
     echo "==================================================="  | tee -a $LOG_FILE
     echo "$(date "+%Y-%m-%d  %H:%M:%S")"                       | tee  -a  $LOG_FILE
-    merge_parquet
+    load_parquet
 }
 
 
