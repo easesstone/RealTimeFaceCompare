@@ -155,7 +155,7 @@ public class FaceFunction {
     public static String floatArray2string(float[] feature) {
         if (feature != null && feature.length == 512) {
             StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < feature.length; i++) {
+            for (int i = 0; i < feature.length; i++) {
                 if (i == 511) {
                     sb.append(feature[i]);
                 } else {
