@@ -178,6 +178,10 @@ if [ ! -e ${LIB_DIR}/streaming-${MODULE_VERSION}.jar ];then
     echo "${LIB_DIR}/streaming-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
+if [ ! -e ${LIB_DIR}/metrics-core-2.2.0.jar ];then
+    echo "${LIB_DIR}/metrics-core-2.2.0.jar does not exit!"
+    exit 0
+fi
 if [ ! -e ${CONF_DIR}/es-config.properties ];then
     echo "${CONF_DIR}/es-config.properties does not exit!"
     exit 0
@@ -227,7 +231,8 @@ ${LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
-${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar \
+${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar, \
+${LIB_DIR}/metrics-core-2.2.0.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
