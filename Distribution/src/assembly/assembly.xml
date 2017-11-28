@@ -20,7 +20,7 @@
             <includes>
                 <include>env_RealTimeCompare.sh</include>
             </includes>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>\</outputDirectory>
         </fileSet>
         <!--项目模块-->
         <fileSet>
@@ -112,6 +112,20 @@
                 <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../Service/bin</directory>
+            <includes>
+                <include>facecomp-daemon.sh</include>
+            </includes>
+            <outputDirectory>common/bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../Service/src/main/resources</directory>
+            <includes>
+                <include>ftp-hostnames.properties</include>
+            </includes>
+            <outputDirectory>common/conf</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

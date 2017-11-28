@@ -90,6 +90,9 @@
                     <include>*.properties</include>
                     <include>*.xml</include>
                 </includes>
+                <excludes>
+                    <exclude>ftp-hostnames.properties</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
