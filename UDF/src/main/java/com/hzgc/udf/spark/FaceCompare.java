@@ -46,7 +46,7 @@ public class FaceCompare extends GenericUDF {
         ObjectInspector rightArrayElementValue = ObjectInspectorFactory.getStandardListObjectInspector
                 (PrimitiveObjectInspectorFactory.javaFloatObjectInspector);
         if (rightArrayElementValue != arguments[1]){
-            result.set(0.0D);
+            this.result.set(0.0D);
         }
         this.result = new DoubleWritable(0.0D);
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
