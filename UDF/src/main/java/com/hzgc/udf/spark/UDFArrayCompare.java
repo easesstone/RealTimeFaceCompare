@@ -40,9 +40,9 @@ public class UDFArrayCompare extends GenericUDF {
         ObjectInspector rightArrayElementValue = ObjectInspectorFactory.getStandardListObjectInspector
                 (PrimitiveObjectInspectorFactory.javaFloatObjectInspector);
         if (rightArrayElementValue != arguments[1]) {
-            this.result.set(0.0D);
+            this.result.set(0);
         }
-        this.result = new DoubleWritable(0.0D);
+        this.result = new DoubleWritable(0);
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     }
 
@@ -50,9 +50,13 @@ public class UDFArrayCompare extends GenericUDF {
         Object leftArray = arguments[0].get();
         Object rightArray = arguments[1].get();
         float[] currentFeature = string2floatArray(leftArray.toString());
-        List historyFeature = (List) rightArray;
-        double ret = featureCompare(currentFeature, historyFeature);
-        this.result.set(ret);
+        try {
+            List<Float> historyFeature = (List<Float>) rightArray;
+            double ret = featureCompare(currentFeature, historyFeature);
+            this.result.set(ret);
+        } catch (Exception e) {
+            this.result.set(0);
+        }
         return this.result;
     }
 
@@ -67,7 +71,7 @@ public class UDFArrayCompare extends GenericUDF {
             String[] strArr = feature.split(":");
             for (int i = 0; i < strArr.length; i++) {
                 try {
-                    featureFloat[i] = Float.valueOf(strArr[i]).floatValue();
+                    featureFloat[i] = Float.valueOf(strArr[i]);
                 } catch (Exception e) {
                     return new float[0];
                 }
@@ -78,25 +82,25 @@ public class UDFArrayCompare extends GenericUDF {
     }
 
     private double featureCompare(float[] currentFeature, List<Float> historyFeature) {
-        double similarityDegree = 0.0D;
-        double currentFeatureMultiple = 0.0D;
-        double historyFeatureMultiple = 0.0D;
+        double similarityDegree = 0;
+        double currentFeatureMultiple = 0;
+        double historyFeatureMultiple = 0;
         if ((currentFeature.length == 512) && (historyFeature.size() == 512)) {
             for (int i = 0; i < currentFeature.length; i++) {
-                similarityDegree += currentFeature[i] * ((Float) historyFeature.get(i)).floatValue();
-                currentFeatureMultiple += Math.pow(currentFeature[i], 2.0D);
-                historyFeatureMultiple += Math.pow(((Float) historyFeature.get(i)).floatValue(), 2.0D);
+                similarityDegree += currentFeature[i] * historyFeature.get(i);
+                currentFeatureMultiple += Math.pow(currentFeature[i], 2.0);
+                historyFeatureMultiple += Math.pow((historyFeature.get(i)), 2.0);
             }
             double tempSim = similarityDegree / Math.sqrt(currentFeatureMultiple) / Math.sqrt(historyFeatureMultiple);
 
-            double actualValue = new BigDecimal((0.5D + tempSim / 2.0D) * 100.0D)
+            double actualValue = new BigDecimal((0.5 + tempSim / 2.0) * 100)
                     .setScale(2, 4)
                     .doubleValue();
-            if (actualValue >= 100.0D) {
-                return 100.0D;
+            if (actualValue >= 100) {
+                return 100.0;
             }
             return actualValue;
         }
-        return 0.0D;
+        return 0;
     }
 }
