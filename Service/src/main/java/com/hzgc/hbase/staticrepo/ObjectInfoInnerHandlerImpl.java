@@ -45,9 +45,9 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      */
     public List<Object[]> getTotalList() {
         if (totalList == null || totalNumIsChange()) {
-            System.out.println("start load static info repo...");
+            System.out.println("Start load static library...");
             totalList = searchByPkeys();
-            System.out.println("load static info repo successfull...");
+            System.out.println("Load static library successfull...");
             return totalList;
         } else {
             return totalList;
@@ -61,13 +61,10 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      */
     private boolean totalNumIsChange() {
         long newTotalNums = getTotalNums();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateStr = df.format(new Date());
         if (totalNums == newTotalNums) {
-            System.out.println("TotalNums no change,current time:[ " + dateStr + " ]");
             return false;
         } else {
-            System.out.println("totalNums has changed, old number:[" + totalNums + "], current number:[" + newTotalNums + "]");
+            System.out.println("TotalNums changed");
             setTotalNums(newTotalNums);
             return true;
         }
