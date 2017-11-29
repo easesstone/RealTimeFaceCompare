@@ -181,8 +181,8 @@ if [ ! -e ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
     echo "${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${LIB_DIR}/streaming-${MODULE_VERSION}.jar ];then
-    echo "${LIB_DIR}/streaming-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${LIB_DIR}/cluster-${MODULE_VERSION}.jar ];then
+    echo "${LIB_DIR}/cluster-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${CONF_DIR}/es-config.properties ];then
@@ -241,4 +241,4 @@ ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
 ${CONF_DIR}/sparkJob.properties,\
 ${CONF_DIR}/rocketmq.properties \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
+${LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &

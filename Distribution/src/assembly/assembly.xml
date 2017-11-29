@@ -24,7 +24,7 @@
         </fileSet>
         <!--项目模块-->
         <fileSet>
-            <directory>../Cluster/target/streaming-1.5.0</directory>
+            <directory>../Cluster/target/cluster-1.5.0</directory>
             <includes>
                 <include>**</include>
             </includes>

@@ -138,4 +138,4 @@ ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/service-${MODULE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/sparkJob.properties \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
+${LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &

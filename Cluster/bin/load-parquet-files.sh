@@ -55,7 +55,7 @@ ${LIB_DIR}/ftp-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/util-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${RELEASE_VERSION}.jar,\
 ${LIB_DIR}/service-${RELEASE_VERSION}.jar \
-${LIB_DIR}/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${hdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
+${LIB_DIR}/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${hdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
 }
 
 #####################################################################
