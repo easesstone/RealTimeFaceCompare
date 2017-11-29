@@ -2,7 +2,7 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    add-offlinejob-crontab.sh
-## Description: add offLineAlarmJob to crontab
+## Description: add offLineAlarmJob to crontab(将离线告警任务添加到定时器)
 ## Version:     1.0
 ## Author:      liushanbin
 ## Created:     2017-09-09

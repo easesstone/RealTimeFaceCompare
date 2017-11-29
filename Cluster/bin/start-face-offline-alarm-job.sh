@@ -2,7 +2,7 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-offline-alarm-job.sh
-## Description: to start faceOffLineAlarmJob
+## Description: to start faceOffLineAlarmJob(启动离线告警任务)
 ## Version:     1.5.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
@@ -25,9 +25,17 @@ LIB_DIR=${DEPLOY_DIR}/lib
 LOG_DIR=${DEPLOY_DIR}/logs
 ##  log 日记文件
 LOG_FILE=${LOG_DIR}/sparkFaceOfflineAlarmJob.log
-
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
+## etc profile
+ETC_PROFILE=/etc/profile
+## bigdata_env
+BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
+## spark class
+SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceOffLineAlarmJob
+#---------------------------------------------------------------------#
+#                              jar版本控制                            #
+#---------------------------------------------------------------------#
 ## module version
 MODULE_VERSION=1.5.0
 ## elasticsearch module
@@ -50,12 +58,8 @@ KAFKA_VERSION=2.11-${KAFKA_CLIENTS_VERSION}
 ROCKETMQ_VERSION=4.1.0
 ## fast json version
 FASTJSON_VERSION=1.2.29
-## etc profile
-ETC_PROFILE=/etc/profile
-## bigdata_env
-BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
-## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceOffLineAlarmJob
+## metrics_core_version
+METRICS_CORE_VERSION=2.2.0
 
 
 if [ ! -d ${LOG_DIR} ];then
@@ -178,8 +182,8 @@ if [ ! -e ${LIB_DIR}/streaming-${MODULE_VERSION}.jar ];then
     echo "${LIB_DIR}/streaming-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${LIB_DIR}/metrics-core-2.2.0.jar ];then
-    echo "${LIB_DIR}/metrics-core-2.2.0.jar does not exit!"
+if [ ! -e ${LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar ];then
+    echo "${LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${CONF_DIR}/es-config.properties ];then
@@ -231,8 +235,8 @@ ${LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
-${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar, \
-${LIB_DIR}/metrics-core-2.2.0.jar \
+${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
+${LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
