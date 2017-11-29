@@ -2,7 +2,7 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-offline-alarm-job.sh
-## Description: to start faceOffLineAlarmJob
+## Description: to start faceOffLineAlarmJob(启动离线告警任务)
 ## Version:     1.5.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
@@ -24,18 +24,24 @@ LIB_DIR=${DEPLOY_DIR}/lib
 ## log 日记目录
 LOG_DIR=${DEPLOY_DIR}/logs
 ##  log 日记文件
-LOG_FILE=${LOG_DIR}/sparkFaceAddAlarmJob.log
-
+LOG_FILE=${LOG_DIR}/sparkFaceOfflineAlarmJob.log
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
+## etc profile
+ETC_PROFILE=/etc/profile
+## bigdata_env
+BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
+## spark class
+SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceOffLineAlarmJob
+#---------------------------------------------------------------------#
+#                              jar版本控制                            #
+#---------------------------------------------------------------------#
 ## module version
 MODULE_VERSION=1.5.0
 ## elasticsearch module
 ELASTICSEARCH_MODULE=1.0
 ## hbase client or server version
 HBASE_VERSION=1.2.6
-## hbase shaded miscellaneous version
-HBASE_SHADED_MISCELLANEOUS_VERSION=1.0.1
 ## ftp core version
 FTP_CORE_VERSION=1.1.1
 ## gson version
@@ -52,22 +58,8 @@ KAFKA_VERSION=2.11-${KAFKA_CLIENTS_VERSION}
 ROCKETMQ_VERSION=4.1.0
 ## fast json version
 FASTJSON_VERSION=1.2.29
-## etc profile
-ETC_PROFILE=/etc/profile
-## bigdata_env
-BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
-## spark bin dir
-SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
-## spark master
-SPARK_MASTER=yarn
-## spark mode
-SPARK_MODE=cluster
-## spark executor-memory
-SPARK_EXECUTOR_MEMORY=5g
-## spark executor-cores
-SPARK_EXECUTOR_CORES=4
-## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceOffLineAlarmJob
+## metrics_core_version
+METRICS_CORE_VERSION=2.2.0
 
 
 if [ ! -d ${LOG_DIR} ];then
@@ -104,7 +96,6 @@ cp ${CONF_DIR}/rocketmq.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/sparkJob.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/ftpAddress.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/hbase-site.xml  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
-cp ${BIGDATA_CLUSTER_PATH}/HBase/hbase/lib/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ${LIB_DIR}
 
 ## 判断是否存在jar
 if [ ! -e ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar ];then
@@ -133,10 +124,6 @@ if [ ! -e ${LIB_DIR}/service-${MODULE_VERSION}.jar ];then
 fi
 if [ ! -e ${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar ];then
     echo "${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar does not exit!"
-    exit 0
-fi
-if [ ! -e ${LIB_DIR}/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ];then
-    echo "${LIB_DIR}/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar ];then
@@ -191,8 +178,12 @@ if [ ! -e ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
     echo "${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${LIB_DIR}/streaming-${MODULE_VERSION}.jar ];then
-    echo "${LIB_DIR}/streaming-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${LIB_DIR}/cluster-${MODULE_VERSION}.jar ];then
+    echo "${LIB_DIR}/cluster-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar ];then
+    echo "${LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar does not exit!"
     exit 0
 fi
 if [ ! -e ${CONF_DIR}/es-config.properties ];then
@@ -216,13 +207,14 @@ if [ ! -e ${CONF_DIR}/rocketmq.properties ];then
     exit 0
 fi
 
-## 离线告警任务
+############### 离线告警任务#################
 source ${ETC_PROFILE}
-nohup ${SPARK_HOME}/spark-submit \
---master ${SPARK_MASTER} \
---deploy-mode ${SPARK_MODE} \
---executor-memory ${SPARK_EXECUTOR_MEMORY} \
---executor-cores ${SPARK_EXECUTOR_CORES} \
+source ${BIGDATA_ENV}
+nohup spark-submit \
+--master yarn \
+--deploy-mode cluster \
+--executor-memory 4g \
+--executor-cores 2 \
 --class ${SPARK_CLASS_PARAM} \
 --jars ${LIB_DIR}/gson-${GSON_VERSION}.jar,\
 ${LIB_DIR}/jackson-core-${JACKSON_CORE_VERSION}.jar,\
@@ -232,7 +224,6 @@ ${LIB_DIR}/hbase-server-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-common-${HBASE_VERSION}.jar,\
 ${LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar,\
-${LIB_DIR}/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar,\
 ${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar,\
@@ -244,10 +235,11 @@ ${LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
 ${LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
-${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar \
+${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
+${LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/hbase-site.xml,\
 ${CONF_DIR}/ftpAddress.properties,\
 ${CONF_DIR}/sparkJob.properties,\
 ${CONF_DIR}/rocketmq.properties \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
+${LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &

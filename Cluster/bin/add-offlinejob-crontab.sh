@@ -2,7 +2,7 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    add-offlinejob-crontab.sh
-## Description: add offLineAlarmJob to crontab
+## Description: add offLineAlarmJob to crontab(将离线告警任务添加到定时器)
 ## Version:     1.0
 ## Author:      liushanbin
 ## Created:     2017-09-09
@@ -34,12 +34,6 @@ fi
 if [[ $STATUS != *$RUNNING_STR* ]]
 then
    service crond start
-fi
-
-##判断是否存在FI客户端
-if [ ! -d /opt/client ];then
-   echo "$/opt/client does not exit,please go to the node of the existing FI client !"
-   exit 0
 fi
 
 ##判断是否存在执行文件

@@ -1,10 +1,10 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    bulk-data-to-es.sh
-## Description: to start consumer
+## Filename:    put-json-to-es.sh
+## Description: to spilt json to put data to es
 ## Version:     1.0
-## Author:      lidiliang
+## Author:      chenke
 ## Created:     2017-09-01
 ################################################################################
 

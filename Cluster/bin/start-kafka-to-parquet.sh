@@ -30,6 +30,10 @@ MODULE_VERSION=1.5.0
 SPARK_STREAMING_KAFKA=2.11-1.6.2
 ## kafka clients version
 KAFKA_CLIENTS_VERSION=0.8.2.1
+##metrics core
+METIRCS_CORE_VERSION=2.2.0
+##elasticsearch
+ELASTICSEARCH_VERSION=1.0
 ## kafka version
 KAFKA_VERSION=2.11-${KAFKA_CLIENTS_VERSION}
 ## etc profile
@@ -39,9 +43,15 @@ BIGDATA_ENV=/opt/env_bigdata.sh
 ## spark bin dir
 SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
 ## spark master
-SPARK_MASTER_PARAM=yarn-cluster
+SPARK_MASTER_PARAM=yarn
+##deploy mode
+DEPLOY_MODE=cluster
 ## spark num executors
 SPARK_EXECUTORS_NUM=3
+##spark executor memory
+SPARK_EXECUTOR_MEMORY=5g
+##spark driver memory
+SPARK_DRIVER_MEMORY=5g
 
 if [ ! -d ${LOG_DIR} ];then
     mkdir ${LOG_DIR}
@@ -111,17 +121,21 @@ source ${ETC_PROFILE}
 source ${BIGDATA_ENV}
 nohup spark-submit \
 --master ${SPARK_MASTER_PARAM} \
---num-executors 3 \
+--deploy-mode ${DEPLOY_MODE} \
+--num-executors ${SPARK_EXECUTORS_NUM} \
+--executor-memory ${SPARK_EXECUTOR_MEMORY}\
+--driver-memory ${SPARK_DRIVER_MEMORY} \
 --class com.hzgc.cluster.consumer.kafkaToParquet \
 --jars ${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
 ${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
 ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
-${LIB_DIR}/elasticsearch-1.0.jar,\
+${LIB_DIR}/elasticsearch-${ELASTICSEARCH_VERSION}.jar,\
+${LIB_DIR}/metrics-core-${METIRCS_CORE_VERSION}.jar,\
 ${LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/util-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
 ${LIB_DIR}/service-${MODULE_VERSION}.jar \
 --files ${CONF_DIR}/es-config.properties,\
 ${CONF_DIR}/sparkJob.properties \
-${LIB_DIR}/streaming-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
+${LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
