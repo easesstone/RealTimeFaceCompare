@@ -11,9 +11,6 @@
         <fileSet>
             <directory>${project.basedir}/bin</directory>
             <fileMode>0755</fileMode>
-            <excludes>
-                <exclude>facecomp-daemon.sh</exclude>
-            </excludes>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
         <!--项目resources目录-->
@@ -27,13 +24,6 @@
                 <exclude>sql/**</exclude>
                 <exclude>ftp-hostnames.properties</exclude>
             </excludes>
-            <outputDirectory>conf</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>../FtpServer/src/main/resources</directory>
-            <includes>
-                <include>ftpAddress.properties</include>
-            </includes>
             <outputDirectory>conf</outputDirectory>
         </fileSet>
         <!--项目sql目录-->

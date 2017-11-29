@@ -86,12 +86,9 @@
             <resource>
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
-                <includes>
-                    <include>*.properties</include>
-                    <include>*.xml</include>
-                </includes>
                 <excludes>
-                    <exclude>ftp-hostnames.properties</exclude>
+                    <exclude>*.properties</exclude>
+                    <exclude>*.xml</exclude>
                 </excludes>
             </resource>
         </resources>
