@@ -55,9 +55,7 @@ FASTJSON_VERSION=1.2.29
 ## etc profile
 ETC_PROFILE=/etc/profile
 ## bigdata_env
-BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
-## spark bin dir
-SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
+BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
 SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceRecognizeAlarmJob
 
@@ -210,7 +208,8 @@ fi
 
 ############### 识别告警任务####################
 source ${ETC_PROFILE}
-nohup ${SPARK_HOME}/spark-submit \
+source ${BIGDATA_ENV}
+nohup spark-submit \
 --master yarn \
 --deploy-mode cluster \
 --executor-memory 4g \
