@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------
 |                             建表说明                                  |
-| hbase表:upFea searchRes                                               |
+| hbase表:upFea searchRes （需要手动建表）                              |
 | hive表: person_table mid_table （使用create-dynamic-table.sh脚本建表）|
 -------------------------------------------------------------------------
 应用平台上传的图片：
@@ -9,18 +9,18 @@
 -------------------------------------------------------------------------------
 |             |          CF：p          |              CF：c                  |
 -------------------------------------------------------------------------------
-|   图片ID    |    图片     |    特征    |   图片    |    特征    |      车牌号 |
+|   图片ID    |    图片     |    特征    |   图片    |    特征    |    车牌号 |
 -------------------------------------------------------------------------------
 |   rowkey    |     p      |     f      |      p    |    f      |      n      |
 -------------------------------------------------------------------------------
 
 create 'upFea',
-{NAME => 'p',DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0', COMPRESSION =>
-'SNAPPY', VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
- IN_MEMORY => 'true', BLOCKCACHE => 'true'},
- {NAME => 'c',DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0', COMPRESSION =>
- 'SNAPPY', VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
-  IN_MEMORY => 'true', BLOCKCACHE => 'true'}
+{NAME => 'p',DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0',
+VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
+IN_MEMORY => 'true', BLOCKCACHE => 'true'},
+{NAME => 'c',DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0',
+VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
+IN_MEMORY => 'true', BLOCKCACHE => 'true'}
 
 ------------------------------------------------------------------------------------------------------------
 
@@ -30,14 +30,14 @@ create 'upFea',
 -------------------------------------------------------------
 |            |                 CF：i                        |
 -------------------------------------------------------------
-|   查询ID   |     查询类型     | List<CapturePicture>       |
+|   查询ID   |     查询类型     | List<CapturePicture>      |
 -------------------------------------------------------------
 |    rowkey  |        t         |        m                  |
 -------------------------------------------------------------
 
 create 'searchRes',
-{NAME => 'i', DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0', COMPRESSION =>
-'SNAPPY', VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
+{NAME => 'i', DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0',
+VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
 IN_MEMORY => 'true', BLOCKCACHE => 'true',TTL=>'604800'}
 
 人脸动态库（最终表，存放小文件合并后数据）
@@ -55,7 +55,7 @@ IN_MEMORY => 'true', BLOCKCACHE => 'true',TTL=>'604800'}
 ------------------------------------------------------------------------------------------------------------------------
 CREATE EXTERNAL TABLE IF NOT EXISTS default.person_table(
 ftpurl        string,
-feature       string,
+feature       array<float>,
 eyeglasses    int,
 gender        int,
 haircolor     int,
@@ -83,7 +83,7 @@ LOCATION '/user/hive/warehouse/person_table';
 ------------------------------------------------------------------------------------------------------------------------
 CREATE EXTERNAL TABLE IF NOT EXISTS default.mid_table(
 ftpurl        string,
-feature       string,
+feature       array<float>,
 eyeglasses    int,
 gender        int,
 haircolor     int,

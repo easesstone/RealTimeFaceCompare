@@ -128,7 +128,7 @@ class ParseByOption {
                     .append("'");
         }
         //判断一个或多个设备id
-        if (option.getDeviceIds() != null) {
+        /*if (option.getDeviceIds() != null) {
             finalSql.append(" and ")
             .append(DynamicTable.IPCID)
             .append(" in ")
@@ -147,7 +147,7 @@ class ParseByOption {
                             .append(")");
                 }
             }
-        }
+        }*/
         if (option.getSortParams() != null && option.getSortParams().length() > 0) {
             finalSql.append(" order by ");
             String[] splitStr = option.getSortParams().split(",");
