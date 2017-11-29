@@ -14,6 +14,14 @@
                 <include>README.md</include>
             </includes>
         </fileSet>
+        <!--项目source文件-->
+        <fileSet>
+            <directory>../Distribution/bin</directory>
+            <includes>
+                <include>env_RealTimeCompare.sh</include>
+            </includes>
+            <outputDirectory>\</outputDirectory>
+        </fileSet>
         <!--项目模块-->
         <fileSet>
             <directory>../Cluster/target/streaming-1.5.0</directory>
@@ -49,6 +57,9 @@
             <includes>
                 <include>**</include>
             </includes>
+            <excludes>
+                <exclude>env_RealTimeCompare.sh</exclude>
+            </excludes>
             <fileMode>0755</fileMode>
             <outputDirectory>common/bin</outputDirectory>
         </fileSet>
@@ -101,6 +112,20 @@
                 <include>*.jar</include>
             </includes>
             <outputDirectory>common/lib</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../Service/bin</directory>
+            <includes>
+                <include>facecomp-daemon.sh</include>
+            </includes>
+            <outputDirectory>common/bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../Service/src/main/resources</directory>
+            <includes>
+                <include>ftp-hostnames.properties</include>
+            </includes>
+            <outputDirectory>common/conf</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

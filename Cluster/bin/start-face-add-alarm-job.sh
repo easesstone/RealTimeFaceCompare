@@ -55,17 +55,7 @@ FASTJSON_VERSION=1.2.29
 ## etc profile
 ETC_PROFILE=/etc/profile
 ## bigdata_env
-BIGDATA_ENV=${BIGDATA_CLUSTER_PATH}/start_bigdata_service/temporary_environment_variable.sh
-## spark bin dir
-SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
-## spark master
-SPARK_MASTER=yarn
-## spark mode
-SPARK_MODE=cluster
-## spark executor-memory
-SPARK_EXECUTOR_MEMORY=5g
-## spark executor-cores
-SPARK_EXECUTOR_CORES=4
+BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
 SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceAddAlarmJob
 
@@ -104,7 +94,7 @@ cp ${CONF_DIR}/rocketmq.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/sparkJob.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/ftpAddress.properties  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
 cp ${CONF_DIR}/hbase-site.xml  ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf
-cp ${BIGDATA_CLUSTER_PATH}/HBase/hbase/lib/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ${LIB_DIR}
+#cp ${BIGDATA_CLUSTER_PATH}/HBase/hbase/lib/hbase-shaded-miscellaneous-${HBASE_SHADED_MISCELLANEOUS_VERSION}.jar ${LIB_DIR}
 
 ## 判断是否存在jar
 if [ ! -e ${LIB_DIR}/hbase-client-${HBASE_VERSION}.jar ];then
@@ -216,13 +206,14 @@ if [ ! -e ${CONF_DIR}/rocketmq.properties ];then
     exit 0
 fi
 
-## 新增告警任务
+############ 新增告警任务###############
 source ${ETC_PROFILE}
-nohup ${SPARK_HOME}/spark-submit \
---master ${SPARK_MASTER} \
---deploy-mode ${SPARK_MODE} \
---executor-memory ${SPARK_EXECUTOR_MEMORY} \
---executor-cores ${SPARK_EXECUTOR_CORES} \
+source ${BIGDATA_ENV}
+nohup spark-submit \
+--master yarn \
+--deploy-mode cluster \
+--executor-memory 4g \
+--executor-cores 2 \
 --class ${SPARK_CLASS_PARAM} \
 --jars ${LIB_DIR}/gson-${GSON_VERSION}.jar,\
 ${LIB_DIR}/jackson-core-${JACKSON_CORE_VERSION}.jar,\
