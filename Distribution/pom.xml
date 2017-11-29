@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
-            <artifactId>streaming</artifactId>
+            <artifactId>cluster</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
