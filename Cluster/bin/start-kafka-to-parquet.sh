@@ -29,7 +29,7 @@ MODULE_VERSION=1.5.0
 ## spark-streaming-kafka version
 SPARK_STREAMING_KAFKA=2.11-1.6.2
 ## kafka clients version
-KAFKA_CLIENTS_VERSION=0.8.2.1
+KAFKA_CLIENTS_VERSION=1.0.0
 ##metrics core
 METIRCS_CORE_VERSION=2.2.0
 ##elasticsearch

@@ -51,7 +51,7 @@ JACKSON_CORE_VERSION=2.8.6
 ## spark-streaming-kafka version
 SPARK_STREAMING_KAFKA=2.11-1.6.2
 ## kafka clients version
-KAFKA_CLIENTS_VERSION=0.8.2.1
+KAFKA_CLIENTS_VERSION=1.0.0
 ## kafka version
 KAFKA_VERSION=2.11-${KAFKA_CLIENTS_VERSION}
 ## rocketmq-client or rocketmq-common or rocketmq-remoting version
