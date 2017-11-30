@@ -1,8 +1,8 @@
-package com.hzgc.hbase.staticrepo;
+package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
-import com.hzgc.hbase.util.HBaseHelper;
-import com.hzgc.hbase.util.HBaseUtil;
+import com.hzgc.service.util.HBaseHelper;
+import com.hzgc.service.util.HBaseUtil;
 import com.hzgc.jni.FaceFunction;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
