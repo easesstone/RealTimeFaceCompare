@@ -122,13 +122,6 @@
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../Service/bin</directory>
-            <includes>
-                <include>facecomp-daemon.sh</include>
-            </includes>
-            <outputDirectory>common/bin</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>../Service/src/main/resources</directory>
             <includes>
                 <include>ftp-hostnames.properties</include>
