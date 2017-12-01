@@ -1,8 +1,8 @@
 package com.hzgc.cluster.consumer;
 
 import com.hzgc.ftpserver.producer.FaceObject;
-import com.hzgc.hbase.dynamicrepo.DynamicTable;
-import com.hzgc.hbase.staticrepo.ElasticSearchHelper;
+import com.hzgc.service.dynamicrepo.DynamicTable;
+import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import org.elasticsearch.action.index.IndexResponse;
 

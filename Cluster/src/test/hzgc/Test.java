@@ -1,4 +1,4 @@
-import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl;
+import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl;
 
 import java.util.List;
 

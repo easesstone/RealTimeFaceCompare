@@ -2,10 +2,9 @@ package com.hzgc.cluster.alarm
 
 import java.text.SimpleDateFormat
 import java.util.Date
-
 import com.google.gson.Gson
-import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
-import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
+import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
+import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.cluster.message.OffLineAlarmMessage
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.RocketMQProducer
@@ -23,10 +22,8 @@ object FaceOffLineAlarmJob {
     val offLineAlarmMessage = new OffLineAlarmMessage()
     val properties = StreamingUtils.getProperties
     val appName = properties.getProperty("job.offLine.appName")
-//    val master = properties.getProperty("job.offLine.master")
     val conf = new SparkConf()
       .setAppName(appName)
-//      .setMaster(master)
     val sc = new SparkContext(conf)
     val deviceUtilImpl = new DeviceUtilImpl()
     val offLineAlarmRule = deviceUtilImpl.getThreshold
