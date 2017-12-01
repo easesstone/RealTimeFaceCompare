@@ -61,7 +61,7 @@ object kafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.coalesce(1, shuffle = true).map(rdd => rdd._1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
