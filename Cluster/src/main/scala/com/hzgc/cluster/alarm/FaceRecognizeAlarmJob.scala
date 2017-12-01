@@ -4,8 +4,8 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.Date
 import com.google.gson.Gson
-import com.hzgc.hbase.device.{DeviceTable, DeviceUtilImpl}
-import com.hzgc.hbase.staticrepo.ObjectInfoInnerHandlerImpl
+import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
+import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.cluster.message.{Item, RecognizeAlarmMessage}
 import com.hzgc.cluster.util.StreamingUtils

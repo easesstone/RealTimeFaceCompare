@@ -1,17 +1,22 @@
 package com.hzgc.ftpserver.local;
 
 import com.hzgc.ftpserver.ClusterOverFtp;
+import com.hzgc.ftpserver.util.LoggerConfig;
 import com.hzgc.util.FileUtil;
 import org.apache.ftpserver.FtpServer;
-import org.apache.ftpserver.ftplet.Authority;
 import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.ftplet.FtpStatistics;
-import org.apache.ftpserver.impl.FtpIoSession;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.log4j.Logger;
 
 public class LocalOverFtpServer extends ClusterOverFtp {
     private static Logger log = Logger.getLogger(LocalOverFtpServer.class);
+
+    /*
+      Set the dynamic log configuration file refresh time
+     */
+    static {
+        new LoggerConfig();
+    }
 
     @Override
     public void startFtpServer() {
@@ -44,7 +49,7 @@ public class LocalOverFtpServer extends ClusterOverFtp {
         log.info("Set customer file system factory is successful, " + localFileSystemFactory.getClass());
         // TODO: 2017-10-9
         LocalConnectionConfigFactory connectionConfigFactory = new LocalConnectionConfigFactory();
-        System.out.println(connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
+        log.info("FTP Server Maximum logon number:" + connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
         serverFactory.setConnectionConfig(connectionConfigFactory.createUDConnectionConfig());
         log.info("Set user defined connection config file is successful, " + connectionConfigFactory.getClass());
         FtpServer server = serverFactory.createServer();
