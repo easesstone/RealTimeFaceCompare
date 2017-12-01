@@ -24,14 +24,6 @@
             </excludes>
             <outputDirectory>conf</outputDirectory>
         </fileSet>
-        <!--添加本模块jar到lib目录-->
-        <fileSet>
-            <directory>${project.basedir}/target</directory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-            <outputDirectory>lib</outputDirectory>
-        </fileSet>
     </fileSets>
     <dependencySets>
         <dependencySet>
@@ -40,6 +32,9 @@
             <useTransitiveDependencies>true</useTransitiveDependencies>
             <!--是否解压 -->
             <unpack>false</unpack>
+            <excludes>
+                <exclude>com.hzgc:*:jar</exclude>
+            </excludes>
             <outputDirectory>lib</outputDirectory>
         </dependencySet>
     </dependencySets>
