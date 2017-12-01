@@ -1,141 +1,176 @@
 #!/bin/bash
-############################################################################
-##Copyright:    HZGOSUN Tech. Co, BigData
-##Filename:     start-kafka-to-parquet.sh
-##Description:  to start kafkaToParquet
-##Version:      1.5.0
-##Author:       chenke
-##Created:      2017-11-09
-############################################################################
-#!/bin/bash
+################################################################################
+## Copyright:   HZGOSUN Tech. Co, BigData
+## Filename:    start-kafka-to-parquet.sh
+## Description: to start kafkaToParquet
+## Version:     1.5.0
+## Author:      chenke
+## Created:     2017-11-09
+################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
+
+#---------------------------------------------------------------------#
+#                              定义变量                               #
+#---------------------------------------------------------------------#
 cd `dirname $0`
 ## bin目录
 BIN_DIR=`pwd`
 cd ..
+CLUSTER_DIR=`pwd`
+cd ..
 DEPLOY_DIR=`pwd`
-## 配置文件目录
-CONF_DIR=${DEPLOY_DIR}/conf
-## Jar 包目录
-LIB_DIR=${DEPLOY_DIR}/lib
-## log 日记目录
-LOG_DIR=${DEPLOY_DIR}/logs
-## log 日记文件
-LOG_FILE=${LOG_DIR}/kafkaToParquet.log
+######## cluster目录 ########
+CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
+CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
+CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
+LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquet.log
+######## common目录 ########
+COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
+COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
+######## ftp目录 #########
+FTP_CONF_DIR=${DEPLOY_DIR}/ftp/conf
+FTP_LIB_DIR=${DEPLOY_DIR}/ftp/lib
+######## service目录 ########
+SERVICE_CONF_DIR=${DEPLOY_DIR}/service/conf
+SERVICE_LIB_DIR=${DEPLOY_DIR}/service/lib
+## bigdata_env
+BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
+## spark class
+SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceRecognizeAlarmJob
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
+
+#---------------------------------------------------------------------#
+#                              jar版本控制                            #
+#---------------------------------------------------------------------#
 ## module version
 MODULE_VERSION=1.5.0
+## elasticsearch module
+ELASTICSEARCH_MODULE=1.0
+## hbase client or server version
+HBASE_VERSION=1.2.6
+## ftp core version
+FTP_CORE_VERSION=1.1.1
+## gson version
+GSON_VERSION=2.8.0
+## jackson core version
+JACKSON_CORE_VERSION=2.8.6
 ## spark-streaming-kafka version
 SPARK_STREAMING_KAFKA=2.11-1.6.2
 ## kafka clients version
 KAFKA_CLIENTS_VERSION=1.0.0
-##metrics core
-METIRCS_CORE_VERSION=2.2.0
-##elasticsearch
-ELASTICSEARCH_VERSION=1.0
 ## kafka version
 KAFKA_VERSION=2.11-${KAFKA_CLIENTS_VERSION}
-## etc profile
-ETC_PROFILE=/etc/profile
-## bigdata_env
-BIGDATA_ENV=/opt/env_bigdata.sh
-## spark bin dir
-SPARK_HOME=${BIGDATA_CLUSTER_PATH}/Spark/spark/bin
-## spark master
-SPARK_MASTER_PARAM=yarn
-##deploy mode
-DEPLOY_MODE=cluster
-## spark num executors
-SPARK_EXECUTORS_NUM=3
-##spark executor memory
-SPARK_EXECUTOR_MEMORY=5g
-##spark driver memory
-SPARK_DRIVER_MEMORY=5g
+## rocketmq-client or rocketmq-common or rocketmq-remoting version
+ROCKETMQ_VERSION=4.1.0
+## fast json version
+FASTJSON_VERSION=1.2.29
+## metrics_core_version
+METRICS_CORE_VERSION=2.2.0
 
-if [ ! -d ${LOG_DIR} ];then
-    mkdir ${LOG_DIR}
+
+if [ ! -d ${CLUSTER_LOG_DIR} ];then
+   mkdir ${CLUSTER_LOG_DIR}
 fi
 
-#判断是否存在客户端
+############ 判断是否存在大数据集群 ###################
 if [ ! -d ${BIGDATA_CLUSTER_PATH} ];then
-    echo "${BIGDATA_CLUSTER_PATH} does not exit.please check the client exists! "
-    exit 1
+   echo "${BIGDATA_CLUSTER_PATH} does not exit,please go to the node of the existing bigdata cluster !"
+   exit 0
 fi
 
-#判断是否存在配置文件
-if [ ! -e ${CONF_DIR}/es-config.properties ];then
-   echo "${CONF_DIR}/es-config.properties does not exit!"
-   exit 1
+############### 判断是否存在配置文件 ##################
+if [ ! -e ${SERVICE_CONF_DIR}/es-config.properties ];then
+    echo "${SERVICE_CONF_DIR}/es-config.properties does not exit!"
+    exit 0
 fi
-if [ ! -e ${CONF_DIR}/sparkJob.properties ];then
-   echo "${CONF_DIR}/sparkJob.properties does not exit!"
-   exit 1
-fi
-
-#更新客户端Spark/spark/conf 下运行任务所需要的配置文件
-rm -rf ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf/es-config.properties
-rm -rf ${BIGDATA_CLUSTER_PATH}/Spark/spark/conf/sparkJob.properties
-cp ${CONF_DIR}/es-config.properties /opt/hzgc/bigdata/Spark/spark/conf
-cp ${CONF_DIR}/sparkJob.properties  /opt/hzgc/bigdata/Spark/spark/conf
-
-#判断是否存在jar
-if [ ! -e ${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar ];then
-   echo "${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/jni-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/jni-${MODULE_VERSION}.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/kafka_${KAFKA_VERSION}.jar ];then
-   echo "${LIB_DIR}/kafka_${KAFKA_VERSION}.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
-   echo "${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/elasticsearch-1.0.jar ];then
-   echo "${LIB_DIR}/elasticsearch-1.0.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/ftp-${MODULE_VERSION}.jar does not exit!"
-fi
-if [ ! -e ${LIB_DIR}/util-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/util-${MODULE_VERSION}.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar does not exit!"
-   exit 1
-fi
-if [ ! -e ${LIB_DIR}/service-${MODULE_VERSION}.jar ];then
-   echo "${LIB_DIR}/service-${MODULE_VERSION}.jar does not exit!"
-   exit 1
+if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
+    echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
+    exit 0
 fi
 
-## 存放数据至parquet任务
-source ${ETC_PROFILE}
+
+################# 判断是否存在jar ###################
+if [ ! -e ${CLUSTER_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/service-${MODULE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/service-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/jni-${MODULE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/jni-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/kafka_${KAFKA_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/kafka_${KAFKA_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/ftp-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/util-${MODULE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/util-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/cluster-${MODULE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/cluster-${MODULE_VERSION}.jar does not exit!"
+    exit 0
+fi
+if [ ! -e ${CLUSTER_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar ];then
+    echo "${CLUSTER_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar does not exit!"
+    exit 0
+fi
+
+################## 存放数据至parquet任务 ###################
+source /etc/profile
 source ${BIGDATA_ENV}
 nohup spark-submit \
---master ${SPARK_MASTER_PARAM} \
---deploy-mode ${DEPLOY_MODE} \
---num-executors ${SPARK_EXECUTORS_NUM} \
---executor-memory ${SPARK_EXECUTOR_MEMORY}\
---driver-memory ${SPARK_DRIVER_MEMORY} \
+--master yarn \
+--deploy-mode cluster \
+--executor-memory 4g \
+--executor-cores 2 \
+--driver-memory 4 \
+--num-executors 3 \
 --class com.hzgc.cluster.consumer.kafkaToParquet \
---jars ${LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
-${LIB_DIR}/jni-${MODULE_VERSION}.jar,\
-${LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
-${LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
-${LIB_DIR}/elasticsearch-${ELASTICSEARCH_VERSION}.jar,\
-${LIB_DIR}/metrics-core-${METIRCS_CORE_VERSION}.jar,\
-${LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
-${LIB_DIR}/util-${MODULE_VERSION}.jar,\
-${LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
-${LIB_DIR}/service-${MODULE_VERSION}.jar \
---files ${CONF_DIR}/es-config.properties,\
-${CONF_DIR}/sparkJob.properties \
-${LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
+--jars ${CLUSTER_LIB_DIR}/gson-${GSON_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/jackson-core-${JACKSON_CORE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
+${CLUSTER_LIB_DIR}/service-${MODULE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/hbase-server-${HBASE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/hbase-client-${HBASE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/hbase-common-${HBASE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/jni-${MODULE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar,\
+${CLUSTER_LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/ftpserver-core-${FTP_CORE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/rocketmq-client-${ROCKETMQ_VERSION}-incubating.jar,\
+${CLUSTER_LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
+${CLUSTER_LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
+${CLUSTER_LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/util-${MODULE_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
+${CLUSTER_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar \
+--files ${SERVICE_CONF_DIR}/es-config.properties,\
+${SERVICE_CONF_DIR}/hbase-site.xml,\
+${FTP_CONF_DIR}/ftpAddress.properties,\
+${CLUSTER_CONF_DIR}/sparkJob.properties,\
+${FTP_CONF_DIR}/rocketmq.properties \
+${CLUSTER_LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
