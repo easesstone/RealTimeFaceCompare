@@ -91,48 +91,48 @@ fi
 
 
 ################# 判断是否存在jar ###################
-if [ ! -e ${CLUSTER_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar ];then
+    echo "${COMMON_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/service-${MODULE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/service-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/service-${MODULE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/service-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/jni-${MODULE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/jni-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/jni-${MODULE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/jni-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/kafka_${KAFKA_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/kafka_${KAFKA_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/kafka_${KAFKA_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/kafka_${KAFKA_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar ];then
+    echo "${COMMON_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/ftp-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/ftp-${MODULE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/ftp-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/util-${MODULE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/util-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/util-${MODULE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/util-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/cluster-${MODULE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/cluster-${MODULE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/cluster-${MODULE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/cluster-${MODULE_VERSION}.jar does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar ];then
-    echo "${CLUSTER_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar does not exit!"
+if [ ! -e ${COMMON_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar ];then
+    echo "${COMMON_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar does not exit!"
     exit 0
 fi
 
@@ -147,30 +147,30 @@ nohup spark-submit \
 --driver-memory 4 \
 --num-executors 3 \
 --class com.hzgc.cluster.consumer.kafkaToParquet \
---jars ${CLUSTER_LIB_DIR}/gson-${GSON_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/jackson-core-${JACKSON_CORE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
-${CLUSTER_LIB_DIR}/service-${MODULE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/hbase-server-${HBASE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/hbase-client-${HBASE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/hbase-common-${HBASE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/jni-${MODULE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar,\
-${CLUSTER_LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/ftpserver-core-${FTP_CORE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/rocketmq-client-${ROCKETMQ_VERSION}-incubating.jar,\
-${CLUSTER_LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
-${CLUSTER_LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
-${CLUSTER_LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/util-${MODULE_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
-${CLUSTER_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar \
+--jars ${COMMON_LIB_DIR}/gson-${GSON_VERSION}.jar,\
+${COMMON_LIB_DIR}/jackson-core-${JACKSON_CORE_VERSION}.jar,\
+${COMMON_LIB_DIR}/spark-streaming-kafka_${SPARK_STREAMING_KAFKA}.jar,\
+${COMMON_LIB_DIR}/service-${MODULE_VERSION}.jar,\
+${COMMON_LIB_DIR}/hbase-server-${HBASE_VERSION}.jar,\
+${COMMON_LIB_DIR}/hbase-client-${HBASE_VERSION}.jar,\
+${COMMON_LIB_DIR}/hbase-common-${HBASE_VERSION}.jar,\
+${COMMON_LIB_DIR}/hbase-protocol-${HBASE_VERSION}.jar,\
+${COMMON_LIB_DIR}/jni-${MODULE_VERSION}.jar,\
+${COMMON_LIB_DIR}/kafka_${KAFKA_VERSION}.jar,\
+${COMMON_LIB_DIR}/elasticsearch-${ELASTICSEARCH_MODULE}.jar,\
+${COMMON_LIB_DIR}/ftp-${MODULE_VERSION}.jar,\
+${COMMON_LIB_DIR}/bigdata-api-${MODULE_VERSION}.jar,\
+${COMMON_LIB_DIR}/ftpserver-core-${FTP_CORE_VERSION}.jar,\
+${COMMON_LIB_DIR}/rocketmq-client-${ROCKETMQ_VERSION}-incubating.jar,\
+${COMMON_LIB_DIR}/rocketmq-common-${ROCKETMQ_VERSION}-incubating.jar,\
+${COMMON_LIB_DIR}/rocketmq-remoting-${ROCKETMQ_VERSION}-incubating.jar,\
+${COMMON_LIB_DIR}/fastjson-${FASTJSON_VERSION}.jar,\
+${COMMON_LIB_DIR}/util-${MODULE_VERSION}.jar,\
+${COMMON_LIB_DIR}/kafka-clients-${KAFKA_CLIENTS_VERSION}.jar,\
+${COMMON_LIB_DIR}/metrics-core-${METRICS_CORE_VERSION}.jar \
 --files ${SERVICE_CONF_DIR}/es-config.properties,\
 ${SERVICE_CONF_DIR}/hbase-site.xml,\
 ${FTP_CONF_DIR}/ftpAddress.properties,\
 ${CLUSTER_CONF_DIR}/sparkJob.properties,\
 ${FTP_CONF_DIR}/rocketmq.properties \
-${CLUSTER_LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
+${COMMON_LIB_DIR}/cluster-${MODULE_VERSION}.jar > ${LOG_FILE} 2>&1 &
