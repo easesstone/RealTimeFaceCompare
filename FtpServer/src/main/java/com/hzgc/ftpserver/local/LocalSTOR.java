@@ -5,7 +5,6 @@ import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.ftpserver.util.FtpUtil;
-import com.hzgc.ftpserver.util.IpAddressUtil;
 import com.hzgc.jni.FaceFunction;
 import org.apache.ftpserver.command.AbstractCommand;
 import org.apache.ftpserver.ftplet.*;
