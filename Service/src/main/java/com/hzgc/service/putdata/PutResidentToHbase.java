@@ -26,7 +26,6 @@ public class PutResidentToHbase {
     private static ObjectInfoHandlerImpl objectInfoHandler = new ObjectInfoHandlerImpl();
 
     private static void getPhotoName(String jsonFile, String xlsFile, String photoPath, String pkey) {
-        int sucNum=1;                                                                       //记录提取特征的总数
         Map<String, Object> map1 = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         Map<String, Object> map3 = new HashMap<>();
@@ -90,7 +89,6 @@ public class PutResidentToHbase {
                                     put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(0));
                                 }
                                 if (!"".equals(feature) && feature.length() != 0) {
-                                    sucNum=sucNum+1;
                                     put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("feature"), feature.getBytes("ISO8859-1"));
                                     map3.put("feature", feature);
                                 }
@@ -130,7 +128,6 @@ public class PutResidentToHbase {
             }
             long endNum = getHbaseNum(table);                                                  //插入后hbase中的数据总数
             System.out.println("insert into Hbase data num is " + (endNum - startNum));
-            System.out.println("sucNum is:"+sucNum);
             JsonParser jsonParser = new JsonParser();                                         //创建JSON解析器
             JsonObject jsonObject = (JsonObject) jsonParser.parse(new FileReader(jsonFile));//创建JsonObject对象
             JsonArray jsonArray = jsonObject.get("person").getAsJsonArray();                  //得到为json的数组
