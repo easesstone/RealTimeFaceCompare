@@ -61,11 +61,11 @@ object kafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.map(rdd => rdd._1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
-          val status = putDataToEs.putDataToEs(data._2,data._3)
+          val status = putDataToEs.putDataToEs(data._2, data._3)
           if (status != 1) {
             println("Put data to es failed! And the failed ftpurl is " + data._2)
           }
