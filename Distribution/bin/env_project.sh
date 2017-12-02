@@ -1,13 +1,4 @@
 #!/bin/bash
-################################################################################
-## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    env_project.properties
-## Description: source file
-## Version:     1.0
-## Author:      caodabao
-## Created:     2017-11-29
-################################################################################
-
 set -x
 
 #cd `dirname $0`

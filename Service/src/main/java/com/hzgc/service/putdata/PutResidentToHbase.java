@@ -1,33 +1,38 @@
 package com.hzgc.service.putdata;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.util.HBaseHelper;
-import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 
-public class putResidentToHbase {
-    private static Logger LOG = Logger.getLogger(putResidentToHbase.class);
+public class PutResidentToHbase {
+    private static Logger LOG = Logger.getLogger(PutResidentToHbase.class);
     private static ObjectInfoHandlerImpl objectInfoHandler = new ObjectInfoHandlerImpl();
 
-    private static void getPhotoName(String jsonFile,String xlsFile ,String photoPath) {
+    private static void getPhotoName(String jsonFile, String xlsFile, String photoPath, String pkey) {
+        int sucNum=1;                                                                       //记录提取特征的总数
         Map<String, Object> map1 = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         Map<String, Object> map3 = new HashMap<>();
         String feature = "";
         Table table = HBaseHelper.getTable("objectinfo");
+        long startNum = getHbaseNum(table);                                                 //插入前hbase的数据总数
         try {
             File jfile = new File(jsonFile);
             if (!jfile.exists()) {
@@ -44,24 +49,24 @@ public class putResidentToHbase {
                 LOG.error(photoPath + "not exists!");
             }
             File fa[] = file1.listFiles();
-            Workbook workbook = null;
+            Workbook workBook = null;
             try {
-                workbook = Workbook.getWorkbook(file);
+                workBook = Workbook.getWorkbook(file);
             } catch (BiffException e) {
                 e.printStackTrace();
             }
-            assert workbook != null;
-            Sheet sheet = workbook.getSheet(0);
+            assert workBook != null;
+            Sheet sheet = workBook.getSheet(0);
+            int bidcardNum = sheet.findCell(ObjectInfoExl.BIDCARD).getColumn();
+            int bnameNum = sheet.findCell(ObjectInfoExl.BNAME).getColumn();
+            int bphoneNum = sheet.findCell(ObjectInfoExl.BPHONE).getColumn();
+            int bsexNum = sheet.findCell(ObjectInfoExl.BSEX).getColumn();
             int a = sheet.getRows();
             for (int i = 1; i < a; i++) {
-                Cell cell = sheet.getCell(12, i);
-                Cell cell1 = sheet.getCell(3, i);
-                Cell cell2 = sheet.getCell(4, i);
-                Cell cell3 = sheet.getCell(7, i);
-                String bidcard = cell.getContents();
-                String bname = cell1.getContents();
-                String bphone = cell2.getContents();
-                String bsex = cell3.getContents();
+                String bidcard = sheet.getCell(bidcardNum, i).getContents().trim();
+                String bname = sheet.getCell(bnameNum, i).getContents().trim();
+                String bphone = sheet.getCell(bphoneNum, i).getContents().trim();
+                String bsex = sheet.getCell(bsexNum, i).getContents().trim();
                 System.out.println(bidcard + "====" + bname + "====" + bphone + "====" + bsex);
                 for (File fs : fa) {
                     if (fs.isDirectory()) {
@@ -69,7 +74,7 @@ public class putResidentToHbase {
                     } else {
                         String pidcard = fs.getName().split(".jpg")[0];
                         if (bidcard.equals(pidcard)) {
-                            Put put = new Put(Bytes.toBytes("0001014" + bidcard));
+                            Put put = new Put(Bytes.toBytes(pkey + bidcard));
                             byte[] photo = ImageToByte.image2byte(fs.getAbsolutePath());
                             if (photo != null && photo.length != 0) {
                                 //将信息输出到hbase中
@@ -77,10 +82,15 @@ public class putResidentToHbase {
                                 put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("photo"), photo);
                                 put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("platformid"), Bytes.toBytes("0001"));
                                 put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("tag"), Bytes.toBytes(1));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("pkey"), Bytes.toBytes("0001014"));
+                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("pkey"), Bytes.toBytes(pkey));
                                 put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("idcard"), Bytes.toBytes(bidcard));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(bsex));
+                                if ("男".equals(bsex)) {
+                                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(1));
+                                } else {
+                                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(0));
+                                }
                                 if (!"".equals(feature) && feature.length() != 0) {
+                                    sucNum=sucNum+1;
                                     put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("feature"), feature.getBytes("ISO8859-1"));
                                     map3.put("feature", feature);
                                 }
@@ -91,43 +101,72 @@ public class putResidentToHbase {
                                 //将信息输出到json文件中
                                 map2.put("_index", "objectinfo");
                                 map2.put("_type", "person");
-                                map2.put("_id", "0001014" + bidcard);
+                                map2.put("_id", pkey + bidcard);
                                 map1.put("create", map2);
                                 String newJson = MapToJson.mapToJson(map1);
                                 fos.write(newJson.getBytes());
                                 fos.write("\n".getBytes());
                                 map3.put("platformid", "0001");
                                 map3.put("tag", 1);
-                                map3.put("pkey", "0001014");
+                                map3.put("pkey", pkey);
                                 map3.put("name", bname);
                                 map3.put("idcard", bidcard);
-                                map3.put("sex", bsex);
+                                if ("男".equals(bsex)) {
+                                    map3.put("sex", 1);
+                                } else {
+                                    map3.put("sex", 0);
+                                }
                                 map3.put("creator", "bigdata");
                                 map3.put("cphone", bphone);
                                 String newJson1 = MapToJson.mapToJson(map3);
                                 System.out.println(newJson1);
                                 fos.write(newJson1.getBytes());
                                 fos.write("\n".getBytes());
+                                System.out.println("write to json data num is" + i);
                             }
                         }
                     }
                 }
             }
-            workbook.close();
+            long endNum = getHbaseNum(table);                                                  //插入后hbase中的数据总数
+            System.out.println("insert into Hbase data num is " + (endNum - startNum));
+            System.out.println("sucNum is:"+sucNum);
+            JsonParser jsonParser = new JsonParser();                                         //创建JSON解析器
+            JsonObject jsonObject = (JsonObject) jsonParser.parse(new FileReader(jsonFile));//创建JsonObject对象
+            JsonArray jsonArray = jsonObject.get("person").getAsJsonArray();                  //得到为json的数组
+            int jsonSize = jsonArray.size();
+            System.out.println("write to json num is " + jsonSize);
+            workBook.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private static long getHbaseNum(Table table) {
+        Scan scan = new Scan();
+        scan.setFilter(new FirstKeyOnlyFilter());
+        long rowCount = 0;
+        try {
+            ResultScanner resultScanner = table.getScanner(scan);
+            for (Result result : resultScanner) {
+                rowCount += result.size();
+            }
+        } catch (IOException e) {
+            LOG.info(e.getMessage(), e);
+        }
+        return rowCount;
+    }
+
     public static void main(String[] args) {
-        if (args.length != 3) {
+        if (args.length != 4) {
             System.out.println("");
         }
+        String photoPath = args[0];
         String jsonFile = args[1];
         String xls = args[2];
-        String photoPath = args[0];
+        String pkey = args[3];
         long a = System.currentTimeMillis();
-        getPhotoName(jsonFile,xls,photoPath);
+        getPhotoName(jsonFile, xls, photoPath, pkey);
         System.out.println(System.currentTimeMillis() - a);
     }
 }
