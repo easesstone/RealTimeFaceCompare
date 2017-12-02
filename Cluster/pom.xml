@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka_2.11</artifactId>
+            <artifactId>spark-streaming-kafka-0-8_2.11</artifactId>
             <version>${spark_kafka.verson}</version>
         </dependency>
         <dependency>
@@ -84,6 +84,11 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_2.11</artifactId>
             <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>0.8.2.1</version>
         </dependency>
     </dependencies>
     <build>
