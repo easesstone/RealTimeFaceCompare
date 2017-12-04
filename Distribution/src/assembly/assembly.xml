@@ -26,7 +26,7 @@
         <fileSet>
             <directory>../Distribution/src/resources</directory>
             <includes>
-                <include>**</include>
+                <include>project-conf.properties</include>
             </includes>
             <outputDirectory>\</outputDirectory>
         </fileSet>
@@ -71,7 +71,7 @@
             <fileMode>0755</fileMode>
             <outputDirectory>common/bin</outputDirectory>
         </fileSet>
-        <!--项目jar包-->
+        <!--项目公共jar包-->
         <fileSet>
             <directory>../Cluster/target</directory>
             <includes>
@@ -121,11 +121,12 @@
             </includes>
             <outputDirectory>common/lib</outputDirectory>
         </fileSet>
+        <!--项目公共配置文件-->
         <fileSet>
-            <directory>../Service/src/main/resources</directory>
-            <includes>
-                <include>ftp-hostnames.properties</include>
-            </includes>
+            <directory>../Distribution/src/main/resources</directory>
+            <excludes>
+                <exclude>project-conf.properties</exclude>
+            </excludes>
             <outputDirectory>common/conf</outputDirectory>
         </fileSet>
     </fileSets>
