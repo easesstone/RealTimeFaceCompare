@@ -88,16 +88,19 @@
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>jni</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.jpountz.lz4</groupId>
