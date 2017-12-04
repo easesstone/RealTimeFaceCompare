@@ -124,7 +124,9 @@
         <!--项目公共配置文件-->
         <fileSet>
             <directory>../Distribution/src/main/resources</directory>
-            <includes>**</includes>
+            <includes>
+                <include>**</include>
+            </includes>
             <excludes>
                 <exclude>project-conf.properties</exclude>
             </excludes>
