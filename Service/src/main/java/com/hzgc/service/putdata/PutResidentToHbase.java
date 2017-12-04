@@ -66,7 +66,7 @@ public class PutResidentToHbase {
                 String bname = sheet.getCell(bnameNum, i).getContents().trim();
                 String bphone = sheet.getCell(bphoneNum, i).getContents().trim();
                 String bsex = sheet.getCell(bsexNum, i).getContents().trim();
-                LOG.info(bidcard + "====" + bname + "====" + bphone + "====" + bsex);
+                LOG.info("[idcard:"+bidcard +", "+ "name:" + bname+ ", "+ "phone:" + bphone + ", "+ "sex:" + bsex+"]");
                 Put put = new Put(Bytes.toBytes(pkey + bidcard));
                 for (File fs : fa) {
                     if (fs.isDirectory()) {
