@@ -17,8 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class PutResidentToHbase {
@@ -29,6 +28,7 @@ public class PutResidentToHbase {
         Map<String, Object> map1 = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         Map<String, Object> map3 = new HashMap<>();
+        ArrayList<String> filenamelist = new ArrayList<String>();
         String feature = "";
         Table table = HBaseHelper.getTable("objectinfo");
         long startNum = getHbaseNum(table);                                                 //插入前hbase的数据总数
@@ -66,73 +66,73 @@ public class PutResidentToHbase {
                 String bname = sheet.getCell(bnameNum, i).getContents().trim();
                 String bphone = sheet.getCell(bphoneNum, i).getContents().trim();
                 String bsex = sheet.getCell(bsexNum, i).getContents().trim();
-                System.out.println(bidcard + "====" + bname + "====" + bphone + "====" + bsex);
+                LOG.info(bidcard + "====" + bname + "====" + bphone + "====" + bsex);
+                Put put = new Put(Bytes.toBytes(pkey + bidcard));
                 for (File fs : fa) {
                     if (fs.isDirectory()) {
                         LOG.info(fs.getName() + ",这是一个目录！！！");
                     } else {
                         String pidcard = fs.getName().split(".jpg")[0];
                         if (bidcard.equals(pidcard)) {
-                            Put put = new Put(Bytes.toBytes(pkey + bidcard));
                             byte[] photo = ImageToByte.image2byte(fs.getAbsolutePath());
                             if (photo != null && photo.length != 0) {
                                 //将信息输出到hbase中
                                 feature = objectInfoHandler.getFeature("person", photo);
                                 put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("photo"), photo);
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("platformid"), Bytes.toBytes("0001"));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("tag"), Bytes.toBytes(1));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("pkey"), Bytes.toBytes(pkey));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("idcard"), Bytes.toBytes(bidcard));
-                                if ("男".equals(bsex)) {
-                                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(1));
-                                } else {
-                                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(0));
-                                }
-                                if (!"".equals(feature) && feature.length() != 0) {
-                                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("feature"), feature.getBytes("ISO8859-1"));
-                                    map3.put("feature", feature);
-                                }
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("name"), Bytes.toBytes(bname));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("creator"), Bytes.toBytes("bigdata"));
-                                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("cphone"), Bytes.toBytes(bphone));
-                                table.put(put);
-                                //将信息输出到json文件中
-                                map2.put("_index", "objectinfo");
-                                map2.put("_type", "person");
-                                map2.put("_id", pkey + bidcard);
-                                map1.put("create", map2);
-                                String newJson = MapToJson.mapToJson(map1);
-                                fos.write(newJson.getBytes());
-                                fos.write("\n".getBytes());
-                                map3.put("platformid", "0001");
-                                map3.put("tag", 1);
-                                map3.put("pkey", pkey);
-                                map3.put("name", bname);
-                                map3.put("idcard", bidcard);
-                                if ("男".equals(bsex)) {
-                                    map3.put("sex", 1);
-                                } else {
-                                    map3.put("sex", 0);
-                                }
-                                map3.put("creator", "bigdata");
-                                map3.put("cphone", bphone);
-                                String newJson1 = MapToJson.mapToJson(map3);
-                                System.out.println(newJson1);
-                                fos.write(newJson1.getBytes());
-                                fos.write("\n".getBytes());
-                                System.out.println("write to json data num is" + i);
+                                break;
                             }
+                        } else {
+                            byte[] photo = new byte[0];
+                            put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("photo"), photo);
                         }
                     }
                 }
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("platformid"), Bytes.toBytes("0001"));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("tag"), Bytes.toBytes(1));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("pkey"), Bytes.toBytes(pkey));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("idcard"), Bytes.toBytes(bidcard));
+                if ("男".equals(bsex)) {
+                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(1));
+                } else {
+                    put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("sex"), Bytes.toBytes(0));
+                }
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("feature"), feature.getBytes("UTF-8"));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("name"), Bytes.toBytes(bname));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("creator"), Bytes.toBytes("bigdata"));
+                put.addColumn(Bytes.toBytes("person"), Bytes.toBytes("cphone"), Bytes.toBytes(bphone));
+                table.put(put);
+                //将信息输出到json文件中
+                map2.put("_index", "objectinfo");
+                map2.put("_type", "person");
+                map2.put("_id", pkey + bidcard);
+                map1.put("create", map2);
+                String newJson = MapToJson.mapToJson(map1);
+                fos.write(newJson.getBytes());
+                fos.write("\n".getBytes());
+                map3.put("platformid", "0001");
+                map3.put("tag", 1);
+                map3.put("pkey", pkey);
+                map3.put("name", bname);
+                map3.put("idcard", bidcard);
+                map3.put("feature", feature);
+                if ("男".equals(bsex)) {
+                    map3.put("sex", 1);
+                } else {
+                    map3.put("sex", 0);
+                }
+                map3.put("creator", "bigdata");
+                map3.put("cphone", bphone);
+                String newJson1 = MapToJson.mapToJson(map3);
+                fos.write(newJson1.getBytes());
+                fos.write("\n".getBytes());
             }
             long endNum = getHbaseNum(table);                                                  //插入后hbase中的数据总数
-            System.out.println("insert into Hbase data num is " + (endNum - startNum));
+            LOG.info("insert into Hbase data num is " + (endNum - startNum));
             JsonParser jsonParser = new JsonParser();                                         //创建JSON解析器
             JsonObject jsonObject = (JsonObject) jsonParser.parse(new FileReader(jsonFile));//创建JsonObject对象
-            JsonArray jsonArray = jsonObject.get("person").getAsJsonArray();                  //得到为json的数组
+            JsonArray jsonArray = jsonObject.get("create").getAsJsonArray();                  //得到为json的数组
             int jsonSize = jsonArray.size();
-            System.out.println("write to json num is " + jsonSize);
+            LOG.info("write to json num is " + jsonSize);
             workBook.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -156,7 +156,7 @@ public class PutResidentToHbase {
 
     public static void main(String[] args) {
         if (args.length != 4) {
-            System.out.println("");
+            LOG.error("Wrong number of input parameters");
         }
         String photoPath = args[0];
         String jsonFile = args[1];
@@ -164,6 +164,6 @@ public class PutResidentToHbase {
         String pkey = args[3];
         long a = System.currentTimeMillis();
         getPhotoName(jsonFile, xls, photoPath, pkey);
-        System.out.println(System.currentTimeMillis() - a);
+        LOG.info("put data to HBase consume time " + (System.currentTimeMillis() - a));
     }
 }
