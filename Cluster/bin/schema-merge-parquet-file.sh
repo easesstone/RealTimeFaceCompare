@@ -65,14 +65,6 @@ function merge_parquet()
     nohup spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
     --master local[*] \
     --driver-memory 4g \
-    --jars ${LIB_DIR}/spark-streaming-kafka_${SCALA_VERSION}-${SPARK_STREAMING_KAFKA}.jar,\
-${COMMMON_DIR}/lib/jni-${RELEASE_VERSION}.jar,\
-${LIB_DIR}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.jar,\
-${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
-${COMMMON_DIR}/lib/ftp-${RELEASE_VERSION}.jar,\
-${COMMMON_DIR}/lib/util-${RELEASE_VERSION}.jar,\
-${COMMMON_DIR}/lib/bigdata-api-${RELEASE_VERSION}.jar,\
-${COMMMON_DIR}/lib/service-${RELEASE_VERSION}.jar \
 ${COMMMON_DIR}/lib/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 
