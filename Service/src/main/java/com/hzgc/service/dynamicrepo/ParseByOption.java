@@ -1,11 +1,14 @@
 package com.hzgc.service.dynamicrepo;
 
 import com.hzgc.dubbo.attribute.Attribute;
+import com.hzgc.dubbo.attribute.Logistic;
 import com.hzgc.dubbo.dynamicrepo.SearchOption;
+import org.apache.log4j.Logger;
 
 import java.sql.Date;
 
 class ParseByOption {
+    private static Logger LOG = Logger.getLogger(ParseByOption.class);
     private static String MID_FIELD = null;
     private static String FINAL_FTIEL = null;
 
@@ -52,22 +55,23 @@ class ParseByOption {
         //判断人脸对象属性
         if (option.getAttributes() != null && option.getAttributes().size() > 0) {
             for (Attribute attribute : option.getAttributes()) {
-                if (attribute.getValues() != null) {
-                    switch (attribute.getLogistic()) {
-                        case AND:
-                            finalSql.append(" and ");
-                            break;
-                        case OR:
-                            finalSql.append(" or ");
-                            break;
+                if (attribute.getValues() != null && attribute.getValues().size() > 0) {
+                    if (attribute.getLogistic() == Logistic.OR) {
+                        LOG.error("Logistic is or , so ignore this condition");
+                        continue;
+                    } else {
+                        finalSql.append(" and ");
                     }
+                    finalSql
+                            .append(attribute.getIdentify().toLowerCase())
+                            .append(" in ")
+                            .append("(");
                     for (int i = 0; i < attribute.getValues().size(); i++) {
-                        finalSql
-                                .append(attribute.getIdentify().toLowerCase())
-                                .append("=")
-                                .append(attribute.getValues().get(i).getValue());
+                        finalSql.append(attribute.getValues().get(i).getValue());
                         if (attribute.getValues().size() - 1 > i) {
-                            finalSql.append(" or ");
+                            finalSql.append(",");
+                        } else {
+                            finalSql.append(")");
                         }
                     }
                 }
@@ -75,7 +79,7 @@ class ParseByOption {
         }
         //判断一个或多个时间区间 数据格式 小时+分钟 例如:1122
         if (option.getIntervals() != null && option.getIntervals().size() > 0) {
-            finalSql.append(" and ");
+            finalSql.append(" and (");
             for (int i = 0; option.getIntervals().size() > i; i++) {
                 int start_sj = option.getIntervals().get(i).getStart();
                 int start_st = (start_sj / 60) * 100 + start_sj % 60;
@@ -98,6 +102,7 @@ class ParseByOption {
                             .append(end_st);
                 }
             }
+            finalSql.append(")");
         }
         if (option.getStartDate() != null && option.getEndDate() != null) {
             //判断开始时间和结束时间 数据格式 年-月-日 时:分:秒

@@ -48,7 +48,7 @@ function start_consumer()
    if [ ! -d $LOG_DIR ]; then
            mkdir $LOG_DIR;
        fi
-       java -classpath $CONF_DIR:$LIB_JARS com.hzgc.hbase.getdata.GetDataFromHBase  $JSON_FILE | tee -a  ${LOG_FILE}
+       java -classpath $CONF_DIR:$LIB_JARS com.hzgc.service.getdata.GetDataFromHBase  $JSON_FILE | tee -a  ${LOG_FILE}
 }
 #####################################################################
 # 函数名: main

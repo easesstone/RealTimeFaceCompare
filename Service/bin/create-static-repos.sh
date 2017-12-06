@@ -16,17 +16,13 @@ cd `dirname $0`
 BIN_DIR=`pwd`    ### bin目录
 cd ..
 DEPLOY_DIR=`pwd`
-CONF_DIR=$DEPLOY_DIR/conf    ### 模块根目录
+CONF_DIR=$DEPLOY_DIR/conf    ### 项目根目录
 LIB_DIR=$DEPLOY_DIR/lib        ## Jar 包目录
 LIB_JARS=`ls $LIB_DIR|grep .jar| grep -v elasticsearch-1.0.jar \
 | grep -v avro-ipc-1.7.7-tests.jar | grep -v avro-ipc-1.7.7.jar | grep -v spark-network-common_2.10-1.5.1.jar | \
 awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`   ## jar包位置以及第三方依赖jar包，绝对路径
 LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
 LOG_FILE=${LOG_DIR}/create-table.log       ##  log 日记文件
-cd ..
-ROOT_HOME=`pwd`  ## 项目根目录
-COMMON_LIB_DIR_JARS=`ls ${ROOT_HOME}/common/lib  | grep  .jar | awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
-
 
 #####################################################################
 # 函数名: start_consumer
@@ -41,8 +37,8 @@ function start_consumer()
         mkdir $LOG_DIR;
     fi
     #  java -classpath $CONF_DIR:$LIB_JARS com.hzgc.hbase2es.table.CreatePersonRepoTable   | tee -a  ${LOG_FILE}
-    java -classpath ${CONF_DIR}:${LIB_JARS}${COMMON_LIB_DIR_JARS} com.hzgc.service.staticrepo.tablecreate.CreateStaticRepoTable   | tee -a  ${LOG_FILE}
-    java -classpath ${CONF_DIR}:${LIB_JARS}${COMMON_LIB_DIR_JARS} com.hzgc.service.staticrepo.tablecreate.CreateSrecordTable   | tee -a  ${LOG_FILE}
+    java -classpath $CONF_DIR:$LIB_JARS com.hzgc.service.staticrepo.tablecreate.CreateStaticRepoTable   | tee -a  ${LOG_FILE}
+    java -classpath $CONF_DIR:$LIB_JARS com.hzgc.service.staticrepo.tablecreate.CreateSrecordTable   | tee -a  ${LOG_FILE}
 }
 
 #####################################################################
