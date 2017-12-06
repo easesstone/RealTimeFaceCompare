@@ -31,10 +31,7 @@ declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
 declare -r CLUSTER_DIR=${BIGDATA_SERVICE_DIR}/cluster
 
-SPARK_STREAMING_KAFKA=1.6.2
 RELEASE_VERSION=1.5.0
-KAFKA_VERSION=1.0.0
-SCALA_VERSION=2.11
 
 hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/merget-parquet-files.properties)
 tmpTableHdfsPath=$(sed -n '2p' ${CONF_DIR}/merget-parquet-files.properties)
