@@ -77,7 +77,7 @@ function config_sparkJob()
 
     ### 从project-conf.properties读取sparkJob所需配置IP
     # 根据字段kafka，查找配置文件中，Kafka的安装节点所在IP端口号的值，这些值以分号分割
-    KAFKA_IP=`sed '/kafka/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    KAFKA_IP=`sed '/kafka_installnode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
     # 将这些分号分割的ip用放入数组
     spark_arr=(${KAFKA_IP//;/ })
     sparkpro=''    
