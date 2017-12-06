@@ -30,10 +30,7 @@ declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
 declare -r CLUSTER_DIR=${BIGDATA_SERVICE_DIR}/cluster
 
-SPARK_STREAMING_KAFKA=1.6.2
 RELEASE_VERSION=1.5.0
-KAFKA_VERSION=1.0.0
-SCALA_VERSION=2.11
 
 hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/merget-parquet-files.properties)
 tmpTableHdfsPath=$(sed -n '2p' ${CONF_DIR}/merget-parquet-files.properties)
@@ -71,14 +68,6 @@ function merge_parquet()
     nohup spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
     --master local[*] \
     --driver-memory 4g \
-    --jars ${LIB_DIR}/spark-streaming-kafka_${SCALA_VERSION}-${SPARK_STREAMING_KAFKA}.jar,\
-${COMMMON_DIR}/lib/jni-${RELEASE_VERSION}.jar,\
-${LIB_DIR}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.jar,\
-${LIB_DIR}/kafka-clients-${KAFKA_VERSION}.jar,\
-${COMMMON_DIR}/lib/ftp-${RELEASE_VERSION}.jar,\
-${COMMMON_DIR}/lib/util-${RELEASE_VERSION}.jar,\
-${COMMMON_DIR}/lib/bigdata-api-${RELEASE_VERSION}.jar,\
-${COMMMON_DIR}/lib/service-${RELEASE_VERSION}.jar \
 ${COMMMON_DIR}/lib/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 
