@@ -18,10 +18,9 @@ cd `dirname $0`
 BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
-## 配置文件目录
-CONF_DIR=${DEPLOY_DIR}/conf
-## Jar 包目录
-LIB_DIR=${DEPLOY_DIR}/lib
+cd ..
+PROJECT_DIR=`pwd`                        ## 项目根目录
+COMMON_LIB=$PROJECT_DIR/common/lib       ## common模块lib目录
 ## log 日记目录
 LOG_DIR=${DEPLOY_DIR}/logs
 ##  log 日记文件
@@ -75,7 +74,7 @@ else
 	echo "=================================="
 	echo "${HDFS_UDF_PATH}/${UDF_VERSION}不存在,正在上传"
 	echo "=================================="
-    ${HADOOP_PATH}/bin/hdfs dfs -put ${LIB_DIR}/${UDF_VERSION} ${HDFS_UDF_PATH}
+    ${HADOOP_PATH}/bin/hdfs dfs -put ${COMMON_LIB}/${UDF_VERSION} ${HDFS_UDF_PATH}
 	if [ $? == 0 ];then
 		echo "===================================="
 		echo "上传udf函数成功......"
