@@ -63,10 +63,9 @@ object FaceRecognizeAlarmJob {
           if (alarmRule != null && !alarmRule.isEmpty) {
             val recognizeWarnRule = alarmRule.get(DeviceTable.IDENTIFY)
             if (recognizeWarnRule != null && !recognizeWarnRule.isEmpty) {
-              val tempFea = FaceFunction.string2floatArray(FaceFunction.floatArray2string(faceObj.getAttribute.getFeature))
               totalList.foreach(record => {
                 if (recognizeWarnRule.containsKey(record(1))) {
-                  val threshold = FaceFunction.featureCompare(record(2).asInstanceOf[Array[Float]], tempFea)
+                  val threshold = FaceFunction.featureCompare(record(2).asInstanceOf[Array[Float]], faceObj.getAttribute.getFeature)
                   if (threshold > recognizeWarnRule.get(record(1))) {
                     filterResult += Json(record(0).asInstanceOf[String], record(1).asInstanceOf[String], threshold)
                   }
