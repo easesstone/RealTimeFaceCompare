@@ -52,6 +52,8 @@ function start_consumer()
         mkdir $LOG_DIR;
     fi
     java -classpath $CONF_DIR:$LIB_JARS com.hzgc.service.putdata.PutResidentToHbase  $PHOTO_PATH  $JSON_FILE  $XLS_FILE_NAME $PKEY | tee -a  ${LOG_FILE}
+    JSONNUM=$(cat $JSON_FILE | grep create | wc -l)
+    echo -e "写入到json文件中的数据有$JSONNUM"
 }
 
 #####################################################################
