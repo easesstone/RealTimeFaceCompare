@@ -62,7 +62,7 @@ function merge_parquet()
     nohup spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
     --master local[*] \
     --driver-memory 4g \
-${COMMMON_DIR}/lib/streaming-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
+${COMMMON_DIR}/lib/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
 }
 
 merge_parquet

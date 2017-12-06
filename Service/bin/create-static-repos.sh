@@ -24,6 +24,18 @@ awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`   ## jar包位置以及第三方依�
 LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
 LOG_FILE=${LOG_DIR}/create-table.log       ##  log 日记文件
 
+cd ..
+declare -r BIGDATA_SERVICE_DIR=`pwd`
+declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
+declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
+declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
+declare -r CLUSTER_DIR=${BIGDATA_SERVICE_DIR}/cluster
+
+cd -
+COMMON_JARS=`ls ${COMMMON_DIR}/lib | grep .jar | awk '{print "'${COMMMON_DIR}/lib'/"$0}'|tr "\n" ":"`
+LIB_JARS=${LIB_JARS}${COMMON_JARS}
+
+
 #####################################################################
 # 函数名: start_consumer
 # 描述: 把consumer 消费组启动起来

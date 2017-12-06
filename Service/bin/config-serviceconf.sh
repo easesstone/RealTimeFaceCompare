@@ -59,6 +59,40 @@ function move_xml()
 }
 
 #####################################################################
+# 函数名: config_es
+# 描述: 配置es-config.properties的es.hosts
+# 参数: N/A
+# 返回值: N/A
+# 其他: N/A
+#####################################################################
+function config_es()
+{
+    echo ""  | tee -a $LOG_FILE
+    echo "**********************************************" | tee -a $LOG_FILE
+    echo "" | tee -a $LOG_FILE
+    echo "配置service/conf/es-config.properties......"  | tee  -a  $LOG_FILE
+
+    # 配置es.hosts：
+    # 从project-conf.properties读取es所需配置IP
+    # 根据字段es，查找配置文件，这些值以分号分割
+    cd ${OBJECT_DIR}
+    ES_IP=$(grep es_servernode project-conf.properties|cut -d '=' -f2)
+    # 将这些分号分割的ip用放入数组
+    es_arr=(${ES_IP//;/ })
+    espro=''    
+    for es_host in ${es_arr[@]}
+    do
+        espro="$espro$es_host,"
+    done
+    espro=${espro%?}
+    
+    # 替换es-config.properties中：key=value（替换key字段的值value）
+    sed -i "s#^es.hosts=.*#es.hosts=${espro}#g" ${DEPLOY_DIR}/conf/es-config.properties
+    echo "es-config.properties配置es完毕......"  | tee  -a  $LOG_FILE
+}
+
+
+#####################################################################
 # 函数名: configzk_dubbo
 # 描述: 配置dubbo.properties的zk地址
 # 参数: N/A
@@ -194,6 +228,7 @@ function main()
     move_xml
     configzk_dubbo
     config_ftphost
+    config_es
     config_jdbc
     config_dubbo
 }
