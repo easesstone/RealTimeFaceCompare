@@ -38,6 +38,7 @@ declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
 declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
 declare -r FTP_HOSTS_FILE=${CONF_DIR}/ftp-hostnames.properties
+declare -r DUBBO_HOSTS_FILE=${CONF_DIR}/dubbo-hostnames.properties
 
 #####################################################################
 # 函数名: make_sure_the_ftp_service_alive
@@ -139,7 +140,10 @@ function main()
         make_sure_the_ftp_service_alive  $host
     done
     ## 监听 dubbo 服务情况
-    make_sure_the_dubbo_service_alive
+    for host in $(cat ${DUBBO_HOSTS_FILE});do
+        make_sure_the_dubbo_service_alive  $host
+    done
+
 }
 
 
