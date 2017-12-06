@@ -10,6 +10,13 @@ SERVER_PROTOCOL=`sed '/dubbo.protocol.name/!d;s/.*=//' conf/dubbo.properties | t
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 
+cd ..
+declare -r BIGDATA_SERVICE_DIR=`pwd`
+declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
+
+cd -
+
+
 if [ -z "$SERVER_NAME" ]; then
     SERVER_NAME=`hostname`
 fi
@@ -42,6 +49,9 @@ STDOUT_FILE=$LOGS_DIR/dubbo.log
 
 LIB_DIR=$DEPLOY_DIR/lib
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
+
+COMMON_JARS=`ls ${COMMMON_DIR}/lib | grep .jar | awk '{print "'${COMMMON_DIR}/lib'/"$0}'|tr "\n" ":"`
+LIB_JARS=${LIB_JARS}${COMMON_JARS}
 
 JAVA_OPTS=" -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true "
 JAVA_DEBUG_OPTS=""
