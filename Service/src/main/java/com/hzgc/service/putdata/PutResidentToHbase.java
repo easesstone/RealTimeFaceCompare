@@ -1,8 +1,5 @@
 package com.hzgc.service.putdata;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.util.HBaseHelper;
 import jxl.Sheet;
@@ -15,7 +12,6 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -28,7 +24,6 @@ public class PutResidentToHbase {
         Map<String, Object> map1 = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         Map<String, Object> map3 = new HashMap<>();
-        ArrayList<String> filenamelist = new ArrayList<String>();
         String feature = "";
         Table table = HBaseHelper.getTable("objectinfo");
         long startNum = getHbaseNum(table);                                                 //插入前hbase的数据总数
@@ -128,11 +123,6 @@ public class PutResidentToHbase {
             }
             long endNum = getHbaseNum(table);                                                  //插入后hbase中的数据总数
             LOG.info("insert into Hbase data num is " + (endNum - startNum));
-            JsonParser jsonParser = new JsonParser();                                         //创建JSON解析器
-            JsonObject jsonObject = (JsonObject) jsonParser.parse(new FileReader(jsonFile));//创建JsonObject对象
-            JsonArray jsonArray = jsonObject.get("create").getAsJsonArray();                  //得到为json的数组
-            int jsonSize = jsonArray.size();
-            LOG.info("write to json num is " + jsonSize);
             workBook.close();
         } catch (IOException e) {
             e.printStackTrace();
