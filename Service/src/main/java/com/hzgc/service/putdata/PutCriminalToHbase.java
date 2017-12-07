@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by Administrator on 2017-11-13.
  */
-public class putCriminalToHbase {
+public class PutCriminalToHbase {
     private static Logger LOG = Logger.getLogger(PutDataToHBase.class);
     private static ObjectInfoHandlerImpl objectInfoHandler = new ObjectInfoHandlerImpl();
 

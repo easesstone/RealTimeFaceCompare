@@ -77,12 +77,12 @@ function stopdubbo ()
 function main()
 {
     stopdubbo
-    if [ ${start_dubbo} -eq 0 ];then
-        echo "start dubbo sucessed" | tee -a  $LOG_FILE  
+    if [ ${stop_dubbo} -eq 0 ];then
+        echo "stop dubbo sucessed" | tee -a  $LOG_FILE
     else
         stopdubbo
-        if [ ${start_dubbo} -eq 1 ];then
-            echo "retry start dubbo failed please check the config......exit with 1" | tee -a  $LOG_FILE
+        if [ ${stop_dubbo} -eq 1 ];then
+            echo "retry stop dubbo failed please check the config......exit with 1" | tee -a  $LOG_FILE
         fi
     fi
 }

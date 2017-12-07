@@ -12,6 +12,14 @@ import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Duration, Durations, Seconds, StreamingContext}
 
 object kafkaToParquet {
+  val properties: Properties = StreamingUtils.getProperties
+
+  case class Picture(ftpurl: String, //图片搜索地址
+                     feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
+                     exacttime: Timestamp, searchtype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
+                     eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
+                     hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
+                    )
 
   def getItem(parameter: String, properties: Properties): String = {
     val item = properties.getProperty(parameter)
@@ -24,24 +32,15 @@ object kafkaToParquet {
     null
   }
 
-  case class Picture(ftpurl: String, //图片搜索地址
-                     feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
-                     exacttime: Timestamp, searchtype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
-                     eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
-                     hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
-                    )
-
-  val properties: Properties = StreamingUtils.getProperties
-  val appname: String = getItem("job.faceObjectConsumer.appName", properties)
-  val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
-  val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties)
-  val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)
-  val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))
-  val repartitionNum: Int = getItem("job.repartition.number", properties).toInt
-  val storeAddress: String = getItem("job.storeAddress", properties)
-  val backupAddress: String = getItem("job.backupAddress", properties)
-
-  def main(args: Array[String]): Unit = {
+  def createContext(): StreamingContext = {
+    val appname: String = getItem("job.faceObjectConsumer.appName", properties)
+    val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
+    val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties)
+    val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)
+    val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))
+    val repartitionNum: Int = getItem("job.repartition.number", properties).toInt
+    val storeAddress: String = getItem("job.storeAddress", properties)
+    val backupAddress: String = getItem("job.backupAddress", properties)
     val spark = SparkSession.builder().appName(appname).getOrCreate()
     val ssc = new StreamingContext(spark.sparkContext, timeInterval)
     ssc.checkpoint(backupAddress)
@@ -72,6 +71,11 @@ object kafkaToParquet {
         })
       })
     })
+    ssc
+  }
+
+  def main(args: Array[String]): Unit = {
+    val ssc = StreamingContext.getOrCreate(getItem("job.backupAddress", properties), () => createContext())
     ssc.start()
     ssc.awaitTermination()
   }

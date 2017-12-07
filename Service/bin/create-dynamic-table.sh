@@ -33,7 +33,7 @@ SPARK_PATH=${BIGDATA_CLUSTER_PATH}/Spark/spark
 ## 创建person_table
 ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.person_table( \
                                 ftpurl        string, \
-                                feature       string, \
+                                feature       array<float>, \
                                 eyeglasses    int, \
                                 gender        int, \
                                 haircolor     int, \
@@ -49,7 +49,7 @@ ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.pers
                                 LOCATION '/user/hive/warehouse/person_table';
                                 CREATE EXTERNAL TABLE IF NOT EXISTS default.mid_table( \
                                 ftpurl        string, \
-                                feature       string, \
+                                feature       array<float>, \
                                 eyeglasses    int, \
                                 gender        int, \
                                 haircolor     int, \
