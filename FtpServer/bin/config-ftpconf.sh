@@ -108,7 +108,7 @@ function config_pdcrOverFtp()
     
     ### 从project-conf.properties读取sparkJob所需配置IP
     # 根据字段kafka，查找配置文件中，Kafka的安装节点所在IP端口号的值，这些值以分号分割
-    KAFKA_HOSTS=`sed '/kafka/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    KAFKA_HOSTS=`sed '/kafka_installnode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
     # 将这些分号分割的ip用放入数组
     kafka_arr=(${KAFKA_HOSTS//;/ })
     kafkapro=''    
