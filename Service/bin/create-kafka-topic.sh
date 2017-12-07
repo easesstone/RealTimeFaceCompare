@@ -7,7 +7,7 @@
 ## Author:      mashencai
 ## Created:     2017-12-01
 ################################################################################
-#set -x  ## 用于调试用，不用的时候可以注释掉
+set -x  ## 用于调试用，不用的时候可以注释掉
 
 #---------------------------------------------------------------------#
 #                              定义变量                                #
@@ -51,7 +51,8 @@ function create_kafka_topic()
     echo "" | tee -a $LOG_FILE
 
     # 根据zookeeper字段，查找配置文件中，zk的IP地址和端口号
-    ZK_IP_PORTS=`sed '/zookeeper/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    #ZK_IP_PORTS=`sed '/zookeeper/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+	ZK_IP_PORTS=$(grep zookeeper ${CONF_FILE}|cut -d '=' -f2)
     # 将读取的IP（原本为分号分割），配置为以逗号分割
     zk_arr=(${ZK_IP_PORTS//;/ })
     zkpro=''    
@@ -62,8 +63,10 @@ function create_kafka_topic()
     zkpro=${zkpro%?}
     
     # 从配置文件中获取创建kafka topic的副本数和分区数
-    repl_factor=`sed '/kafka_replicationFactor/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
-    part_num=`sed '/kafka_partitions/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+	repl_factor=$(grep kafka_replicationFactor ${CONF_FILE}|cut -d '=' -f2)
+	part_num=$(grep kafka_partitions ${CONF_FILE}|cut -d '=' -f2)
+    #repl_factor=`sed '/kafka_replicationFactor/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    #part_num=`sed '/kafka_partitions/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
     
     # 进入到kafka的bin目录下
     cd ${KAFKA_HOME}/bin
