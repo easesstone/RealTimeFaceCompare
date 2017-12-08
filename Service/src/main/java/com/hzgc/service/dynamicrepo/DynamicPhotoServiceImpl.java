@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-import static com.hzgc.util.ObjectUtil.objectToByte;
+import static com.hzgc.util.common.ObjectUtil.objectToByte;
 
 /**
  * 动态库实现类

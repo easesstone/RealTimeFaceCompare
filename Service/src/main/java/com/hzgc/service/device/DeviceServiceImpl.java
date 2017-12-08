@@ -3,7 +3,7 @@ package com.hzgc.service.device;
 import com.hzgc.dubbo.device.DeviceService;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
-import com.hzgc.util.StringUtil;
+import com.hzgc.util.common.StringUtil;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;

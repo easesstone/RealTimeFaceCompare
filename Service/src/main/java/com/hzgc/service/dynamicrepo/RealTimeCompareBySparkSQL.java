@@ -6,8 +6,8 @@ import com.hzgc.ftpserver.util.Download;
 import com.hzgc.ftpserver.util.FtpUtil;
 import com.hzgc.service.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
-import com.hzgc.util.ObjectListSort.ListUtils;
-import com.hzgc.util.ObjectListSort.SortParam;
+import com.hzgc.util.sort.ListUtils;
+import com.hzgc.util.sort.SortParam;
 import org.apache.log4j.Logger;
 
 import java.sql.*;

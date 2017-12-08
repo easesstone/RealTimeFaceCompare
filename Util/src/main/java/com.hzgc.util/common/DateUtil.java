@@ -1,4 +1,4 @@
-package com.hzgc.util;
+package com.hzgc.util.common;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
