@@ -1,4 +1,4 @@
-package com.hzgc.util;
+package com.hzgc.util.common;
 
 import java.io.IOException;
 import java.io.InputStream;

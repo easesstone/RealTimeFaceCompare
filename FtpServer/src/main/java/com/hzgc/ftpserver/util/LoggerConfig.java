@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver.util;
 
-import com.hzgc.util.FileUtil;
+import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 

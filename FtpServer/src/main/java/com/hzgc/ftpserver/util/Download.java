@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.util;
 
-import com.hzgc.util.FileUtil;
-import com.hzgc.util.IOUtil;
+import com.hzgc.util.common.FileUtil;
+import com.hzgc.util.common.IOUtil;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
