@@ -1,6 +1,6 @@
 package com.hzgc.service.staticrepo;
 
-import com.hzgc.util.FileUtil;
+import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;

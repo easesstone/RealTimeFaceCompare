@@ -3,7 +3,7 @@ package com.hzgc.ftpserver.producer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import com.hzgc.util.FileUtil;
+import com.hzgc.util.common.FileUtil;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;

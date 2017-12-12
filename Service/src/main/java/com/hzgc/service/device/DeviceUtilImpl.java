@@ -2,8 +2,8 @@ package com.hzgc.service.device;
 
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
-import com.hzgc.util.ObjectUtil;
-import com.hzgc.util.StringUtil;
+import com.hzgc.util.common.ObjectUtil;
+import com.hzgc.util.common.StringUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;

@@ -1,8 +1,6 @@
-package com.hzgc.util;
+package com.hzgc.util.common;
 
 import java.io.*;
-import java.util.List;
-import java.util.Map;
 
 public class ObjectUtil {
 

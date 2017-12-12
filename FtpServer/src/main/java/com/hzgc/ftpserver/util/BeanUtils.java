@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.producer.FaceObject;
-import com.hzgc.util.IOUtil;
+import com.hzgc.util.common.IOUtil;
 
 import java.io.*;
 

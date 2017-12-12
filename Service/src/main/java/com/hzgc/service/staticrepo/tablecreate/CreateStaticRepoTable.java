@@ -2,8 +2,8 @@ package com.hzgc.service.staticrepo.tablecreate;
 
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.util.HBaseHelper;
-import com.hzgc.util.FileUtil;
-import com.hzgc.util.IOUtil;
+import com.hzgc.util.common.FileUtil;
+import com.hzgc.util.common.IOUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
