@@ -1,5 +1,6 @@
 package com.hzgc.cluster.consumer
 
+import java.sql.Timestamp
 import java.util.Properties
 
 import com.google.common.base.Stopwatch
@@ -12,14 +13,24 @@ import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
-import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 
-object KafkaToEs {
+/**
+  * Created by Administrator on 2017-12-14.
+  */
+object KafkToParquet {
   val LOG: Logger = Logger.getLogger(KafkaToEs.getClass)
   val properties: Properties = StreamingUtils.getProperties
+
+  case class Picture(ftpurl: String, //图片搜索地址
+                     feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
+                     exacttime: Timestamp, searchtype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
+                     eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
+                     hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
+                    )
 
   def getItem(parameter: String, properties: Properties): String = {
     val item = properties.getProperty(parameter)
@@ -50,24 +61,22 @@ object KafkaToEs {
   private def setupSsc(topics: Set[String], kafkaParams: Map[String, String]
                        , spark: SparkSession)(): StreamingContext = {
     val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
+    val storeAddress: String = getItem("job.storeAddress", properties)
     val zkHosts: String = getItem("job.zkDirAndPort", properties)
-    val zKPaths: String = getItem("job.kafkaToEs.zkPaths", properties)
+    val zKPaths: String = getItem("job.kafkaToParquet", properties)
     val sc = spark.sparkContext
     val ssc = new StreamingContext(sc, timeInterval)
     val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics)
     val kafkaDF = messages.map(faceobject => {
-      (faceobject._1, faceobject._2)
+      Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
+        faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
+        faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
+        faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
+        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie)
     })
     kafkaDF.foreachRDD(rdd => {
-      rdd.foreachPartition(parData => {
-        val putDataToEs = PutDataToEs.getInstance()
-        parData.foreach(data => {
-          val status = putDataToEs.putDataToEs(data._1, data._2)
-          if (status != 1) {
-            LOG.error("Put data to es failed! And the failed ftpurl is " + data._1)
-          }
-        })
-      })
+      import spark.implicits._
+      rdd.coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
     })
     ssc
   }
