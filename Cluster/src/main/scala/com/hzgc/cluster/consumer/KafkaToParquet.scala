@@ -63,7 +63,7 @@ object KafkaToParquet {
     val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
     val storeAddress: String = getItem("job.storeAddress", properties)
     val zkHosts: String = getItem("job.zkDirAndPort", properties)
-    val zKPaths: String = getItem("job.kafkaToParquet", properties)
+    val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)
     val sc = spark.sparkContext
     val ssc = new StreamingContext(sc, timeInterval)
     val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics)
