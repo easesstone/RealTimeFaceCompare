@@ -1,8 +1,8 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-kafka-to-es.sh
-## Description: to start KafkaToEs
+## Filename:    start-new-kafka-to-parquet.sh
+## Description: to start KafkToParquet
 ## Version:     1.5.0
 ## Author:      chenke
 ## Created:     2017-12-14
