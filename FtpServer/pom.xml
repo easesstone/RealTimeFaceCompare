@@ -24,6 +24,10 @@
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>*.properties</exclude>
+                    <exclude>*.xml</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -84,6 +88,7 @@
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
