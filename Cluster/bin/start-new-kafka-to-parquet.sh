@@ -1,11 +1,11 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-kafka-to-parquet.sh
-## Description: to start kafkaToParquet
+## Filename:    start-kafka-to-es.sh
+## Description: to start KafkaToEs
 ## Version:     1.5.0
 ## Author:      chenke
-## Created:     2017-11-09
+## Created:     2017-12-14
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
 
@@ -23,7 +23,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
-LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquet.log
+LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToEs.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
 COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
@@ -75,7 +75,7 @@ if [ ! -d ${CLUSTER_LOG_DIR} ];then
    mkdir ${CLUSTER_LOG_DIR}
 fi
 
-############ 判断是否存在大数据集群 ###################
+############ 判断是否存在大数据集▒?###################
 if [ ! -d ${BIGDATA_CLUSTER_PATH} ];then
    echo "${BIGDATA_CLUSTER_PATH} does not exit,please go to the node of the existing bigdata cluster !"
    exit 0
@@ -189,8 +189,8 @@ nohup spark-submit \
 --master yarn \
 --deploy-mode cluster \
 --executor-memory 4g \
---executor-cores 2 \
---num-executors 4 \
+--executor-cores 1 \
+--num-executors 3 \
 --class ${SPARK_CLASS_PARAM} \
 --jars ${CLUSTER_LIB_DIR}/${GSON_VERSION},\
 ${CLUSTER_LIB_DIR}/${JACKSON_CORE_VERSION},\
@@ -211,11 +211,11 @@ ${FTP_LIB_DIR}/${ROCKETMQ_COMMON_VERSION},\
 ${FTP_LIB_DIR}/${ROCKETMQ_REMOTING_VERSION},\
 ${FTP_LIB_DIR}/${FASTJSON_VERSION},\
 ${COMMON_LIB_DIR}/${UTIL_VERSION},\
+${CLUSTER_LIB_DIR}/zkclient-0.3.jar,\
 ${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION},\
 ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} \
 --files ${SERVICE_CONF_DIR}/es-config.properties,\
 ${SERVICE_CONF_DIR}/hbase-site.xml,\
 ${FTP_CONF_DIR}/ftpAddress.properties,\
-${CLUSTER_CONF_DIR}/sparkJob.properties,\
-${FTP_CONF_DIR}/rocketmq.properties \
+${CLUSTER_CONF_DIR}/sparkJob.properties \
 ${COMMON_LIB_DIR}/${CLUSTER_VERSION} > ${LOG_FILE} 2>&1 &
