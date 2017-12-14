@@ -21,7 +21,7 @@ import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
 /**
   * Created by Administrator on 2017-12-14.
   */
-object KafkToParquet {
+object KafkaToParquet {
   val LOG: Logger = Logger.getLogger(KafkaToEs.getClass)
   val properties: Properties = StreamingUtils.getProperties
 

@@ -23,7 +23,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
-LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToEs.log
+LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquet.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
 COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
@@ -36,7 +36,7 @@ SERVICE_LIB_DIR=${DEPLOY_DIR}/service/lib
 ## bigdata_env
 BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.KafkToParquet
+SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.KafkaToParquet
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 
