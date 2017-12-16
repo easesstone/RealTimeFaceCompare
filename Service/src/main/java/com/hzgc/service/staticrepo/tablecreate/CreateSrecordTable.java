@@ -1,7 +1,7 @@
 package com.hzgc.service.staticrepo.tablecreate;
 
 import com.hzgc.service.util.HBaseHelper;
-import com.hzgc.util.FileUtil;
+import com.hzgc.util.common.FileUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.log4j.Logger;
 

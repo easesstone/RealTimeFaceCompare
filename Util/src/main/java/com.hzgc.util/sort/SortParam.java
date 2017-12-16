@@ -1,4 +1,4 @@
-package com.hzgc.util.ObjectListSort;
+package com.hzgc.util.sort;
 
 import java.io.Serializable;
 import java.util.Arrays;

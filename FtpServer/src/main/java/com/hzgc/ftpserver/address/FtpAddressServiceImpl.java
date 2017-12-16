@@ -1,8 +1,8 @@
 package com.hzgc.ftpserver.address;
 
 import com.hzgc.dubbo.address.FtpAddressService;
-import com.hzgc.util.FileUtil;
-import com.hzgc.util.IOUtil;
+import com.hzgc.util.common.FileUtil;
+import com.hzgc.util.common.IOUtil;
 
 import java.io.*;
 import java.util.Properties;

@@ -1,4 +1,4 @@
-package com.hzgc.util.ObjectListSort;
+package com.hzgc.util.sort;
 
 import org.apache.log4j.Logger;
 
