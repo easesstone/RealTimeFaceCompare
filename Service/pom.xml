@@ -20,6 +20,7 @@
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
@@ -44,11 +45,13 @@
             <groupId>com.hzgc</groupId>
             <artifactId>jni</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!--阿里数据库连接池-->
         <dependency>
@@ -66,11 +69,17 @@
             <groupId>com.hzgc</groupId>
             <artifactId>ftp</artifactId>
             <version>1.5.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>
             <artifactId>jxl</artifactId>
             <version>2.6.12</version>
+        </dependency>
+        <dependency>
+            <groupId>com.belerweb</groupId>
+            <artifactId>pinyin4j</artifactId>
+            <version>2.5.0</version>
         </dependency>
     </dependencies>
     <build>

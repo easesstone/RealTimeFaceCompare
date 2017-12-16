@@ -32,9 +32,6 @@
             <useTransitiveDependencies>true</useTransitiveDependencies>
             <!--是否解压 -->
             <unpack>false</unpack>
-            <excludes>
-                <exclude>com.hzgc:*:jar</exclude>
-            </excludes>
             <outputDirectory>lib</outputDirectory>
         </dependencySet>
     </dependencySets>

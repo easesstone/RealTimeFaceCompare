@@ -1,11 +1,12 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-consumer.sh
-## Description: to start consumer
-## Version:     1.0
+## Filename:    facecomp-daemon.sh
+## Description: 大数据dubbo ftp 守护脚本
+## Version:     1.0.0
 ## Author:      lidiliang
 ## Created:     2017-11-18
+## Modified:    (ldl-2017-12-1)
 ################################################################################
 
 #set -x
@@ -37,10 +38,11 @@ declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
 declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
 declare -r FTP_HOSTS_FILE=${CONF_DIR}/ftp-hostnames.properties
+declare -r DUBBO_HOSTS_FILE=${CONF_DIR}/dubbo-hostnames.properties
 
 #####################################################################
 # 函数名: make_sure_the_ftp_service_alive
-# 描述: 把脚本定时执行，每个小时监控一下ftp 服务是否挂掉，如果挂掉则重启。
+# 描述: 把脚本定时执行，定时监控一下ftp 服务是否挂掉，如果挂掉则重启。
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
@@ -81,7 +83,7 @@ function make_sure_the_ftp_service_alive()
 
 #####################################################################
 # 函数名: make_sure_the_dubbo_service_alive
-# 描述: 把脚本定时执行，每个小时监控一下ftp 服务是否挂掉，如果挂掉则重启。
+# 描述: 把脚本定时执行，定时监控ftp 服务是否挂掉，如果挂掉则重启。
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
@@ -90,23 +92,23 @@ function make_sure_the_dubbo_service_alive()
 {
     echo ""  | tee  -a  $LOG_FILE
     echo "****************************************************"  | tee -a $LOG_FILE
-    echo "dubbo procceding......................."  | tee  -a  $LOG_FILE
-    dubbo_pid=$(lsof  -i | grep 20881  | awk  '{print $2}' | uniq)
+    echo "in ${1} monitoring dubbo procceding ing......................."  | tee  -a  $LOG_FILE
+    dubbo_pid=$(ssh root@$1 "source /etc/profile; lsof  -i | grep 20881  | awk  '{print $2}' | uniq")
     echo "dubbo's pid is: ${dubbo_pid}"  | tee  -a  $LOG_FILE
     if [ -n "${dubbo_pid}" ];then
         echo "dubbo process is exit,do not need to do anything. exit with 0 " | tee -a $LOG_FILE
     else
         echo "dubbo process is not exit, just to restart dubbo."  | tee -a $LOG_FILE
-        sh ${BIN_DIR}/start-dubbo.sh
+        ssh root@${1} "source /etc/profile; sh ${BIN_DIR}/start-dubbo.sh"
         echo "starting, please wait........" | tee -a $LOG_FILE
         sleep 1m
-        dubbo_pid_restart=$(lsof  -i | grep 20881  | awk  '{print $2}' | uniq)
+        dubbo_pid_restart=$(ssh root@$1 "source /etc/profile; lsof  -i | grep 20881  | awk  '{print $2}' | uniq")
         if [ -z "${dubbo_pid_restart}" ];then
             echo "start dubbo failed.....,retrying to start it second time" | tee -a $LOG_FILE
-            sh  ${BIN_DIR}/start-dubbo.sh
+            ssh root@${1} "source /etc/profile; sh ${BIN_DIR}/start-dubbo.sh"
             echo "second try starting, please wait........" | tee -a $LOG_FILE
             sleep 1m
-            dubbo_pid_retry=$(lsof  -i | grep 20881  | awk  '{print $2}' | uniq)
+            dubbo_pid_retry=$(ssh root@$1 "source /etc/profile; lsof  -i | grep 20881  | awk  '{print $2}' | uniq")
             if [ -z  "${dubbo_pid_retry}" ];then
                 echo "retry start dubbo failed, please check the config......exit with 1"  | tee -a $LOG_FILE
                 flag_dubbo=1
@@ -138,7 +140,10 @@ function main()
         make_sure_the_ftp_service_alive  $host
     done
     ## 监听 dubbo 服务情况
-    make_sure_the_dubbo_service_alive
+    for host in $(cat ${DUBBO_HOSTS_FILE});do
+        make_sure_the_dubbo_service_alive  $host
+    done
+
 }
 
 

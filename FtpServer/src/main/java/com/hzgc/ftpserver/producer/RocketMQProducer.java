@@ -1,8 +1,8 @@
 package com.hzgc.ftpserver.producer;
 
-import com.hzgc.util.FileUtil;
-import com.hzgc.util.IOUtil;
-import com.hzgc.util.StringUtil;
+import com.hzgc.util.common.FileUtil;
+import com.hzgc.util.common.IOUtil;
+import com.hzgc.util.common.StringUtil;
 import org.apache.log4j.Logger;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.MessageQueueSelector;

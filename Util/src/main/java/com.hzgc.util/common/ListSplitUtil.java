@@ -1,4 +1,4 @@
-package com.hzgc.util;
+package com.hzgc.util.common;
 
 import java.util.ArrayList;
 import java.util.List;

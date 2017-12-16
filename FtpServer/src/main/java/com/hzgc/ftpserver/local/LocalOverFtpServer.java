@@ -2,7 +2,7 @@ package com.hzgc.ftpserver.local;
 
 import com.hzgc.ftpserver.ClusterOverFtp;
 import com.hzgc.ftpserver.util.LoggerConfig;
-import com.hzgc.util.FileUtil;
+import com.hzgc.util.common.FileUtil;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.listener.ListenerFactory;

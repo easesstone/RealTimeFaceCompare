@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver.local;
 
-import com.hzgc.util.FileUtil;
+import com.hzgc.util.common.FileUtil;
 import org.apache.ftpserver.ConnectionConfig;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.impl.DefaultConnectionConfig;

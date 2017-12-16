@@ -1,7 +1,9 @@
 package com.hzgc.ftpserver.producer;
 
 
-import com.hzgc.util.FileUtil;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.hzgc.util.common.FileUtil;
 import org.apache.ftpserver.util.IoUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,10 +19,10 @@ public class ProducerOverFtp implements Serializable {
     private static KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
-    /*private static String PICTURE = "picture";
-    private static String FACE = "face";
-    private static String JSON = "json";*/
     private static String FEATURE = "feature";
+
+    private static MetricRegistry metric = new MetricRegistry();
+    private final static Counter counter = metric.counter("sendKafkaCount");
 
     ProducerOverFtp() {
         try {
@@ -29,9 +31,6 @@ public class ProducerOverFtp implements Serializable {
                 this.fis = new FileInputStream(file);
             }
             this.kafkaPropers.load(fis);
-            /*PICTURE = kafkaPropers.getProperty("topic-picture");
-            FACE = kafkaPropers.getProperty("topic-face");
-            JSON = kafkaPropers.getProperty("topic-json");*/
             FEATURE = kafkaPropers.getProperty("topic-feature");
             if (kafkaPropers != null) {
                 kafkaProducer = new KafkaProducer<String, FaceObject>(kafkaPropers);
@@ -51,6 +50,8 @@ public class ProducerOverFtp implements Serializable {
                     new ProducerCallBack(startTime, key));
         }
         LOG.info("Send Kafka message[topic:" + topic + ", key:" + key + "]");
+        counter.inc();
+        LOG.info("Send Kafka total:" + counter.getCount());
 
     }
 

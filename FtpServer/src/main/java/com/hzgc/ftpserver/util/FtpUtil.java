@@ -1,7 +1,6 @@
 package com.hzgc.ftpserver.util;
 
-import com.hzgc.util.FileUtil;
-import org.apache.ftpserver.util.IoUtils;
+import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -24,7 +23,13 @@ public class FtpUtil implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            IoUtils.close(in);
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -44,8 +49,18 @@ public class FtpUtil implements Serializable {
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         } finally {
-            IoUtils.close(baos);
-            IoUtils.close(is);
+            try {
+                baos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return baos;
     }
