@@ -5,13 +5,13 @@ import java.util.Properties
 
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
-import com.hzgc.jni.FaceFunction
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Duration, Durations, Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
 
-object kafkaToParquet {
+object kafkaToParquetold {
   val properties: Properties = StreamingUtils.getProperties
 
   case class Picture(ftpurl: String, //图片搜索地址
@@ -43,6 +43,11 @@ object kafkaToParquet {
     val backupAddress: String = getItem("job.backupAddress", properties)
     val spark = SparkSession.builder().appName(appname).getOrCreate()
     val ssc = new StreamingContext(spark.sparkContext, timeInterval)
+    val conf = new SparkConf()
+    conf.set("es.index.auto.create","true")
+    conf.set("es.nodes","172.18.18.103,172.18.18.104,172.18.18.105")
+    conf.set("es.port","9200")
+    val sc = new SparkContext(conf)
     ssc.checkpoint(backupAddress)
     val kafkaParams = Map(
       "metadata.broker.list" -> brokers,
