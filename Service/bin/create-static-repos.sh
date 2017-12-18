@@ -1,8 +1,8 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-consumer.sh
-## Description: to start consumer
+## Filename:    create-static-repos.sh
+## Description: 静态库建表：objectinfo、srecord
 ## Version:     1.0
 ## Author:      lidiliang
 ## Created:     2017-08-03

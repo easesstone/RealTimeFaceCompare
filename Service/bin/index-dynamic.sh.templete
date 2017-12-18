@@ -4,6 +4,8 @@ curl -XDELETE 's109:9200/dynamic?pretty'  -H 'Content-Type: application/json'
 curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
 {
     "settings": {
+	    "number_of_shards":5,
+        "number_of_replicas":1,
         "analysis": {
             "filter": {
                 "trigrams_filter": {
