@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver.common;
 
-import com.hzgc.ftpserver.LocalOverFtpServer;
+import com.hzgc.ftpserver.FTP;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
@@ -166,7 +166,7 @@ public class FtpUtil implements Serializable {
     public static String filePath2absolutePath(String filePath) {
         StringBuilder url = new StringBuilder();
         String hostName = IpAddressUtil.getHostName();
-        Map<Integer, Integer> ftpPIDMap = LocalOverFtpServer.getPidMap();
+        Map<Integer, Integer> ftpPIDMap = FTP.getPidMap();
         if (!ftpPIDMap.isEmpty()){
             Integer ftpPID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
             LOG.info("ftp PID = " + ftpPID);
