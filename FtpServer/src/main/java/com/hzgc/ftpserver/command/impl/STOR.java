@@ -152,14 +152,15 @@ public class STOR extends AbstractCommand {
             long transSz = 0L;
             try {
                 outStream = file.createOutputStream(skipLen);
+
                 ProducerOverFtp kafkaProducer = context.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
+
                 InputStream is = dataConnection.getDataInputStream();
                 ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
                 byte[] data = baos.toByteArray();
 
                 int faceNum = FtpUtil.pickPicture(fileName);
-
                 if (fileName.contains("unknown")) {
                     LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
                 } else {

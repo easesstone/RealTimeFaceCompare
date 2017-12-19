@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver.common;
 
-import com.hzgc.ftpserver.local.LocalOverFtpServer;
+import com.hzgc.ftpserver.LocalOverFtpServer;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
