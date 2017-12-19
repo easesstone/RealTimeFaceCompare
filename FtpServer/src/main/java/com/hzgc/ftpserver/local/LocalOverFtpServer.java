@@ -8,15 +8,20 @@ import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.log4j.Logger;
 
+import java.lang.management.ManagementFactory;
+import java.util.HashMap;
+import java.util.Map;
+
 public class LocalOverFtpServer extends ClusterOverFtp {
     private static Logger log = Logger.getLogger(LocalOverFtpServer.class);
+    private static Map<Integer,Integer> pidMap = new HashMap<>();
 
     /*
       Set the dynamic log configuration file refresh time
      */
-    static {
+    /*static {
         new LoggerConfig();
-    }
+    }*/
 
     @Override
     public void startFtpServer() {
@@ -55,10 +60,16 @@ public class LocalOverFtpServer extends ClusterOverFtp {
         FtpServer server = serverFactory.createServer();
         try {
             server.start();
+            Integer ftpPID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
+            pidMap.put(ftpPID,listenerPort);
         } catch (FtpException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public static Map<Integer, Integer> getPidMap() {
+        return pidMap;
     }
 
     public static void main(String args[]) throws Exception {
