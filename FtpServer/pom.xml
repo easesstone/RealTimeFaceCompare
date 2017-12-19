@@ -21,7 +21,7 @@
                 </includes>
             </resource>
             <resource>
-                <targetPath>${project.build.directory}/classes/org/apache/ftpserver/message/</targetPath>
+                <targetPath>${project.build.directory}/classes/com/hzgc/ftpserver/message/</targetPath>
                 <directory>src/main/resources/ftpserver/message</directory>
                 <filtering>false</filtering>
                 <includes>

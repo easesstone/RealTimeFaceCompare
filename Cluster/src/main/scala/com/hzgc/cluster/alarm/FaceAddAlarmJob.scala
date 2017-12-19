@@ -9,7 +9,7 @@ import com.hzgc.jni.FaceFunction
 import com.hzgc.cluster.message.AddAlarmMessage
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
-import com.hzgc.ftpserver.util.FtpUtil
+import com.hzgc.ftpserver.common.FtpUtil
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils

@@ -1,7 +1,7 @@
 package com.hzgc.ftpserver.producer;
 
 
-import com.hzgc.ftpserver.util.BeanUtils;
+import com.hzgc.ftpserver.common.BeanUtils;
 import kafka.serializer.Decoder;
 import kafka.utils.VerifiableProperties;
 

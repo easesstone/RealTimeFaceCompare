@@ -1,6 +1,6 @@
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import com.hzgc.ftpserver.util.Download;
+import com.hzgc.ftpserver.common.Download;
 
 import java.io.File;
 import java.util.Random;

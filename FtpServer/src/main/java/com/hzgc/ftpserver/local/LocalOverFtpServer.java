@@ -1,11 +1,15 @@
 package com.hzgc.ftpserver.local;
 
 import com.hzgc.ftpserver.ClusterOverFtp;
-import com.hzgc.ftpserver.util.LoggerConfig;
 import com.hzgc.util.common.FileUtil;
-import org.apache.ftpserver.FtpServer;
-import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.listener.ListenerFactory;
+import com.hzgc.ftpserver.ConnectionConfigFactory;
+import com.hzgc.ftpserver.FtpServer;
+import com.hzgc.ftpserver.FtpServerFactory;
+import com.hzgc.ftpserver.command.CommandFactoryFactory;
+import com.hzgc.ftpserver.filesystem.nativefs.NativeFileSystemFactory;
+import com.hzgc.ftpserver.ftplet.FtpException;
+import com.hzgc.ftpserver.listener.ListenerFactory;
+import com.hzgc.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.log4j.Logger;
 
 import java.lang.management.ManagementFactory;
@@ -25,8 +29,8 @@ public class LocalOverFtpServer extends ClusterOverFtp {
 
     @Override
     public void startFtpServer() {
-        LocalFtpServerFactory serverFactory = new LocalFtpServerFactory();
-        log.info("Create " + LocalFtpServerFactory.class + " successful");
+        FtpServerFactory serverFactory = new FtpServerFactory();
+        log.info("Create " + FtpServerFactory.class + " successful");
         ListenerFactory listenerFactory = new ListenerFactory();
         log.info("Create " + ListenerFactory.class + " successful");
         //set the port of the listener
@@ -36,7 +40,7 @@ public class LocalOverFtpServer extends ClusterOverFtp {
         serverFactory.addListener("default", listenerFactory.createListener());
         log.info("Add listner, name:default, class:" + serverFactory.getListener("default").getClass());
         // set customer user manager
-        LocalPropertiesUserManagerFactory userManagerFactory = new LocalPropertiesUserManagerFactory();
+        PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
         try {
             userManagerFactory.setFile(FileUtil.loadResourceFile("users.properties"));
         } catch (Exception e) {
@@ -45,15 +49,15 @@ public class LocalOverFtpServer extends ClusterOverFtp {
         serverFactory.setUserManager(userManagerFactory.createUserManager());
         log.info("Set customer user manager factory is successful, " + userManagerFactory.getClass());
         //set customer cmd factory
-        LocalCmdFactoryFactory cmdFactoryFactory = new LocalCmdFactoryFactory();
-        serverFactory.setCommandFactory(cmdFactoryFactory.createCommandFactory());
-        log.info("Set customer command factory is successful, " + cmdFactoryFactory.getClass());
+        CommandFactoryFactory commandFactoryFactory = new CommandFactoryFactory();
+        serverFactory.setCommandFactory(commandFactoryFactory.createCommandFactory());
+        log.info("Set customer command factory is successful, " + commandFactoryFactory.getClass());
         //set local file system
-        LocalFileSystemFactory localFileSystemFactory = new LocalFileSystemFactory();
-        serverFactory.setFileSystem(localFileSystemFactory);
-        log.info("Set customer file system factory is successful, " + localFileSystemFactory.getClass());
+        NativeFileSystemFactory nativeFileSystemFactory = new NativeFileSystemFactory();
+        serverFactory.setFileSystem(nativeFileSystemFactory);
+        log.info("Set customer file system factory is successful, " + nativeFileSystemFactory.getClass());
         // TODO: 2017-10-9
-        LocalConnectionConfigFactory connectionConfigFactory = new LocalConnectionConfigFactory();
+        ConnectionConfigFactory connectionConfigFactory = new ConnectionConfigFactory();
         log.info("FTP Server Maximum logon number:" + connectionConfigFactory.createUDConnectionConfig().getMaxLogins());
         serverFactory.setConnectionConfig(connectionConfigFactory.createUDConnectionConfig());
         log.info("Set user defined connection config file is successful, " + connectionConfigFactory.getClass());
