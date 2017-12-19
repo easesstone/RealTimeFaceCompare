@@ -35,13 +35,13 @@ function stopftp ()
     echo ""  | tee -a $LOG_FILE
     echo "****************************************************"  | tee -a $LOG_FILE
     echo "ftp procceding......................." | tee  -a $LOG_FILE
-    ftp_pid=$(jps | grep LocalOverFtpServer | awk '{print $1}')
+    ftp_pid=$(jps | grep FTP | awk '{print $1}')
     echo "ftp's pid is: ${ftp_pid}"  | tee -a $LOG_FILE
     if [ -n "${ftp_pid}" ];then
         echo "ftp process is exit,exit with 0,kill ftp now " | tee -a $LOG_FILE  
         kill -9 ${ftp_pid}
         sleep 5s
-        ftp_pid=$(jps | grep LocalOverFtpServer | awk '{print $1}')
+        ftp_pid=$(jps | grep FTP | awk '{print $1}')
         if [ -n "${ftp_pid}" ];then
             stop_ftp=1
             echo "stop ftp failure, retry it again."  | tee -a  $LOG_FILE
