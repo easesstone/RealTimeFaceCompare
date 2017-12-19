@@ -174,8 +174,10 @@ public class STOR extends AbstractCommand {
                             String date = map.get("date");
                             String timeSlot = map.get("sj");
 
+                            //拼装ftpUrl
+                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
                             //发送到rocketMQ
-                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, data);
+                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, ftpUrl.getBytes());
                             rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
 
                             FaceObject faceObject = new FaceObject();
@@ -188,7 +190,6 @@ public class STOR extends AbstractCommand {
                             faceObject.setStartTime(sdf.format(new Date()));
 
                             //发送到kafka
-                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
                             kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
                             LOG.info("send to kafka successfully! {}", ftpUrl);
                         }
