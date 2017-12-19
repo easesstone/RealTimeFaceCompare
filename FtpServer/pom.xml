@@ -21,6 +21,14 @@
                 </includes>
             </resource>
             <resource>
+                <targetPath>${project.build.directory}/classes/com/hzgc/ftpserver/message/</targetPath>
+                <directory>src/main/resources/ftpserver/message</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+            </resource>
+            <resource>
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
@@ -59,16 +67,6 @@
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
             <version>${mina.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ftpserver</groupId>
-            <artifactId>ftplet-api</artifactId>
-            <version>${ftplet.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ftpserver</groupId>
-            <artifactId>ftpserver-core</artifactId>
-            <version>${ftplet.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>

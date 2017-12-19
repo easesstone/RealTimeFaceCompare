@@ -16,7 +16,7 @@ import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Durations, StreamingContext}
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
-import com.hzgc.ftpserver.util.FtpUtil
+import com.hzgc.ftpserver.common.FtpUtil
 
 
 /**
