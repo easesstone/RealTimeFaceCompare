@@ -6,6 +6,7 @@ import java.util.Properties
 import com.google.common.base.Stopwatch
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
+import com.hzgc.jni.FaceFunction
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
 import kafka.serializer.StringDecoder
@@ -22,11 +23,11 @@ import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
   * Created by Administrator on 2017-12-14.
   */
 object KafkaToParquet {
-  val LOG: Logger = Logger.getLogger(KafkaToEs.getClass)
+  val LOG: Logger = Logger.getLogger(KafkaToParquet.getClass)
   val properties: Properties = StreamingUtils.getProperties
 
   case class Picture(ftpurl: String, //图片搜索地址
-                     feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
+                     feature: String, ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
                      exacttime: Timestamp, searchtype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
                      eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
                      hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
@@ -68,15 +69,25 @@ object KafkaToParquet {
     val ssc = new StreamingContext(sc, timeInterval)
     val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics)
     val kafkaDF = messages.map(faceobject => {
-      Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
+      (Picture(faceobject._1, FaceFunction.floatArray2string(faceobject._2.getAttribute.getFeature), faceobject._2.getIpcId,
         faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
         faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
         faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
-        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie)
+        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie
+      ), faceobject._1, faceobject._2)
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.foreachPartition(parData => {
+        val putDataToEs = PutDataToEs.getInstance()
+        parData.foreach(data => {
+          val status = putDataToEs.putDataToEs(data._2, data._3)
+          if (status != 1) {
+            println("Put data to es failed! And the failed ftpurl is " + data._2)
+          }
+        })
+      })
     })
     ssc
   }

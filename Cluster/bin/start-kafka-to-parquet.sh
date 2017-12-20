@@ -23,7 +23,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
-LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquetold.log
+LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquet.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
 COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
@@ -36,7 +36,7 @@ SERVICE_LIB_DIR=${DEPLOY_DIR}/service/lib
 ## bigdata_env
 BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.kafkaToParquetold
+SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.KafkaToParquet
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 
@@ -184,7 +184,7 @@ nohup spark-submit \
 --master yarn \
 --deploy-mode cluster \
 --executor-memory 4g \
---executor-cores 2 \
+--executor-cores 1 \
 --num-executors 4 \
 --class ${SPARK_CLASS_PARAM} \
 --jars ${CLUSTER_LIB_DIR}/${GSON_VERSION},\
@@ -197,6 +197,7 @@ ${CLUSTER_LIB_DIR}/${HBASE_COMMON_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION},\
 ${COMMON_LIB_DIR}/${JNI_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_VERSION},\
+${CLUSTER_LIB_DIR}/zkclient-0.3.jar,\
 ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION},\
 ${COMMON_LIB_DIR}/${FTP_VERSION},\
 ${COMMON_LIB_DIR}/${BIGDATA_API_VERSION},\
