@@ -23,7 +23,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
-LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquet.log
+LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquetold.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
 COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
@@ -36,7 +36,7 @@ SERVICE_LIB_DIR=${DEPLOY_DIR}/service/lib
 ## bigdata_env
 BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.kafkaToParquet
+SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.kafkaToParquetold
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 
@@ -61,7 +61,6 @@ HBASE_COMMON_VERSION=hbase-common-1.2.6.jar
 HBASE_PROTOCOL_VERSION=hbase-protocol-1.2.6.jar
 KAFKA_VERSION=kafka_2.11-0.8.2.1.jar
 ELASTICSEARCH_VERSION=elasticsearch-1.0.jar
-FTPSERVER_CORE_VERSION=ftpserver-core-1.1.1.jar
 ROCKETMQ_CLIENT_VERSION=rocketmq-client-4.1.0-incubating.jar
 ROCKETMQ_COMMON_VERSION=rocketmq-common-4.1.0-incubating.jar
 ROCKETMQ_REMOTING_VERSION=rocketmq-remoting-4.1.0-incubating.jar
@@ -123,10 +122,6 @@ if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_SERVER_VERSION} ];then
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION} does not exit!"
-    exit 0
-fi
-if [ ! -e ${FTP_LIB_DIR}/${FTPSERVER_CORE_VERSION} ];then
-    echo "${FTP_LIB_DIR}/${FTPSERVER_CORE_VERSION} does not exit!"
     exit 0
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${JNI_VERSION} ];then
@@ -205,7 +200,6 @@ ${CLUSTER_LIB_DIR}/${KAFKA_VERSION},\
 ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION},\
 ${COMMON_LIB_DIR}/${FTP_VERSION},\
 ${COMMON_LIB_DIR}/${BIGDATA_API_VERSION},\
-${FTP_LIB_DIR}/${FTPSERVER_CORE_VERSION},\
 ${FTP_LIB_DIR}/${ROCKETMQ_CLIENT_VERSION},\
 ${FTP_LIB_DIR}/${ROCKETMQ_COMMON_VERSION},\
 ${FTP_LIB_DIR}/${ROCKETMQ_REMOTING_VERSION},\
