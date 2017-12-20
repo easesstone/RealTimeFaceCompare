@@ -174,10 +174,12 @@ public class STOR extends AbstractCommand {
                             String date = map.get("date");
                             String timeSlot = map.get("sj");
 
-                            //拼装ftpUrl
-                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
+                            //拼装ftpUrl (带主机名的ftpUrl)
+                            String ftpHostNameUrl = FtpUtil.filePath2absolutePath(fileName);
+                            //获取ftpUrl (带IP地址的ftpUrl)
+                            String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
                             //发送到rocketMQ
-                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, ftpUrl.getBytes());
+                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
                             rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
 
                             FaceObject faceObject = new FaceObject();
@@ -190,8 +192,8 @@ public class STOR extends AbstractCommand {
                             faceObject.setStartTime(sdf.format(new Date()));
 
                             //发送到kafka
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                            LOG.info("send to kafka successfully! {}", ftpUrl);
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpHostNameUrl, faceObject);
+                            LOG.info("send to kafka successfully! {}", ftpHostNameUrl);
                         }
                     }
                 }
