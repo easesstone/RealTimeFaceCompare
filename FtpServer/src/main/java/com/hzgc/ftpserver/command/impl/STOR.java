@@ -177,7 +177,7 @@ public class STOR extends AbstractCommand {
                             //拼装ftpUrl
                             String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
                             //发送到rocketMQ
-                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, ftpUrl.getBytes());
+                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, data);
                             rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
 
                             FaceObject faceObject = new FaceObject();
