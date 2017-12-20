@@ -1,4 +1,4 @@
-import com.hzgc.ftpserver.util.Download;
+import com.hzgc.ftpserver.common.Download;
 
 import java.util.Arrays;
 

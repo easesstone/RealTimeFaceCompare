@@ -56,13 +56,11 @@ class ParseByOption {
         if (option.getAttributes() != null && option.getAttributes().size() > 0) {
             for (Attribute attribute : option.getAttributes()) {
                 if (attribute.getValues() != null && attribute.getValues().size() > 0) {
-                    if (attribute.getLogistic() == Logistic.OR) {
+                    if (attribute.getLogistic() == Logistic.OR || attribute.getValues().get(0).getValue() == 0) {
                         LOG.error("Logistic is or , so ignore this condition");
                         continue;
-                    } else {
-                        finalSql.append(" and ");
                     }
-                    finalSql
+                    finalSql.append(" and ")
                             .append(attribute.getIdentify().toLowerCase())
                             .append(" in ")
                             .append("(");

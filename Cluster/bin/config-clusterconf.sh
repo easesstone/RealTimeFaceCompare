@@ -16,25 +16,32 @@
 cd `dirname $0`
 BIN_DIR=`pwd`                                         ### bin目录：脚本所在目录
 cd ..
-DEPLOY_DIR=`pwd`                                      ### cluster模块部署目录
-CONF_CLUSTER_DIR=$DEPLOY_DIR/conf                     ### 配置文件目录
-LOG_DIR=$DEPLOY_DIR/logs                              ### log日志目录
+CLUSTER_DIR=`pwd`                                      ### cluster模块部署目录
+CONF_CLUSTER_DIR=$CLUSTER_DIR/conf                     ### 配置文件目录
+LOG_DIR=$CLUSTER_DIR/logs                              ### log日志目录
 LOG_FILE=$LOG_DIR/config-cluster.log                  ### log日志目录
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
-CONF_FILE=$OBJECT_DIR/project-conf.properties         ### 项目配置文件
-cd ../hzgc/conf
+
+COMMON_DIR=$OBJECT_DIR/common                         ### common模块目录
+CONF_COMMON_DIR=$COMMON_DIR/conf                      ### 配置文件目录
+CONF_FILE=$CONF_COMMON_DIR/project-conf.properties    ### 项目配置文件
+
+cd ../ClusterBuildScripts/conf
 CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
+CONF_HZGC_FILE=$CONF_HZGC_DIR/cluster_conf.properties ### 集群配置文件
 
 ## 安装的根目录，所有bigdata 相关的根目录
-INSTALL_HOME=$(sed -n '4p' ${CONF_HZGC_DIR}/install_home.properties)
+INSTALL_HOME=$(grep Install_HomeDir ${CONF_HZGC_FILE}|cut -d '=' -f2)
+
 HADOOP_INSTALL_HOME=${INSTALL_HOME}/Hadoop            ### hadoop 安装目录
 HADOOP_HOME=${HADOOP_INSTALL_HOME}/hadoop             ### hadoop 根目录
 HBASE_INSTALL_HOME=${INSTALL_HOME}/HBase              ### hbase 安装目录
 HBASE_HOME=${HBASE_INSTALL_HOME}/hbase                ### hbase 根目录
 HIVE_INSTALL_HOME=${INSTALL_HOME}/Hive                ### hive 安装目录
-HIVE_HOME=${HIVE_INSTALL_HOME}/hive                  ### hive 根目录
+HIVE_HOME=${HIVE_INSTALL_HOME}/hive                   ### hive 根目录
 
+mkdir -p $LOG_DIR
 #---------------------------------------------------------------------#
 #                              定义函数                                #
 #---------------------------------------------------------------------#
@@ -77,7 +84,7 @@ function config_sparkJob()
 
     ### 从project-conf.properties读取sparkJob所需配置IP
     # 根据字段kafka，查找配置文件中，Kafka的安装节点所在IP端口号的值，这些值以分号分割
-    KAFKA_IP=`sed '/kafka_installnode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+	KAFKA_IP=$(grep kafka_installnode ${CONF_FILE}|cut -d '=' -f2)
     # 将这些分号分割的ip用放入数组
     spark_arr=(${KAFKA_IP//;/ })
     sparkpro=''    
