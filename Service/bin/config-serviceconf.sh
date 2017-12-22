@@ -7,7 +7,6 @@
 ## Author:      caodabao
 ## Created:     2017-11-28 
 ################################################################################
-#set -x  ## 用于调试用，不用的时候可以注释掉
 
 #---------------------------------------------------------------------#
 #                              定义变量                                #
@@ -15,29 +14,24 @@
 cd `dirname $0`
 BIN_DIR=`pwd`                                         ### bin目录：脚本所在目录
 cd ..
-SERVICE_DIR=`pwd`                                     ### service模块部署目录
-CONF_SERVICE_DIR=$SERVICE_DIR/conf                    ### 配置文件目录
-LOG_DIR=$SERVICE_DIR/logs                             ### log日志目录
-LOG_FILE=$LOG_DIR/config-service.log                  ### log日志文件
+DEPLOY_DIR=`pwd`                                      ### service模块部署目录
+CONF_SERVICE_DIR=$DEPLOY_DIR/conf                     ### 配置文件目录
+LOG_DIR=$DEPLOY_DIR/logs                              ### log日志目录
+LOG_FILE=$LOG_DIR/config-service.log                  ### log日志目录
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
-
-COMMON_DIR=$OBJECT_DIR/common                         ### common模块目录
-CONF_COMMON_DIR=$COMMON_DIR/conf                      ### common模块conf目录
-CONF_FILE=$CONF_COMMON_DIR/project-conf.properties    ### 项目配置文件
-cd ../ClusterBuildScripts/conf
+CONF_DIR=$OBJECT_DIR/common/conf/project-conf.properties   ### 项目配置文件
+cd ../hzgc/conf
 CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
-CONF_HZGC_FILE=$CONF_HZGC_DIR/cluster_conf.properties ### 集群配置文件
 
-## 安装的根目录，所有bigdata 相关的根目录
-INSTALL_HOME=$(grep Install_HomeDir $CONF_HZGC_FILE |cut -d '=' -f2)
+## 最终安装的根目录，所有bigdata 相关的根目录
+INSTALL_HOME=$(grep Install_HomeDir $CONF_DIR |cut -d '=' -f2)
 HADOOP_INSTALL_HOME=${INSTALL_HOME}/Hadoop            ### hadoop 安装目录
 HADOOP_HOME=${HADOOP_INSTALL_HOME}/hadoop             ### hadoop 根目录
 HBASE_INSTALL_HOME=${INSTALL_HOME}/HBase              ### hbase 安装目录
 HBASE_HOME=${HBASE_INSTALL_HOME}/hbase                ### hbase 根目录
 
 
-mkdir -p $LOG_DIR
 #---------------------------------------------------------------------#
 #                              定义函数                                #
 #---------------------------------------------------------------------#
@@ -80,8 +74,7 @@ function config_es()
     # 配置es.hosts：
     # 从project-conf.properties读取es所需配置IP
     # 根据字段es，查找配置文件，这些值以分号分割
-    cd ${OBJECT_DIR}
-    ES_IP=$(grep es_servicenode ${CONF_FILE}|cut -d '=' -f2)
+    ES_IP=$(grep es_servicenode ${CONF_DIR} | cut -d '=' -f2)
     # 将这些分号分割的ip用放入数组
     es_arr=(${ES_IP//;/ })
     espro=''    
@@ -92,7 +85,7 @@ function config_es()
     espro=${espro%?}
     
     # 替换es-config.properties中：key=value（替换key字段的值value）
-    sed -i "s#^es.hosts=.*#es.hosts=${espro}#g" ${SERVICE_DIR}/conf/es-config.properties
+    sed -i "s#^es.hosts=.*#es.hosts=${espro}#g" ${DEPLOY_DIR}/conf/es-config.properties
     echo "es-config.properties配置es完毕......"  | tee  -a  $LOG_FILE
 }
 
@@ -113,7 +106,7 @@ function configzk_dubbo()
 
     #配置dubbo.registry.address为(e.x)：
     #zookeeper://172.18.18.106:2181?backup=172.18.18.107:2181,172.18.18.108:2181
-    ZK_HOSTS=$(grep zookeeper_installnode ${CONF_FILE} | cut -d '=' -f2)
+    ZK_HOSTS=$(grep zookeeper_installnode ${CONF_DIR} | cut -d '=' -f2)
     zk_arr=(${ZK_HOSTS//;/ }) 
     ZK_HOST=''
     ZK_HOST1=''
@@ -128,7 +121,7 @@ function configzk_dubbo()
         fi
     done
     ZK_HOST="$ZK_HOST$ZK_HOST1${ZK_HOST2%?}"
-    sed -i "s#^dubbo.registry.address=.*#dubbo.registry.address=${ZK_HOST}#g" ${SERVICE_DIR}/conf/dubbo.properties
+    sed -i "s#^dubbo.registry.address=.*#dubbo.registry.address=${ZK_HOST}#g" ${DEPLOY_DIR}/conf/dubbo.properties
     echo "dubbo.properties配置zk完毕......"  | tee  -a  $LOG_FILE
 }
 
@@ -149,7 +142,7 @@ function config_ftphost()
 
     echo "" > ${CONF_SERVICE_DIR}/ftp-hostnames.properties
     ##FTP服务节点主机名
-    FTP_HOSTS=$(grep ftp_servicenode ${CONF_FILE} | cut -d '=' -f2)
+    FTP_HOSTS=$(grep ftp_servicenode ${CONF_DIR} | cut -d '=' -f2)
     ftph_arr=(${FTP_HOSTS//;/ }) 
     for ftp_host in ${ftph_arr[@]}
     do
@@ -173,7 +166,7 @@ function config_jdbc()
     echo "" | tee -a $LOG_FILE
     echo "配置service/conf/jdbc.properties......"  | tee  -a  $LOG_FILE
     ##jdbc节点IP
-    JDBC_IPS=$(grep jdbc_servicenode ${CONF_FILE} | cut -d '=' -f2)
+    JDBC_IPS=$(grep jdbc_servicenode ${CONF_DIR} | cut -d '=' -f2)
     jdbc_arr=(${JDBC_IPS//;/ })
     jdbc_ips=''    
     for jdbc_ip in ${jdbc_arr[@]}
@@ -200,7 +193,7 @@ function config_dubbo()
     echo "" | tee -a $LOG_FILE
     echo "分发service................."  | tee  -a  $LOG_FILE
     ## 获取dubbo节点IP
-    DUBBO_HOSTS=$(grep dubbo_servicenode ${CONF_FILE} | cut -d '=' -f2)
+    DUBBO_HOSTS=$(grep dubbo_servicenode ${CONF_DIR} | cut -d '=' -f2)
     dubbo_arr=(${DUBBO_HOSTS//;/ }) 
     for dubbo_host in ${dubbo_arr[@]}
     do
