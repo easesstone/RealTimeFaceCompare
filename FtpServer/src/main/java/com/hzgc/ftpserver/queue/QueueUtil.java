@@ -16,10 +16,10 @@ public class QueueUtil {
      *
      * @return Properties对象
      */
-    public static Properties getProperties() {
+    public static Properties getProperties(String fileName) {
         Properties ps = new Properties();
         try {
-            InputStream is = new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties"));
+            InputStream is = new FileInputStream(FileUtil.loadResourceFile(fileName));
             ps.load(is);
         } catch (Exception e) {
             System.out.println(e);
@@ -30,29 +30,36 @@ public class QueueUtil {
     /**
      * 本地图片转化为字节数组
      *
-     * @param path 图片路径
+     * @param path          图片路径
+     * @param homedirectory ftp数据存储位置
      * @return 字节数组
      */
-    public static byte[] getData(String path) {
+    public static byte[] getData(String path, String homedirectory) {
         byte[] data = null;
         //数据存储位置
-        StringBuilder sb = new StringBuilder("/opt/ftpdata");
+        StringBuilder sb = new StringBuilder(homedirectory);
         FileImageInputStream input = null;
+        ByteArrayOutputStream output = null;
         try {
             input = new FileImageInputStream(new File(sb.append(path).toString()));
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            output = new ByteArrayOutputStream();
             byte[] buf = new byte[1024];
             int numBytesRead = 0;
             while ((numBytesRead = input.read(buf)) != -1) {
                 output.write(buf, 0, numBytesRead);
             }
             data = output.toByteArray();
-            output.close();
-            input.close();
-        } catch (FileNotFoundException ex1) {
-            ex1.printStackTrace();
-        } catch (IOException ex1) {
-            ex1.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                output.close();
+                input.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return data;
     }

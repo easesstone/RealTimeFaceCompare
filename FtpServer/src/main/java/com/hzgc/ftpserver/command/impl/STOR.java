@@ -152,8 +152,8 @@ public class STOR extends AbstractCommand {
             try {
                 outStream = file.createOutputStream(skipLen);
 
-                ProducerOverFtp kafkaProducer = context.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
+                BufferQueue bufferQueue = context.getBufferQueue();
 
                 InputStream is = dataConnection.getDataInputStream();
                 ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
@@ -179,9 +179,9 @@ public class STOR extends AbstractCommand {
                             String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
                             //发送到rocketMQ
                             rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
-                            BlockingQueue<String> queue = BufferQueue.getInstance().getQueue();
+                            BlockingQueue<String> queue = bufferQueue.getQueue();
                             queue.put(fileName);
-                            LOG.info("Push to queue success!");
+                            LOG.info("Push to queue success,queue size : " + queue.size());
                         }
                     }
                 }

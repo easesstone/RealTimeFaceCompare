@@ -23,12 +23,11 @@ import org.slf4j.LoggerFactory;
  * 队列数据处理
  */
 public class DataProcess {
-    private static MetricRegistry metric = new MetricRegistry();
-    private final static Counter counter = metric.counter("counter");
 
     public static void reader() {
         try {
-            int threadNum = Integer.valueOf(QueueUtil.getProperties().getProperty("thread.number"));
+            int threadNum = Integer.valueOf(QueueUtil.getProperties("cluster-over-ftp.properties").getProperty("thread.number"));
+            String homedirectory = QueueUtil.getProperties("users.properties").getProperty("com.hzgc.ftpserver.user.admin.homedirectory");
             final Logger LOG = LoggerFactory.getLogger(DataProcess.class);
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(threadNum);
             BlockingQueue queue = BufferQueue.getInstance().getQueue();
@@ -48,7 +47,7 @@ public class DataProcess {
                                 String timeStamp = map.get("time");
                                 String date = map.get("date");
                                 String timeSlot = map.get("sj");
-                                byte[] data = QueueUtil.getData(fileName);
+                                byte[] data = QueueUtil.getData(fileName, homedirectory);
                                 FaceObject faceObject = new FaceObject();
                                 faceObject.setIpcId(ipcID);
                                 faceObject.setTimeStamp(timeStamp);
@@ -61,10 +60,9 @@ public class DataProcess {
                                     faceObject.setAttribute(attribute);
                                     faceObject.setStartTime(sdf.format(new Date()));
                                     kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                                    counter.inc();
-                                    LOG.info(Thread.currentThread() + "Send to kafka success,queue count:" + size + ";Process data count:" + counter.getCount());
+                                    LOG.info("Send to kafka success,queue size : " + size);
                                 } else {
-                                    LOG.info(fileName + " data is null");
+                                    LOG.info(fileName + " Small picture data is null");
                                 }
 
                             } catch (InterruptedException e) {
