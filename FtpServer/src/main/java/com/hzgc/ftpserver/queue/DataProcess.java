@@ -60,9 +60,9 @@ public class DataProcess {
                                     faceObject.setAttribute(attribute);
                                     faceObject.setStartTime(sdf.format(new Date()));
                                     kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                                    LOG.info("Send to kafka success,queue size : " + size);
+                                    LOG.info("Send to kafka success,queue size:" + size );
                                 } else {
-                                    LOG.info(fileName + " Small picture data is null");
+                                    LOG.info(fileName + "picture data is null");
                                 }
 
                             } catch (InterruptedException e) {

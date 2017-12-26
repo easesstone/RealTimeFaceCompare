@@ -151,10 +151,7 @@ public class STOR extends AbstractCommand {
             long transSz = 0L;
             try {
                 outStream = file.createOutputStream(skipLen);
-
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
-                BufferQueue bufferQueue = context.getBufferQueue();
-
                 InputStream is = dataConnection.getDataInputStream();
                 ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
                 byte[] data = baos.toByteArray();
@@ -179,9 +176,6 @@ public class STOR extends AbstractCommand {
                             String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
                             //发送到rocketMQ
                             rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
-                            BlockingQueue<String> queue = bufferQueue.getQueue();
-                            queue.put(fileName);
-                            LOG.info("Push to queue success,queue size : " + queue.size());
                         }
                     }
                 }
@@ -220,11 +214,29 @@ public class STOR extends AbstractCommand {
                                         context,
                                         FtpReply.REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN,
                                         "STOR", fileName, file));
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 // make sure we really close the output stream
                 IoUtils.close(outStream);
+                // Put url to queue
+                int faceNum = FtpUtil.pickPicture(fileName);
+                if (fileName.contains("unknown")) {
+                    LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
+                } else {
+                    if (fileName.contains(".jpg") && faceNum > 0) {
+                        BufferQueue bufferQueue = context.getBufferQueue();
+                        BlockingQueue<String> queue = bufferQueue.getQueue();
+                        try {
+                            queue.put(fileName);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        LOG.info("Push to queue success,queue size : " + queue.size());
+
+                    }
+
+                }
             }
 
             // if data transfer ok - send transfer complete message
