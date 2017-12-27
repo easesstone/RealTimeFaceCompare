@@ -24,6 +24,7 @@ import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.ftpserver.common.FtpUtil;
+import com.hzgc.ftpserver.queue.BufferQueue;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
@@ -39,6 +40,7 @@ import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
@@ -153,7 +155,6 @@ public class STOR extends AbstractCommand {
             try {
                 outStream = file.createOutputStream(skipLen);
 
-                ProducerOverFtp kafkaProducer = context.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
 
                 InputStream is = dataConnection.getDataInputStream();
@@ -180,18 +181,6 @@ public class STOR extends AbstractCommand {
                             SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, data);
                             rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
 
-                            FaceObject faceObject = new FaceObject();
-                            faceObject.setIpcId(ipcID);
-                            faceObject.setTimeStamp(timeStamp);
-                            faceObject.setTimeSlot(timeSlot);
-                            faceObject.setDate(date);
-                            faceObject.setType(SearchType.PERSON);
-                            faceObject.setAttribute(FaceFunction.featureExtract(data));
-                            faceObject.setStartTime(sdf.format(new Date()));
-
-                            //发送到kafka
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                            LOG.info("send to kafka successfully! {}", ftpUrl);
                         }
                     }
                 }
@@ -233,6 +222,23 @@ public class STOR extends AbstractCommand {
             } finally {
                 // make sure we really close the output stream
                 IoUtils.close(outStream);
+                // Put url to queue
+                int faceNum = FtpUtil.pickPicture(fileName);
+                if (fileName.contains("unknown")) {
+                    LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
+                } else {
+                    if (fileName.contains(".jpg") && faceNum > 0) {
+                        BufferQueue bufferQueue = context.getBufferQueue();
+                        BlockingQueue<String> queue = bufferQueue.getQueue();
+                        try {
+                            queue.put(fileName);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        LOG.info("Push to queue success,queue size : " + queue.size());
+
+                    }
+                }
             }
 
             // if data transfer ok - send transfer complete message
