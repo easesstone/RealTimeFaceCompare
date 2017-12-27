@@ -19,12 +19,11 @@
 
 package com.hzgc.ftpserver.command.impl;
 
-import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
 import com.hzgc.ftpserver.common.FtpUtil;
-import com.hzgc.jni.FaceFunction;
+import com.hzgc.ftpserver.queue.BufferQueue;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
 import com.hzgc.ftpserver.impl.*;
@@ -37,14 +36,14 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
- * 
+ * <p>
  * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
- * 
+ * <p>
  * This command causes the server-DTP to accept the data transferred via the
  * data connection and to store the data as a file at the server site. If the
  * file specified in the pathname exists at the server site, then its contents
@@ -152,10 +151,7 @@ public class STOR extends AbstractCommand {
             long transSz = 0L;
             try {
                 outStream = file.createOutputStream(skipLen);
-
-                ProducerOverFtp kafkaProducer = context.getProducerOverFtp();
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
-
                 InputStream is = dataConnection.getDataInputStream();
                 ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
                 byte[] data = baos.toByteArray();
@@ -174,24 +170,12 @@ public class STOR extends AbstractCommand {
                             String date = map.get("date");
                             String timeSlot = map.get("sj");
 
-                            //拼装ftpUrl
-                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
+                            //拼装ftpUrl (带主机名的ftpUrl)
+                            String ftpHostNameUrl = FtpUtil.filePath2absolutePath(fileName);
+                            //获取ftpUrl (带IP地址的ftpUrl)
+                            String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
                             //发送到rocketMQ
-                            SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, ftpUrl.getBytes());
-                            rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
-
-                            FaceObject faceObject = new FaceObject();
-                            faceObject.setIpcId(ipcID);
-                            faceObject.setTimeStamp(timeStamp);
-                            faceObject.setTimeSlot(timeSlot);
-                            faceObject.setDate(date);
-                            faceObject.setType(SearchType.PERSON);
-                            faceObject.setAttribute(FaceFunction.featureExtract(data));
-                            faceObject.setStartTime(sdf.format(new Date()));
-
-                            //发送到kafka
-                            kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                            LOG.info("send to kafka successfully! {}", ftpUrl);
+                            rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
                         }
                     }
                 }
@@ -202,7 +186,7 @@ public class STOR extends AbstractCommand {
 
                 // attempt to close the output stream so that errors in 
                 // closing it will return an error to the client (FTPSERVER-119) 
-                if(outStream != null) {
+                if (outStream != null) {
                     outStream.close();
                 }
 
@@ -212,7 +196,7 @@ public class STOR extends AbstractCommand {
                 ServerFtpStatistics ftpStat = (ServerFtpStatistics) context
                         .getFtpStatistics();
                 ftpStat.setUpload(session, file, transSz);
-                
+
             } catch (SocketException ex) {
                 LOG.debug("Socket exception during data transfer", ex);
                 failure = true;
@@ -230,9 +214,29 @@ public class STOR extends AbstractCommand {
                                         context,
                                         FtpReply.REPLY_551_REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN,
                                         "STOR", fileName, file));
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 // make sure we really close the output stream
                 IoUtils.close(outStream);
+                // Put url to queue
+                int faceNum = FtpUtil.pickPicture(fileName);
+                if (fileName.contains("unknown")) {
+                    LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
+                } else {
+                    if (fileName.contains(".jpg") && faceNum > 0) {
+                        BufferQueue bufferQueue = context.getBufferQueue();
+                        BlockingQueue<String> queue = bufferQueue.getQueue();
+                        try {
+                            queue.put(fileName);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        LOG.info("Push to queue success,queue size : " + queue.size());
+
+                    }
+
+                }
             }
 
             // if data transfer ok - send transfer complete message

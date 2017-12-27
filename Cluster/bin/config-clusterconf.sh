@@ -27,12 +27,8 @@ COMMON_DIR=$OBJECT_DIR/common                         ### common模块目录
 CONF_COMMON_DIR=$COMMON_DIR/conf                      ### 配置文件目录
 CONF_FILE=$CONF_COMMON_DIR/project-conf.properties    ### 项目配置文件
 
-cd ../ClusterBuildScripts/conf
-CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
-CONF_HZGC_FILE=$CONF_HZGC_DIR/cluster_conf.properties ### 集群配置文件
-
 ## 安装的根目录，所有bigdata 相关的根目录
-INSTALL_HOME=$(grep Install_HomeDir ${CONF_HZGC_FILE}|cut -d '=' -f2)
+INSTALL_HOME=$(grep Install_HomeDir ${CONF_FILE}|cut -d '=' -f2)
 
 HADOOP_INSTALL_HOME=${INSTALL_HOME}/Hadoop            ### hadoop 安装目录
 HADOOP_HOME=${HADOOP_INSTALL_HOME}/hadoop             ### hadoop 根目录
@@ -90,7 +86,7 @@ function config_sparkJob()
     sparkpro=''    
     for spark_host in ${spark_arr[@]}
     do
-        sparkpro="$sparkpro$spark_host,"
+        sparkpro="$sparkpro$spark_host:9092,"
     done
     sparkpro=${sparkpro%?}
     
