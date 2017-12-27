@@ -36,10 +36,6 @@ CLUSTER_LOG_DIR=$CLUSTER_DIR/logs                     ### cluster的log日志目
 FTP_LOG_DIR=$FTP_DIR/logs                             ### ftp的log日志目录
 SERVICE_LOG_DIR=$SERVICE_DIR/logs                     ### service的log日志目录
 
-cd ../ClusterBuildScripts/conf
-CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
-CONF_HZGC_FILE=$CONF_HZGC_DIR/cluster_conf.properties ### 集群配置文件
-
 # 创建日志目录
 mkdir -p $LOG_DIR
 mkdir -p $CLUSTER_LOG_DIR
@@ -52,13 +48,13 @@ mkdir -p $SERVICE_LOG_DIR
 #---------------------------------------------------------------------#
 
 #####################################################################
-# 函数名: config_dubbo
+# 函数名: config_common_dubbo
 # 描述: 配置文件：common/conf/dubbo-hostnames.properties
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
 #####################################################################
-function config_dubbo()
+function config_common_dubbo()
 {
     echo ""  | tee -a $LOG_FILE
     echo "**********************************************" | tee -a $LOG_FILE
@@ -84,13 +80,13 @@ function config_dubbo()
 }
 
 #####################################################################
-# 函数名: config_ftp
-# 描述: 配置ftp-hostnames.properties的地址
+# 函数名: config_common_ftp
+# 描述: 配置common/conf/ftp-hostnames.properties的地址
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
 #####################################################################
-function config_ftp()
+function config_common_ftp()
 {
     echo ""  | tee -a $LOG_FILE
     echo "**********************************************" | tee -a $LOG_FILE
@@ -129,7 +125,7 @@ function distribute_common()
     echo "" | tee -a $LOG_FILE
     echo "分发common......"  | tee  -a  $LOG_FILE
     
-	CLUSTER_HOSTNAME_LISTS=$(grep Cluster_HostName ${CONF_HZGC_FILE}|cut -d '=' -f2)
+	CLUSTER_HOSTNAME_LISTS=$(grep Cluster_HostName ${CONF_FILE}|cut -d '=' -f2)
 	CLUSTER_HOSTNAME_ARRY=(${CLUSTER_HOSTNAME_LISTS//;/ })
     for hostname in ${CLUSTER_HOSTNAME_ARRY[@]}
     do
@@ -200,8 +196,8 @@ function sh_service()
 #####################################################################
 function main()
 {
-    config_dubbo
-	config_ftp
+    config_common_dubbo
+	config_common_ftp
 	distribute_common
     sh_cluster
     sh_ftp
