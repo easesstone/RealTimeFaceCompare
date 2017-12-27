@@ -79,6 +79,8 @@ public class ProducerOverFtp implements Serializable {
         return JSON;
     }*/
 
-    public static String getFEATURE() { return FEATURE; }
+    public static String getFEATURE() {
+        return FEATURE;
+    }
 
 }

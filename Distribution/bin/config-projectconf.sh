@@ -16,9 +16,11 @@
 cd `dirname $0`
 BIN_DIR=`pwd`                                         ### bin目录：脚本所在目录
 cd ..
-DEPLOY_DIR=`pwd`                                      ### common模块部署目录
-CONF_COMMON_DIR=$DEPLOY_DIR/conf                      ### 配置文件目录
-LOG_DIR=$DEPLOY_DIR/logs                              ### log日志目录
+COMMON_DIR=`pwd`                                      ### common模块部署目录
+CONF_COMMON_DIR=$COMMON_DIR/conf                      ### 配置文件目录
+CONF_FILE=$CONF_COMMON_DIR/project-conf.properties    ### 项目配置文件
+
+LOG_DIR=$COMMON_DIR/logs                              ### log日志目录
 LOG_FILE=$LOG_DIR/config-project.log                  ### log日志目录
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
@@ -46,13 +48,13 @@ mkdir -p $SERVICE_LOG_DIR
 #---------------------------------------------------------------------#
 
 #####################################################################
-# 函数名: config_dubbo
+# 函数名: config_common_dubbo
 # 描述: 配置文件：common/conf/dubbo-hostnames.properties
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
 #####################################################################
-function config_dubbo()
+function config_common_dubbo()
 {
     echo ""  | tee -a $LOG_FILE
     echo "**********************************************" | tee -a $LOG_FILE
@@ -65,7 +67,7 @@ function config_dubbo()
     ### 从project-conf.properties读取dubbo所需配置IP
     # 根据字段dubbo_servicenode，查找配置文件中，dubbo的服务节点所在IP，这些值以分号分割
     cd ${OBJECT_DIR}
-    DUBBO_HOSTS=$(grep dubbo_servicenode project-conf.properties|cut -d '=' -f2)
+    DUBBO_HOSTS=$(grep dubbo_servicenode ${CONF_FILE}|cut -d '=' -f2)
     # 将这些分号分割的ip用放入数组，将数组每行添加到dubbo-hostnames.properties文件末尾
     dubbo_arr=(${DUBBO_HOSTS//;/ })
     dubbopro=''    
@@ -78,13 +80,13 @@ function config_dubbo()
 }
 
 #####################################################################
-# 函数名: config_ftp
-# 描述: 配置ftp-hostnames.properties的地址
+# 函数名: config_common_ftp
+# 描述: 配置common/conf/ftp-hostnames.properties的地址
 # 参数: N/A
 # 返回值: N/A
 # 其他: N/A
 #####################################################################
-function config_ftp()
+function config_common_ftp()
 {
     echo ""  | tee -a $LOG_FILE
     echo "**********************************************" | tee -a $LOG_FILE
@@ -97,7 +99,7 @@ function config_ftp()
     ### 从project-conf.properties读取ftp所需配置IP
     # 根据字段ftp_servicenode，查找配置文件中，ftp的服务节点主机名，这些值以分号分割
     cd ${OBJECT_DIR}
-    FTP_HOSTS=$(grep ftp_servicenode project-conf.properties|cut -d '=' -f2)
+    FTP_HOSTS=$(grep ftp_servicenode ${CONF_FILE}|cut -d '=' -f2)
     # 将这些分号分割的ip用放入数组，将数组每行添加到dubbo-hostnames.properties文件末尾
     ftp_arr=(${FTP_HOSTS//;/ })
     ftppro=''    
@@ -105,6 +107,33 @@ function config_ftp()
     do
         echo "${ftp_host}" >> ${CONF_COMMON_DIR}/ftp-hostnames.properties
     done
+    
+    echo "配置完毕......"  | tee  -a  $LOG_FILE
+}
+
+#####################################################################
+# 函数名: distribute_common
+# 描述: 将common文件夹分发到所有节点
+# 参数: N/A
+# 返回值: N/A
+# 其他: N/A
+#####################################################################
+function distribute_common()
+{
+    echo ""  | tee -a $LOG_FILE
+    echo "**********************************************" | tee -a $LOG_FILE
+    echo "" | tee -a $LOG_FILE
+    echo "分发common......"  | tee  -a  $LOG_FILE
+    
+	CLUSTER_HOSTNAME_LISTS=$(grep Cluster_HostName ${CONF_FILE}|cut -d '=' -f2)
+	CLUSTER_HOSTNAME_ARRY=(${CLUSTER_HOSTNAME_LISTS//;/ })
+    for hostname in ${CLUSTER_HOSTNAME_ARRY[@]}
+    do
+        ssh root@${hostname} "if [ ! -x "${OBJECT_DIR}" ]; then mkdir "${OBJECT_DIR}"; fi"
+        rsync -rvl ${OBJECT_DIR}/common   root@${hostname}:${OBJECT_DIR}  >/dev/null
+        ssh root@${hostname}  "chmod -R 755   ${OBJECT_DIR}/common"
+        echo "${hostname}上分发common完毕......"  | tee  -a  $LOG_FILE
+    done 
     
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 }
@@ -167,8 +196,9 @@ function sh_service()
 #####################################################################
 function main()
 {
-    config_dubbo
-	config_ftp
+    config_common_dubbo
+	config_common_ftp
+	distribute_common
     sh_cluster
     sh_ftp
     sh_service

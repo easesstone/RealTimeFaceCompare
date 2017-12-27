@@ -7,7 +7,6 @@
 ## Author:      mashencai
 ## Created:     2017-11-29
 ################################################################################
-#set -x  ## 用于调试用，不用的时候可以注释掉
 
 #---------------------------------------------------------------------#
 #                              定义变量                                #
@@ -22,10 +21,12 @@ LOG_DIR=$DEPLOY_DIR/logs                              ### log日志目录
 LOG_FILE=$LOG_DIR/config-ftp.log                      ### log日志目录
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
-CONF_FILE=$OBJECT_DIR/project-conf.properties         ### 项目配置文件
+CONF_FILE=$OBJECT_DIR/common/conf/project-conf.properties  ### 项目配置文件
 
 cd ../hzgc/conf
 CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
+
+FTP_DATA_PATH=$(grep FTP_DataDir $OBJECT_DIR/common/conf/project-conf.properties | cut -d '=' -f2)
 
 #---------------------------------------------------------------------#
 #                              定义函数                                #
@@ -46,23 +47,23 @@ function config_ftpAddress()
     echo "" | tee -a $LOG_FILE
     echo "配置ftp/conf/ftpAddress.properties......"  | tee  -a  $LOG_FILE
     
-    ### 配置安装节点
-    # 根据ftp_namenode字段，查找配置文件中，FTP安装节点IP
-    FTP_NAMENODE=`sed '/ftp_namenode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    ### 配置代理节点
+    # 根据ftp_proxynode字段，查找配置文件中，FTP代理节点IP
+    FTP_PROXYNODE=$(grep ftp_proxynode ${CONF_FILE}|cut -d '=' -f2)
     # 替换ftpAddress.properties中FTP安装节点IP值：key=value（替换key字段的值value）
-    sed -i "s#^ip=.*#ip=${FTP_NAMENODE}#g" ${CONF_FTP_DIR}/ftpAddress.properties
+    sed -i "s#^ip=.*#ip=${FTP_PROXYNODE}#g" ${CONF_FTP_DIR}/ftpAddress.properties
     
     ### 配置服务节点
     # 删除ftpAddress.properties中与服务节点相关的内容(从第7行开始的行)：
     sed -i '7,$d' ${CONF_FTP_DIR}/ftpAddress.properties
     # 根据ftp_serviceip字段，查找配置文件中，FTP服务节点主机名和IP
-    FTP_SERVICEIPS=`sed '/ftp_serviceip/!d;s/.*://' ${CONF_FILE} | tr -d '\r'`
+    FTP_SERVICEIPS=`sed '/ftp_serviceip/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
     # 将查找到的FTP服务节点主机名和IP切分，放入数组中
     ftp_arr=(${FTP_SERVICEIPS//;/ }) 
     # 在文件末尾添加FTP服务节点hostname=ip 
     for ftp_ip in ${ftp_arr[@]}
     do
-        echo "${ftp_ip}" >> ${CONF_FTP_DIR}/ftpAddress.properties
+        echo "${ftp_ip//:/=}" >> ${CONF_FTP_DIR}/ftpAddress.properties
     done
     
     echo "################################################################################" >> ${CONF_FTP_DIR}/ftpAddress.properties
@@ -87,7 +88,7 @@ function config_rkmq()
     # 从project-conf.properties中，根据rocketmq_nameserver字段，读取RocketMQ的NameServer所在节点IP
     ROCKET_NAMESERVER=`sed '/rocketmq_nameserver/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
     # 替换ftpAddress.properties中FTP安装节点IP值：key=value（替换key字段的值value）
-    sed -i "s#^address=.*#address=${ROCKET_NAMESERVER}#g" ${CONF_FTP_DIR}/rocketmq.properties
+    sed -i "s#^address=.*#address=${ROCKET_NAMESERVER}:9876#g" ${CONF_FTP_DIR}/rocketmq.properties
     
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 }
@@ -114,7 +115,7 @@ function config_pdcrOverFtp()
     kafkapro=''    
     for kafka_host in ${kafka_arr[@]}
     do
-        kafkapro="$kafkapro$kafka_host,"
+        kafkapro="$kafkapro$kafka_host:9092,"
     done
     kafkapro=${kafkapro%?}
     
@@ -138,9 +139,6 @@ function config_users()
     echo "**********************************************" | tee -a $LOG_FILE
     echo "" | tee -a $LOG_FILE
     echo "配置ftp/conf/users.properties......"  | tee  -a  $LOG_FILE
-    
-    ### 从install_home.properties读取Ftp的数据存放路径
-    FTP_DATA_PATH=$(sed -n '10p' ${CONF_HZGC_DIR}/install_home.properties)  
     
     # 替换producer-over-ftp.properties中：key=value（替换key字段的值value）
     sed -i "s#^com.hzgc.ftpserver.user.admin.homedirectory=.*#com.hzgc.ftpserver.user.admin.homedirectory=${FTP_DATA_PATH}#g" ${CONF_FTP_DIR}/users.properties
@@ -168,6 +166,7 @@ function distribute_ftp()
     ftp_arr=(${FTP_HOSTS//;/ }) 
     for ftp_host in ${ftp_arr[@]}
     do
+        ssh root@${ftp_host} "if [ ! -x "${FTP_DATA_PATH}" ]; then mkdir -p "${FTP_DATA_PATH}"; fi" 
         ssh root@${ftp_host} "if [ ! -x "${OBJECT_DIR}" ]; then mkdir "${OBJECT_DIR}"; fi" 
         rsync -rvl ${OBJECT_DIR}/ftp   root@${ftp_host}:${OBJECT_DIR}  >/dev/null
         ssh root@${ftp_host}  "chmod -R 755   ${OBJECT_DIR}/ftp"
@@ -176,32 +175,6 @@ function distribute_ftp()
     
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 }
-
-#####################################################################
-# 函数名: distribute_common
-# 描述: 将common文件夹分发到所有节点
-# 参数: N/A
-# 返回值: N/A
-# 其他: N/A
-#####################################################################
-function distribute_common()
-{
-    echo ""  | tee -a $LOG_FILE
-    echo "**********************************************" | tee -a $LOG_FILE
-    echo "" | tee -a $LOG_FILE
-    echo "分发common......"  | tee  -a  $LOG_FILE
-     
-    for hostname in $(cat ${CONF_HZGC_DIR}/hostnamelists.properties)
-    do
-        ssh root@${hostname} "if [ ! -x "${OBJECT_DIR}" ]; then mkdir "${OBJECT_DIR}"; fi"
-        rsync -rvl ${OBJECT_DIR}/common   root@${hostname}:${OBJECT_DIR}  >/dev/null
-        ssh root@${hostname}  "chmod -R 755   ${OBJECT_DIR}/common"
-        echo "${hostname}上分发common完毕......"  | tee  -a  $LOG_FILE
-    done 
-    
-    echo "配置完毕......"  | tee  -a  $LOG_FILE
-}
-
 
 #####################################################################
 # 函数名: main
@@ -217,7 +190,6 @@ function main()
     config_pdcrOverFtp
     config_users
     distribute_ftp
-    distribute_common
 }
 
 

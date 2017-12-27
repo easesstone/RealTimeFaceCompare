@@ -7,7 +7,6 @@
 ## Author:      caodabao
 ## Created:     2017-11-28 
 ################################################################################
-#set -x  ## 用于调试用，不用的时候可以注释掉
 
 #---------------------------------------------------------------------#
 #                              定义变量                                #
@@ -21,12 +20,12 @@ LOG_DIR=$DEPLOY_DIR/logs                              ### log日志目录
 LOG_FILE=$LOG_DIR/config-service.log                  ### log日志目录
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
-CONF_DIR=$OBJECT_DIR/project-conf.properties          ### 项目配置文件
+CONF_DIR=$OBJECT_DIR/common/conf/project-conf.properties   ### 项目配置文件
 cd ../hzgc/conf
 CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
 
-## 安装的根目录，所有bigdata 相关的根目录
-INSTALL_HOME=$(sed -n '4p' ${CONF_HZGC_DIR}/install_home.properties)
+## 最终安装的根目录，所有bigdata 相关的根目录
+INSTALL_HOME=$(grep Install_HomeDir $CONF_DIR |cut -d '=' -f2)
 HADOOP_INSTALL_HOME=${INSTALL_HOME}/Hadoop            ### hadoop 安装目录
 HADOOP_HOME=${HADOOP_INSTALL_HOME}/hadoop             ### hadoop 根目录
 HBASE_INSTALL_HOME=${INSTALL_HOME}/HBase              ### hbase 安装目录
@@ -75,8 +74,7 @@ function config_es()
     # 配置es.hosts：
     # 从project-conf.properties读取es所需配置IP
     # 根据字段es，查找配置文件，这些值以分号分割
-    cd ${OBJECT_DIR}
-    ES_IP=$(grep es_servernode project-conf.properties|cut -d '=' -f2)
+    ES_IP=$(grep es_servicenode ${CONF_DIR} | cut -d '=' -f2)
     # 将这些分号分割的ip用放入数组
     es_arr=(${ES_IP//;/ })
     espro=''    
@@ -108,20 +106,18 @@ function configzk_dubbo()
 
     #配置dubbo.registry.address为(e.x)：
     #zookeeper://172.18.18.106:2181?backup=172.18.18.107:2181,172.18.18.108:2181
-    MASTER=$(sed -n '1p' ${CONF_HZGC_DIR}/iplists.properties)
-    ZKMASTER="$MASTER:2181"
-    cd ${OBJECT_DIR}
-    ZK_HOSTS=$(grep zookeeper project-conf.properties|cut -d '=' -f2)
+    ZK_HOSTS=$(grep zookeeper_installnode ${CONF_DIR} | cut -d '=' -f2)
+    zk_arr=(${ZK_HOSTS//;/ }) 
     ZK_HOST=''
     ZK_HOST1=''
     ZK_HOST2=''
-    zk_arr=(${ZK_HOSTS//;/ }) 
+    ZKMASTER=${zk_arr[0]}
     for zk_host in ${zk_arr[@]}
     do
         if [ "$zk_host" = "$ZKMASTER" ];then
-            ZK_HOST1="zookeeper://$ZK_HOST1$zk_host?backup="
+            ZK_HOST1="zookeeper://$ZK_HOST1$zk_host:2181?backup="
         else
-            ZK_HOST2="$ZK_HOST2$zk_host,"
+            ZK_HOST2="$ZK_HOST2$zk_host:2181,"
         fi
     done
     ZK_HOST="$ZK_HOST$ZK_HOST1${ZK_HOST2%?}"
@@ -146,8 +142,7 @@ function config_ftphost()
 
     echo "" > ${CONF_SERVICE_DIR}/ftp-hostnames.properties
     ##FTP服务节点主机名
-    cd ${OBJECT_DIR}
-    FTP_HOSTS=$(grep ftp_servicenode project-conf.properties|cut -d '=' -f2)
+    FTP_HOSTS=$(grep ftp_servicenode ${CONF_DIR} | cut -d '=' -f2)
     ftph_arr=(${FTP_HOSTS//;/ }) 
     for ftp_host in ${ftph_arr[@]}
     do
@@ -171,15 +166,14 @@ function config_jdbc()
     echo "" | tee -a $LOG_FILE
     echo "配置service/conf/jdbc.properties......"  | tee  -a  $LOG_FILE
     ##jdbc节点IP
-    cd ${OBJECT_DIR}
-    JDBC_IPS=$(grep jdbc_servicenode project-conf.properties|cut -d '=' -f2)
+    JDBC_IPS=$(grep jdbc_servicenode ${CONF_DIR} | cut -d '=' -f2)
     jdbc_arr=(${JDBC_IPS//;/ })
     jdbc_ips=''    
     for jdbc_ip in ${jdbc_arr[@]}
     do
-        jdbc_ips="$jdbc_ips$jdbc_ip,"
+        jdbc_ips="$jdbc_ips$jdbc_ip:2181,"
     done
-    JDBC="jdbc:hive2://${jdbc_ips%?}/"
+    JDBC="jdbc:hive2://${jdbc_ips%?}/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=thriftserver"
     sed -i "s#^url=.*#url=${JDBC}#g"  ${CONF_SERVICE_DIR}/jdbc.properties
     
     echo "配置jdbc.properties完毕......"  | tee  -a  $LOG_FILE
@@ -199,8 +193,7 @@ function config_dubbo()
     echo "" | tee -a $LOG_FILE
     echo "分发service................."  | tee  -a  $LOG_FILE
     ## 获取dubbo节点IP
-    cd ${OBJECT_DIR}
-    DUBBO_HOSTS=$(grep dubbo_servicenode project-conf.properties|cut -d '=' -f2)
+    DUBBO_HOSTS=$(grep dubbo_servicenode ${CONF_DIR} | cut -d '=' -f2)
     dubbo_arr=(${DUBBO_HOSTS//;/ }) 
     for dubbo_host in ${dubbo_arr[@]}
     do

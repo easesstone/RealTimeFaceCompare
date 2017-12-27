@@ -115,5 +115,9 @@
             <artifactId>metrics-core</artifactId>
             <version>3.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 </project>
