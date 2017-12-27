@@ -27,12 +27,8 @@ COMMON_DIR=$OBJECT_DIR/common                         ### common模块目录
 CONF_COMMON_DIR=$COMMON_DIR/conf                      ### 配置文件目录
 CONF_FILE=$CONF_COMMON_DIR/project-conf.properties    ### 项目配置文件
 
-cd ../ClusterBuildScripts/conf
-CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
-CONF_HZGC_FILE=$CONF_HZGC_DIR/cluster_conf.properties ### 集群配置文件
-
 ## 安装的根目录，所有bigdata 相关的根目录
-INSTALL_HOME=$(grep Install_HomeDir ${CONF_HZGC_FILE}|cut -d '=' -f2)
+INSTALL_HOME=$(grep Install_HomeDir ${CONF_FILE}|cut -d '=' -f2)
 
 HADOOP_INSTALL_HOME=${INSTALL_HOME}/Hadoop            ### hadoop 安装目录
 HADOOP_HOME=${HADOOP_INSTALL_HOME}/hadoop             ### hadoop 根目录
@@ -64,7 +60,7 @@ function move_xml()
     cp ${HADOOP_HOME}/etc/hadoop/core-site.xml ${CONF_CLUSTER_DIR}
     cp ${HADOOP_HOME}/etc/hadoop/hdfs-site.xml ${CONF_CLUSTER_DIR}
     cp ${HIVE_HOME}/conf/hive-site.xml ${CONF_CLUSTER_DIR}
-    
+
     echo "copy完毕......"  | tee  -a  $LOG_FILE
 }
 
@@ -87,17 +83,32 @@ function config_sparkJob()
 	KAFKA_IP=$(grep kafka_installnode ${CONF_FILE}|cut -d '=' -f2)
     # 将这些分号分割的ip用放入数组
     spark_arr=(${KAFKA_IP//;/ })
-    sparkpro=''    
+    sparkpro=''
     for spark_host in ${spark_arr[@]}
     do
-        sparkpro="$sparkpro$spark_host,"
+        sparkpro="$sparkpro$spark_host:9092,"
     done
     sparkpro=${sparkpro%?}
-    
+
+     # 替换sparkJob.properties中：key=value（替换key字段的值value）
+     sed -i "s#^kafka.metadata.broker.list=.*#kafka.metadata.broker.list=${sparkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
+     sed -i "s#^job.faceObjectConsumer.broker.list=.*#job.faceObjectConsumer.broker.list=${sparkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
+
+
+    # 根据字段zookeeper_installnode，查找配置文件中，Zk的安装节点所在IP端口号的值，这些值以分号分割
+    ZK_IP=$(grep zookeeper_installnode ${CONF_FILE}|cut -d '=' -f2)
+    # 将这些分号分割的ip用放入数组
+    zk_arr=(${ZK_IP//;/ })
+    zkpro=''
+    for zk_ip in ${zk_arr[@]}
+    do
+        zkpro="$zkpro$zk_ip:2181,"
+    done
+    zkpro=${zkpro%?}
     # 替换sparkJob.properties中：key=value（替换key字段的值value）
-    sed -i "s#^kafka.metadata.broker.list=.*#kafka.metadata.broker.list=${sparkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
-    sed -i "s#^job.faceObjectConsumer.broker.list=.*#job.faceObjectConsumer.broker.list=${sparkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
-    
+    sed -i "s#^job.zkDirAndPort=.*#job.zkDirAndPort=${zkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
+
+
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 }
 

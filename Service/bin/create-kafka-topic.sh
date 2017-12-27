@@ -53,7 +53,6 @@ function create_kafka_topic()
     echo ""  | tee -a $LOG_FILE
     echo "**********************************************" | tee -a $LOG_FILE
     echo "" | tee -a $LOG_FILE
-	echo "开始创建kafka的topic.."                       | tee  -a  $LOG_FILE
 
     # 根据zookeeper字段，查找配置文件中，zk的IP地址和端口号
     #ZK_IP_PORTS=`sed '/zookeeper/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
@@ -74,30 +73,18 @@ function create_kafka_topic()
     # 进入到kafka的bin目录下
     cd ${KAFKA_HOME}/bin
     # 创建kafka topic
-    ./kafka-topics.sh --create \
+    kafka-topics.sh --create \
     --zookeeper ${zkpro} \
     --replication-factor ${repl_factor} \
     --partitions ${part_num}  \
     --topic feature >> ${LOG_FILE} 2>&1 &
-	
-    if [ $? = 0 ];then
-		echo "创建成功...."  | tee  -a  $LOG_FILE
-		echo "kafka topic 副本数为${repl_factor},分区数为${part_num}." | tee -a $LOG_FILE
-	else
-		echo "创建失败...." | tee -a $LOG_FILE
-	fi	
-	
     # 列出所有topic
-	echo ""  | tee -a $LOG_FILE
-	echo "**********************************************" | tee -a $LOG_FILE
-	echo ""  | tee -a $LOG_FILE
-	echo "验证Kafka创建是否成功....." | tee -a $LOG_FILE
-    echo "执行${KAFKA_HOME}/bin/kafka-topics.sh --list --zookeeper ${zkpro}，列出所有topic..." | tee -a $LOG_FILE
-	sleep 2s
-	./kafka-topics.sh --list \
-    --zookeeper ${zkpro} | tee  -a  $LOG_FILE
-	echo "**********************************************" | tee -a $LOG_FILE
+    ./kafka-topics.sh --list \
+    --zookeeper ${zkpro} >> ${LOG_FILE} 2>&1 &
 
+
+    echo "创建完毕......"  | tee  -a  $LOG_FILE
+	echo "kafka topic 副本数为${repl_factor},分区数为${part_num}."
 }
 
 
@@ -120,8 +107,10 @@ function main()
 
 ## 打印时间
 echo ""  | tee  -a  $LOG_FILE
+echo ""  | tee  -a  $LOG_FILE
 echo "==================================================="  | tee -a $LOG_FILE
 echo "$(date "+%Y-%m-%d  %H:%M:%S")"                       | tee  -a  $LOG_FILE
+echo "开始创建kafka的topic.."                       | tee  -a  $LOG_FILE
 main
 
 set +x

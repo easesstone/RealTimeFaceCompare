@@ -19,6 +19,7 @@ import java.util.UUID;
 public class RocketMQProducer implements Serializable {
     private static Logger LOG = Logger.getLogger(RocketMQProducer.class);
     private static String topic;
+    private static String messTopic;
     private static Properties properties = new Properties();
     private static RocketMQProducer instance = null;
     private DefaultMQProducer producer;
@@ -30,6 +31,7 @@ public class RocketMQProducer implements Serializable {
             properties.load(fis);
             String namesrvAddr = properties.getProperty("address");
             topic = properties.getProperty("topic");
+            messTopic = properties.getProperty("messTopic");
             String producerGroup = properties.getProperty("group", UUID.randomUUID().toString());
             if (StringUtil.strIsRight(namesrvAddr) && StringUtil.strIsRight(topic) && StringUtil.strIsRight(producerGroup)) {
                 producer = new DefaultMQProducer(producerGroup);
@@ -106,5 +108,9 @@ public class RocketMQProducer implements Serializable {
         if (producer != null) {
             producer.shutdown();
         }
+    }
+
+    public String getMessTopic() {
+        return messTopic;
     }
 }
