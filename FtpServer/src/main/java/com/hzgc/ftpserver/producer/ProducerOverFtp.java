@@ -49,7 +49,7 @@ public class ProducerOverFtp implements Serializable {
             kafkaProducer.send(new ProducerRecord<String, FaceObject>(topic, key, value),
                     new ProducerCallBack(startTime, key));
         }
-        LOG.info("Send Kafka message[topic:" + topic + ", key:" + key + "]");
+        LOG.info("Send Kafka successfully! message:[topic:" + topic + ", key:" + key + "]");
         counter.inc();
         LOG.info("Send Kafka total:" + counter.getCount());
 

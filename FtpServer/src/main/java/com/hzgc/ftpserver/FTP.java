@@ -78,6 +78,7 @@ public class FTP extends ClusterOverFtp {
         FTP ftp = new FTP();
         ftp.loadConfig();
         ftp.startFtpServer();
-        DataProcess.reader();
+        DataProcess data = new DataProcess();
+        data.reader();
     }
 }
