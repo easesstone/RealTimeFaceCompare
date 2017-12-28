@@ -18,6 +18,7 @@ declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 ## 用于包含ftpAddress.properties
 CONF_DIR=${CONF_DIR}:${FTP_DIR}/conf
 
+cd -
 
 if [ -z "$SERVER_NAME" ]; then
     SERVER_NAME=`hostname`
