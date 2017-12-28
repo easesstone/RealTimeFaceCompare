@@ -1,5 +1,7 @@
 package com.hzgc.ftpserver.producer;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.util.common.IOUtil;
 import com.hzgc.util.common.StringUtil;
@@ -23,6 +25,9 @@ public class RocketMQProducer implements Serializable {
     private static Properties properties = new Properties();
     private static RocketMQProducer instance = null;
     private DefaultMQProducer producer;
+
+    private static MetricRegistry metric = new MetricRegistry();
+    private final static Counter counter = metric.counter("sendRocketMQCount");
 
     private RocketMQProducer() {
         FileInputStream fis = null;
@@ -84,7 +89,7 @@ public class RocketMQProducer implements Serializable {
             } else {
                 msg = new Message(topic, tag, key, data);
             }
-            LOG.info("Send MQ message[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + ", key:" + msg.getKeys() + "]");
+            LOG.info("Send RocketMQ successfully! message:[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + ", key:" + msg.getKeys() + "]");
             //long startTime = System.currentTimeMillis();
             if (selector != null) {
                 sendResult = producer.send(msg, new MessageQueueSelector() {
@@ -97,9 +102,11 @@ public class RocketMQProducer implements Serializable {
             }
             //log.info(startTime);
             LOG.info(sendResult);
+            counter.inc();
+            LOG.info("Send RocketMQ total:" + counter.getCount());
         } catch (Exception e) {
             e.printStackTrace();
-            LOG.error("send message error...");
+            LOG.error("Send message error...");
         }
         return sendResult;
     }
