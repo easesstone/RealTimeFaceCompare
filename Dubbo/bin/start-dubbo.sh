@@ -13,6 +13,10 @@ LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'
 cd ..
 declare -r BIGDATA_SERVICE_DIR=`pwd`
 declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
+declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
+
+## 用于包含ftpAddress.properties
+CONF_DIR=${CONF_DIR}:${FTP_DIR}/conf
 
 cd -
 
