@@ -9,15 +9,22 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class BufferQueue {
 
-    private final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+    private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
-    private static final BufferQueue bufferQueue = new BufferQueue();
+    private static BufferQueue instance = null;
 
     private BufferQueue() {
     }
 
     public static BufferQueue getInstance() {
-        return bufferQueue;
+        if (instance == null){
+            synchronized (BufferQueue.class){
+                if (instance == null){
+                    instance = new BufferQueue();
+                }
+            }
+        }
+        return instance;
     }
 
     public BlockingQueue<String> getQueue() {

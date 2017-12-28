@@ -49,8 +49,6 @@ public class QueueUtil {
                 output.write(buf, 0, numBytesRead);
             }
             data = output.toByteArray();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
