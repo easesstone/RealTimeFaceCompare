@@ -1,5 +1,6 @@
 package com.hzgc.ftpserver;
 
+import com.hzgc.ftpserver.common.LoggerConfig;
 import com.hzgc.ftpserver.queue.DataProcess;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.ftpserver.command.CommandFactoryFactory;
@@ -21,9 +22,9 @@ public class FTP extends ClusterOverFtp {
     /*
       Set the dynamic log configuration file refresh time
      */
-    /*static {
+    static {
         new LoggerConfig();
-    }*/
+    }
 
     @Override
     public void startFtpServer() {
