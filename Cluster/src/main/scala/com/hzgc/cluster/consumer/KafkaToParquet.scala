@@ -90,7 +90,7 @@ object KafkaToParquet {
         })
       })
     })
-    kafkaDF.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zKPaths, rdd))
+    messages.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zKPaths, rdd))
     ssc
   }
 
