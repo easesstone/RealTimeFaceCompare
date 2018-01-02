@@ -81,8 +81,8 @@ function create_kafka_topic()
     # 列出所有topic
     ./kafka-topics.sh --list \
     --zookeeper ${zkpro} >> ${LOG_FILE} 2>&1 &
-	
-    
+
+
     echo "创建完毕......"  | tee  -a  $LOG_FILE
 	echo "kafka topic 副本数为${repl_factor},分区数为${part_num}."
 }

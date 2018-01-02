@@ -52,22 +52,22 @@ function make_sure_the_ftp_service_alive()
     echo ""  | tee -a $LOG_FILE
     echo "****************************************************"  | tee -a $LOG_FILE
     echo "in $1: monitoring ftp service ing......................." | tee  -a $LOG_FILE
-    ftp_pid=$(ssh root@$1 "source /etc/profile;jps | grep LocalOverFtpServer")
+    ftp_pid=$(ssh root@$1 "source /etc/profile;jps | grep FTP")
     echo "ftp's pid is: ${ftp_pid}"  | tee -a $LOG_FILE
     if [ -n "${ftp_pid}" ];then
         echo "ftp process is exit,do not need to do anything. exit with 0 " | tee -a $LOG_FILE  
     else 
 	echo "ftp process is not exit, just to restart ftp."   | tee -a $LOG_FILE
-        ssh root@$1 "source /etc/profile;service ftp start" 
+        ssh root@$1 "source /etc/profile;cd ${FTP_DIR}/bin; sh start-ftp.sh" 
         echo "starting, please wait........" | tee -a $LOG_FILE
         sleep 10s
-        ftp_pid_restart=$(ssh root@$1 "source /etc/profile;jps | grep LocalOverFtpServer")
+        ftp_pid_restart=$(ssh root@$1 "source /etc/profile;jps | grep FTP")
         if [ -z "${ftp_pid_restart}" ];then
             echo "first trying start ftp failed.....,retrying to start it second time"  | tee -a $LOG_FILE
-            ssh root@$1 "source /etc/profile;service ftp start"
+            ssh root@$1 "source /etc/profile;cd ${FTP_DIR}/bin; sh start-ftp.sh"
             echo "second try starting, please wait........" | tee -a $LOG_FILE
             sleep 10s
-            ftp_pid_retry=$(ssh root@$1 "source /etc/profile;jps | grep LocalOverFtpServer")
+            ftp_pid_retry=$(ssh root@$1 "source /etc/profile;jps | grep FTP")
             if [ -z  "${ftp_pid_retry}" ];then
                 echo "retry start ftp failed, please check the config......exit with 1"  | tee -a  $LOG_FILE
                 flag_ftp=1

@@ -172,11 +172,7 @@ public class STOR extends AbstractCommand {
                         if (!map.isEmpty()) {
                             String ipcID = map.get("ipcID");
                             String timeStamp = map.get("time");
-                            String date = map.get("date");
-                            String timeSlot = map.get("sj");
 
-                            //拼装ftpUrl
-                            String ftpUrl = FtpUtil.filePath2absolutePath(fileName);
                             //发送到rocketMQ
                             SendResult tempResult = rocketMQProducer.send(ipcID, timeStamp, data);
                             rocketMQProducer.send(rocketMQProducer.getMessTopic(), ipcID, timeStamp, tempResult.getOffsetMsgId().getBytes(), null);
@@ -222,7 +218,7 @@ public class STOR extends AbstractCommand {
             } finally {
                 // make sure we really close the output stream
                 IoUtils.close(outStream);
-                // Put url to queue
+                // Put filePath to queue and send kafka
                 int faceNum = FtpUtil.pickPicture(fileName);
                 if (fileName.contains("unknown")) {
                     LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
