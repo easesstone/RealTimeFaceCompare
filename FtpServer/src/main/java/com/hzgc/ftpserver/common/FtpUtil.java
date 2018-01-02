@@ -163,13 +163,13 @@ public class FtpUtil implements Serializable {
      * @param filePath ftp接收数据路径
      * @return 文件的ftp地址
      */
-    public static String filePath2absolutePath(String filePath) {
+    public static String filePath2FtpUrl(String filePath) {
         StringBuilder url = new StringBuilder();
         String hostName = IpAddressUtil.getHostName();
         Map<Integer, Integer> ftpPIDMap = FTP.getPidMap();
         if (!ftpPIDMap.isEmpty()){
             Integer ftpPID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
-            LOG.info("ftp PID = " + ftpPID);
+            //LOG.info("ftp PID = " + ftpPID);
             int ftpPort = ftpPIDMap.get(ftpPID);
             url = url.append("ftp://").append(hostName).append(":").append(ftpPort).append(filePath);
             return url.toString();
