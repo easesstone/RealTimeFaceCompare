@@ -105,7 +105,6 @@ object KafkaToParquet {
         KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder
           , (String, FaceObject)](ssc, kafkaParams, fromOffsets, messageHandler)
     }
-    //kafkaStream.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zkPath, rdd))
     kafkaStream
   }
 
