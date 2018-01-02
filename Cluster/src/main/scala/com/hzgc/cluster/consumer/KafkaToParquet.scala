@@ -65,6 +65,7 @@ object KafkaToParquet {
     val storeAddress: String = getItem("job.storeAddress", properties)
     val zkHosts: String = getItem("job.zkDirAndPort", properties)
     val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)
+    val zKClient = new ZkClient(zkHosts)
     val sc = spark.sparkContext
     val ssc = new StreamingContext(sc, timeInterval)
     val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics)
@@ -78,7 +79,7 @@ object KafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.map(rdd => rdd._1).coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
@@ -89,6 +90,7 @@ object KafkaToParquet {
         })
       })
     })
+    kafkaDF.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zKPaths, rdd))
     ssc
   }
 
@@ -105,7 +107,6 @@ object KafkaToParquet {
         KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder
           , (String, FaceObject)](ssc, kafkaParams, fromOffsets, messageHandler)
     }
-    kafkaStream.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zkPath, rdd))
     kafkaStream
   }
 
