@@ -22,7 +22,7 @@ import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
   * Created by Administrator on 2017-12-14.
   */
 object KafkaToParquet {
-  val LOG: Logger = Logger.getLogger(KafkaToEs.getClass)
+  val LOG: Logger = Logger.getLogger(KafkaToParquet.getClass)
   val properties: Properties = StreamingUtils.getProperties
 
   case class Picture(ftpurl: String, //图片搜索地址
@@ -64,20 +64,31 @@ object KafkaToParquet {
     val storeAddress: String = getItem("job.storeAddress", properties)
     val zkHosts: String = getItem("job.zkDirAndPort", properties)
     val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)
+    val zKClient = new ZkClient(zkHosts)
     val sc = spark.sparkContext
     val ssc = new StreamingContext(sc, timeInterval)
     val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics)
     val kafkaDF = messages.map(faceobject => {
-      Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
+      (Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
         faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
         faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
         faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
-        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie)
+        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie), faceobject._1, faceobject._2)
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.coalesce(1, shuffle = true).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.foreachPartition(parData => {
+        val putDataToEs = PutDataToEs.getInstance()
+        parData.foreach(data => {
+          val status = putDataToEs.putDataToEs(data._2, data._3)
+          if (status != 1) {
+            println("Put data to es failed! And the failed ftpurl is " + data._2)
+          }
+        })
+      })
     })
+    messages.foreachRDD(rdd => saveOffsets(zKClient,zkHosts,zKPaths,rdd))
     ssc
   }
 
@@ -94,7 +105,7 @@ object KafkaToParquet {
         KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder
           , (String, FaceObject)](ssc, kafkaParams, fromOffsets, messageHandler)
     }
-    kafkaStream.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zkPath, rdd))
+    //kafkaStream.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zkPath, rdd))
     kafkaStream
   }
 
