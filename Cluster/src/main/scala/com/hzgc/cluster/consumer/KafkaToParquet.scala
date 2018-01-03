@@ -62,7 +62,7 @@ object KafkaToParquet {
   private def setupSsc(topics: Set[String], kafkaParams: Map[String, String]
                        , spark: SparkSession)(): StreamingContext = {
     val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
-    val storeAddress: String = getItem("job.storeAddress", properties) + UUID.randomUUID().toString.replace("-","")
+    val storeAddress: String = getItem("job.storeAddress", properties)
     val zkHosts: String = getItem("job.zkDirAndPort", properties)
     val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)
     val zKClient = new ZkClient(zkHosts)
@@ -79,7 +79,8 @@ object KafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append)
+          .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-",""))
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
