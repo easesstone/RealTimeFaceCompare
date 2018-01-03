@@ -1,7 +1,7 @@
 package com.hzgc.cluster.consumer
 
 import java.sql.Timestamp
-import java.util.Properties
+import java.util.{Properties, UUID}
 
 import com.google.common.base.Stopwatch
 import com.hzgc.cluster.util.StreamingUtils
@@ -62,7 +62,7 @@ object KafkaToParquet {
   private def setupSsc(topics: Set[String], kafkaParams: Map[String, String]
                        , spark: SparkSession)(): StreamingContext = {
     val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
-    val storeAddress: String = getItem("job.storeAddress", properties)
+    val storeAddress: String = getItem("job.storeAddress", properties) + UUID.randomUUID().toString.replace("-","")
     val zkHosts: String = getItem("job.zkDirAndPort", properties)
     val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)
     val zKClient = new ZkClient(zkHosts)
