@@ -234,7 +234,7 @@ public class PassivePorts {
 
         } else {
             // log attempt to release unused port
-            log.warn("Releasing unreserved passive port: " + port);
+            log.debug("Releasing unreserved passive port: " + port);
         }
     }
 
