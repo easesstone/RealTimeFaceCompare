@@ -57,7 +57,7 @@ class ParseByOption {
             for (Attribute attribute : option.getAttributes()) {
                 if (attribute.getValues() != null && attribute.getValues().size() > 0) {
                     if (attribute.getLogistic() == Logistic.OR || attribute.getValues().get(0).getValue() == 0) {
-                        LOG.error("Logistic is or , so ignore this condition");
+                        LOG.warn("Logistic is or , so ignore this condition");
                         continue;
                     }
                     finalSql.append(" and ")

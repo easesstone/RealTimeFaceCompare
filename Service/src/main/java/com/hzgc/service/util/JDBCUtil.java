@@ -88,6 +88,7 @@ public class JDBCUtil {
         try {
             conn = DriverManager.getConnection(propertie.getProperty("url"));
         } catch (SQLException e) {
+            LOG.error("get jdbc connection failure,please check up URL");
             e.printStackTrace();
         }
         LOG.info("get jdbc connection time is:" + (System.currentTimeMillis() - start));
