@@ -1,7 +1,7 @@
 package com.hzgc.cluster.consumer
 
 import java.sql.Timestamp
-import java.util.Properties
+import java.util.{Properties, UUID}
 
 import com.google.common.base.Stopwatch
 import com.hzgc.cluster.util.StreamingUtils
@@ -79,7 +79,8 @@ object KafkaToParquet {
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
-      rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append).parquet(storeAddress)
+      rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append)
+          .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-",""))
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
