@@ -88,8 +88,11 @@ public class JDBCUtil {
         try {
             conn = DriverManager.getConnection(propertie.getProperty("url"));
         } catch (SQLException e) {
-            LOG.error("get jdbc connection failure,please check up URL");
-            e.printStackTrace();
+            if (e.getMessage().contains("Unable to read HiveServer2 uri from ZooKeeper")){
+                LOG.error("Please start Spark JBDC Service !");
+            }else {
+                e.printStackTrace();
+            }
         }
         LOG.info("get jdbc connection time is:" + (System.currentTimeMillis() - start));
         return conn;
