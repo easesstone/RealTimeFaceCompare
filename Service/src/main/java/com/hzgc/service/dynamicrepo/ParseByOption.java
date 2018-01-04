@@ -177,7 +177,7 @@ class ParseByOption {
         StringBuilder SQL = new StringBuilder();
         if (option.getAttributes() != null && option.getAttributes().size() > 0) {
             for (Attribute attribute : option.getAttributes()) {
-                if (attribute.getValues() != null || attribute.getValues().size() > 0 || attribute.getLogistic() == Logistic.AND) {
+                if (attribute.getValues() != null && attribute.getValues().size() > 0 && attribute.getLogistic() == Logistic.AND) {
                     StringBuilder tempStr = new StringBuilder();
                     for (int i = 0; i < attribute.getValues().size(); i++) {
                         if (attribute.getValues().get(i).getValue() != 0) {
@@ -200,7 +200,9 @@ class ParseByOption {
                         SQL.append(tempStr);
                     }
                 } else {
-                    LOG.error("Logistic is or , so ignore this condition");
+                    if (attribute.getLogistic() == Logistic.OR){
+                        LOG.error("Logistic is or , so ignore this condition");
+                    }
                 }
             }
         }
