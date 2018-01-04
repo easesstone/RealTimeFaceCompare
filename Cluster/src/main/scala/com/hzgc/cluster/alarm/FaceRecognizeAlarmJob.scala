@@ -115,6 +115,7 @@ object FaceRecognizeAlarmJob {
             val item = new Item()
             item.setSimilarity(record.sim.toString)
             item.setStaticID(record.staticID)
+            item.setObjType(record.staticObjectType)
             items += item
           })
           recognizeAlarmMessage.setItems(items.toArray)
