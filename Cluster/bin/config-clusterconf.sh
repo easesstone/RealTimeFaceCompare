@@ -36,6 +36,8 @@ HBASE_INSTALL_HOME=${INSTALL_HOME}/HBase              ### hbase 安装目录
 HBASE_HOME=${HBASE_INSTALL_HOME}/hbase                ### hbase 根目录
 HIVE_INSTALL_HOME=${INSTALL_HOME}/Hive                ### hive 安装目录
 HIVE_HOME=${HIVE_INSTALL_HOME}/hive                   ### hive 根目录
+SPARK_INSTALL_HOME=${INSTALL_HOME}/Spark              ### spark 安装目录
+SPARK_HOME=${SPARK_INSTALL_HOME}/spark                ### spark 根目录
 
 mkdir -p $LOG_DIR
 #---------------------------------------------------------------------#
@@ -93,8 +95,27 @@ function config_sparkJob()
     # 替换sparkJob.properties中：key=value（替换key字段的值value）
     sed -i "s#^kafka.metadata.broker.list=.*#kafka.metadata.broker.list=${sparkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
     sed -i "s#^job.faceObjectConsumer.broker.list=.*#job.faceObjectConsumer.broker.list=${sparkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
-    
+
+    # 根据字段zookeeper_installnode，查找配置文件中，Zk的安装节点所在IP端口号的值，这些值以分号分割
+    ZK_IP=$(grep zookeeper_installnode ${CONF_FILE}|cut -d '=' -f2)
+    # 将这些分号分割的ip用放入数组
+    zk_arr=(${ZK_IP//;/ })
+    zkpro=''
+    for zk_ip in ${zk_arr[@]}
+    do
+        zkpro="$zkpro$zk_ip:2181,"
+    done
+    zkpro=${zkpro%?}
+    # 替换sparkJob.properties中：key=value（替换key字段的值value）
+    sed -i "s#^job.zkDirAndPort=.*#job.zkDirAndPort=${zkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
+
     echo "配置完毕......"  | tee  -a  $LOG_FILE
+
+    echo "开始分发SparkJob文件......"  | tee  -a  $LOG_FILE
+    for spark_hname in ${spark_arr[@]}
+    do
+        scp -r ${CONF_CLUSTER_DIR}/sparkJob.properties root@${spark_hname}:${SPARK_HOME}/conf
+    done
 }
 
 #####################################################################

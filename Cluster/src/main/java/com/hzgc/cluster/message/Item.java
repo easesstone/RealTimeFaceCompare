@@ -18,11 +18,17 @@ public class Item implements Serializable {
     private String similarity;
 
     /**
+     * 对象类型
+     */
+    private String objType;
+
+    /**
      * 构造函数
      **/
-    public Item(String staticID, String similarity) {
+    public Item(String staticID, String similarity,String objType) {
         this.staticID = staticID;
         this.similarity = similarity;
+        this.objType=objType;
     }
 
     public Item() {
@@ -45,6 +51,14 @@ public class Item implements Serializable {
 
     public void setSimilarity(String similarity) {
         this.similarity = similarity;
+    }
+
+    public String getObjType() {
+        return objType;
+    }
+
+    public void setObjType(String objType) {
+        this.objType = objType;
     }
 
 }
