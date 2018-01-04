@@ -33,7 +33,7 @@ declare -r CLUSTER_DIR=${BIGDATA_SERVICE_DIR}/cluster
 RELEASE_VERSION=1.5.0
 
 hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/merget-parquet-files.properties)
-tmpTableHdfsPath=$(sed -n '2p' ${CONF_DIR}/merget-parquet-files.properties)
+tmpTableHdfsPath=$(sed -n '3p' ${CONF_DIR}/merget-parquet-files.properties)
 hisTableHdfsPath=$(sed -n '3p' ${CONF_DIR}/merget-parquet-files.properties)
 tableName=$(sed -n '4p' ${CONF_DIR}/merget-parquet-files.properties)
 
