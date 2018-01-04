@@ -53,6 +53,7 @@ class ParseByOption {
                 .append(">=")
                 .append(option.getThreshold())
                 .append(getAttributesAndValuesByOption(option));
+
         //判断一个或多个时间区间 数据格式 小时+分钟 例如:1122
         if (option.getIntervals() != null && option.getIntervals().size() > 0) {
             finalSql.append(" and (");
