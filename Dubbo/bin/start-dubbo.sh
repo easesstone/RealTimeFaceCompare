@@ -20,7 +20,6 @@ CONF_DIR=${CONF_DIR}:${FTP_DIR}/conf
 
 cd -
 
-
 if [ -z "$SERVER_NAME" ]; then
     SERVER_NAME=`hostname`
 fi
@@ -95,3 +94,4 @@ echo "successful!"
 PIDS=`ps -f | grep java | grep "$DEPLOY_DIR" | awk '{print $2}'`
 echo "PID: $PIDS"
 echo "STDOUT: $STDOUT_FILE"
+nohup sh ${BIN_DIR}/start-check-dubbo.sh &
