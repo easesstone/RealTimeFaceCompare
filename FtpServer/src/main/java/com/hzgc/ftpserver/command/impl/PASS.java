@@ -232,9 +232,9 @@ public class PASS extends AbstractCommand {
             session.write(LocalizedFtpReply.translate(session, request, context,
                     FtpReply.REPLY_230_USER_LOGGED_IN, "PASS", userName));
             if (anonymous) {
-                LOG.info("Anonymous login success - " + password);
+                LOG.debug("Anonymous login success - " + password);
             } else {
-                LOG.info("Login success - " + userName);
+                LOG.debug("Login success - " + userName);
             }
 
         } finally {

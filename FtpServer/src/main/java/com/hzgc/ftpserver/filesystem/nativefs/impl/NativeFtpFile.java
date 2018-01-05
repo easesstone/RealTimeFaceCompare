@@ -193,19 +193,19 @@ public class NativeFtpFile implements FtpFile {
      * Check file write permission.
      */
     public boolean isWritable() {
-        LOG.info("Checking authorization for " + getAbsolutePath());
+        LOG.debug("Checking authorization for " + getAbsolutePath());
         if (user.authorize(new WriteRequest(getAbsolutePath())) == null) {
-            LOG.info("Not authorized");
+            LOG.debug("Not authorized");
             return false;
         }
 
-        LOG.info("Checking if file exists");
+        LOG.debug("Checking if file exists");
         if (file.exists()) {
-            LOG.info("Checking can write: " + file.canWrite());
+            LOG.debug("Checking can write: " + file.canWrite());
             return file.canWrite();
         }
 
-        LOG.info("Authorized");
+        LOG.debug("Authorized");
         return true;
     }
 

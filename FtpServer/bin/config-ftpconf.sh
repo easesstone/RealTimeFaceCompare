@@ -70,7 +70,27 @@ function config_ftpAddress()
     
     echo "配置ftpAddress.properties完毕......"  | tee  -a  $LOG_FILE
 }
+#####################################################################
+# 函数名: config_cluster_over_ftp
+# 描述: 配置文件：ftp/conf/config-cluster-over_ftp.properties
+# 参数: N/A
+# 返回值: N/A
+# 其他: N/A
+#####################################################################
+function config_cluster_over_ftp()
+{
+    echo ""  | tee -a $LOG_FILE
+    echo "**********************************************" | tee -a $LOG_FILE
+    echo "" | tee -a $LOG_FILE
+    echo "配置ftp/conf/config-cluster-over_ftp.properties......"  | tee  -a  $LOG_FILE
 
+    # 从project-conf.properties中，根据Thread_number字段，读取线程数
+    THREAD_NUMBER=`sed '/Thread_number/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    # 替换config-cluster-over_ftp.properties中线程数：key=value（替换key字段的值value）
+    sed -i "s#^thread.number=.*#thread.number=${THREAD_NUMBER}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
+
+    echo "配置完毕......"  | tee  -a  $LOG_FILE
+}
 #####################################################################
 # 函数名: config_rkmq
 # 描述: 配置文件：ftp/conf/rocketmq.properties
@@ -185,6 +205,7 @@ function distribute_ftp()
 #####################################################################
 function main()
 {
+    config_cluster_over_ftp
     config_ftpAddress
     config_rkmq
     config_pdcrOverFtp

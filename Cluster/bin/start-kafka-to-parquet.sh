@@ -39,7 +39,8 @@ BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.kafkaToParquetold
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
-
+##deploy-mode
+DEPLOY_MODE=client
 #---------------------------------------------------------------------#
 #                              jar版本控制                            #
 #---------------------------------------------------------------------#
@@ -182,7 +183,7 @@ source /etc/profile
 source ${BIGDATA_ENV}
 nohup spark-submit \
 --master yarn \
---deploy-mode cluster \
+--deploy-mode ${DEPLOY_MODE} \
 --executor-memory 4g \
 --executor-cores 2 \
 --num-executors 4 \
