@@ -56,12 +56,12 @@ object MergeParquetFile {
     def main(args: Array[String]): Unit = {
         if (args.length != 4  && args.length != 5) {
             System.out.print(s"""
-                   |Usage: MergeParquetFile <hdfsClusterName> <tmpTableHdfsPath> <hisTableHdfsPath> <tableName> <dateString>
-                   |<hdfsClusterName> 例如：hdfs://hacluster或者hdfs://hzgc
-                   |<tmpTableHdfsPath> 临时表的根目录，需要是绝对路径
-                   |<hisTableHdfsPath> 合并后的parquet文件，即总的或者历史文件的根目录，需要是绝对路径
-                   |<tableName> 表格名字，最终保存的动态信息库的表格名字
-                   |<dateString > 用于表示需要合并的某天的内容
+                                |Usage: MergeParquetFile <hdfsClusterName> <tmpTableHdfsPath> <hisTableHdfsPath> <tableName> <dateString>
+                                |<hdfsClusterName> 例如：hdfs://hacluster或者hdfs://hzgc
+                                |<tmpTableHdfsPath> 临时表的根目录，需要是绝对路径
+                                |<hisTableHdfsPath> 合并后的parquet文件，即总的或者历史文件的根目录，需要是绝对路径
+                                |<tableName> 表格名字，最终保存的动态信息库的表格名字
+                                |<dateString > 用于表示需要合并的某天的内容
                  """.stripMargin)
             System.exit(1)
         }
@@ -94,9 +94,12 @@ object MergeParquetFile {
         } else {
             ReadWriteHDFS.getParquetFiles(dateString, new Path(tmpTableHdfsPath),fs, parquetFiles)
         }
-        val pathArr : Array[String] = new Array[String](parquetFiles.size())
+        var pathArr : Array[String] = new Array[String](parquetFiles.size())
+        if (parquetFiles.size() >= 10000) {
+            pathArr = new Array[String](10000)
+        }
         var count = 0
-        while (count < parquetFiles.size()) {
+        while (count < pathArr.length) {
             pathArr(count) = parquetFiles.get(count)
             count = count + 1
         }
@@ -111,7 +114,8 @@ object MergeParquetFile {
             personDF.persist()
             if (personDF.count() == 0) {
                 LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
-                ReadWriteHDFS.del(pathArr, fs);
+                // 删除临时表格中的文件
+                ReadWriteHDFS.delV2(pathArr, fs);
                 System.exit(2)
             }
             personDF.printSchema()
@@ -124,6 +128,7 @@ object MergeParquetFile {
                 .parquet(tmpPath)
             val setOfTempTable : util.Set[String] = new util.HashSet[String]()
             ReadWriteHDFS.getPartitions(new Path(tmpPath), fs, setOfTempTable)
+            // 删除临时目录
             ReadWriteHDFS.del(Array(tmpPath), fs)
 
             // 4, 遍历hisTableHdfsPath目录，最终表格的根目录，得到时间和设备对应关系set02
@@ -148,7 +153,8 @@ object MergeParquetFile {
             personDF.persist()
             if (personDF.count() == 0) {
                 LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
-                ReadWriteHDFS.del(pathArr, fs);
+                // 删除最终表格中的文件
+                ReadWriteHDFS.del(pathArr, fs)
                 System.exit(2)
             }
             personDF.printSchema()
@@ -162,7 +168,13 @@ object MergeParquetFile {
             .parquet(hisTableHdfsPath)
 
         // 7,删除原来的文件
-        ReadWriteHDFS.del(pathArr, fs);
+        if (dateString == null || dateString.equals("")) {
+            // 删除临时表格上的文件
+            ReadWriteHDFS.delV2(pathArr, fs)
+        } else {
+            // 删除最终表格上的文件
+            ReadWriteHDFS.del(pathArr, fs)
+        }
 
         // 8, Reflesh spark store crash table data
         if (dateString == null || "".equals(dateString)) {
@@ -218,6 +230,17 @@ object ReadWriteHDFS {
     def del(paths : Array[String], fs : FileSystem): Unit = {
         for (f <- paths) {
             fs.delete(new Path(f), true)
+        }
+    }
+
+    /**
+      * 删除文件，ture 表示迭代删除目录或者文件
+      * @param paths  文件列表
+      * @param fs  hdfs文件系统实例
+      */
+    def delV2(paths : Array[String], fs : FileSystem): Unit = {
+        for (f <- paths) {
+            fs.delete(new Path(f.substring(0, f.lastIndexOf("/"))), true)
         }
     }
 
@@ -286,5 +309,4 @@ object ReadWriteHDFS {
         }
     }
 }
-
 
