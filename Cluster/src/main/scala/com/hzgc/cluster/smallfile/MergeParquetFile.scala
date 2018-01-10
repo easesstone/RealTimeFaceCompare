@@ -94,9 +94,12 @@ object MergeParquetFile {
         } else {
             ReadWriteHDFS.getParquetFiles(dateString, new Path(tmpTableHdfsPath),fs, parquetFiles)
         }
-        val pathArr : Array[String] = new Array[String](parquetFiles.size())
+        var pathArr : Array[String] = new Array[String](parquetFiles.size())
+        if (parquetFiles.size() >= 10000) {
+            pathArr = new Array[String](10000)
+        }
         var count = 0
-        while (count < parquetFiles.size() && count <= 10000) {
+        while (count < pathArr.length) {
             pathArr(count) = parquetFiles.get(count)
             count = count + 1
         }
