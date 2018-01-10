@@ -22,7 +22,7 @@ public class Zk {
     private CountDownLatch connectedSemaphore = new CountDownLatch(1);
 
     public void createConnection(String connectAddr, int sessionTimeout) {
-        releaseConnection();
+        zookeeperClose();
         try {
             zooKeeper = new ZooKeeper(connectAddr, sessionTimeout, new Watcher() {
                 @Override
@@ -41,8 +41,6 @@ public class Zk {
                     }
                 }
             });
-            System.out.println("开始连接Zookeeper服务器");
-            //LOG.info("开始连接Zookeeper服务器");
             //进行阻塞
             connectedSemaphore.await();
         } catch (Exception e) {
@@ -50,7 +48,11 @@ public class Zk {
         }
     }
 
-    public void syncCreateNode(List<String> ipcIdList){
+    /**
+     * 重置“/mq_ipcid”数据
+     * @param ipcIdList 设备ID列表
+     */
+    public void setData(List<String> ipcIdList){
         this.createConnection(ZOOKEEPER_ADDRESS, SESSION_TIMEOUT);
         StringBuilder ipcIds = new StringBuilder();
         if (!ipcIdList.isEmpty()){
@@ -63,15 +65,17 @@ public class Zk {
                 //System.out.println("path = " + path);
             } catch (KeeperException | InterruptedException e) {
                 e.printStackTrace();
+            }finally {
+                zookeeperClose();
             }
         }
     }
 
     /**
-     * 取出zk信息
+     * 获取“/mq_ipcid”数据
      * @return ipcids
      */
-    public String readDate() {
+    public String getData() {
         String ipcids = null;
         this.createConnection(ZOOKEEPER_ADDRESS, SESSION_TIMEOUT);
         try {
@@ -81,7 +85,7 @@ public class Zk {
         } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
         } finally {
-            releaseConnection();
+            zookeeperClose();
         }
         return ipcids;
     }
@@ -89,7 +93,7 @@ public class Zk {
     /**
      * 关闭ZK连接
      */
-    public void releaseConnection() {
+    public void zookeeperClose() {
         if (this.zooKeeper != null) {
             try {
                 this.zooKeeper.close();
@@ -101,12 +105,12 @@ public class Zk {
 
     public static void main(String[] args) {
         Zk zk = new Zk();
-        String aa = zk.readDate();
+        String aa = zk.getData();
         System.out.println(aa);
         List<String> ipcIdList = new ArrayList<>();
         ipcIdList.add("aaaa");
         ipcIdList.add("bbbb");
         ipcIdList.add("333");
-        zk.syncCreateNode(ipcIdList);
+        zk.setData(ipcIdList);
     }
 }
