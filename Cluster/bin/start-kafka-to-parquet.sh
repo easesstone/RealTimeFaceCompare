@@ -23,7 +23,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
-LOG_FILE=${CLUSTER_LOG_DIR}/kafkaToParquetold.log
+LOG_FILE=${CLUSTER_LOG_DIR}/KafkaToParquet.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
 COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
@@ -36,7 +36,7 @@ SERVICE_LIB_DIR=${DEPLOY_DIR}/service/lib
 ## bigdata_env
 BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.kafkaToParquetold
+SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.KafkaToParquet
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 ##deploy-mode
@@ -68,6 +68,7 @@ ROCKETMQ_REMOTING_VERSION=rocketmq-remoting-4.1.0-incubating.jar
 FASTJSON_VERSION=fastjson-1.2.29.jar
 KAFKA_CLIENTS_VERSION=kafka-clients-1.0.0.jar
 METRICS_CORE_VERSION=metrics-core-2.2.0.jar
+ZKCLIENT_VERSION=zkclient-0.3.jar
 
 
 ############ 创建log目录 ###############
@@ -196,6 +197,7 @@ ${CLUSTER_LIB_DIR}/${HBASE_SERVER_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_COMMON_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION},\
+${CLUSTER_LIB_DIR}/${ZKCLIENT_VERSION},\
 ${COMMON_LIB_DIR}/${JNI_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_VERSION},\
 ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION},\
