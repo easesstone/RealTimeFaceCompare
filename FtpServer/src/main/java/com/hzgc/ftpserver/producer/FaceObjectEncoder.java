@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver.producer;
 
-import com.hzgc.ftpserver.common.BeanUtils;
+import com.hzgc.ftpserver.util.BeanUtils;
 
 import java.util.Map;
 

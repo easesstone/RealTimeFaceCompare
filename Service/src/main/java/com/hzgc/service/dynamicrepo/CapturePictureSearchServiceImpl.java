@@ -394,9 +394,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         List<AttributeValue> values = attribute.getValues();
                         for (AttributeValue attributeValue : values) {
                             BoolQueryBuilder FilterIpcId = QueryBuilders.boolQuery();
-                            FilterIpcId.must(QueryBuilders.matchQuery(DynamicTable.IPCID, ipcId));
+                            FilterIpcId.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcId));
                             FilterIpcId.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gt(startTime).lt(endTime));
-                            FilterIpcId.must(QueryBuilders.matchQuery(attribute.getIdentify().toLowerCase(), attributeValue.getValue()));
+                            FilterIpcId.must(QueryBuilders.matchPhraseQuery(attribute.getIdentify().toLowerCase(), attributeValue.getValue()));
                             SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                                     .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                                     .setTypes(DynamicTable.PERSON_INDEX_TYPE)

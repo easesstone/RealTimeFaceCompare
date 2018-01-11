@@ -19,16 +19,13 @@
 
 package com.hzgc.ftpserver.command.impl;
 
-import com.hzgc.ftpserver.producer.FaceObject;
-import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.ftpserver.producer.RocketMQProducer;
-import com.hzgc.ftpserver.common.FtpUtil;
+import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.ftpserver.queue.BufferQueue;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
 import com.hzgc.ftpserver.impl.*;
 import com.hzgc.ftpserver.util.IoUtils;
-import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,25 +150,25 @@ public class STOR extends AbstractCommand {
                 outStream = file.createOutputStream(skipLen);
                 RocketMQProducer rocketMQProducer = context.getProducerRocketMQ();
                 InputStream is = dataConnection.getDataInputStream();
-                ByteArrayOutputStream baos = FtpUtil.inputStreamCacher(is);
+                ByteArrayOutputStream baos = FtpUtils.inputStreamCacher(is);
                 byte[] data = baos.toByteArray();
 
-                int faceNum = FtpUtil.pickPicture(fileName);
+                int faceNum = FtpUtils.pickPicture(fileName);
                 if (fileName.contains("unknown")) {
                     LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
                 } else {
                     //当FTP接收到小图
                     if (fileName.contains(".jpg") && faceNum > 0) {
-                        Map<String, String> map = FtpUtil.getFtpPathMessage(fileName);
+                        Map<String, String> map = FtpUtils.getFtpPathMessage(fileName);
                         //若获取不到信息，则不发rocketMQ和Kafka
                         if (!map.isEmpty()) {
                             String ipcID = map.get("ipcID");
                             String timeStamp = map.get("time");
 
                             //拼装ftpUrl (带主机名的ftpUrl)
-                            String ftpHostNameUrl = FtpUtil.filePath2FtpUrl(fileName);
+                            String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
                             //获取ftpUrl (带IP地址的ftpUrl)
-                            String ftpIpUrl = FtpUtil.getFtpUrl(ftpHostNameUrl);
+                            String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
                             //发送到rocketMQ
                             rocketMQProducer.send(ipcID, timeStamp, ftpIpUrl.getBytes());
                         }
@@ -218,7 +215,7 @@ public class STOR extends AbstractCommand {
                 // make sure we really close the output stream
                 IoUtils.close(outStream);
                 // Put filePath to queue and send kafka
-                int faceNum = FtpUtil.pickPicture(fileName);
+                int faceNum = FtpUtils.pickPicture(fileName);
                 if (fileName.contains("unknown")) {
                     LOG.error(fileName + ": contain unknown ipcID, Not send to rocketMQ and Kafka!");
                 } else {

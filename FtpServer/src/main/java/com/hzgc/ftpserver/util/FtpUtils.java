@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.common;
+package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.FTP;
 import com.hzgc.util.common.FileUtil;
@@ -10,18 +10,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class FtpUtil implements Serializable {
-    private static Logger LOG = Logger.getLogger(FtpUtil.class);
+public class FtpUtils implements Serializable {
+    private static Logger LOG = Logger.getLogger(FtpUtils.class);
 
     private static Properties properties = new Properties();
-    private static int ftpServerPort;
 
     static {
         FileInputStream in = null;
         try {
             in = new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties"));
             properties.load(in);
-            ftpServerPort = Integer.parseInt(properties.getProperty("port"));
+            int ftpServerPort = Integer.parseInt(properties.getProperty("port"));
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -165,7 +164,7 @@ public class FtpUtil implements Serializable {
      */
     public static String filePath2FtpUrl(String filePath) {
         StringBuilder url = new StringBuilder();
-        String hostName = IpAddressUtil.getHostName();
+        String hostName = IPAddressUtils.getHostName();
         Map<Integer, Integer> ftpPIDMap = FTP.getPidMap();
         if (!ftpPIDMap.isEmpty()){
             Integer ftpPID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);

@@ -1,10 +1,7 @@
 package com.hzgc.ftpserver.queue;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.dubbo.feature.FaceAttribute;
-import com.hzgc.ftpserver.common.FtpUtil;
+import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.jni.FaceFunction;
@@ -44,7 +41,7 @@ public class DataProcess {
                         while (true) {
                             try {
                                 String fileName = queue.take().toString();
-                                Map<String, String> map = FtpUtil.getFtpPathMessage(fileName);
+                                Map<String, String> map = FtpUtils.getFtpPathMessage(fileName);
                                 String ipcID = map.get("ipcID");
                                 String timeStamp = map.get("time");
                                 String date = map.get("date");
@@ -60,7 +57,7 @@ public class DataProcess {
                                 byte[] data = QueueUtil.getData(fileName, homeDirectory);
                                 if (data != null && data.length != 0) {
                                     faceObject.setAttribute(FaceFunction.featureExtract(data));
-                                    String ftpUrl = FtpUtil.filePath2FtpUrl(fileName);
+                                    String ftpUrl = FtpUtils.filePath2FtpUrl(fileName);
                                     kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
                                     LOG.info("Send to kafka success, queue size:" + queue.size());
                                 } else {

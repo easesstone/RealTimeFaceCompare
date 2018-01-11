@@ -3,6 +3,7 @@ package com.hzgc.util.common;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URL;
 
 public class FileUtil {
@@ -23,6 +24,6 @@ public class FileUtil {
         } else {
             LOG.error("The file name is not vaild!");
         }
-        return null;
+        return new File("");
     }
 }
