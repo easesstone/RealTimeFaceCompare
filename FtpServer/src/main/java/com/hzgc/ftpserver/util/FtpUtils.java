@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class FtpUtil implements Serializable {
-    private static Logger LOG = Logger.getLogger(FtpUtil.class);
+public class FtpUtils implements Serializable {
+    private static Logger LOG = Logger.getLogger(FtpUtils.class);
 
     private static Properties properties = new Properties();
 
