@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver;
 
-import com.hzgc.ftpserver.common.LoggerConfig;
+import com.hzgc.ftpserver.util.LoggerConfig;
 import com.hzgc.ftpserver.queue.DataProcess;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.ftpserver.command.CommandFactoryFactory;

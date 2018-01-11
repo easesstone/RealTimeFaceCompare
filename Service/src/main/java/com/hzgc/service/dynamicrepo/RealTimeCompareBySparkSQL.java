@@ -2,8 +2,8 @@ package com.hzgc.service.dynamicrepo;
 
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.ftpserver.common.Download;
-import com.hzgc.ftpserver.common.FtpUtil;
+import com.hzgc.ftpserver.util.DownloadUtils;
+import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.service.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.util.sort.ListUtils;
@@ -70,7 +70,7 @@ class RealTimeCompareBySparkSQL {
             image = option.getImage();
             searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         } else {
-            image = Download.downloadftpFile2Bytes(option.getImageId());
+            image = DownloadUtils.downloadftpFile2Bytes(option.getImageId());
             if (image == null) {
                 return new SearchResult();
             }
@@ -117,11 +117,11 @@ class RealTimeCompareBySparkSQL {
                         //时间戳
                         Timestamp timestamp = resultSet.getTimestamp(DynamicTable.TIMESTAMP);
                         //大图ftpurl
-                        String burl = FtpUtil.surlToBurl(surl);
+                        String burl = FtpUtils.surlToBurl(surl);
                         //图片对象
                         CapturedPicture capturedPicture = new CapturedPicture();
-                        capturedPicture.setSurl(FtpUtil.getFtpUrl(surl));
-                        capturedPicture.setBurl(FtpUtil.getFtpUrl(burl));
+                        capturedPicture.setSurl(FtpUtils.getFtpUrl(surl));
+                        capturedPicture.setBurl(FtpUtils.getFtpUrl(burl));
                         capturedPicture.setIpcId(ipcid);
                         capturedPicture.setTimeStamp(format.format(timestamp));
                         capturedPicture.setSimilarity(similaritys);

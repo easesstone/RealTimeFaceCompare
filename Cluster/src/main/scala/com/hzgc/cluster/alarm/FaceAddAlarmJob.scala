@@ -2,6 +2,7 @@ package com.hzgc.cluster.alarm
 
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import com.google.gson.Gson
 import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
@@ -9,11 +10,12 @@ import com.hzgc.jni.FaceFunction
 import com.hzgc.cluster.message.AddAlarmMessage
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
-import com.hzgc.ftpserver.common.FtpUtil
+import com.hzgc.ftpserver.util.FtpUtils
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Durations, StreamingContext}
+
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
 
@@ -92,11 +94,11 @@ object FaceAddAlarmJob {
           if (result._4 == null || result._4.isEmpty) {
             val dateStr = df.format(new Date())
             val addAlarmMessage = new AddAlarmMessage()
-            val ftpMess = FtpUtil.getFtpUrlMessage(result._1)
+            val ftpMess = FtpUtils.getFtpUrlMessage(result._1)
             addAlarmMessage.setAlarmTime(dateStr)
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
             addAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
-            addAlarmMessage.setBigPictureURL(FtpUtil.getFtpUrlMessage(FtpUtil.surlToBurl(result._1)).get("filepath"))
+            addAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).get("filepath"))
             addAlarmMessage.setDynamicDeviceID(result._2)
             addAlarmMessage.setHostName(ftpMess.get("ip"))
             rocketMQProducer.send(result._3,

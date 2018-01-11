@@ -1,6 +1,6 @@
 package com.hzgc.ftpserver;
 
-import com.hzgc.ftpserver.common.FtpUtil;
+import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
@@ -22,7 +22,7 @@ public abstract class ClusterOverFtp implements Serializable {
 
         try {
             listenerPort = Integer.parseInt(props.getProperty("listener-port"));
-            boolean checkPort = FtpUtil.checkPort(listenerPort);
+            boolean checkPort = FtpUtils.checkPort(listenerPort);
             if (!checkPort) {
                 log.error("The port settings for listener port is illegal and must be greater than 1024");
                 System.exit(1);

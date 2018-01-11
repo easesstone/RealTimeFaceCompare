@@ -1,4 +1,4 @@
-import com.hzgc.ftpserver.common.Download;
+import com.hzgc.ftpserver.util.DownloadUtils;
 
 import java.util.Arrays;
 
@@ -14,9 +14,9 @@ public class DownloadTest {
         String localFileName = "aaa.jpg";
         String localFileName22 = "20111.jpg";
         String ftpUrl = "ftp://172.18.18.109:2121/3B0000000000000/2017/05/23/16/00/2017_05_23_16_00_15_5704_1.jpg";
-        //Download.downloadFtpFile(ftpAddress, ftpUserName, ftpPassword, ftpPort, ftpFilePath, ftpFileName, localPath, localFileName);
-        Download.downloadFtpFile(ftpUrl, localPath, localFileName22);
-        byte[] bytes = Download.downloadftpFile2Bytes(ftpUrl);
+        //DownloadUtils.downloadFtpFile(ftpAddress, ftpUserName, ftpPassword, ftpPort, ftpFilePath, ftpFileName, localPath, localFileName);
+        DownloadUtils.downloadFtpFile(ftpUrl, localPath, localFileName22);
+        byte[] bytes = DownloadUtils.downloadftpFile2Bytes(ftpUrl);
         System.out.println(Arrays.toString(bytes));
         System.out.println("ok");
     }
