@@ -26,7 +26,7 @@ import com.hzgc.ftpserver.ftplet.FtpRequest;
 import com.hzgc.ftpserver.impl.FtpIoSession;
 import com.hzgc.ftpserver.impl.FtpServerContext;
 import com.hzgc.ftpserver.impl.LocalizedFtpReply;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +152,7 @@ public class MD5 extends AbstractCommand {
                         FtpReply.REPLY_502_COMMAND_NOT_IMPLEMENTED,
                         "MD5.notimplemened", null));
             } finally {
-                IoUtils.close(is);
+                IOUtils.close(is);
             }
         }
         if (isMMD5) {

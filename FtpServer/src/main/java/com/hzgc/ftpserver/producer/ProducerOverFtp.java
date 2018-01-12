@@ -4,7 +4,7 @@ package com.hzgc.ftpserver.producer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.hzgc.util.common.FileUtil;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -41,7 +41,7 @@ public class ProducerOverFtp implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            IoUtils.close(fis);
+            IOUtils.close(fis);
         }
     }
 

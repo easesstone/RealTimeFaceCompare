@@ -22,7 +22,7 @@ package com.hzgc.ftpserver.command.impl;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
 import com.hzgc.ftpserver.impl.*;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,7 +189,7 @@ public class RETR extends AbstractCommand {
                                         "RETR", fileName, file, transSz));
             } finally {
                 // make sure we really close the input stream
-                IoUtils.close(is);
+                IOUtils.close(is);
             }
 
             // if data transfer ok - send transfer complete message

@@ -25,14 +25,13 @@ import com.hzgc.ftpserver.queue.BufferQueue;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
 import com.hzgc.ftpserver.impl.*;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
@@ -52,8 +51,6 @@ import java.util.concurrent.BlockingQueue;
 public class STOR extends AbstractCommand {
 
     private final Logger LOG = LoggerFactory.getLogger(STOR.class);
-
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Execute command.
@@ -104,16 +101,15 @@ public class STOR extends AbstractCommand {
             FtpFile file = null;
             try {
                 file = session.getFileSystemView().getFile(fileName);
+                if (file == null) {
+                    session.write(LocalizedDataTransferFtpReply.translate(session, request, context,
+                            FtpReply.REPLY_550_REQUESTED_ACTION_NOT_TAKEN,
+                            "STOR.invalid", fileName, file));
+                    return;
+                }
             } catch (Exception ex) {
                 LOG.debug("Exception getting file object", ex);
             }
-            if (file == null) {
-                session.write(LocalizedDataTransferFtpReply.translate(session, request, context,
-                        FtpReply.REPLY_550_REQUESTED_ACTION_NOT_TAKEN,
-                        "STOR.invalid", fileName, file));
-                return;
-            }
-            fileName = file.getAbsolutePath();
 
             // get permission
             if (!file.isWritable()) {
@@ -122,6 +118,9 @@ public class STOR extends AbstractCommand {
                         "STOR.permission", fileName, file));
                 return;
             }
+
+            //get file name
+            fileName = file.getAbsolutePath();
 
             // get data connection
             session.write(
@@ -213,7 +212,7 @@ public class STOR extends AbstractCommand {
                 e.printStackTrace();
             } finally {
                 // make sure we really close the output stream
-                IoUtils.close(outStream);
+                IOUtils.close(outStream);
                 // Put filePath to queue and send kafka
                 int faceNum = FtpUtils.pickPicture(fileName);
                 if (fileName.contains("unknown")) {

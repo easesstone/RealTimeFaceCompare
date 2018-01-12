@@ -21,7 +21,7 @@ package com.hzgc.ftpserver.ssl;
 
 import com.hzgc.ftpserver.FtpServerConfigurationException;
 import com.hzgc.ftpserver.ssl.impl.DefaultSslConfiguration;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,7 +305,7 @@ public class SslConfigurationFactory {
 
             return store;
         } finally {
-            IoUtils.close(fin);
+            IOUtils.close(fin);
         }
     }
 

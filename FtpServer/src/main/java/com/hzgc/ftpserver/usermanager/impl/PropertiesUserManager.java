@@ -26,7 +26,7 @@ import com.hzgc.ftpserver.usermanager.PasswordEncryptor;
 import com.hzgc.ftpserver.usermanager.PropertiesUserManagerFactory;
 import com.hzgc.ftpserver.usermanager.UsernamePasswordAuthentication;
 import com.hzgc.ftpserver.util.BaseProperties;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,7 +151,7 @@ public class PropertiesUserManager extends AbstractUserManager {
                         fis = new FileInputStream(userDataFile);
                         userDataProp.load(fis);
                     } finally {
-                        IoUtils.close(fis);
+                        IOUtils.close(fis);
                     }
                 } else {
                     // try loading it from the classpath
@@ -165,7 +165,7 @@ public class PropertiesUserManager extends AbstractUserManager {
                         try {
                             userDataProp.load(is);
                         } finally {
-                            IoUtils.close(is);
+                            IOUtils.close(is);
                         }
                     } else {
                         throw new FtpServerConfigurationException(
@@ -196,7 +196,7 @@ public class PropertiesUserManager extends AbstractUserManager {
                 try {
                     userDataProp.load(is);
                 } finally {
-                    IoUtils.close(is);
+                    IOUtils.close(is);
                 }
             }
         } catch (IOException e) {
@@ -313,7 +313,7 @@ public class PropertiesUserManager extends AbstractUserManager {
             LOG.error("Failed saving user data", ex);
             throw new FtpException("Failed saving user data", ex);
         } finally {
-            IoUtils.close(fos);
+            IOUtils.close(fos);
         }
     }
 
