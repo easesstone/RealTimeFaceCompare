@@ -21,7 +21,7 @@ package com.hzgc.collect.ftp.ssl;
 
 import com.hzgc.collect.ftp.FtpServerConfigurationException;
 import com.hzgc.collect.ftp.ssl.impl.DefaultSslConfiguration;
-import com.hzgc.collect.util.IOUtils;
+import com.hzgc.collect.ftp.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

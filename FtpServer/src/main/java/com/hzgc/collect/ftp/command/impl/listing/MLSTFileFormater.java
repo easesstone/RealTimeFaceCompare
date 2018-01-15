@@ -19,7 +19,7 @@
 package com.hzgc.collect.ftp.command.impl.listing;
 
 import com.hzgc.collect.ftp.ftplet.FtpFile;
-import com.hzgc.collect.util.DateUtils;
+import com.hzgc.collect.ftp.util.DateUtils;
 
 /**
  * <strong>Internal class, do not use directly.</strong>

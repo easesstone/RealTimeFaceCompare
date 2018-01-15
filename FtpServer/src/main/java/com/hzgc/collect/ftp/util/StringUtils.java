@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 import java.util.Map;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
- * 
+ * <p>
  * String utility methods.
  *
  * @author <a href="http://mina.apache.org">Apache MINA Project</a>
@@ -33,8 +33,8 @@ public class StringUtils {
     /**
      * This is a string replacement method.
      */
-    public final static String replaceString(String source, String oldStr,
-            String newStr) {
+    public static String replaceString(String source, String oldStr,
+                                       String newStr) {
         StringBuilder sb = new StringBuilder(source.length());
         int sind = 0;
         int cind = 0;
@@ -50,7 +50,7 @@ public class StringUtils {
     /**
      * Replace string
      */
-    public final static String replaceString(String source, Object[] args) {
+    public static String replaceString(String source, Object[] args) {
         int startIndex = 0;
         int openIndex = source.indexOf('{', startIndex);
         if (openIndex == -1) {
@@ -89,8 +89,7 @@ public class StringUtils {
     /**
      * Replace string.
      */
-    public final static String replaceString(String source,
-            Map<String, Object> args) {
+    public static String replaceString(String source, Map<String, Object> args) {
         int startIndex = 0;
         int openIndex = source.indexOf('{', startIndex);
         if (openIndex == -1) {
@@ -129,64 +128,64 @@ public class StringUtils {
     }
 
     /**
-         * This method is used to insert HTML block dynamically
-         *
-         * @param source the HTML code to be processes
-         * @param bReplaceNl if true '\n' will be replaced by <br>
-         * @param bReplaceTag if true '<' will be replaced by &lt; and 
-         *                          '>' will be replaced by &gt;
-         * @param bReplaceQuote if true '\"' will be replaced by &quot; 
-         */
-    public final static String formatHtml(String source, boolean bReplaceNl,
-            boolean bReplaceTag, boolean bReplaceQuote) {
+     * This method is used to insert HTML block dynamically
+     *
+     * @param source        the HTML code to be processes
+     * @param bReplaceNl    if true '\n' will be replaced by <br>
+     * @param bReplaceTag   if true '<' will be replaced by &lt; and
+     *                      '>' will be replaced by &gt;
+     * @param bReplaceQuote if true '\"' will be replaced by &quot;
+     */
+    public static String formatHtml(String source, boolean bReplaceNl,
+                                    boolean bReplaceTag, boolean bReplaceQuote) {
 
         StringBuilder sb = new StringBuilder();
         int len = source.length();
         for (int i = 0; i < len; i++) {
             char c = source.charAt(i);
             switch (c) {
-            case '\"':
-                if (bReplaceQuote)
-                    sb.append("&quot;");
-                else
-                    sb.append(c);
-                break;
-
-            case '<':
-                if (bReplaceTag)
-                    sb.append("&lt;");
-                else
-                    sb.append(c);
-                break;
-
-            case '>':
-                if (bReplaceTag)
-                    sb.append("&gt;");
-                else
-                    sb.append(c);
-                break;
-
-            case '\n':
-                if (bReplaceNl) {
-                    if (bReplaceTag)
-                        sb.append("&lt;br&gt;");
+                case '\"':
+                    if (bReplaceQuote)
+                        sb.append("&quot;");
                     else
-                        sb.append("<br>");
-                } else {
+                        sb.append(c);
+                    break;
+
+                case '<':
+                    if (bReplaceTag)
+                        sb.append("&lt;");
+                    else
+                        sb.append(c);
+                    break;
+
+                case '>':
+                    if (bReplaceTag)
+                        sb.append("&gt;");
+                    else
+                        sb.append(c);
+                    break;
+
+                case '\n':
+                    if (bReplaceNl) {
+                        if (bReplaceTag)
+                            sb.append("&lt;br&gt;");
+                        else
+                            sb.append("<br>");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+
+                case '\r':
+                    break;
+
+                case '&':
+                    sb.append("&amp;");
+                    break;
+
+                default:
                     sb.append(c);
-                }
-                break;
-
-            case '\r':
-                break;
-
-            case '&':
-                sb.append("&amp;");
-                break;
-
-            default:
-                sb.append(c);
-                break;
+                    break;
             }
         }
         return sb.toString();
@@ -195,8 +194,8 @@ public class StringUtils {
     /**
      * Pad string object
      */
-    public final static String pad(String src, char padChar, boolean rightPad,
-            int totalLength) {
+    public static String pad(String src, char padChar, boolean rightPad,
+                             int totalLength) {
 
         int srcLength = src.length();
         if (srcLength >= totalLength) {
@@ -219,10 +218,10 @@ public class StringUtils {
     /**
      * Get hex string from byte array
      */
-    public final static String toHexString(byte[] res) {
+    static String toHexString(byte[] res) {
         StringBuilder sb = new StringBuilder(res.length << 1);
-        for (int i = 0; i < res.length; i++) {
-            String digit = Integer.toHexString(0xFF & res[i]);
+        for (byte re : res) {
+            String digit = Integer.toHexString(0xFF & re);
             if (digit.length() == 1) {
                 sb.append('0');
             }
@@ -234,7 +233,7 @@ public class StringUtils {
     /**
      * Get byte array from hex string
      */
-    public final static byte[] toByteArray(String hexString) {
+    public static byte[] toByteArray(String hexString) {
         int arrLength = hexString.length() >> 1;
         byte buff[] = new byte[arrLength];
         for (int i = 0; i < arrLength; i++) {

@@ -1,6 +1,6 @@
 package com.hzgc.collect.ftp;
 
-import com.hzgc.collect.util.FtpUtils;
+import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 

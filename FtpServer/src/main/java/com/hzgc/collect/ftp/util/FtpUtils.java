@@ -1,4 +1,4 @@
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 import com.hzgc.collect.FTP;
 import com.hzgc.util.common.FileUtil;

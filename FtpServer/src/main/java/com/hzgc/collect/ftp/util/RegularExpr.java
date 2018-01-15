@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
@@ -47,11 +47,8 @@ public class RegularExpr {
     public boolean isMatch(String name) {
 
         // common pattern - *
-        if ((pattern.length == 1) && (pattern[0] == '*')) {
-            return true;
-        }
+        return (pattern.length == 1) && (pattern[0] == '*') || isMatch(name.toCharArray(), 0, 0);
 
-        return isMatch(name.toCharArray(), 0, 0);
     }
 
     /**

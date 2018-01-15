@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 import java.util.Locale;
 
@@ -116,7 +116,7 @@ public final class OS {
         return isFamily(FAMILY_UNIX);
     }
 
-    public static boolean isFamilyWindows() {
+    static boolean isFamilyWindows() {
         return isFamily(FAMILY_WINDOWS);
     }
 
@@ -185,8 +185,8 @@ public final class OS {
      *            The OS version
      * @return true if the OS matches
      */
-    public static boolean isOs(final String family, final String name,
-            final String arch, final String version) {
+    private static boolean isOs(final String family, final String name,
+                                final String arch, final String version) {
         boolean retValue = false;
 
         if (family != null || name != null || arch != null || version != null) {
@@ -198,35 +198,34 @@ public final class OS {
 
             if (family != null) {
                 if (family.equals(FAMILY_WINDOWS)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_WINDOWS) > -1;
+                    isFamily = OS_NAME.contains(FAMILY_WINDOWS);
                 } else if (family.equals(FAMILY_OS_2)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_OS_2) > -1;
+                    isFamily = OS_NAME.contains(FAMILY_OS_2);
                 } else if (family.equals(FAMILY_NETWARE)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_NETWARE) > -1;
+                    isFamily = OS_NAME.contains(FAMILY_NETWARE);
                 } else if (family.equals(FAMILY_DOS)) {
                     isFamily = PATH_SEP.equals(";")
                             && !isFamily(FAMILY_NETWARE);
                 } else if (family.equals(FAMILY_MAC)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_MAC) > -1;
+                    isFamily = OS_NAME.contains(FAMILY_MAC);
                 } else if (family.equals(FAMILY_TANDEM)) {
-                    isFamily = OS_NAME.indexOf("nonstop_kernel") > -1;
+                    isFamily = OS_NAME.contains("nonstop_kernel");
                 } else if (family.equals(FAMILY_UNIX)) {
                     isFamily = PATH_SEP.equals(":")
                             && !isFamily(FAMILY_OPENVMS)
                             && (!isFamily(FAMILY_MAC) || OS_NAME.endsWith("x"));
                 } else if (family.equals(FAMILY_WIN9X)) {
                     isFamily = isFamily(FAMILY_WINDOWS)
-                            && (OS_NAME.indexOf("95") >= 0
-                                    || OS_NAME.indexOf("98") >= 0
-                                    || OS_NAME.indexOf("me") >= 0 || OS_NAME
-                                    .indexOf("ce") >= 0);
+                            && (OS_NAME.contains("95")
+                                    || OS_NAME.contains("98")
+                                    || OS_NAME.contains("me") || OS_NAME.contains("ce"));
                 } else if (family.equals(FAMILY_Z_OS)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_Z_OS) > -1
-                            || OS_NAME.indexOf("os/390") > -1;
+                    isFamily = OS_NAME.contains(FAMILY_Z_OS)
+                            || OS_NAME.contains("os/390");
                 } else if (family.equals(FAMILY_OS_400)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_OS_400) > -1;
+                    isFamily = OS_NAME.contains(FAMILY_OS_400);
                 } else if (family.equals(FAMILY_OPENVMS)) {
-                    isFamily = OS_NAME.indexOf(FAMILY_OPENVMS) > -1;
+                    isFamily = OS_NAME.contains(FAMILY_OPENVMS);
                 } else {
                     throw new IllegalArgumentException(
                             "Don\'t know how to detect os family \"" + family

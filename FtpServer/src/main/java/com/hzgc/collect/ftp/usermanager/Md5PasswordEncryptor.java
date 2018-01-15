@@ -19,7 +19,7 @@
 
 package com.hzgc.collect.ftp.usermanager;
 
-import com.hzgc.collect.util.EncryptUtils;
+import com.hzgc.collect.ftp.util.EncryptUtils;
 
 
 /**

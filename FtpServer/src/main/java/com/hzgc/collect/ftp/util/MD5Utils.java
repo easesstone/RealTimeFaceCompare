@@ -1,4 +1,6 @@
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
+
+import com.hzgc.collect.ftp.util.EncryptUtils;
 
 public class MD5Utils {
     public static void main(String args[]) {

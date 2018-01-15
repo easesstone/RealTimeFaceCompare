@@ -4,8 +4,8 @@ import com.hzgc.collect.ftp.ClusterOverFtp;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
 import com.hzgc.collect.ftp.FtpServer;
 import com.hzgc.collect.ftp.FtpServerFactory;
-import com.hzgc.collect.util.LoggerConfig;
-import com.hzgc.collect.expand.recive.DataProcess;
+import com.hzgc.collect.ftp.util.LoggerConfig;
+import com.hzgc.collect.expand.reciver.DataProcesser;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.nativefs.filesystem.NativeFileSystemFactory;
@@ -83,7 +83,7 @@ public class FTP extends ClusterOverFtp {
         FTP ftp = new FTP();
         ftp.loadConfig();
         ftp.startFtpServer();
-        DataProcess data = new DataProcess();
+        DataProcesser data = new DataProcesser();
         data.reader();
     }
 }

@@ -1,13 +1,13 @@
-package com.hzgc.collect.util;
+package com.hzgc.collect.expand.util;
 
 import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.util.common.IOUtil;
 
 import java.io.*;
 
-public class BeanUtils {
+public class FaceObjectUtils {
 
-    private BeanUtils() {
+    private FaceObjectUtils() {
     }
     /**
      * 对象转字节数组

@@ -19,7 +19,7 @@
 
 package com.hzgc.collect.ftp;
 
-import com.hzgc.collect.util.IOUtils;
+import com.hzgc.collect.ftp.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

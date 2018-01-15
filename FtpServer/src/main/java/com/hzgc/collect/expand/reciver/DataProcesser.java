@@ -1,7 +1,7 @@
 package com.hzgc.collect.expand.reciver;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.collect.util.FtpUtils;
+import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.collect.expand.processer.ProducerOverFtp;
 import com.hzgc.jni.FaceFunction;

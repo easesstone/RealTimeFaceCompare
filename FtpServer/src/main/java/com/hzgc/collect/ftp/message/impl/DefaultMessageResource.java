@@ -22,7 +22,7 @@ package com.hzgc.collect.ftp.message.impl;
 import com.hzgc.collect.ftp.FtpServerConfigurationException;
 import com.hzgc.collect.ftp.message.MessageResource;
 import com.hzgc.collect.ftp.message.MessageResourceFactory;
-import com.hzgc.collect.util.IOUtils;
+import com.hzgc.collect.ftp.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

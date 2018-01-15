@@ -25,8 +25,8 @@ import com.hzgc.collect.ftp.usermanager.PropertiesUserManagerFactory;
 import com.hzgc.collect.ftp.usermanager.AnonymousAuthentication;
 import com.hzgc.collect.ftp.usermanager.PasswordEncryptor;
 import com.hzgc.collect.ftp.usermanager.UsernamePasswordAuthentication;
-import com.hzgc.collect.util.BaseProperties;
-import com.hzgc.collect.util.IOUtils;
+import com.hzgc.collect.ftp.util.BaseProperties;
+import com.hzgc.collect.ftp.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

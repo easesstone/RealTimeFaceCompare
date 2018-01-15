@@ -26,9 +26,9 @@ import com.hzgc.collect.ftp.ftplet.FtpRequest;
 import com.hzgc.collect.ftp.impl.FtpIoSession;
 import com.hzgc.collect.ftp.impl.FtpServerContext;
 import com.hzgc.collect.ftp.impl.LocalizedFtpReply;
-import com.hzgc.collect.util.IllegalInetAddressException;
-import com.hzgc.collect.util.IllegalPortException;
-import com.hzgc.collect.util.SocketAddressEncoder;
+import com.hzgc.collect.ftp.util.IllegalInetAddressException;
+import com.hzgc.collect.ftp.util.IllegalPortException;
+import com.hzgc.collect.ftp.util.SocketAddressEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

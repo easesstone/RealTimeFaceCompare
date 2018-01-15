@@ -17,24 +17,45 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
+
+import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
  * 
- * Thrown if the provided string representation does not match a valid IP port
+ * This is regular expression filename filter.
  *
  * @author <a href="http://mina.apache.org">Apache MINA Project</a>
  */
-public class IllegalPortException extends IllegalArgumentException {
+public class FileRegularFilter implements FilenameFilter {
 
-    private static final long serialVersionUID = -7771719692741419931L;
+    private RegularExpr regularExpr = null;
 
-    public IllegalPortException() {
-        super();
+    /**
+     * Constructor.
+     * 
+     * @param pattern
+     *            regular expression
+     */
+    public FileRegularFilter(String pattern) {
+        if ((pattern == null) || pattern.equals("") || pattern.equals("*")) {
+            regularExpr = null;
+        } else {
+            regularExpr = new RegularExpr(pattern);
+        }
     }
 
-    public IllegalPortException(String s) {
-        super(s);
+    /**
+     * Tests if a specified file should be included in a file list.
+     * 
+     * @param dir
+     *            - the directory in which the file was found
+     * @param name
+     *            - the name of the file.
+     */
+    public boolean accept(File dir, String name) {
+        return regularExpr == null || regularExpr.isMatch(name);
     }
 }

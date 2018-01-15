@@ -17,7 +17,10 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
+
+import com.hzgc.collect.ftp.util.IllegalInetAddressException;
+import com.hzgc.collect.ftp.util.IllegalPortException;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

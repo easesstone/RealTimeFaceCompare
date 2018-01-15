@@ -23,7 +23,7 @@ import com.hzgc.collect.ftp.ftplet.DataType;
 import com.hzgc.collect.ftp.ftplet.FtpSession;
 import com.hzgc.collect.ftp.ftplet.DataConnection;
 import com.hzgc.collect.ftp.usermanager.impl.TransferRateRequest;
-import com.hzgc.collect.util.IOUtils;
+import com.hzgc.collect.ftp.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

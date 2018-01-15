@@ -24,8 +24,8 @@ import com.hzgc.collect.ftp.ftplet.*;
 import com.hzgc.collect.ftp.impl.FtpIoSession;
 import com.hzgc.collect.ftp.impl.FtpServerContext;
 import com.hzgc.collect.ftp.impl.LocalizedFtpReply;
-import com.hzgc.collect.util.DateUtils;
-import com.hzgc.collect.util.StringUtils;
+import com.hzgc.collect.ftp.util.DateUtils;
+import com.hzgc.collect.ftp.util.StringUtils;
 import org.apache.mina.core.session.IoSession;
 
 import java.io.IOException;

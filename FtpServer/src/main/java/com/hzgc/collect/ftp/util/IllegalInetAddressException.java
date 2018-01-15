@@ -17,37 +17,25 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
+ * 
+ * Thrown if the provided string representation does not match a valid IP
+ * address
  *
  * @author <a href="http://mina.apache.org">Apache MINA Project</a>
- *
  */
-public class ClassUtils {
+public class IllegalInetAddressException extends IllegalArgumentException {
 
-    /**
-     * Checks if a class is a subclass of a class with the specified name. Used
-     * as an instanceOf without having to load the class, useful when trying to
-     * check for classes that might not be available in the runtime JRE.
-     * 
-     * @param clazz
-     *            The class to check
-     * @param className
-     *            The class name to look for in the super classes
-     * @return true if the class extends a class by the specified name.
-     */
-    public static boolean extendsClass(final Class<?> clazz, String className) {
-        Class<?> superClass = clazz.getSuperclass();
+    private static final long serialVersionUID = -7771719692741419933L;
 
-        while (superClass != null) {
-            if (superClass.getName().equals(className)) {
-                return true;
-            }
-            superClass = superClass.getSuperclass();
+    public IllegalInetAddressException() {
+        super();
+    }
 
-        }
-        return false;
+    IllegalInetAddressException(String s) {
+        super(s);
     }
 }

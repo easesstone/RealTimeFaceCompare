@@ -17,48 +17,37 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
-
-import java.io.File;
-import java.io.FilenameFilter;
+package com.hzgc.collect.ftp.util;
 
 /**
  * <strong>Internal class, do not use directly.</strong>
- * 
- * This is regular expression filename filter.
  *
  * @author <a href="http://mina.apache.org">Apache MINA Project</a>
+ *
  */
-public class FileRegularFilter implements FilenameFilter {
-
-    private RegularExpr regularExpr = null;
+public class ClassUtils {
 
     /**
-     * Constructor.
+     * Checks if a class is a subclass of a class with the specified name. Used
+     * as an instanceOf without having to load the class, useful when trying to
+     * check for classes that might not be available in the runtime JRE.
      * 
-     * @param pattern
-     *            regular expression
+     * @param clazz
+     *            The class to check
+     * @param className
+     *            The class name to look for in the super classes
+     * @return true if the class extends a class by the specified name.
      */
-    public FileRegularFilter(String pattern) {
-        if ((pattern == null) || pattern.equals("") || pattern.equals("*")) {
-            regularExpr = null;
-        } else {
-            regularExpr = new RegularExpr(pattern);
-        }
-    }
+    public static boolean extendsClass(final Class<?> clazz, String className) {
+        Class<?> superClass = clazz.getSuperclass();
 
-    /**
-     * Tests if a specified file should be included in a file list.
-     * 
-     * @param dir
-     *            - the directory in which the file was found
-     * @param name
-     *            - the name of the file.
-     */
-    public boolean accept(File dir, String name) {
-        if (regularExpr == null) {
-            return true;
+        while (superClass != null) {
+            if (superClass.getName().equals(className)) {
+                return true;
+            }
+            superClass = superClass.getSuperclass();
+
         }
-        return regularExpr.isMatch(name);
+        return false;
     }
 }

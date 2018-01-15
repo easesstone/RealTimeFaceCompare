@@ -27,7 +27,7 @@ import com.hzgc.collect.ftp.ftplet.FtpReply;
 import com.hzgc.collect.ftp.impl.FtpIoSession;
 import com.hzgc.collect.ftp.impl.FtpServerContext;
 import com.hzgc.collect.ftp.impl.LocalizedFtpReply;
-import com.hzgc.collect.util.SocketAddressEncoder;
+import com.hzgc.collect.ftp.util.SocketAddressEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

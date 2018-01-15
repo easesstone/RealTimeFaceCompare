@@ -11,7 +11,7 @@ import com.hzgc.jni.FaceFunction
 import com.hzgc.cluster.message.{Item, RecognizeAlarmMessage}
 import com.hzgc.cluster.util.StreamingUtils
 import com.hzgc.collect.expand.processer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
-import com.hzgc.collect.util.FtpUtils
+import com.hzgc.collect.ftp.util.FtpUtils
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils

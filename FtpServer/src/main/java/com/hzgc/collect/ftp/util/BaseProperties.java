@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 import com.hzgc.collect.ftp.ftplet.FtpException;
 
@@ -62,7 +62,7 @@ public class BaseProperties extends Properties {
     /**
      * Get boolean value.
      */
-    public boolean getBoolean(final String str) throws FtpException {
+    private boolean getBoolean(final String str) throws FtpException {
         String prop = getProperty(str);
         if (prop == null) {
             throw new FtpException(str + " not found");
@@ -82,7 +82,7 @@ public class BaseProperties extends Properties {
     /**
      * Get integer value.
      */
-    public int getInteger(final String str) throws FtpException {
+    private int getInteger(final String str) throws FtpException {
         String value = getProperty(str);
         if (value == null) {
             throw new FtpException(str + " not found");
@@ -106,7 +106,7 @@ public class BaseProperties extends Properties {
     /**
      * Get long value.
      */
-    public long getLong(final String str) throws FtpException {
+    private long getLong(final String str) throws FtpException {
         String value = getProperty(str);
         if (value == null) {
             throw new FtpException(str + " not found");
@@ -130,7 +130,7 @@ public class BaseProperties extends Properties {
     /**
      * Get double value.
      */
-    public double getDouble(final String str) throws FtpException {
+    private double getDouble(final String str) throws FtpException {
         String value = getProperty(str);
         if (value == null) {
             throw new FtpException(str + " not found");
@@ -178,7 +178,7 @@ public class BaseProperties extends Properties {
     /**
      * Get <code>String</code>.
      */
-    public String getString(final String str) throws FtpException {
+    private String getString(final String str) throws FtpException {
         String value = getProperty(str);
         if (value == null) {
             throw new FtpException(str + " not found");
@@ -241,7 +241,7 @@ public class BaseProperties extends Properties {
     /**
      * Get <code>TimeZone</code>
      */
-    public TimeZone getTimeZone(final String str) throws FtpException {
+    private TimeZone getTimeZone(final String str) throws FtpException {
         String value = getProperty(str);
         if (value == null) {
             throw new FtpException(str + " not found");
@@ -260,7 +260,7 @@ public class BaseProperties extends Properties {
     /**
      * Get <code>DateFormat</code> object.
      */
-    public SimpleDateFormat getDateFormat(final String str) throws FtpException {
+    private SimpleDateFormat getDateFormat(final String str) throws FtpException {
         String value = getProperty(str);
         if (value == null) {
             throw new FtpException(str + " not found");
@@ -284,7 +284,7 @@ public class BaseProperties extends Properties {
     /**
      * Get <code>Date</code> object.
      */
-    public Date getDate(final String str, final DateFormat fmt)
+    private Date getDate(final String str, final DateFormat fmt)
             throws FtpException {
         String value = getProperty(str);
         if (value == null) {

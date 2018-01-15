@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +34,7 @@ public class EncryptUtils {
     /**
      * Encrypt byte array.
      */
-    public final static byte[] encrypt(byte[] source, String algorithm)
+    private static byte[] encrypt(byte[] source, String algorithm)
             throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(algorithm);
         md.reset();
@@ -45,7 +45,7 @@ public class EncryptUtils {
     /**
      * Encrypt string
      */
-    public final static String encrypt(String source, String algorithm)
+    private static String encrypt(String source, String algorithm)
             throws NoSuchAlgorithmException {
         byte[] resByteArray = encrypt(source.getBytes(), algorithm);
         return StringUtils.toHexString(resByteArray);
@@ -54,12 +54,12 @@ public class EncryptUtils {
     /**
      * Encrypt string using MD5 algorithm
      */
-    public final static String encryptMD5(String source) {
+    public static String encryptMD5(String source) {
         if (source == null) {
             source = "";
         }
 
-        String result = "";
+        String result;
         try {
             result = encrypt(source, "MD5");
         } catch (NoSuchAlgorithmException ex) {
@@ -72,12 +72,12 @@ public class EncryptUtils {
     /**
      * Encrypt string using SHA algorithm
      */
-    public final static String encryptSHA(String source) {
+    public static String encryptSHA(String source) {
         if (source == null) {
             source = "";
         }
 
-        String result = "";
+        String result;
         try {
             result = encrypt(source, "SHA");
         } catch (NoSuchAlgorithmException ex) {

@@ -24,7 +24,7 @@ import com.hzgc.collect.ftp.ftplet.*;
 import com.hzgc.collect.ftp.impl.FtpIoSession;
 import com.hzgc.collect.ftp.impl.FtpServerContext;
 import com.hzgc.collect.ftp.impl.LocalizedFtpReply;
-import com.hzgc.collect.util.DateUtils;
+import com.hzgc.collect.ftp.util.DateUtils;
 
 import java.io.IOException;
 
@@ -65,13 +65,13 @@ public class SITE_STAT extends AbstractCommand {
                 .append('\n');
         sb.append("File Upload Number       : ").append(
                 stat.getTotalUploadNumber()).append('\n');
-        sb.append("File DownloadUtils Number     : ").append(
+        sb.append("File FTPDownloadUtils Number     : ").append(
                 stat.getTotalDownloadNumber()).append('\n');
         sb.append("File Delete Number       : ").append(
                 stat.getTotalDeleteNumber()).append('\n');
         sb.append("File Upload Bytes        : ").append(
                 stat.getTotalUploadSize()).append('\n');
-        sb.append("File DownloadUtils Bytes      : ").append(
+        sb.append("File FTPDownloadUtils Bytes      : ").append(
                 stat.getTotalDownloadSize()).append('\n');
         sb.append("Directory Create Number  : ").append(
                 stat.getTotalDirectoryCreated()).append('\n');

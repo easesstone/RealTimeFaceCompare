@@ -23,7 +23,7 @@ import com.hzgc.collect.ftp.ftplet.FtpRequest;
 import com.hzgc.collect.ftp.message.MessageResource;
 import com.hzgc.collect.ftp.ftplet.FileSystemView;
 import com.hzgc.collect.ftp.ftplet.FtpStatistics;
-import com.hzgc.collect.util.DateUtils;
+import com.hzgc.collect.ftp.util.DateUtils;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

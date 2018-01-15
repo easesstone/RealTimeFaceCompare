@@ -1,4 +1,4 @@
-package com.hzgc.collect.util;
+package com.hzgc.collect.ftp.util;
 
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.util.common.IOUtil;
@@ -16,9 +16,9 @@ import java.util.Properties;
 /**
  * ftpClient文件下载
  */
-public class DownloadUtils {
+public class FTPDownloadUtils {
 
-    private static final Logger LOG = Logger.getLogger(DownloadUtils.class);
+    private static final Logger LOG = Logger.getLogger(FTPDownloadUtils.class);
 
     /**
      * 获取FTPClient对象
