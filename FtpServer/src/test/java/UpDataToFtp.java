@@ -1,6 +1,6 @@
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import com.hzgc.ftpserver.util.Download;
+import com.hzgc.ftpserver.util.DownloadUtils;
 
 import java.io.File;
 import java.util.Random;
@@ -32,7 +32,7 @@ public class UpDataToFtp {
                     StringBuilder filePath = new StringBuilder();
                     //拼装路径
                     filePath = filePath.append(IpcId).append("/").append(tempList[j].getName().substring(0, 13).replaceAll("_", "/")).append(randPath);
-                    Download.upLoadFromProduction("172.18.18.136", 2121, "admin", "123456", "", filePath.toString(), fileName, orginFileName);
+                    DownloadUtils.upLoadFromProduction("172.18.18.136", 2121, "admin", "123456", "", filePath.toString(), fileName, orginFileName);
                     counter.inc();
                     System.out.println(counter.getCount());
                 }

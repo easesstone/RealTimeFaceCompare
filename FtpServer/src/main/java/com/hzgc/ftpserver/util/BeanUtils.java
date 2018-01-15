@@ -12,7 +12,7 @@ public class BeanUtils {
     /**
      * 对象转字节数组
      *
-     * @param faceObject
+     * @param faceObject 人脸属性和特征值对象
      * @return byte[]
      */
     public static byte[] objectToBytes(FaceObject faceObject) {

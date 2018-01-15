@@ -13,9 +13,12 @@ LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'
 cd ..
 declare -r BIGDATA_SERVICE_DIR=`pwd`
 declare -r COMMMON_DIR=${BIGDATA_SERVICE_DIR}/common
+declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
+
+## 用于包含ftpAddress.properties
+CONF_DIR=${CONF_DIR}:${FTP_DIR}/conf
 
 cd -
-
 
 if [ -z "$SERVER_NAME" ]; then
     SERVER_NAME=`hostname`
@@ -45,7 +48,7 @@ fi
 if [ ! -d $LOGS_DIR ]; then
     mkdir $LOGS_DIR
 fi
-STDOUT_FILE=$LOGS_DIR/dubbo.log
+STDOUT_FILE=$LOGS_DIR/start_dubbo.log
 
 LIB_DIR=$DEPLOY_DIR/lib
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
@@ -91,3 +94,12 @@ echo "successful!"
 PIDS=`ps -f | grep java | grep "$DEPLOY_DIR" | awk '{print $2}'`
 echo "PID: $PIDS"
 echo "STDOUT: $STDOUT_FILE"
+
+check_dubbo_pid=$(ps -ef | grep start-check-dubbo.sh |grep -v grep | awk  '{print $2}' | uniq)
+if [ -n "${check_dubbo_pid}" ];then
+    echo "check_dubbo is exit,nothing to do " | tee -a $STDOUT_FILE
+else
+    echo "check_dubbo is not exit, just to start check_dubbo."   | tee -a $STDOUT_FILE
+    nohup sh ${BIN_DIR}/start-check-dubbo.sh &
+fi
+

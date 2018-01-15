@@ -3,7 +3,7 @@ package com.hzgc.service.dynamicrepo;
 import com.hzgc.dubbo.attribute.Attribute;
 import com.hzgc.dubbo.attribute.AttributeValue;
 import com.hzgc.dubbo.dynamicrepo.*;
-import com.hzgc.ftpserver.util.FtpUtil;
+import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -154,11 +154,11 @@ class CaptureHistory {
             for (SearchHit hit : hits) {
                 capturePicture = new CapturedPicture();
                 String surl = hit.getId();
-                String burl = FtpUtil.surlToBurl(surl);
+                String burl = FtpUtils.surlToBurl(surl);
                 String ipcid = (String) hit.getSource().get(DynamicTable.IPCID);
                 String timestamp = (String) hit.getSource().get(DynamicTable.TIMESTAMP);
-                capturePicture.setSurl(FtpUtil.getFtpUrl(surl));
-                capturePicture.setBurl(FtpUtil.getFtpUrl(burl));
+                capturePicture.setSurl(FtpUtils.getFtpUrl(surl));
+                capturePicture.setBurl(FtpUtils.getFtpUrl(burl));
                 capturePicture.setIpcId(ipcid);
                 capturePicture.setTimeStamp(timestamp);
                 persons.add(capturePicture);

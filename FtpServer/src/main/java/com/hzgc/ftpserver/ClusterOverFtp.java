@@ -1,8 +1,7 @@
 package com.hzgc.ftpserver;
 
-import com.hzgc.ftpserver.util.FtpUtil;
+import com.hzgc.ftpserver.util.FtpUtils;
 import com.hzgc.util.common.FileUtil;
-import org.apache.ftpserver.DataConnectionConfigurationFactory;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -23,7 +22,7 @@ public abstract class ClusterOverFtp implements Serializable {
 
         try {
             listenerPort = Integer.parseInt(props.getProperty("listener-port"));
-            boolean checkPort = FtpUtil.checkPort(listenerPort);
+            boolean checkPort = FtpUtils.checkPort(listenerPort);
             if (!checkPort) {
                 log.error("The port settings for listener port is illegal and must be greater than 1024");
                 System.exit(1);
@@ -33,24 +32,6 @@ public abstract class ClusterOverFtp implements Serializable {
             log.error("The port for listener is not set, Check that the \"listener-port\" is set", e);
             System.exit(1);
         }
-
-//        try {
-//            jsonLogPath = props.getProperty("json-log");
-//            File jsonLogFile;
-//            if (null != jsonLogPath) {
-//                jsonLogFile = new File(jsonLogPath);
-//                if (jsonLogFile.exists()) {
-//                    FtpUtil.jsonLogPath = jsonLogFile;
-//                    log.info(jsonLogFile.getPath() + "is exist, append to it");
-//                } else {
-////                    jsonLogFile.createNewFile();
-//                    FtpUtil.jsonLogPath = jsonLogFile;
-//                    log.info(jsonLogFile.getPath() + "is not exist, create it");
-//                }
-//            }
-//        } catch (Exception e) {
-//            log.error("Get the path for local json path failure", e);
-//        }
 
         if (listenerPort != 0) {
             passivePorts = props.getProperty("data-ports");

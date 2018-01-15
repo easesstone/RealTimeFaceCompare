@@ -1,6 +1,7 @@
 package com.hzgc.service.dynamicrepo;
 
 import com.hzgc.dubbo.attribute.Attribute;
+import com.hzgc.dubbo.attribute.AttributeValue;
 import com.hzgc.dubbo.attribute.Logistic;
 import com.hzgc.dubbo.dynamicrepo.SearchOption;
 import org.apache.log4j.Logger;
@@ -10,7 +11,6 @@ import java.sql.Date;
 class ParseByOption {
     private static Logger LOG = Logger.getLogger(ParseByOption.class);
     private static String MID_FIELD = null;
-    private static String FINAL_FTIEL = null;
 
     static {
         StringBuilder field = new StringBuilder();
@@ -24,9 +24,6 @@ class ParseByOption {
                 .append(",")
                 .append(DynamicTable.DATE);
         MID_FIELD = field.toString();
-
-        FINAL_FTIEL = field.append(",")
-                .append(DynamicTable.SIMILARITY).toString();
     }
 
     /**
@@ -43,7 +40,10 @@ class ParseByOption {
         }
         StringBuilder finalSql = new StringBuilder();
         finalSql.append("select ")
-                .append(FINAL_FTIEL)
+                .append(MID_FIELD)
+                .append(",")
+                .append(getAttributesByOption(option))
+                .append(DynamicTable.SIMILARITY)
                 .append(" from (")
                 .append(getSQLbyOption(DynamicTable.PERSON_TABLE, searchFeaStr, option))
                 .append(" union all ")
@@ -51,30 +51,9 @@ class ParseByOption {
                 .append(") temp_table where ")
                 .append(DynamicTable.SIMILARITY)
                 .append(">=")
-                .append(option.getThreshold());
-        //判断人脸对象属性
-        if (option.getAttributes() != null && option.getAttributes().size() > 0) {
-            for (Attribute attribute : option.getAttributes()) {
-                if (attribute.getValues() != null && attribute.getValues().size() > 0) {
-                    if (attribute.getLogistic() == Logistic.OR || attribute.getValues().get(0).getValue() == 0) {
-                        LOG.error("Logistic is or , so ignore this condition");
-                        continue;
-                    }
-                    finalSql.append(" and ")
-                            .append(attribute.getIdentify().toLowerCase())
-                            .append(" in ")
-                            .append("(");
-                    for (int i = 0; i < attribute.getValues().size(); i++) {
-                        finalSql.append(attribute.getValues().get(i).getValue());
-                        if (attribute.getValues().size() - 1 > i) {
-                            finalSql.append(",");
-                        } else {
-                            finalSql.append(")");
-                        }
-                    }
-                }
-            }
-        }
+                .append(option.getThreshold())
+                .append(getAttributesAndValuesByOption(option));
+
         //判断一个或多个时间区间 数据格式 小时+分钟 例如:1122
         if (option.getIntervals() != null && option.getIntervals().size() > 0) {
             finalSql.append(" and (");
@@ -131,7 +110,7 @@ class ParseByOption {
                     .append("'");
         }
         //判断一个或多个设备id
-        /*if (option.getDeviceIds() != null) {
+        if (option.getDeviceIds() != null) {
             finalSql.append(" and ")
             .append(DynamicTable.IPCID)
             .append(" in ")
@@ -150,7 +129,7 @@ class ParseByOption {
                             .append(")");
                 }
             }
-        }*/
+        }
         if (option.getSortParams() != null && option.getSortParams().length() > 0) {
             finalSql.append(" order by ");
             String[] splitStr = option.getSortParams().split(",");
@@ -173,11 +152,70 @@ class ParseByOption {
         return finalSql.toString();
     }
 
+    private static String getAttributesByOption(SearchOption option) {
+        StringBuilder SQL = new StringBuilder();
+        if (option.getAttributes() != null && option.getAttributes().size() > 0) {
+            for (Attribute attribute : option.getAttributes()) {
+                if (attribute.getValues() != null && attribute.getValues().size() > 0) {
+                    if (attribute.getLogistic() == Logistic.AND) {
+                        for (AttributeValue attributeValue : attribute.getValues()) {
+                            if (attributeValue.getValue() != 0) {
+                                SQL.append(attribute.getIdentify().toLowerCase())
+                                        .append(",");
+                            }
+                            break;
+                        }
+                    } else {
+                        LOG.error("Logistic is or , so ignore this condition");
+                    }
+                }
+            }
+        }
+        return SQL.toString();
+    }
+
+    private static String getAttributesAndValuesByOption(SearchOption option) {
+        StringBuilder SQL = new StringBuilder();
+        if (option.getAttributes() != null && option.getAttributes().size() > 0) {
+            for (Attribute attribute : option.getAttributes()) {
+                if (attribute.getValues() != null && attribute.getValues().size() > 0 && attribute.getLogistic() == Logistic.AND) {
+                    StringBuilder tempStr = new StringBuilder();
+                    for (int i = 0; i < attribute.getValues().size(); i++) {
+                        if (attribute.getValues().get(i).getValue() != 0) {
+                            if (tempStr.length() == 0) {
+                                tempStr.append(" and ")
+                                        .append(attribute.getIdentify().toLowerCase())
+                                        .append(" in ")
+                                        .append("(");
+                            }
+                            if (attribute.getValues().size() - 1 > i) {
+                                tempStr.append(attribute.getValues().get(i).getValue())
+                                        .append(",");
+                            } else {
+                                tempStr.append(attribute.getValues().get(i).getValue());
+                            }
+                        }
+                    }
+                    if (tempStr.length() != 0) {
+                        tempStr.append(")");
+                        SQL.append(tempStr);
+                    }
+                } else {
+                    if (attribute.getLogistic() == Logistic.OR){
+                        LOG.error("Logistic is or , so ignore this condition");
+                    }
+                }
+            }
+        }
+        return SQL.toString();
+    }
+
     private static String getSQLbyOption(String tableName, String searchFeaStr, SearchOption option) {
         //date分区字段
         return "select " +
                 MID_FIELD +
                 "," +
+                getAttributesByOption(option) +
                 DynamicTable.FUNCTION_NAME +
                 "('" +
                 searchFeaStr +
