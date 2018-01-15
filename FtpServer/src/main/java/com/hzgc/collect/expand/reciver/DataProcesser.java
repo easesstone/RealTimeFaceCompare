@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 /**
  * 队列数据处理
  */
-public class DataProcess {
-    private final Logger LOG = LoggerFactory.getLogger(DataProcess.class);
+public class DataProcesser {
+    private final Logger LOG = LoggerFactory.getLogger(DataProcesser.class);
 
     private final int threadNum = Integer.valueOf(QueueUtil.getProperties("cluster-over-ftp.properties").getProperty("thread.number"));
 
@@ -33,7 +33,7 @@ public class DataProcess {
     public void reader() {
         try {
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(threadNum);
-            BlockingQueue queue = BufferQueue.getInstance().getQueue();
+            BlockingQueue queue = DataReciver.getInstance().getQueue();
             for (int i = 0; i < threadNum; i++) {
                 fixedThreadPool.execute(new Runnable() {
                     @Override

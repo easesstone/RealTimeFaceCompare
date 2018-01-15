@@ -7,20 +7,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * 缓冲队列(刘善彬 to 内)
  */
-public class BufferQueue {
+public class DataReciver {
 
     private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
-    private static BufferQueue instance = null;
+    private static DataReciver instance = null;
 
-    private BufferQueue() {
+    private DataReciver() {
     }
 
-    public static BufferQueue getInstance() {
+    public static DataReciver getInstance() {
         if (instance == null){
-            synchronized (BufferQueue.class){
+            synchronized (DataReciver.class){
                 if (instance == null){
-                    instance = new BufferQueue();
+                    instance = new DataReciver();
                 }
             }
         }
