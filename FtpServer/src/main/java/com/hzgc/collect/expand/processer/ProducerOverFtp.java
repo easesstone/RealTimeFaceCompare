@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.producer;
+package com.hzgc.collect.expand.processer;
 
 
 import com.codahale.metrics.Counter;
@@ -35,7 +35,7 @@ public class ProducerOverFtp implements Serializable {
             this.kafkaPropers.load(fis);
             FEATURE = kafkaPropers.getProperty("topic-feature");
             if (kafkaPropers != null) {
-                kafkaProducer = new KafkaProducer<String, FaceObject>(kafkaPropers);
+                kafkaProducer = new KafkaProducer<>(kafkaPropers);
                 LOG.info("Create KafkaProducer successfull");
             }
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class ProducerOverFtp implements Serializable {
     public void sendKafkaMessage(final String topic, final String key, FaceObject value) {
         long startTime = System.currentTimeMillis();
         if (kafkaPropers != null) {
-            kafkaProducer.send(new ProducerRecord<String, FaceObject>(topic, key, value), new Callback() {
+            kafkaProducer.send(new ProducerRecord<>(topic, key, value), new Callback() {
                 @Override
                 public void onCompletion(RecordMetadata metadata, Exception e) {
                     long elapsedTime = System.currentTimeMillis() - startTime;

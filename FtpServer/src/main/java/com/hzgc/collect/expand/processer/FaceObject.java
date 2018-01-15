@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.producer;
+package com.hzgc.collect.expand.processer;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;

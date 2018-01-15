@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.producer;
+package com.hzgc.collect.expand.processer;
 
 import com.hzgc.collect.util.BeanUtils;
 

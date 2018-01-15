@@ -19,6 +19,7 @@
 
 package com.hzgc.collect.ftp.impl;
 
+import com.hzgc.collect.expand.reciver.DataReciver;
 import com.hzgc.collect.ftp.command.CommandFactory;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.ftplet.*;
@@ -28,9 +29,8 @@ import com.hzgc.collect.ftp.usermanager.PropertiesUserManagerFactory;
 import com.hzgc.collect.ftp.usermanager.impl.BaseUser;
 import com.hzgc.collect.ftp.usermanager.impl.TransferRatePermission;
 import com.hzgc.collect.ftp.usermanager.impl.WritePermission;
-import com.hzgc.collect.expand.producer.ProducerOverFtp;
-import com.hzgc.collect.expand.producer.RocketMQProducer;
-import com.hzgc.collect.expand.recive.BufferQueue;
+import com.hzgc.collect.expand.processer.ProducerOverFtp;
+import com.hzgc.collect.expand.processer.RocketMQProducer;
 import com.hzgc.collect.ftp.ConnectionConfig;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
 import com.hzgc.collect.ftp.nativefs.filesystem.NativeFileSystemFactory;
@@ -80,15 +80,15 @@ public class DefaultFtpServerContext implements FtpServerContext {
 
     private ConnectionConfig connectionConfig = new ConnectionConfigFactory().createConnectionConfig();
 
-    private Map<String, Listener> listeners = new HashMap<String, Listener>();
+    private Map<String, Listener> listeners = new HashMap<>();
 
     private ProducerOverFtp producerOverFtp = ProducerOverFtp.getInstance();
 
     private RocketMQProducer producerRocketMQ = RocketMQProducer.getInstance();
 
-    private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList<Authority>();
-    private static final List<Authority> ANON_AUTHORITIES = new ArrayList<Authority>();
-    private BufferQueue bufferQueue = BufferQueue.getInstance();
+    private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList<>();
+    private static final List<Authority> ANON_AUTHORITIES = new ArrayList<>();
+    private DataReciver bufferQueue = DataReciver.getInstance();
     
     /**
      * The thread pool executor to be used by the server using this context
@@ -211,9 +211,7 @@ public class DefaultFtpServerContext implements FtpServerContext {
             threadPoolExecutor.shutdown();
             try {
                 threadPoolExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-            } finally {
-                // TODO: how to handle?
+            } catch (InterruptedException ignored) {
             }
         }
     }
@@ -295,7 +293,7 @@ public class DefaultFtpServerContext implements FtpServerContext {
     public RocketMQProducer getProducerRocketMQ() {
         return producerRocketMQ;
     }
-    public BufferQueue getBufferQueue() {
+    public DataReciver getBufferQueue() {
         return bufferQueue;
     }
 }

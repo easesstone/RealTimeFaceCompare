@@ -1,6 +1,6 @@
 package com.hzgc.collect.util;
 
-import com.hzgc.collect.expand.producer.FaceObject;
+import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.util.common.IOUtil;
 
 import java.io.*;

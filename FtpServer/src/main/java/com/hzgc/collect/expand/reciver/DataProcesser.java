@@ -1,9 +1,9 @@
-package com.hzgc.collect.expand.recive;
+package com.hzgc.collect.expand.reciver;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.collect.util.FtpUtils;
-import com.hzgc.collect.expand.producer.FaceObject;
-import com.hzgc.collect.expand.producer.ProducerOverFtp;
+import com.hzgc.collect.expand.processer.FaceObject;
+import com.hzgc.collect.expand.processer.ProducerOverFtp;
 import com.hzgc.jni.FaceFunction;
 
 import java.text.SimpleDateFormat;

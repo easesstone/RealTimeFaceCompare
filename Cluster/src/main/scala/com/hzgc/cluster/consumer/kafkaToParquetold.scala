@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import java.util.Properties
 
 import com.hzgc.cluster.util.StreamingUtils
-import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
+import com.hzgc.collect.expand.processer.{FaceObject, FaceObjectDecoder}
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka.KafkaUtils

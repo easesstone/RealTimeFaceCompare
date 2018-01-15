@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.recive;
+package com.hzgc.collect.expand.reciver;
 
 import com.hzgc.util.common.FileUtil;
 import org.slf4j.Logger;

@@ -3,7 +3,7 @@ package com.hzgc.service.dynamicrepo;
 import com.hzgc.dubbo.attribute.Attribute;
 import com.hzgc.dubbo.attribute.AttributeValue;
 import com.hzgc.dubbo.dynamicrepo.*;
-import com.hzgc.ftpserver.util.FtpUtils;
+import com.hzgc.collect.util.FtpUtils;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;

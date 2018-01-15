@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.recive;
+package com.hzgc.collect.expand.reciver;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

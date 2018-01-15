@@ -2,12 +2,13 @@ package com.hzgc.cluster.alarm
 
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import com.google.gson.Gson
 import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.cluster.message.OffLineAlarmMessage
 import com.hzgc.cluster.util.StreamingUtils
-import com.hzgc.ftpserver.producer.RocketMQProducer
+import com.hzgc.collect.expand.processer.RocketMQProducer
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConverters

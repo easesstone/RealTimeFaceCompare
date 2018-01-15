@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.producer;
+package com.hzgc.collect.expand.processer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;

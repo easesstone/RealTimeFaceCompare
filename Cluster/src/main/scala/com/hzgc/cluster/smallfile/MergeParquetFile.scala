@@ -52,7 +52,7 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
   * 通过以上内容，每天，每个设备下，最多有2到3个文件，每个文件的大小为256 M
   */
 object MergeParquetFile {
-    val LOG = Logger.getLogger(MergeParquetFile.getClass)
+    val LOG: Logger = Logger.getLogger(MergeParquetFile.getClass)
     def main(args: Array[String]): Unit = {
         if (args.length != 4  && args.length != 5) {
             System.out.print(s"""

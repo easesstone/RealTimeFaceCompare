@@ -23,7 +23,7 @@ import org.apache.spark.sql.SparkSession
   *       load-parquet-files.sh
   */
 object LoadParquetFile {
-  val LOG = Logger.getLogger(LoadParquetFile.getClass)
+  val LOG: Logger = Logger.getLogger(LoadParquetFile.getClass)
 
   def main(args: Array[String]): Unit = {
     if (args.length != 3) {
