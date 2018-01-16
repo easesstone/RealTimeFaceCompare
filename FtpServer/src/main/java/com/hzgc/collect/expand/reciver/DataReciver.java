@@ -1,5 +1,7 @@
 package com.hzgc.collect.expand.reciver;
 
+import com.hzgc.collect.expand.log.LogGroupWriter;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -10,6 +12,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class DataReciver {
 
     private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+
+    private long count;
+
+    private LogGroupWriter writer;
 
     private static DataReciver instance = null;
 

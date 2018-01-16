@@ -8,5 +8,5 @@ public interface ProperHelper {
      * @param key 字段名称
      * @return 相应值
      */
-    public String getProper(String key);
+    String getProper(String key);
 }
