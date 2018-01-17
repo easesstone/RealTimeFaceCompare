@@ -1,6 +1,6 @@
 package com.hzgc.collect.expand.reciver;
 
-public class RecvicerData {
+public class RecvicerEvent {
     /**
      * FTP url
      */

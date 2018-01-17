@@ -1,13 +1,18 @@
 package com.hzgc.collect.expand.log;
 
-public abstract class AbstractLogGroupWrite implements LogGroupWriter {
+import com.hzgc.collect.expand.conf.RecvicerConf;
+
+public abstract class AbstractLogGroupWrite implements LogWriter {
     /**
      * 日志文件名称
      */
     public String fileName;
 
-    /**
-     * 被调度的日志名称
-     */
-    public String scheduledFileName;
+    private AbstractLogGroupWrite() {
+
+    }
+
+    public AbstractLogGroupWrite(RecvicerConf conf) {
+
+    }
 }

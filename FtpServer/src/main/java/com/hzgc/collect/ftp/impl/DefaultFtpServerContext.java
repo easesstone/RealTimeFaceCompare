@@ -19,7 +19,7 @@
 
 package com.hzgc.collect.ftp.impl;
 
-import com.hzgc.collect.expand.reciver.DataReciver;
+import com.hzgc.collect.expand.util.DataReciver;
 import com.hzgc.collect.ftp.command.CommandFactory;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.ftplet.*;

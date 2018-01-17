@@ -20,7 +20,7 @@
 package com.hzgc.collect.ftp.command.impl;
 
 import com.hzgc.collect.expand.processer.RocketMQProducer;
-import com.hzgc.collect.expand.reciver.DataReciver;
+import com.hzgc.collect.expand.util.DataReciver;
 import com.hzgc.collect.ftp.command.AbstractCommand;
 import com.hzgc.collect.ftp.ftplet.*;
 import com.hzgc.collect.ftp.impl.*;

@@ -5,7 +5,7 @@ import com.hzgc.collect.ftp.ConnectionConfigFactory;
 import com.hzgc.collect.ftp.FtpServer;
 import com.hzgc.collect.ftp.FtpServerFactory;
 import com.hzgc.collect.ftp.util.LoggerConfig;
-import com.hzgc.collect.expand.reciver.DataProcesser;
+import com.hzgc.collect.expand.util.DataProcesser;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.nativefs.filesystem.NativeFileSystemFactory;

@@ -6,7 +6,7 @@ public interface Recvicer {
      *
      * @param data 数据对象
      */
-    public void putData(RecvicerData data);
+    public void putData(RecvicerEvent data);
 
     /**
      * 向RecvicerContainer注册Recvicer用来接收数据
@@ -19,4 +19,9 @@ public interface Recvicer {
      * @param count 当前队列序号
      */
     public void setCount(long count);
+
+    /**
+     * 开始处理数据
+     */
+    public void startProcess();
 }

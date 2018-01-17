@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.reciver;
+package com.hzgc.collect.expand.util;
 
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.collect.ftp.util.FtpUtils;
