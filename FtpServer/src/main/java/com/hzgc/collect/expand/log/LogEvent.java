@@ -1,15 +1,10 @@
-package com.hzgc.collect.expand.reciver;
+package com.hzgc.collect.expand.log;
 
-public class RecvicerEvent {
+public class LogEvent {
     /**
      * FTP url
      */
     private String url;
-
-    /**
-     * 当前数据序号
-     */
-    private long count;
 
     /**
      * 序列号
@@ -32,14 +27,6 @@ public class RecvicerEvent {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public long getCount() {
-        return count;
-    }
-
-    public void setCount(long count) {
-        this.count = count;
     }
 
     public long getIpcID() {

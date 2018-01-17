@@ -1,6 +1,6 @@
 package com.hzgc.collect.expand.log;
 
-import com.hzgc.collect.expand.conf.RecvicerConf;
+import com.hzgc.collect.expand.conf.CommonConf;
 
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
@@ -9,34 +9,32 @@ import com.hzgc.collect.expand.conf.RecvicerConf;
  * 3.无参构造器私有化，即不能通过无参构造器进行实例化
  * 如果需要实现LogWriter定义的功能需要继承AbstractLogGroupWrite
  */
-public abstract class AbstractLogGroupWrite implements LogWriter {
+abstract class AbstractLogWrite implements LogWriter {
     /**
-     * 日志文件名称
+     * 当前队列ID
      */
-    public String logName;
-
-    /**
-     * 日志目录
-     */
-    public String logPath;
-
-    /**
-     * 日志大小，以个数计算
-     */
-    public String logSize;
+    private String queueID;
 
     /**
      * 私有无参构造器
      */
-    private AbstractLogGroupWrite() {
+    private AbstractLogWrite() {
 
     }
 
     /**
-     * 通过ReceiverConf来实例化对应属性
      *
      * @param conf ReceiverConf对象
+     * @param queueID 当前队列ID
      */
-    AbstractLogGroupWrite(RecvicerConf conf) {
+    AbstractLogWrite(CommonConf conf, String queueID) {
+    }
+
+    public String getQueueID() {
+        return queueID;
+    }
+
+    public void setQueueID(String queueID) {
+        this.queueID = queueID;
     }
 }
