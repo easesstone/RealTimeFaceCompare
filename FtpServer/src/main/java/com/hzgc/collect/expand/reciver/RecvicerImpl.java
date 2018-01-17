@@ -18,7 +18,6 @@ public class RecvicerImpl implements Recvicer {
 
     @Override
     public void putData(RecvicerEvent event) {
-        writer.writeEvent(event);
     }
 
     @Override
