@@ -22,7 +22,7 @@ package com.hzgc.ftpserver.command.impl;
 import com.hzgc.ftpserver.command.AbstractCommand;
 import com.hzgc.ftpserver.ftplet.*;
 import com.hzgc.ftpserver.impl.*;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +176,7 @@ public class STOU extends AbstractCommand {
                                         "STOU", fileName, file));
             } finally {
                 // make sure we really close the output stream
-                IoUtils.close(os);
+                IOUtils.close(os);
             }
 
             // if data transfer ok - send transfer complete message

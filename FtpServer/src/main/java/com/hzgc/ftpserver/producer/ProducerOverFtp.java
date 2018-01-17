@@ -4,9 +4,11 @@ package com.hzgc.ftpserver.producer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.hzgc.util.common.FileUtil;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -39,20 +41,29 @@ public class ProducerOverFtp implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            IoUtils.close(fis);
+            IOUtils.close(fis);
         }
     }
 
     public void sendKafkaMessage(final String topic, final String key, FaceObject value) {
         long startTime = System.currentTimeMillis();
         if (kafkaPropers != null) {
-            kafkaProducer.send(new ProducerRecord<String, FaceObject>(topic, key, value),
-                    new ProducerCallBack(startTime, key));
+            kafkaProducer.send(new ProducerRecord<String, FaceObject>(topic, key, value), new Callback() {
+                @Override
+                public void onCompletion(RecordMetadata metadata, Exception e) {
+                    long elapsedTime = System.currentTimeMillis() - startTime;
+                    if (metadata != null) {
+                        LOG.info("Send Kafka successfully! message:[topic:" + topic + ", key:" + key +
+                                "], send to partition(" + metadata.partition() + "), offset(" + metadata.offset() + ") in " + elapsedTime + "ms");
+                        counter.inc();
+                        LOG.info("Send Kafka total:" + counter.getCount());
+                    } else {
+                        LOG.error("Send Kafka failed! message:[" + key + "]" + " send to partition(" + metadata.partition() + ")");
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
-        LOG.info("Send Kafka successfully! message:[topic:" + topic + ", key:" + key + "]");
-        counter.inc();
-        LOG.info("Send Kafka total:" + counter.getCount());
-
     }
 
     public void closeProducer() {

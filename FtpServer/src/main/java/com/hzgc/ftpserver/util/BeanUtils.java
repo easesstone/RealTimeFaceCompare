@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.common;
+package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.producer.FaceObject;
 import com.hzgc.util.common.IOUtil;
@@ -12,7 +12,7 @@ public class BeanUtils {
     /**
      * 对象转字节数组
      *
-     * @param faceObject
+     * @param faceObject 人脸属性和特征值对象
      * @return byte[]
      */
     public static byte[] objectToBytes(FaceObject faceObject) {

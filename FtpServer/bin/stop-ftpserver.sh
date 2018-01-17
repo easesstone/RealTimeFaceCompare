@@ -4,8 +4,8 @@
 ## Filename:    ftpoverkafka
 ## Description: stop  ftp
 ## Version:     1.0
-## Author:      caodabao
-## Created:     2017-11-15
+## Author:      liushanbin
+## Created:     2018-01-08
 ################################################################################
 
 #set -x
@@ -18,10 +18,9 @@ FTP_DIR=`pwd`
 ## log 日记目录
 LOG_DIR=${FTP_DIR}/logs
 ##log日志文件
-LOG_FILE=${LOG_DIR}/ftp.log
+LOG_FILE=${LOG_DIR}/stop_ftpserver.log
 source /etc/profile
 stop_ftp=1                                                      ## 判断ftp是否关闭成功 1->失败 0->成功 默认失败
-CHECK_LOG_FILE=$LOG_DIR/check_ftpserver.log
 stop_check_ftp=1
 
 
@@ -34,25 +33,25 @@ stop_check_ftp=1
 #####################################################################
 function stop_check_ftp()
 {
-    echo ""  | tee -a $CHECK_LOG_FILE
-    echo "****************************************************"  | tee -a $CHECK_LOG_FILE
-    echo " start stop check_ftp ......................." | tee  -a $CHECK_LOG_FILE
+    echo ""  | tee -a $LOG_FILE
+    echo "****************************************************"  | tee -a $LOG_FILE
+    echo " start stop check_ftp ......................." | tee  -a $LOG_FILE
     check_ftp_pid=$(ps -ef | grep start-check-ftpserver.sh |grep -v grep | awk  '{print $2}' | uniq)
-    echo "check_ftpserver's pid is: ${check_ftp_pid}"  | tee -a $CHECK_LOG_FILE
+    echo "check_ftpserver's pid is: ${check_ftp_pid}"  | tee -a $LOG_FILE
     if [ -n "${check_ftp_pid}" ];then
-        echo "check_ftpserver is exit,exit with 0,kill check_ftpserver now " | tee -a $CHECK_LOG_FILE
+        echo "check_ftpserver is exit,exit with 0,kill check_ftpserver now " | tee -a $LOG_FILE
         kill -9 ${check_ftp_pid}
         sleep 5s
         check_ftp_pid_restart=$(ps -ef | grep start-check-ftpserver.sh |grep -v grep | awk  '{print $2}' | uniq)
         if [ -n "${check_ftp_pid_restart}" ];then
             stop_check_ftp=1
-            echo "stop check_ftpserver failure, retry it again."  | tee -a  $CHECK_LOG_FILE
+            echo "stop check_ftpserver failure, retry it again."  | tee -a  $LOG_FILE
         else
             stop_check_ftp=0
-            echo "stop check_ftpserver sucessed, just to start check_ftpserver."  | tee -a  $CHECK_LOG_FILE
+            echo "stop check_ftpserver sucessed, just to start check_ftpserver."  | tee -a  $LOG_FILE
         fi
     else
-        echo "check_ftpserver is not exit, just to start check_ftpserver."   | tee -a $CHECK_LOG_FILE
+        echo "check_ftpserver is not exit, just to start check_ftpserver."   | tee -a $LOG_FILE
         stop_check_ftp=0
     fi
 }
@@ -108,11 +107,11 @@ function main()
     fi
     stop_check_ftp
     if [ ${stop_check_ftp} -eq 0 ];then
-        echo "stop check_ftp sucessed" | tee -a  $CHECK_LOG_FILE
+        echo "stop check_ftp sucessed" | tee -a  $LOG_FILE
     else
         stop_check_ftp
         if [ ${stop_check_ftp} -eq 1 ];then
-            echo "retry stop check_ftp failed please check the config......exit with 1" | tee -a  $CHECK_LOG_FILE
+            echo "retry stop check_ftp failed please check the config......exit with 1" | tee -a  $LOG_FILE
         fi
     fi
 }

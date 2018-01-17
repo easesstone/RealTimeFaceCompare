@@ -38,6 +38,8 @@ public class RocketMQProducer implements Serializable {
             String producerGroup = properties.getProperty("group", UUID.randomUUID().toString());
             if (StringUtil.strIsRight(namesrvAddr) && StringUtil.strIsRight(topic) && StringUtil.strIsRight(producerGroup)) {
                 producer = new DefaultMQProducer(producerGroup);
+                producer.setRetryTimesWhenSendFailed(4);
+                producer.setRetryAnotherBrokerWhenNotStoreOK(true);
                 producer.setNamesrvAddr(namesrvAddr);
                 producer.start();
                 LOG.info("producer started...");
@@ -87,8 +89,6 @@ public class RocketMQProducer implements Serializable {
             } else {
                 msg = new Message(topic, tag, key, data);
             }
-            LOG.info("Send RocketMQ successfully! message:[topic:" + msg.getTopic() + ", tag:" + msg.getTags() + ", key:" + msg.getKeys() + ", data:" + new String(data) + "]");
-            //long startTime = System.currentTimeMillis();
             if (selector != null) {
                 sendResult = producer.send(msg, new MessageQueueSelector() {
                     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
@@ -98,8 +98,8 @@ public class RocketMQProducer implements Serializable {
             } else {
                 sendResult = producer.send(msg);
             }
-            //log.info(startTime);
-            LOG.info(sendResult);
+            LOG.info("Send RocketMQ successfully! message:[topic:" + msg.getTopic() + ", tag:" + msg.getTags() +
+                    ", key:" + msg.getKeys() + ", data:" + new String(data) + "], " + sendResult);
             counter.inc();
             LOG.info("Send RocketMQ total:" + counter.getCount());
         } catch (Exception e) {
@@ -107,11 +107,5 @@ public class RocketMQProducer implements Serializable {
             LOG.error("Send message error...");
         }
         return sendResult;
-    }
-
-    void shutdown() {
-        if (producer != null) {
-            producer.shutdown();
-        }
     }
 }

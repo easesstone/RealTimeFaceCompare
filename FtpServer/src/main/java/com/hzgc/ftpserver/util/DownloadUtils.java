@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.common;
+package com.hzgc.ftpserver.util;
 
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.util.common.IOUtil;
@@ -16,9 +16,9 @@ import java.util.Properties;
 /**
  * ftpClient文件下载
  */
-public class Download {
+public class DownloadUtils {
 
-    private static Logger logger = Logger.getLogger(Download.class);
+    private static final Logger LOG = Logger.getLogger(DownloadUtils.class);
 
     /**
      * 获取FTPClient对象
@@ -29,8 +29,8 @@ public class Download {
      * @param ftpPort     FTP端口 默认为21
      * @return FTPClient
      */
-    public static FTPClient getFTPClient(String ftpHost, String ftpUserName,
-                                         String ftpPassword, int ftpPort) {
+    private static FTPClient getFTPClient(String ftpHost, String ftpUserName,
+                                          String ftpPassword, int ftpPort) {
         FTPClient ftpClient = new FTPClient();
         try {
             ftpClient.connect(ftpHost, ftpPort);// 连接FTP服务器
@@ -38,16 +38,16 @@ public class Download {
             FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX); //设置linux环境
             ftpClient.configure(conf);
             if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) { //判断是否连接成功
-                logger.info("Failed to connect to FTPClient, user name or password error.");
+                LOG.info("Failed to connect to FTPClient, user name or password error.");
                 ftpClient.disconnect();
             } else {
-                logger.info("FTPClient connection successful.");
+                LOG.info("FTPClient connection successful.");
             }
         } catch (SocketException e) {
-            logger.info("FTP IP address may be incorrect, please configure correctly.");
+            LOG.info("FTP IP address may be incorrect, please configure correctly.");
             e.printStackTrace();
         } catch (IOException e) {
-            logger.info("FTP port error, please configure correctly.");
+            LOG.info("FTP port error, please configure correctly.");
             e.printStackTrace();
         }
         return ftpClient;
@@ -65,12 +65,12 @@ public class Download {
      * @param localPath     下载到本地的位置 格式：D:/download
      * @param localFileName 下载到本地的文件名称
      */
-    public static void downloadFtpFile(String ftpHost, String ftpUserName,
-                                       String ftpPassword, int ftpPort,
-                                       String ftpFilePath, String ftpFileName,
-                                       String localPath, String localFileName) {
+    private static void downloadFtpFile(String ftpHost, String ftpUserName,
+                                        String ftpPassword, int ftpPort,
+                                        String ftpFilePath, String ftpFileName,
+                                        String localPath, String localFileName) {
 
-        FTPClient ftpClient = null;
+        FTPClient ftpClient;
 
         try {
             //连接FTPClient并转移到FTP服务器目录
@@ -83,7 +83,12 @@ public class Download {
             //判断文件目录是否存在
             File dir = new File(localPath);
             if (!dir.exists()) {
-                dir.mkdirs();
+                boolean temp = dir.mkdirs();
+                if (temp) {
+                    LOG.info("Create directory " + localPath + " successful");
+                } else {
+                    LOG.info("Create directory " + localPath + " failed");
+                }
             }
 
             File localFile = new File(localPath + File.separatorChar + localFileName);
@@ -95,13 +100,13 @@ public class Download {
             ftpClient.logout();
 
         } catch (FileNotFoundException e) {
-            logger.error("Failed to find the " + ftpFilePath + " file below");
+            LOG.error("Failed to find the " + ftpFilePath + " file below");
             e.printStackTrace();
         } catch (SocketException e) {
-            logger.error("Failed to connect FTPClient.");
+            LOG.error("Failed to connect FTPClient.");
             e.printStackTrace();
         } catch (IOException e) {
-            logger.error("File read error.");
+            LOG.error("File read error.");
             e.printStackTrace();
         }
     }
@@ -189,23 +194,23 @@ public class Download {
 
                 //通过FTPClient获取文件输入流并转为byte[]
                 in = ftpClient.retrieveFileStream(ftpFileName);
-                ftpFileBytes = FtpUtil.inputStreamCacher(in).toByteArray();
+                ftpFileBytes = FtpUtils.inputStreamCacher(in).toByteArray();
 
                 in.close();
                 ftpClient.logout();
 
             } catch (FileNotFoundException e) {
-                logger.error("Failed to find the " + ftpFilePath + " file below");
+                LOG.error("Failed to find the " + ftpFilePath + " file below");
                 e.printStackTrace();
             } catch (SocketException e) {
-                logger.error("Failed to connect FTPClient.");
+                LOG.error("Failed to connect FTPClient.");
                 e.printStackTrace();
             } catch (IOException e) {
-                logger.error("File read error.");
+                LOG.error("File read error.");
                 e.printStackTrace();
             }
         } else {
-            logger.warn("method param is error.");
+            LOG.warn("method param is error.");
         }
         return ftpFileBytes;
     }
@@ -235,7 +240,7 @@ public class Download {
             reply = ftp.getReplyCode();
             if (!FTPReply.isPositiveCompletion(reply)) {
                 ftp.disconnect();
-                return result;
+                return false;
             }
             //切换到上传目录
             if (!ftp.changeWorkingDirectory(basePath + filePath)) {
@@ -249,7 +254,7 @@ public class Download {
                     tempPath += "/" + dir;
                     if (!ftp.changeWorkingDirectory(tempPath)) {
                         if (!ftp.makeDirectory(tempPath)) {
-                            return result;
+                            return false;
                         } else {
                             ftp.changeWorkingDirectory(tempPath);
                         }
@@ -260,7 +265,7 @@ public class Download {
             ftp.setFileType(FTP.BINARY_FILE_TYPE);
             //上传文件
             if (!ftp.storeFile(filename, input)) {
-                return result;
+                return false;
             }
             input.close();
             ftp.logout();
@@ -289,7 +294,6 @@ public class Download {
      * @param filename 上传到FTP服务器上的文件名
      * @param input    输入流
      * @return 成功返回true，否则返回false *
-     * @Version 1.0
      */
     public static boolean uploadFileNew(String url,// FTP服务器hostname
                                         int port,// FTP服务器端口
@@ -311,7 +315,7 @@ public class Download {
             reply = ftp.getReplyCode();
             if (!FTPReply.isPositiveCompletion(reply)) {
                 ftp.disconnect();
-                return success;
+                return false;
             }
             ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
             ftp.makeDirectory(path);
@@ -345,12 +349,18 @@ public class Download {
                                             String filename, //上传到FTP服务器上的文件名
                                             String orginfilename //输入流文件名
     ) {
+        FileInputStream in = null;
         try {
-            FileInputStream in = new FileInputStream(new File(orginfilename));
-            boolean flag = uploadFile(hostname, port, username, password, basepath, filepath, filename, in);
-            //System.out.println(flag);
-        } catch (Exception e) {
+            in = new FileInputStream(new File(orginfilename));
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        boolean flag = uploadFile(hostname, port, username, password, basepath, filepath, filename, in);
+            if (flag) {
+                LOG.info("upload file successfule");
+            } else {
+                LOG.error("upload file successfule");
+            }
+
     }
 }

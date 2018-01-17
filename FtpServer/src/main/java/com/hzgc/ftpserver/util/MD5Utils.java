@@ -1,9 +1,9 @@
-package com.hzgc.ftpserver.common;
+package com.hzgc.ftpserver.util;
 
 import com.hzgc.ftpserver.util.EncryptUtils;
 import org.omg.Dynamic.Parameter;
 
-public class PasswrodToMD5 {
+public class MD5Utils {
     public static void main(String args[]) {
         if (args.length == 0) {
             System.out.println("Parameter can not be empty!");

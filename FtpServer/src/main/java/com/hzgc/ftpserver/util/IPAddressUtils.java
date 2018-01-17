@@ -1,4 +1,4 @@
-package com.hzgc.ftpserver.common;
+package com.hzgc.ftpserver.util;
 
 import org.apache.log4j.Logger;
 
@@ -8,9 +8,9 @@ import java.net.UnknownHostException;
 /**
  * 获取IP、hostName工具类
  */
-public class IpAddressUtil {
+public class IPAddressUtils {
 
-    private static Logger LOG = Logger.getLogger(IpAddressUtil.class);
+    private static Logger LOG = Logger.getLogger(IPAddressUtils.class);
 
     private static InetAddress netAddress = getInetAddress();
 
