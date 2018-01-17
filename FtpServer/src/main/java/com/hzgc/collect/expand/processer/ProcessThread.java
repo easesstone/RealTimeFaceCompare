@@ -1,35 +1,30 @@
 package com.hzgc.collect.expand.processer;
 
 
-import com.hzgc.collect.expand.log.DataEvent;
+import com.hzgc.collect.expand.conf.RecvicerConf;
+import com.hzgc.collect.expand.log.LogWriter;
+import com.hzgc.collect.expand.reciver.RecvicerEvent;
 
 import java.util.concurrent.BlockingQueue;
 
 public class ProcessThread implements Runnable {
-    private long count;
-    private BlockingQueue<DataEvent> queue;
-    public ProcessThread(long count, BlockingQueue<DataEvent> queue) {
-        this.count = count;
+    private RecvicerConf conf;
+    private BlockingQueue<RecvicerEvent> queue;
+    private LogWriter writer;
+    public ProcessThread(RecvicerConf conf, BlockingQueue<RecvicerEvent> queue, LogWriter writer) {
+        this.conf = conf;
         this.queue = queue;
+        this.writer = writer;
     }
     @Override
     public void run() {
-
     }
 
-    public long getCount() {
-        return count;
-    }
-
-    public void setCount(long count) {
-        this.count = count;
-    }
-
-    public BlockingQueue<DataEvent> getQueue() {
+    public BlockingQueue<RecvicerEvent> getQueue() {
         return queue;
     }
 
-    public void setQueue(BlockingQueue<DataEvent> queue) {
+    public void setQueue(BlockingQueue<RecvicerEvent> queue) {
         this.queue = queue;
     }
 }

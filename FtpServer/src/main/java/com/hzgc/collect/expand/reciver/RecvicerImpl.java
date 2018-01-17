@@ -23,7 +23,6 @@ public class RecvicerImpl implements Recvicer {
 
     @Override
     public void registIntoContainer() {
-
     }
 
     @Override
