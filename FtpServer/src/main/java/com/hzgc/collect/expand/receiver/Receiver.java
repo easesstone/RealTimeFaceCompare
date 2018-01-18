@@ -1,12 +1,14 @@
-package com.hzgc.collect.expand.reciver;
+package com.hzgc.collect.expand.receiver;
 
-public interface Recvicer {
+import com.hzgc.collect.expand.log.LogEvent;
+
+public interface Receiver {
     /**
      * 此方法可将数据插入当前Recvicer的队列列
      *
      * @param data 数据对象
      */
-    public void putData(RecvicerEvent data);
+    public void putData(LogEvent data);
 
     /**
      * 向RecvicerContainer注册Recvicer用来接收数据

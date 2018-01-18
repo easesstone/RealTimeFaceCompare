@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
+    public Main(String string){
+
+    }
+    public Main(String s1, String s2) {
+        this(s1);
+    }
      static List<String> integer;
 }
 

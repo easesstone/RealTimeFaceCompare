@@ -1,17 +1,19 @@
-package com.hzgc.collect.expand.reciver;
+package com.hzgc.collect.expand.receiver;
+
+import com.hzgc.collect.expand.log.LogEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecvicerImplContainer {
-    private static List<Recvicer> container = new ArrayList<>();
+public class ReceiverScheduler {
+    private static List<Receiver> container = new ArrayList<>();
 
     /**
      * 向Recvicer对象即队列对象集合中的其中一个插入数据，采用轮询的方式,需要考虑线程安全
      *
      * @param event 封装的数据对象
      */
-    public static void putData(RecvicerEvent event) {
+    public static void putData(LogEvent event) {
     }
 
     /**
@@ -19,12 +21,12 @@ public class RecvicerImplContainer {
      *
      * @return 返回Recvicer对象
      */
-    private static Recvicer getRecvicer() {
+    private static Receiver getRecvicer() {
         return null;
     }
 
-    public static void regist(Recvicer recvicer) {
-        container.add(recvicer);
+    public static void regist(Receiver receiver) {
+        container.add(receiver);
     }
 
     public static void preapreRecvicer() {
