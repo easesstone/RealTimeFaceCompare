@@ -34,7 +34,7 @@ abstract class AbstractLogWrite implements LogWriter {
         return queueID;
     }
 
-    public void setQueueID(String queueID) {
+    public void  setQueueID(String queueID) {
         this.queueID = queueID;
     }
 }

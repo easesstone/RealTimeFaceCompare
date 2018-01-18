@@ -15,8 +15,4 @@ public class ClusterOverFtpProperHelper implements ProperHelper {
     public ClusterOverFtpProperHelper(String properName) {
         ClusterOverFtpProperHelper.properName = properName;
     }
-    @Override
-    public String getProper(String key) {
-        return null;
-    }
 }
