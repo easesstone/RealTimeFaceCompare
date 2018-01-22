@@ -16,7 +16,7 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
      */
     private String receiveLogName;
 
-    public DataReceiveLogWriter(CommonConf conf, String queueID) {
+    public DataReceiveLogWriter(CommonConf conf, String queueID, long count) {
         super(conf, queueID);
     }
 

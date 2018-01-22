@@ -15,10 +15,10 @@ public class ReceiverImpl implements Receiver {
     public ReceiverImpl() {
     }
 
-    public ReceiverImpl(CommonConf conf, String queueID) {
+    public ReceiverImpl(CommonConf conf, String queueID, long count) {
         this.queueID = queueID;
         this.queue = new ArrayBlockingQueue<LogEvent>(conf.getCapacity());
-        this.receiveWriter = new DataReceiveLogWriter(conf, queueID);
+        this.receiveWriter = new DataReceiveLogWriter(conf, queueID, count);
     }
 
     @Override
