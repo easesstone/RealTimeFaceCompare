@@ -1,12 +1,22 @@
 package com.hzgc.collect.expand.receiver;
 
+import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReceiverScheduler {
-    private static List<Receiver> container = new ArrayList<>();
+    private List<Receiver> container = new ArrayList<>();
+    private CommonConf conf;
+
+    private ReceiverScheduler() {
+
+    }
+
+    public ReceiverScheduler(CommonConf conf) {
+        this.conf = conf;
+    }
 
     /**
      * 向Recvicer对象即队列对象集合中的其中一个插入数据，采用轮询的方式,需要考虑线程安全
@@ -25,11 +35,11 @@ public class ReceiverScheduler {
         return null;
     }
 
-    public static void regist(Receiver receiver) {
+    public void regist(Receiver receiver) {
         container.add(receiver);
     }
 
-    public static void preapreRecvicer() {
+    public void preapreRecvicer() {
 
     }
 }

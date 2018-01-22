@@ -1,12 +1,10 @@
 package com.hzgc.collect.expand.util;
 
-public interface ProperHelper {
+/**
+ * 此接口定义了资源文件对应的工具类
+ * 每一个实现类都对应一个配置文件
+ * 用来从配置文件中读取配置
+ */
+interface ProperHelper {
 
-    /**
-     * 根据字段名称获取相应值
-     *
-     * @param key 字段名称
-     * @return 相应值
-     */
-    String getProper(String key);
 }

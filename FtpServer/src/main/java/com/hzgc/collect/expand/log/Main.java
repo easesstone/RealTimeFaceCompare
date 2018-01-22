@@ -1,8 +1,8 @@
 package com.hzgc.collect.expand.log;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class Main {
     public Main(String string){
@@ -16,6 +16,14 @@ public class Main {
 
 class PP {
     public static void main(String[] args) {
-        System.out.println(Main.integer.add(""));
+        BlockingQueue<String> deque = new ArrayBlockingQueue<String>(2);
+        System.out.println(deque.offer("1"));
+        System.out.println(deque.offer("2"));
+        try {
+            deque.put("3");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }

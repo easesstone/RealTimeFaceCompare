@@ -46,7 +46,7 @@ public class ProducerOverFtp implements Serializable {
     }
 
     public void sendKafkaMessage(final String topic, final String key, FaceObject value) {
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
         if (kafkaPropers != null) {
             kafkaProducer.send(new ProducerRecord<>(topic, key, value), new Callback() {
                 @Override

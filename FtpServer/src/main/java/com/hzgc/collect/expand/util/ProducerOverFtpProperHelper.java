@@ -7,8 +7,4 @@ public class ProducerOverFtpProperHelper implements ProperHelper {
     public ProducerOverFtpProperHelper(String properName) {
 
     }
-    @Override
-    public String getProper(String key) {
-        return null;
-    }
 }

@@ -33,7 +33,7 @@ public class DataProcesser {
     public void reader() {
         try {
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(threadNum);
-            BlockingQueue queue = DataReciver.getInstance().getQueue();
+            final BlockingQueue queue = DataReciver.getInstance().getQueue();
             for (int i = 0; i < threadNum; i++) {
                 fixedThreadPool.execute(new Runnable() {
                     @Override

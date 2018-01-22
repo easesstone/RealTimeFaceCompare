@@ -18,8 +18,4 @@ public class FTPAddressProperHelper implements ProperHelper {
         FTPAddressProperHelper.properName = properName;
     }
 
-    @Override
-    public String getProper(String key) {
-        return null;
-    }
 }

@@ -38,6 +38,12 @@ public class CommonConf {
     private String processLogDir;
 
     /**
+     * 接收队列个数
+     */
+    private int receiveNumber;
+
+
+    /**
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
