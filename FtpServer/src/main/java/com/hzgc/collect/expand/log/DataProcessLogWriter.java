@@ -29,10 +29,16 @@ public class DataProcessLogWriter extends AbstractLogWrite {
     DataProcessLogWriter(CommonConf conf, String queueID, long count) {
         super(conf, queueID);
         this.count = count;
+
     }
 
     @Override
     public void writeEvent(LogEvent event) {
+    }
+
+    @Override
+    protected void prepare() {
+
     }
 
     public int getProcessLogSize() {

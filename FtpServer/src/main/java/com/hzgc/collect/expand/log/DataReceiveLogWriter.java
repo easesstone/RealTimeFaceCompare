@@ -29,6 +29,11 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
     public void writeEvent(LogEvent event) {
     }
 
+    @Override
+    protected void prepare() {
+
+    }
+
     public int getReceiveLogSize() {
         return receiveLogSize;
     }

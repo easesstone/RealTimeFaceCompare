@@ -30,6 +30,8 @@ abstract class AbstractLogWrite implements LogWriter {
     AbstractLogWrite(CommonConf conf, String queueID) {
     }
 
+    abstract protected void prepare();
+
     public String getQueueID() {
         return queueID;
     }
