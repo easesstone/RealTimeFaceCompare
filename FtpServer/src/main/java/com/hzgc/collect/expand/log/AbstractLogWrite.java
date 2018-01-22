@@ -13,7 +13,7 @@ abstract class AbstractLogWrite implements LogWriter {
     /**
      * 当前队列ID
      */
-    private String queueID;
+    protected String queueID;
 
     /**
      * 私有无参构造器

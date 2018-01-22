@@ -1,29 +1,50 @@
 package com.hzgc.collect.expand.log;
 
+import java.io.*;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class Main {
-    public Main(String string){
-
-    }
-    public Main(String s1, String s2) {
-        this(s1);
-    }
-     static List<String> integer;
-}
-
-class PP {
     public static void main(String[] args) {
-        BlockingQueue<String> deque = new ArrayBlockingQueue<String>(2);
-        System.out.println(deque.offer("1"));
-        System.out.println(deque.offer("2"));
         try {
-            deque.put("3");
-        } catch (InterruptedException e) {
+            String str = System.getProperty("line.separator");
+            FileWriter writer = new FileWriter("/opt/pp.txt");
+            writer.write("pp");
+            writer.write(str);
+            writer.write("pp");
+//            writer.flush();
+            writer.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+}
 
+class Member {
+    private String name;
+    private int age;
+    public Member() {
+    }
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    public void setName(String name){
+        this.name = name;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+    public String getName() {
+        return name;
+    }
+    public int getAge() {
+        return age;
+    }
+
+    @Override
+    public String toString() {
+        return name + ":" + age;
     }
 }
