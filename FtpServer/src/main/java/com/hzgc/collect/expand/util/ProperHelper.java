@@ -5,9 +5,9 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
- * @Title： ProperHelper
- * @Description： 抽象类ProperHelper，提供所有名为“**ProperHelper”类的公用方法
- * @author： 马燊偲
+ * 此抽象类定义了资源文件对应的工具类中的公有方法
+ * 每一个子类都对应一个配置文件
+ * 用来从配置文件中读取配置（马燊偲）
  */
 
 abstract class ProperHelper {
