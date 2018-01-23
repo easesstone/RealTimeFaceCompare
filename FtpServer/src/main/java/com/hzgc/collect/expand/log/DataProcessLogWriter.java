@@ -1,6 +1,7 @@
 package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.JsonHelper;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -28,11 +29,13 @@ public class DataProcessLogWriter extends AbstractLogWrite {
     private String currentFile;
 
     /**
-     * 当前队列序号
+     * 当前队列序号,默认从1开始
      */
     private long count;
 
     private String newLine;
+
+    private String currentDir;
 
     DataProcessLogWriter(CommonConf conf, String queueID, long count) {
         super(conf, queueID);
@@ -42,6 +45,7 @@ public class DataProcessLogWriter extends AbstractLogWrite {
         this.count = count;
         this.newLine = System.getProperty("line.separator");
         this.currentFile = this.processLogDir + "/" + "process-" + super.queueID + "/" + processLogName;
+        this.currentDir = this.processLogDir + "/" + "process-" + super.queueID + "/";
         LOG.info("Init DataProcessLogWriter successfull [" + queueID + ":" + this.queueID
                 + ", count:" + count
                 + ", processLogName:" + this.processLogName
@@ -52,15 +56,18 @@ public class DataProcessLogWriter extends AbstractLogWrite {
 
     @Override
     public void writeEvent(LogEvent event) {
-        try {
-            FileWriter fw = new FileWriter(this.currentFile, true);
-            fw.write("");
-            fw.write(newLine);
-            fw.flush();
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            if (this.count % processLogSize == 0) {
+                FileWriter fw = null;
+                if (count == processLogSize) {
+                    action(event);
+                } else {
+                    File oldFile = new File(this.currentFile);
+//                    File newFile = new File(currentDir + )
+                }
+            } else {
+                action(event);
+            }
+
     }
 
     @Override
@@ -75,6 +82,19 @@ public class DataProcessLogWriter extends AbstractLogWrite {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void action(LogEvent event) {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(this.currentFile, true);
+            fw.write(JsonHelper.toJson(event));
+            fw.write(newLine);
+            fw.flush();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
