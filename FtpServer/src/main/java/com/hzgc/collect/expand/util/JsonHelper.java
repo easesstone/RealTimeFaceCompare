@@ -8,4 +8,11 @@ public class JsonHelper {
     public static String toJson(LogEvent event) {
         return gson.toJson(event);
     }
+
+    public static void main(String[] args) {
+        LogEvent logEvent = new LogEvent();
+        logEvent.setStatus("1");
+        logEvent.setTimeStamp("111");
+        System.out.println(JsonHelper.toJson(logEvent));
+    }
 }
