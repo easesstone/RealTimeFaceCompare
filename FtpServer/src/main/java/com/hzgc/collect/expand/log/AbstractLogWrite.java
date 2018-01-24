@@ -23,8 +23,7 @@ abstract class AbstractLogWrite implements LogWriter {
     }
 
     /**
-     *
-     * @param conf ReceiverConf对象
+     * @param conf    ReceiverConf对象
      * @param queueID 当前队列ID
      */
     AbstractLogWrite(CommonConf conf, String queueID) {
@@ -32,11 +31,18 @@ abstract class AbstractLogWrite implements LogWriter {
 
     abstract protected void prepare();
 
+    public String logNameUpdate(String defaultName, long count) {
+        char[] oldChar = defaultName.toCharArray();
+        char[] content = (count + "").toCharArray();
+
+        return "";
+    }
+
     public String getQueueID() {
         return queueID;
     }
 
-    public void  setQueueID(String queueID) {
+    public void setQueueID(String queueID) {
         this.queueID = queueID;
     }
 }

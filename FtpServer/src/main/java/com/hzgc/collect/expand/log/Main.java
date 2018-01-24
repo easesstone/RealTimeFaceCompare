@@ -7,17 +7,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            String str = System.getProperty("line.separator");
-            FileWriter writer = new FileWriter("/opt/pp.txt");
-            writer.write("pp");
-            writer.write(str);
-            writer.write("pp");
-//            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        long a = -19;
+        long b = 19;
+        System.out.println(Long.MAX_VALUE);
     }
 }
 
