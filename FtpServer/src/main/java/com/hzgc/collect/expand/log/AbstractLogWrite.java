@@ -1,10 +1,10 @@
 package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.JsonHelper;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.LineNumberReader;
+import java.io.*;
+import java.util.Arrays;
 
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
@@ -17,7 +17,10 @@ abstract class AbstractLogWrite implements LogWriter {
     /**
      * 当前队列ID
      */
-    protected String queueID;
+    String queueID;
+
+    String newLine;
+
 
     /**
      * 私有无参构造器
@@ -27,10 +30,11 @@ abstract class AbstractLogWrite implements LogWriter {
     }
 
     /**
-     * @param conf    ReceiverConf对象
      * @param queueID 当前队列ID
      */
-    AbstractLogWrite(CommonConf conf, String queueID) {
+    AbstractLogWrite(String queueID) {
+        this.queueID = queueID;
+        this.newLine = System.getProperty("line.separator");
     }
 
     abstract protected void prepare();
@@ -41,7 +45,7 @@ abstract class AbstractLogWrite implements LogWriter {
      * 此方法用来生成这个文件名称
      *
      * @param defaultName 默认写入的日志文件名称
-     * @param count 要标记的count值
+     * @param count       要标记的count值
      * @return 最终合并的文件名称
      */
     String logNameUpdate(String defaultName, long count) {
@@ -55,13 +59,41 @@ abstract class AbstractLogWrite implements LogWriter {
 
     long getLastCount(String currentLogFile) {
         try {
-            LineNumberReader numberReader = new LineNumberReader(new FileReader(currentLogFile));
-//            numberReader.skip()
-        } catch (FileNotFoundException e) {
+            RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
+            long length = raf.length();
+            long position = length - 1;
+            if (position == -1) {
+                return 0;
+            } else {
+                while (position >= 0) {
+                    position--;
+                    raf.seek(position);
+                    if (raf.readByte() == '\n') {
+                        break;
+                    }
+                }
+                byte[] bytes = new byte[(int) (length - position)];
+                String json = new String(bytes);
+                LogEvent event = JsonHelper.toObject(json, LogEvent.class);
+                return event.getCount();
+            }
+        } catch (java.io.IOException e) {
             e.printStackTrace();
         }
         return 1;
     }
+
+    String getLastLogFile(String currentDir) {
+        File file = new File(currentDir);
+        String[] fileArray = file.list();
+        if (fileArray != null) {
+            Arrays.sort(fileArray);
+            return fileArray[fileArray.length - 1];
+        } else {
+            return "";
+        }
+    }
+
     public String getQueueID() {
         return queueID;
     }
