@@ -13,7 +13,7 @@ javadocs/
 *.exe
 *.ipdb
 *.pdb
-*.iobj
+*.iob
 *.dat
 *.exp
 *.Jpg
