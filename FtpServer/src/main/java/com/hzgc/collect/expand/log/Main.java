@@ -7,7 +7,6 @@ import java.util.concurrent.BlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
-        RandomAccessFile randomFile = new RandomAccessFile("/opt/test.txt", "")
     }
 
     public String logNameUpdate(String defaultName, long count) {
