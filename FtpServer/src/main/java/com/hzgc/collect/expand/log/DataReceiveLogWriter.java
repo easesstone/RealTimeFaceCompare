@@ -1,6 +1,5 @@
 package com.hzgc.collect.expand.log;
 
-import com.google.common.base.Optional;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.util.JsonHelper;
 import org.apache.log4j.Logger;
@@ -12,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * 此对象为数据接收写日志对象的实例
@@ -117,22 +115,22 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
 
     /**
      * 返回文件的行数
+     *
      * @param filePath 文件路径
      * @return line
      */
     private Long getLineNumber(String filePath) {
-        File file = new File(filePath);
-        LineNumberReader rf=null;
-        long lineCount=0L;
+        long lineCount = 0L;
+        LineNumberReader numberReader = null;
         try {
-            rf = new LineNumberReader(new FileReader(file));
-            lineCount = rf.getLineNumber();
-        } catch (java.io.IOException e) {
+            numberReader = new LineNumberReader(new FileReader(filePath));
+            lineCount = numberReader.getLineNumber();
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            if (rf != null) {
+        } finally {
+            if (numberReader != null) {
                 try {
-                    rf.close();
+                    numberReader.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -148,30 +146,28 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
      * @return lastLine 文件的最后一行内容
      */
     public String readLastLine(File file) {
-        RandomAccessFile raf = null;
+        RandomAccessFile randomAccessFile = null;
         String lastLine = "";
         try {
-            raf = new RandomAccessFile(file, "r");
-            long len = raf.length();
-            System.out.println(len);
+            randomAccessFile = new RandomAccessFile(file, "r");
+            long len = randomAccessFile.length();
             if (len != 0L) {
                 long pos = len - 1;
                 while (pos > 0) {
                     pos--;
-                    raf.seek(pos);
-                    if (raf.readByte() == '\n') {
-                        lastLine = raf.readLine();
+                    randomAccessFile.seek(pos);
+                    if (randomAccessFile.readByte() == '\n') {
+                        lastLine = new String(randomAccessFile.readLine().getBytes("ISO-8859-1"),"UTF-8");
                         break;
                     }
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                if (raf != null) {
-                    raf.close();
+                if (randomAccessFile != null) {
+                    randomAccessFile.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
