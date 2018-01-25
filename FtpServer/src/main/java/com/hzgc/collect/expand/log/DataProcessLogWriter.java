@@ -26,8 +26,6 @@ public class DataProcessLogWriter extends AbstractLogWrite {
      */
     private String processLogDir;
 
-    private String currentFile;
-
     /**
      * 当前队列序号,默认从1开始
      */
@@ -37,15 +35,17 @@ public class DataProcessLogWriter extends AbstractLogWrite {
 
     private String currentDir;
 
-    DataProcessLogWriter(CommonConf conf, String queueID, long count) {
+    private String currentFile;
+
+
+    DataProcessLogWriter(CommonConf conf, String queueID) {
         super(conf, queueID);
         this.processLogSize = conf.getProcessLogSize();
         this.processLogName = conf.getProcessLogName();
         this.processLogDir = conf.getProcessLogDir();
-        this.count = count;
         this.newLine = System.getProperty("line.separator");
-        this.currentFile = this.processLogDir + "/" + "process-" + super.queueID + "/" + processLogName;
         this.currentDir = this.processLogDir + "/" + "process-" + super.queueID + "/";
+        this.currentFile = this.currentDir + processLogName;
         LOG.info("Init DataProcessLogWriter successfull [" + queueID + ":" + this.queueID
                 + ", count:" + count
                 + ", processLogName:" + this.processLogName
@@ -56,37 +56,37 @@ public class DataProcessLogWriter extends AbstractLogWrite {
 
     @Override
     public void writeEvent(LogEvent event) {
-            if (this.count % processLogSize == 0) {
-                FileWriter fw = null;
-                if (count == processLogSize) {
-                    action(event);
-                } else {
-                    File oldFile = new File(this.currentFile);
-//                    File newFile = new File(currentDir + )
-                }
-            } else {
-                action(event);
+        if (this.count % processLogSize == 0) {
+            FileWriter fw = null;
+            File oldFile = new File(this.currentFile);
+            File newFile = new File(currentDir + logNameUpdate(this.processLogName, count));
+            oldFile.renameTo(newFile);
+            try {
+                oldFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            action(event);
+        } else {
+            action(event);
+        }
 
     }
 
     @Override
     protected void prepare() {
-        if (count == 0) {
-            File file = new File(this.currentFile);
-            try {
-                if (!file.exists()) {
-                    boolean status = file.createNewFile();
-                    LOG.info("Current count is " + count + ", create log file:" + this.currentFile);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        File logDir = new File(this.currentDir);
+        if (!logDir.exists()) {
+            logDir.mkdirs();
+            this.count = 1;
+        } else {
+
         }
+
     }
 
     private void action(LogEvent event) {
-        FileWriter fw = null;
+        FileWriter fw;
         try {
             fw = new FileWriter(this.currentFile, true);
             fw.write(JsonHelper.toJson(event));
@@ -96,6 +96,7 @@ public class DataProcessLogWriter extends AbstractLogWrite {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        count++;
     }
 
     public int getProcessLogSize() {

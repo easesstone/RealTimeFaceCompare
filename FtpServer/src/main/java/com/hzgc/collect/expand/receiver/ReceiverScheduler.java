@@ -5,10 +5,14 @@ import com.hzgc.collect.expand.log.LogEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ReceiverScheduler {
     private List<Receiver> container = new ArrayList<>();
     private CommonConf conf;
+
+    private ExecutorService pool = Executors.newCachedThreadPool();
 
     private ReceiverScheduler() {
 
@@ -35,7 +39,7 @@ public class ReceiverScheduler {
         return null;
     }
 
-    public void regist(Receiver receiver) {
+    private void regist(Receiver receiver) {
         container.add(receiver);
     }
 

@@ -2,6 +2,10 @@ package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.LineNumberReader;
+
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
  * 1.子类的公共字段
@@ -31,13 +35,33 @@ abstract class AbstractLogWrite implements LogWriter {
 
     abstract protected void prepare();
 
-    public String logNameUpdate(String defaultName, long count) {
+    /**
+     * 当默认日志文件写入的日志个数大于配置的个数时,
+     * 需要重新再写入新的日志,之前的默认日志文件名称里会包含最后一行日志的count值
+     * 此方法用来生成这个文件名称
+     *
+     * @param defaultName 默认写入的日志文件名称
+     * @param count 要标记的count值
+     * @return 最终合并的文件名称
+     */
+    String logNameUpdate(String defaultName, long count) {
         char[] oldChar = defaultName.toCharArray();
         char[] content = (count + "").toCharArray();
-
-        return "";
+        for (int i = 0; i < content.length; i++) {
+            oldChar[oldChar.length - 1 - i] = content[content.length - 1 - i];
+        }
+        return new String(oldChar);
     }
 
+    long getLastCount(String currentLogFile) {
+        try {
+            LineNumberReader numberReader = new LineNumberReader(new FileReader(currentLogFile));
+//            numberReader.skip()
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return 1;
+    }
     public String getQueueID() {
         return queueID;
     }

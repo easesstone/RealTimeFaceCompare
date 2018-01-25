@@ -7,9 +7,15 @@ import java.util.concurrent.BlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
-        long a = -19;
-        long b = 19;
-        System.out.println(Long.MAX_VALUE);
+    }
+
+    public String logNameUpdate(String defaultName, long count) {
+        char[] oldChar = defaultName.toCharArray();
+        char[] content = (count + "").toCharArray();
+        for (int i = 0; i < content.length; i++) {
+            oldChar[oldChar.length - 1 - i] = content[content.length - 1 - i];
+        }
+        return new String(oldChar);
     }
 }
 
