@@ -53,7 +53,7 @@ LIB_DIR=$DEPLOY_DIR/lib        ## Jar 包目录
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`    ## jar 包位置以及第三方依赖jar包，绝对路径
 LIB_JARS=${LIB_JARS}${COMMON_JARS}
 LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
-LOG_FILE=${LOG_DIR}/start_ftpserver.log        ##  log 日记文件
+LOG_FILE=${LOG_DIR}/ftpserver.log        ##  log 日记文件
 echo "$SERVER_NAME:$SERVER_PORT is starting ..."
 #####################################################################
 # 函数名: start_consumer

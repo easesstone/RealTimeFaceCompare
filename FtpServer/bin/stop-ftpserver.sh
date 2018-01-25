@@ -35,7 +35,7 @@ function stop_check_ftp()
 {
     echo ""  | tee -a $LOG_FILE
     echo "****************************************************"  | tee -a $LOG_FILE
-    echo " start stop check_ftp ......................." | tee  -a $LOG_FILE
+    echo "start stop check_ftp ......................." | tee  -a $LOG_FILE
     check_ftp_pid=$(ps -ef | grep start-check-ftpserver.sh |grep -v grep | awk  '{print $2}' | uniq)
     echo "check_ftpserver's pid is: ${check_ftp_pid}"  | tee -a $LOG_FILE
     if [ -n "${check_ftp_pid}" ];then

@@ -114,7 +114,7 @@ function main()
     else
         stopdubbo
         if [ ${stop_dubbo} -eq 1 ];then
-            echo "retry stop dubbo failed please check the config......exit with 1" | tee -a  $LOG_FILE
+            echo "retry stop dubbo failed ..." | tee -a  $LOG_FILE
         fi
     fi
 
@@ -124,7 +124,7 @@ function main()
     else
         stop_check_dubbo
         if [ ${stop_check_dubbo} -eq 1 ];then
-            echo "retry stop check_dubbo failed please check the config......exit with 1" | tee -a  $LOG_FILE
+            echo "retry stop check_dubbo failed ..." | tee -a  $LOG_FILE
         fi
     fi
 
