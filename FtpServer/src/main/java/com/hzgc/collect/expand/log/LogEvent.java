@@ -1,15 +1,16 @@
 package com.hzgc.collect.expand.log;
 
 public class LogEvent {
+
+    /**
+     * 日志记数
+     */
+    private long count;
+
     /**
      * FTP url
      */
     private String url;
-
-    /**
-     * 序列号
-     */
-    private long ipcID;
 
     /**
      * 接收时间戳
@@ -17,9 +18,9 @@ public class LogEvent {
     private String timeStamp;
 
     /**
-     * 图片检测时间
+     * 状态
      */
-    private String date;
+    private int status;
 
     public String getUrl() {
         return url;
@@ -27,14 +28,6 @@ public class LogEvent {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public long getIpcID() {
-        return ipcID;
-    }
-
-    public void setIpcID(long ipcID) {
-        this.ipcID = ipcID;
     }
 
     public String getTimeStamp() {
@@ -45,11 +38,11 @@ public class LogEvent {
         this.timeStamp = timeStamp;
     }
 
-    public String getDate() {
-        return date;
+    public long getCount() {
+        return count;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setCount(long count) {
+        this.count = count;
     }
 }

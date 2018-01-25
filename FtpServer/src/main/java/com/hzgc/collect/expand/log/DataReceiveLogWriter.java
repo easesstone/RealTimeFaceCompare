@@ -1,16 +1,18 @@
 package com.hzgc.collect.expand.log;
 
+import com.google.common.base.Optional;
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.JsonHelper;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * 此对象为数据接收写日志对象的实例
@@ -40,7 +42,7 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
     /**
      * 当前日志行号
      */
-    private long count;
+    private long count = 0;
 
     /**
      * 系统换行符
@@ -71,20 +73,26 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
         this.prepare();
     }
 
-
+    /**
+     * 数据写入队列时写日志事件
+     *
+     * @param event 日志信息
+     */
     @Override
     public void writeEvent(LogEvent event) {
-        String state = "1";
+        String state = "0";
         count++;
         Path path = Paths.get(this.currentFile);
+        JsonHelper.toJson(event);
         Charset charset = Charset.forName("UTF-8");
         ArrayList<String> lines = new ArrayList<>();
-        StringBuilder logStr = new StringBuilder();
-        logStr.append(count).append(" ").append(event.getUrl()).append(" ").append(state);
-        lines.add("hello");
+        /*StringBuilder logStr = new StringBuilder();
+        logStr.append(count).append(" ").append(event.getUrl()).append(" ").append(state);*/
+        lines.add(JsonHelper.toJson(event));
         try {
             if (!Files.exists(path)) {
                 Files.createFile(path);
+                LOG.info("create log file:" + this.currentFile);
             }
             Files.write(path, lines, charset, StandardOpenOption.APPEND);
         } catch (IOException e) {
@@ -105,6 +113,71 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 返回文件的行数
+     * @param filePath 文件路径
+     * @return line
+     */
+    private Long getLineNumber(String filePath) {
+        File file = new File(filePath);
+        LineNumberReader rf=null;
+        long lineCount=0L;
+        try {
+            rf = new LineNumberReader(new FileReader(file));
+            lineCount = rf.getLineNumber();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (rf != null) {
+                try {
+                    rf.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return lineCount;
+    }
+
+    /**
+     * 快速读取文件最后一行
+     *
+     * @param file 要读取的文件
+     * @return lastLine 文件的最后一行内容
+     */
+    public String readLastLine(File file) {
+        RandomAccessFile raf = null;
+        String lastLine = "";
+        try {
+            raf = new RandomAccessFile(file, "r");
+            long len = raf.length();
+            System.out.println(len);
+            if (len != 0L) {
+                long pos = len - 1;
+                while (pos > 0) {
+                    pos--;
+                    raf.seek(pos);
+                    if (raf.readByte() == '\n') {
+                        lastLine = raf.readLine();
+                        break;
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return lastLine;
     }
 
     public int getReceiveLogSize() {

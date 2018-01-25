@@ -1,11 +1,10 @@
 package com.hzgc.service.dynamicrepo;
 
+import com.hzgc.collect.ftp.util.FtpUtils;
+import com.hzgc.collect.ftp.util.FTPDownloadUtils;
 import com.hzgc.dubbo.dynamicrepo.*;
-import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.ftpserver.util.DownloadUtils;
-import com.hzgc.ftpserver.util.FtpUtils;
-import com.hzgc.service.util.JDBCUtil;
 import com.hzgc.jni.FaceFunction;
+import com.hzgc.service.util.JDBCUtil;
 import com.hzgc.util.sort.ListUtils;
 import com.hzgc.util.sort.SortParam;
 import org.apache.log4j.Logger;
@@ -70,7 +69,7 @@ class RealTimeCompareBySparkSQL {
             image = option.getImage();
             searchFea = FaceFunction.featureExtract(option.getImage()).getFeature();
         } else {
-            image = DownloadUtils.downloadftpFile2Bytes(option.getImageId());
+            image = FTPDownloadUtils.downloadftpFile2Bytes(option.getImageId());
             if (image == null) {
                 return new SearchResult();
             }
