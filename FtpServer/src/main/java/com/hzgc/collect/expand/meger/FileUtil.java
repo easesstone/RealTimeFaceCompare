@@ -40,7 +40,7 @@ public class FileUtil {
      *
      * 通过创建SimpleFileVisitor对象来对文件进行遍历即可，它是FileVisitor的实现类，这样可以有选择的重写指定的方法。
      */
-    private class filePathVistor extends SimpleFileVisitor<Path>{
+    private class FilePathVistor extends SimpleFileVisitor<Path>{
 
         //访问目录前触发该方法
         @Override
@@ -79,7 +79,7 @@ public class FileUtil {
      * @return 该根目录下所有文件的FileList
      */
     public List<String> listAllFileOfDir(String path){
-        filePathVistor FPV = new filePathVistor();
+        FilePathVistor FPV = new FilePathVistor();
         try {
             Files.walkFileTree(Paths.get(path), FPV) ; //用NIO对path目录下的文件进行递归遍历
         } catch (IOException e) {
