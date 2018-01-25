@@ -1,12 +1,12 @@
 package com.hzgc.collect.expand.log;
 
+import com.hzgc.collect.expand.conf.CommonConf;
+
 import java.io.*;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
+
     }
 
     public String logNameUpdate(String defaultName, long count) {
@@ -19,30 +19,19 @@ public class Main {
     }
 }
 
-class Member {
-    private String name;
-    private int age;
-    public Member() {
+abstract class Person {
+    public Person(Class clz) {
+        System.out.println(clz.toString());
     }
-    public Member(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
-    public void setName(String name){
-        this.name = name;
-    }
-    public void setAge(int age) {
-        this.age = age;
-    }
-    public String getName() {
-        return name;
-    }
-    public int getAge() {
-        return age;
+}
+
+class Zhaozhe extends Person {
+    public Zhaozhe() {
+        super(Zhaozhe.class);
     }
 
-    @Override
-    public String toString() {
-        return name + ":" + age;
+    public static void main(String[] args) {
+        Zhaozhe zhaozhe = new Zhaozhe();
+
     }
 }
