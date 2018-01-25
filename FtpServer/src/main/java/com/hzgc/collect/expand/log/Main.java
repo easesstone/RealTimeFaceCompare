@@ -1,29 +1,48 @@
 package com.hzgc.collect.expand.log;
 
+import java.io.*;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class Main {
-    public Main(String string){
+    public static void main(String[] args) {
+    }
 
+    public String logNameUpdate(String defaultName, long count) {
+        char[] oldChar = defaultName.toCharArray();
+        char[] content = (count + "").toCharArray();
+        for (int i = 0; i < content.length; i++) {
+            oldChar[oldChar.length - 1 - i] = content[content.length - 1 - i];
+        }
+        return new String(oldChar);
     }
-    public Main(String s1, String s2) {
-        this(s1);
-    }
-     static List<String> integer;
 }
 
-class PP {
-    public static void main(String[] args) {
-        BlockingQueue<String> deque = new ArrayBlockingQueue<String>(2);
-        System.out.println(deque.offer("1"));
-        System.out.println(deque.offer("2"));
-        try {
-            deque.put("3");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+class Member {
+    private String name;
+    private int age;
+    public Member() {
+    }
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    public void setName(String name){
+        this.name = name;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+    public String getName() {
+        return name;
+    }
+    public int getAge() {
+        return age;
+    }
 
+    @Override
+    public String toString() {
+        return name + ":" + age;
     }
 }
