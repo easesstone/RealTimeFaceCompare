@@ -21,9 +21,6 @@ public class FileUtil {
     private static Logger LOG = Logger.getLogger(FileUtil.class);
     private List<String> allFileOfDir = new ArrayList<>();
 
-
-    //------*------*------以下是内部使用的私有方法------*-------*--------//
-
     /**
      * 内部类：filePathVistor，用于对文件进行递归遍历的listAllFileOfDir方法。
      *
@@ -70,8 +67,6 @@ public class FileUtil {
         return dir.getFileName().toString().contains(".log");
     }
 
-
-    //------*------*-------以下是公有方法-------*--------*--------//
 
     /**
      * NIO扫描得到某个目录下的所有文件的绝对路径的FileList
