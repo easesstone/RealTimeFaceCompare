@@ -9,9 +9,14 @@ public class LogEvent {
     private long count;
 
     /**
-     * FTP url
+     * face path
      */
-    private String url;
+    private String path;
+
+    /**
+     * face absolute path
+     */
+    private String absolutePath;
 
     /**
      * 接收时间戳
@@ -25,12 +30,12 @@ public class LogEvent {
      */
     private String status;
 
-    public String getUrl() {
-        return url;
+    public String getPath() {
+        return path;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getTimeStamp() {
@@ -55,5 +60,13 @@ public class LogEvent {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getAbsolutePath() {
+        return absolutePath;
+    }
+
+    public void setAbsolutePath(String absolutePath) {
+        this.absolutePath = absolutePath;
     }
 }

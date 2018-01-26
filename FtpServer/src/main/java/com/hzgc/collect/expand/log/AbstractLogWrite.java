@@ -1,7 +1,6 @@
 package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
-import com.hzgc.collect.expand.util.JsonHelper;
 import org.apache.log4j.Logger;
 
 import java.io.*;
