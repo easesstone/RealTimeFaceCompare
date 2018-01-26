@@ -13,10 +13,9 @@ javadocs/
 *.exe
 *.ipdb
 *.pdb
-*.iob
+*.iobj
 *.dat
 *.exp
 *.Jpg
 *.lib
 *.sn.ini
-
