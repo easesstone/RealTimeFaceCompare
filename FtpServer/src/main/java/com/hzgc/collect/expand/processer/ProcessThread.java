@@ -15,10 +15,14 @@ public class ProcessThread implements Runnable {
     public ProcessThread(CommonConf conf, BlockingQueue<LogEvent> queue, String queueID) {
         this.conf = conf;
         this.queue = queue;
-//        writer = new DataProcessLogWriter(this.conf, queueID)
+        writer = new DataProcessLogWriter(this.conf, queueID);
     }
+
     @Override
     public void run() {
+        while (true) {
+
+        }
     }
 
     public BlockingQueue<LogEvent> getQueue() {

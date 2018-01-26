@@ -7,7 +7,7 @@ import com.hzgc.collect.expand.conf.CommonConf;
  * @author Zhaozhe
  */
 public class DataProcessLogWriter extends AbstractLogWrite {
-    DataProcessLogWriter(CommonConf conf, String queueID) {
+    public DataProcessLogWriter(CommonConf conf, String queueID) {
         super(conf, queueID, DataProcessLogWriter.class);
         super.currentDir = conf.getProcessLogDir() + "/" + "process-" + super.queueID + "/";
         super.currentFile = super.currentDir + super.logName;
