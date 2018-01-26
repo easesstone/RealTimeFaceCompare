@@ -53,8 +53,12 @@ public class QueueUtil {
             e.printStackTrace();
         } finally {
             try {
-                output.close();
-                input.close();
+                if (output != null) {
+                    output.close();
+                }
+                if (input != null) {
+                    input.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
