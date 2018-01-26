@@ -32,10 +32,10 @@
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
-                <excludes>
+               <!-- <excludes>
                     <exclude>*.properties</exclude>
                     <exclude>*.xml</exclude>
-                </excludes>
+                </excludes>-->
             </resource>
         </resources>
         <plugins>
@@ -63,8 +63,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -94,19 +94,19 @@
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.hzgc</groupId>
             <artifactId>jni</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>net.jpountz.lz4</groupId>

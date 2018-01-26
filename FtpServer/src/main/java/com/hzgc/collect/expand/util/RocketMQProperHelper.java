@@ -13,14 +13,14 @@ import java.util.Properties;
  */
 public class RocketMQProperHelper extends ProperHelper{
 	private static Logger log = Logger.getLogger(RocketMQProperHelper.class);
-	private static String properName = "rocketmq.properties";
-	private static Properties props = new Properties();
+    private static Properties props = new Properties();
 	private static String address;
 	private static String topic;
 	private static String group;
 
 	static {
-		try {
+        String properName = "rocketmq.properties";
+        try {
 			props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
 			log.info("Load configuration for ftp server from ./conf/rocketmq.properties");
 
@@ -37,17 +37,17 @@ public class RocketMQProperHelper extends ProperHelper{
 	/**
 	 * set方法。验证配置文件中的值是否为符合条件的格式。
 	 */
-	private static String setAddress(){
-		return address = verifyIpPlusPort("address", props, log);
-	}
+	private static void setAddress(){
+        address = verifyIpPlusPort("address", props, log);
+    }
 
-	private static String setTopic(){
-		return topic = verifyCommonValue("topic", "REALTIME_PIC_MESSAGE", props, log);
-	}
+	private static void setTopic(){
+        topic = verifyCommonValue("topic", "REALTIME_PIC_MESSAGE", props, log);
+    }
 
-	private static String setGroup(){
-		return group = verifyCommonValue("group", "FaceGroup", props, log);
-	}
+	private static void setGroup(){
+        group = verifyCommonValue("group", "FaceGroup", props, log);
+    }
 
 	/**
 	 * get方法。提供获取配置文件中的值的方法。

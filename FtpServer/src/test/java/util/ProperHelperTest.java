@@ -10,21 +10,25 @@ public class ProperHelperTest {
 	public void clusterOverFtpProperHelperFun() throws IOException {
 
 		HelperFactory.regist();
-		ClusterOverFtpProperHelper.getPort();
-		ClusterOverFtpProperHelper.getImplicitSsl();
-		ClusterOverFtpProperHelper.getThreadNum();
+//		String Port = ClusterOverFtpProperHelper.getPort();
+//        String implicitSsl = ClusterOverFtpProperHelper.getImplicitSsl();
+//        String threadNum = ClusterOverFtpProperHelper.getThreadNum();
+//
+//		FTPAddressProperHelper.getUser();
+//		FTPAddressProperHelper.getIp();
+//		String pathRule = FTPAddressProperHelper.getPathRule();
 
-		FTPAddressProperHelper.getUser();
-		FTPAddressProperHelper.getIp();
-
-		ProducerOverFtpProperHelper.getBootstrapServers();
-		ProducerOverFtpProperHelper.getClientId();
-		ProducerOverFtpProperHelper.getTopicFeature();
-		ProducerOverFtpProperHelper.getKeySerializer();
-
-		RocketMQProperHelper.getAddress();
-		RocketMQProperHelper.getTopic();
-		RocketMQProperHelper.getGroup();
+		String bootstrapServers = ProducerOverFtpProperHelper.getBootstrapServers();
+//		String clientId = ProducerOverFtpProperHelper.getClientId();
+//        String topicFeature = ProducerOverFtpProperHelper.getTopicFeature();
+//		String keySerializer = ProducerOverFtpProperHelper.getKeySerializer();
+//		String requestRequiredAcks = ProducerOverFtpProperHelper.getRequestRequiredAcks();
+//		String retries = ProducerOverFtpProperHelper.getRetries();
+//		String valueSerializer = ProducerOverFtpProperHelper.getValueSerializer();
+//
+//		RocketMQProperHelper.getAddress();
+//		RocketMQProperHelper.getTopic();
+//		RocketMQProperHelper.getGroup();
 
 
 	}

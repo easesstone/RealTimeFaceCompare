@@ -13,17 +13,17 @@ import java.util.Properties;
 public class FTPAddressProperHelper extends ProperHelper{
 
     private static Logger log = Logger.getLogger(FTPAddressProperHelper.class);
-	private static String properName = "ftpAddress.properties";
-	private static Properties props = new Properties();
+    private static Properties props = new Properties();
 
-	public static String ip;
-    public static String port;
-    public static String user;
-    public static String password;
-    public static String pathRule;
+	private static String ip;
+    private static String port;
+    private static String user;
+    private static String password;
+    private static String pathRule;
 
     static {
-	    try {
+        String properName = "ftpAddress.properties";
+        try {
 		    props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
 		    log.info("Load configuration for ftp Server from ./conf/ftpAddress.properties");
 
@@ -42,13 +42,13 @@ public class FTPAddressProperHelper extends ProperHelper{
 	/**
 	 * set方法。验证配置文件中的值是否为符合条件的格式。
 	 */
-	private static String setIp() {
-    	return ip = verifyIp("ip", props, log);
-	}
+	private static void setIp() {
+        ip = verifyIp("ip", props, log);
+    }
 
-	private static String setPort() {
-    	return port = verifyPort("port", "2121", props, log);
-	}
+	private static void setPort() {
+        port = verifyPort("port", "2121", props, log);
+    }
 
 	private static void setUser() {
     	user = verifyCommonValue("user","admin", props, log);

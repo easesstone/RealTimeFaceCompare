@@ -13,8 +13,7 @@ import java.util.Properties;
  */
 public class ProducerOverFtpProperHelper extends ProperHelper{
 	private static Logger log = Logger.getLogger(ProducerOverFtpProperHelper.class);
-	private static String properName = "producer-over-ftp.properties";
-	private static Properties props = new Properties();
+    private static Properties props = new Properties();
 
 	private static String bootstrapServers;
 	private static String clientId;
@@ -25,7 +24,8 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
 	private static String topicFeature;
 
 	static {
-		try {
+        String properName = "producer-over-ftp.properties";
+        try {
 			props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
 			log.info("Load configuration for ftp server from ./conf/producer-over-ftp.properties");
 
@@ -46,33 +46,33 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
 	/**
 	 * set方法。验证配置文件中的值是否为符合条件的格式。
 	 */
-	private static String setBootstrapServers(){
-		return bootstrapServers = verifyNoDefaultValue("bootstrap.servers", props, log);
-	}
+	private static void setBootstrapServers(){
+        bootstrapServers = verifyIpPlusPortList("bootstrap.servers", props, log);
+    }
 
-	private static String setClientId(){
-		return clientId = verifyCommonValue("client.id", "p1", props, log);
-	}
+	private static void setClientId(){
+        clientId = verifyCommonValue("client.id", "p1", props, log);
+    }
 
-	private static String setRequestRequiredAcks(){
-		return requestRequiredAcks = verifyCommonValue("request.required.acks", "1", props, log);
-	}
+	private static void setRequestRequiredAcks(){
+        requestRequiredAcks = verifyCommonValue("request.required.acks", "1", props, log);
+    }
 
-	private static String setRetries(){
-		return retries = verifyIntegerValue("retries", "0", props, log);
-	}
+	private static void setRetries(){
+        retries = verifyIntegerValue("retries", "0", props, log);
+    }
 
-	private static String setKeySerializer(){
-		return keySerializer = verifyCommonValue("key.serializer", "org.apache.kafka.common.serialization.StringSerializer", props, log);
-	}
+	private static void setKeySerializer(){
+        keySerializer = verifyCommonValue("key.serializer", "org.apache.kafka.common.serialization.StringSerializer", props, log);
+    }
 
-	private static String setValueSerializer(){
-		return valueSerializer = verifyCommonValue("value.serializer","com.hzgc.ftpserver.producer.FaceObjectEncoder", props, log);
-	}
+	private static void setValueSerializer(){
+        valueSerializer = verifyCommonValue("value.serializer", "com.hzgc.ftpserver.producer.FaceObjectEncoder", props, log);
+    }
 
-	private static String setTopicFeature(){
-		return topicFeature = verifyCommonValue("topic-feature","feature", props, log);
-	}
+	private static void setTopicFeature(){
+        topicFeature = verifyCommonValue("topic-feature", "feature", props, log);
+    }
 
 	/**
 	 * get方法。提供获取配置文件中的值的方法。
