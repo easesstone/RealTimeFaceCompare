@@ -4,57 +4,19 @@ import com.hzgc.collect.expand.conf.CommonConf;
 
 /**
  * 此对象为数据接收写日志对象的实例
+ * @author Pengcong
  */
 public class DataReceiveLogWriter extends AbstractLogWrite {
-    /**
-     * 接收队列日志文件大小
-     */
-    private int receiveLogSize;
 
-    /**
-     * 接收队列日志名称
-     */
-    private String receiveLogName;
-
-    public DataReceiveLogWriter(CommonConf conf, String queueID, long count) {
-        super(queueID);
-    }
-
-    /**
-     * 接收队列日志目录
-     */
-    private String receiveLogDir;
-
-    @Override
-    public void writeEvent(LogEvent event) {
-    }
-
-    @Override
-    protected void prepare() {
-
-    }
-
-    public int getReceiveLogSize() {
-        return receiveLogSize;
-    }
-
-    public void setReceiveLogSize(int receiveLogSize) {
-        this.receiveLogSize = receiveLogSize;
-    }
-
-    public String getReceiveLogName() {
-        return receiveLogName;
-    }
-
-    public void setReceiveLogName(String receiveLogName) {
-        this.receiveLogName = receiveLogName;
-    }
-
-    public String getReceiveLogDir() {
-        return receiveLogDir;
-    }
-
-    public void setReceiveLogDir(String receiveLogDir) {
-        this.receiveLogDir = receiveLogDir;
+    public DataReceiveLogWriter(CommonConf conf, String queueID) {
+        super(conf, queueID, DataProcessLogWriter.class);
+        super.currentDir = conf.getProcessLogDir() + "/" + "receive-" + super.queueID + "/";
+        super.currentFile = super.currentDir + super.logName;
+        super.prepare();
+        LOG.info("Init DataReceiveLogWriter successfull [" + queueID + ":" + super.queueID
+                + ", count:" + count
+                + ", LogName:" + super.logName
+                + ", LogSize:" + super.logSize
+                + ", currentFile:" + super.currentFile + "]");
     }
 }
