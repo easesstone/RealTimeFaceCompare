@@ -8,35 +8,51 @@ import java.util.List;
  * 成员变量含义：
  * processParentDir：process日志的根目录
  * processFile：process日志根目录下所有文件
+ * receiveFilePath：根据某一个process日志路径，获得的对应receive日志路径
  */
 public class FileFactory {
 
-    private FileUtil fileUtil = new FileUtil();
+    private static FileUtil fileUtil = new FileUtil();
 
-    private String processParentDir; //要处理的日志路径根目录
-    private List<String> processFiles; //要处理的所有日志名列表
+    private static String processParentDir;
+    private static List<String> allProcessFiles;
+    private static String receiveFilePath;
 
-    //无参构造函数
-    public FileFactory(){
-    }
 
     //有参构造函数，传入需处理的日志根路径
-    public String FileFactory(String processLogDir) {
-        return processParentDir = processLogDir;
+    public FileFactory(String processLogDir) {
+        this.processParentDir = processLogDir;
+        setAllProcessFiles();
+
+//        //列出process日志根目录下所有文件
+//        this.allProcessFiles = fileUtil.listAllFileOfDir(processParentDir);
+//        //根据某一个process日志路径，获得对应receive日志路径
+//        this.receiveFilePath = fileUtil.getRecFileFromProFile(this.processParentDir);
     }
 
     /**
      * set方法
-     * 列出process日志根目录下所有文件
      */
-    private List<String> setProcessFiles() {
-        return processFiles = fileUtil.listAllFileOfDir(processParentDir);
+
+    //列出process日志根目录下所有文件
+    private static List<String> setAllProcessFiles() {
+        return allProcessFiles = fileUtil.listAllFileOfDir(processParentDir);
     }
+
+    //根据某一个process日志路径，获得对应receive日志路径
+//    private static String setReceiveFilePath(String processFilePath) {
+//        return receiveFilePath = fileUtil.getRecFileFromProFile(processFilePath);
+//    }
 
     /**
      * get方法
      */
-    public List<String> getProcessFiles() {
-        return processFiles;
+    public List<String> getAllProcessFiles() {
+        //System.out.println(allProcessFiles);
+        return allProcessFiles;
     }
+
+//    public String getReceiveFilePath() {
+//        return receiveFilePath;
+//    }
 }

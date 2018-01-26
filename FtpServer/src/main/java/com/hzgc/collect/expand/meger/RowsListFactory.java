@@ -11,29 +11,39 @@ import java.util.List;
  */
 public class RowsListFactory {
 
-    FileFactory fileFactory = new FileFactory();
-    FindDiffRows findDiffRows = new FindDiffRows();
+    private  String receiveFileDir; //要处理的一个process日志对应的receive日志路径
 
-    private List<String> allDiffRows;
-    private List<String> notProRows;
-    private List<String>  errProRows;
+    //初始化要用到的两个工具类
+    private  FileUtil fileUtil = new FileUtil();
+    private  FindDiffRows findDiffRows = new FindDiffRows();
 
-    public RowsListFactory(){
+    private  List<String> allDiffRows;
+    private  List<String> notProRows;
+    private  List<String> errProRows;
+
+    //有参构造函数，传入需要处理的某个process文件路径
+    public RowsListFactory(String processFileDir){
+        //调用FileUtil中的方法，获取process文件对应的receive文件
+        receiveFileDir = fileUtil.getRecFileFromProFile(processFileDir);
+        setAllDiffRows(processFileDir);
+        setNotProRows();
+        setErrProRows();
     }
 
     /**
      * set 方法
      */
-    private List<String> setAllDiffRows() {
-        return allDiffRows = findDiffRows.getAllDiffRows(fileFactory.getProcessFiles());
+    private  List<String> setAllDiffRows(String processFileDir) {
+        List<String> allContentRows = fileUtil.getAllContentFromFile(processFileDir);
+        return allDiffRows = findDiffRows.getAllDiffRows(allContentRows);
     }
 
-    private List<String> setNotProRows() {
-        return notProRows = findDiffRows.getNotProRows(fileFactory.getProcessFiles());
+    private  List<String> setNotProRows() {
+        return notProRows = findDiffRows.getNotProRows(allDiffRows);
     }
 
-    private List<String> setErrProRows() {
-        return errProRows = findDiffRows.getErrProRows(fileFactory.getProcessFiles());
+    private  List<String> setErrProRows() {
+        return errProRows = findDiffRows.getErrProRows(allDiffRows);
     }
 
     /**
