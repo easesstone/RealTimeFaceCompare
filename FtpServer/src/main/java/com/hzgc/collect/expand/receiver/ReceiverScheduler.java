@@ -18,7 +18,7 @@ public class ReceiverScheduler {
     private CommonConf conf;
     private int receiveNumber;
     private int pollingCount;
-    private ExecutorService pool = Executors.newCachedThreadPool();
+    private ExecutorService pool;
 
     public ReceiverScheduler(CommonConf conf) {
         this.conf = conf;
@@ -69,13 +69,20 @@ public class ReceiverScheduler {
     private void preapreRecvicer() {
         List<String> queueIdList = reblanceRecevicer(conf.getReceiveNumber(), conf.getProcessLogDir());
         if (queueIdList.size() > 0) {
+            pool = Executors.newFixedThreadPool(queueIdList.size());
             for (String id : queueIdList) {
                 ReceiverImpl receiver = new ReceiverImpl(conf, id);
                 regist(receiver);
                 pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
             }
         } else {
-            LOG.error("Can not to get the queueIdList,please check your ReceiverNumber and your FileDir!");
+            for (int i = 0; i < conf.getReceiveNumber(); i++){
+                pool = Executors.newFixedThreadPool(conf.getReceiveNumber());
+                ReceiverImpl receiver = new ReceiverImpl(conf,i + "");
+                regist(receiver);
+                pool.execute(new ProcessThread(conf, receiver.getQueue(), i + ""));
+            }
+            LOG.info("This is the initialization receiver, please wait for the initialization to complete");
         }
     }
 
@@ -119,11 +126,11 @@ public class ReceiverScheduler {
                 }
 
             } else {
-                LOG.error("This file directory is null,please check your file dir!");
+                LOG.info("This directory is empty, please check the directory!");
                 return queueIDList;
             }
         } else {
-            LOG.error("This file directory is not exist,please mkdir the file directory!");
+            LOG.info("This directory does not exist, please create this directory frist!");
             return queueIDList;
         }
         return queueIDList;
