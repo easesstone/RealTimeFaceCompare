@@ -12,6 +12,7 @@ public class ProcessThread implements Runnable {
     private CommonConf conf;
     private BlockingQueue<LogEvent> queue;
     private LogWriter writer;
+
     public ProcessThread(CommonConf conf, BlockingQueue<LogEvent> queue, String queueID) {
         this.conf = conf;
         this.queue = queue;
@@ -20,8 +21,13 @@ public class ProcessThread implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        LogEvent event;
+        try {
+            while ((event = queue.take()) != null) {
 
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
