@@ -1,6 +1,7 @@
 package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -128,7 +129,7 @@ abstract class AbstractLogWrite implements LogWriter {
                 }
                 byte[] bytes = new byte[(int) (length - position)];
                 String json = new String(bytes);
-                LogEvent event = JsonHelper.toObject(json, LogEvent.class);
+                LogEvent event = JSONHelper.toObject(json, LogEvent.class);
                 return event.getCount();
             }
         } catch (java.io.IOException e) {
@@ -163,7 +164,7 @@ abstract class AbstractLogWrite implements LogWriter {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
-            fw.write(JsonHelper.toJson(event));
+            fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
         } catch (IOException e) {
