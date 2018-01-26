@@ -159,7 +159,7 @@ abstract class ProperHelper {
                 for (String ipPlusPort : valueFromKey.split(",")) {
                     //判断每个IP：PORT 是否是合法的 ip:端口号  格式的正则表达式
                     Boolean isIpPlusPortLegal = patternIpPlusPort().matcher(ipPlusPort).matches();
-                    //若有一个IP：PORT 的格式不正确，就报错
+                    //若有一个IP：PORT 的格式不正确，就报错，退出程序
                     if (!isIpPlusPortLegal) {
                         log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, please reset it.");
                         System.exit(1);
