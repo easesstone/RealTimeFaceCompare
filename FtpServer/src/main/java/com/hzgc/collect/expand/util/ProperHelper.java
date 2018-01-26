@@ -2,6 +2,7 @@ package com.hzgc.collect.expand.util;
 
 import org.apache.log4j.Logger;
 
+
 import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -75,10 +76,11 @@ abstract class ProperHelper {
 
     /**
      * 验证配置文件中，IP 或 IP：PORT属性字段是否为正确格式的方法。
-     * @param key 配置文件中，某属性字段的Key
+     *
+     * @param key                      配置文件中，某属性字段的Key
      * @param patternIpOrPlusPortLegal IP或IP：PORT对应的正则表达式
-     * @param props 不同的ProperHelper类中传进来的配置文件变量props
-     * @param log 不同的ProperHelper类中传进来的日志变量log
+     * @param props                    不同的ProperHelper类中传进来的配置文件变量props
+     * @param log                      不同的ProperHelper类中传进来的日志变量log
      * @return 验证格式正确后的属性字段值
      */
     private static String verifyIpOrPlusPort(String key, Pattern patternIpOrPlusPortLegal, Properties props, Logger log){
@@ -113,6 +115,7 @@ abstract class ProperHelper {
 
     /**
      * IP的正则表达式
+     *
      * @return 正则表达式
      */
     private static Pattern patternIp(){
@@ -125,6 +128,7 @@ abstract class ProperHelper {
 
     /**
      * IP：PORT的正则表达式。
+     *
      * @return 正则表达式
      */
     private static Pattern patternIpPlusPort(){
@@ -367,6 +371,7 @@ abstract class ProperHelper {
 
     /**
      * 判断字符串表示的值是否是整数。
+     *
      * @param value 需要判断的字符串值
      * @return 表示字符串值是否为整数的布尔值
      */

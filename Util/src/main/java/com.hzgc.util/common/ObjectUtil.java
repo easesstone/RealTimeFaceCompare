@@ -5,27 +5,25 @@ import java.io.*;
 public class ObjectUtil {
 
     public static byte[] objectToByte(Object obj) {
-        byte[] buffer = null;
-        ObjectOutputStream os = null;
-        ByteArrayOutputStream baos = null;
-        if (obj != null) {
-            try {
-                baos = new ByteArrayOutputStream();
-                os = new ObjectOutputStream(baos);
-                os.writeObject(obj);
-                buffer = baos.toByteArray();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                IOUtil.closeStream(os);
-                IOUtil.closeStream(baos);
-            }
-            return buffer;
+        byte[] bytes = null;
+        ByteArrayOutputStream bo = null;
+        ObjectOutputStream oo = null;
+        try {
+            bo = new ByteArrayOutputStream();
+            oo = new ObjectOutputStream(bo);
+            oo.writeObject(obj);
+            bytes = bo.toByteArray();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IOUtil.closeStream(bo);
+            IOUtil.closeStream(oo);
         }
-        return buffer;
+        return bytes;
     }
 
-    public static java.lang.Object byteToObject(byte[] bc) {
+    public static <T> T byteToObject(byte[] bc, Class<T> clz) {
         Object obj = null;
         ByteArrayInputStream bis = null;
         ObjectInputStream ois = null;
@@ -43,6 +41,6 @@ public class ObjectUtil {
             IOUtil.closeStream(bis);
             IOUtil.closeStream(ois);
         }
-        return obj;
+        return (T) obj;
     }
 }

@@ -37,9 +37,24 @@ public class FaceObject implements Serializable {
     /**
      * 小图
      */
-    private byte[] image;
 
     private String startTime;
+
+    public FaceObject(String ipcId,
+                      String timeStamp,
+                      SearchType type,
+                      String date,
+                      String timeSlot,
+                      FaceAttribute attribute,
+                      String startTime) {
+        this.ipcId = ipcId;
+        this.timeStamp = timeStamp;
+        this.type = type;
+        this.date = date;
+        this.timeSlot = timeSlot;
+        this.attribute = attribute;
+        this.startTime = startTime;
+    }
 
     public String getIpcId() {
         return ipcId;
@@ -89,14 +104,6 @@ public class FaceObject implements Serializable {
         this.attribute = attribute;
     }
 
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
     public String getStartTime() {
         return startTime;
     }
@@ -114,7 +121,6 @@ public class FaceObject implements Serializable {
                 ", date='" + date + '\'' +
                 ", timeSlot='" + timeSlot + '\'' +
                 ", attribute=" + attribute +
-                ", image=" + Arrays.toString(image) +
                 ", startTime='" + startTime + '\'' +
                 '}';
     }

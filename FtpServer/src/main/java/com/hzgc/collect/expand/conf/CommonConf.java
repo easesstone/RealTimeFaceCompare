@@ -3,24 +3,14 @@ package com.hzgc.collect.expand.conf;
 public class CommonConf {
 
     /**
-     * 接收队列日志名称
+     * 队列日志名称
      */
-    private String receiveLogName = "0000000000000000000";
+    private String logName = "0000000000000000000";
 
     /**
-     * 处理日志文件名称
+     * 日志文件大小
      */
-    private String processLogName = "0000000000000000000";
-
-    /**
-     * 接收队列日志文件大小
-     */
-    private int receiveLogSize = 300000;
-
-    /**
-     * 处理日志文件大小
-     */
-    private int processLogSize = 300000;
+    private int logSize = 300000;
 
     /**
      * 当前队列缓冲容量
@@ -58,36 +48,20 @@ public class CommonConf {
 
     }
 
-    public String getReceiveLogName() {
-        return receiveLogName;
+    public String getLogName() {
+        return logName;
     }
 
-    public void setReceiveLogName(String receiveLogName) {
-        this.receiveLogName = receiveLogName;
+    public void setLogName(String logName) {
+        this.logName = logName;
     }
 
-    public String getProcessLogName() {
-        return processLogName;
+    public int getLogSize() {
+        return logSize;
     }
 
-    public void setProcessLogName(String processLogName) {
-        this.processLogName = processLogName;
-    }
-
-    public int getReceiveLogSize() {
-        return receiveLogSize;
-    }
-
-    public void setReceiveLogSize(int receiveLogSize) {
-        this.receiveLogSize = receiveLogSize;
-    }
-
-    public int getProcessLogSize() {
-        return processLogSize;
-    }
-
-    public void setProcessLogSize(int processLogSize) {
-        this.processLogSize = processLogSize;
+    public void setLogSize(int logSize) {
+        this.logSize = logSize;
     }
 
     public int getCapacity() {
@@ -112,5 +86,13 @@ public class CommonConf {
 
     public void setProcessLogDir(String processLogDir) {
         this.processLogDir = processLogDir;
+    }
+
+    public int getReceiveNumber() {
+        return receiveNumber;
+    }
+
+    public void setReceiveNumber(int receiveNumber) {
+        this.receiveNumber = receiveNumber;
     }
 }
