@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public class FileUtil {
 
-    private static Logger LOG = Logger.getLogger(FileUtil.class);
+    private Logger LOG = Logger.getLogger(FileUtil.class);
     private List<String> allFileOfDir = new ArrayList<>();
 
     /**
@@ -76,7 +76,14 @@ public class FileUtil {
     public List<String> listAllFileOfDir(String path){
         FilePathVistor FPV = new FilePathVistor();
         try {
-            Files.walkFileTree(Paths.get(path), FPV) ; //用NIO对path目录下的文件进行递归遍历
+            //若传入的参数是一个目录
+            if(Files.isDirectory(Paths.get(path))){
+                Files.walkFileTree(Paths.get(path), FPV) ; //用NIO对path目录下的文件进行递归遍历
+            }
+            else {
+                LOG.error(path + " is not a directory!");
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -139,7 +146,48 @@ public class FileUtil {
      * @return 文件是否存在
      */
     public boolean isFileExist(String filePath){
-        return (new File(filePath).exists());
+        //若输入为空
+        if (filePath == null || filePath == ""){
+            return false;
+        }
+        //输入不为空，文件为目录
+        else {
+            File file = new File(filePath);
+            //输入为目录或文件不存在
+            if (!file.isFile() || !file.exists()) {
+                return false;
+            }
+            else{
+                return true;
+            }
+        }
+    }
+
+    /**
+     * 根据要处理的process文件路径，得到对应的receive的文件路径。
+     * process文件路径：/opt/logdata/process/p-0/0000000000001.log
+     * receive文件路径：/opt/logdata/receive/r-0/0000000000001.log
+     */
+    public String getRecFileFromProFile(String processFilePath){
+        /*
+            substring(int beginIndex, int endIndex)：
+            获取字符串中以索引beginIndex开始（包含），endIndex结尾（不含）的部分。
+         */
+
+        //拼接receive文件路径：根据process文件路径，将其“process/p”部分，替换为“receive/r”
+
+
+        //****************************test********************************/
+        //本地测试时路径为：D:\Test\opt\logdata\process\p-0
+        String recSubstring1 = processFilePath.substring(processFilePath.indexOf("\\opt"),processFilePath.indexOf("process"));
+        String recSubstring2 = "receive\\r";
+//        String recSubstring1 = processFilePath.substring(processFilePath.indexOf("/opt"),processFilePath.indexOf("process"));
+//        String recSubstring2 = "receive/r";
+        String recSubstring3 = processFilePath.substring(processFilePath.indexOf("-"));
+
+        String receiveFilePath = recSubstring1 + recSubstring2 + recSubstring3;
+
+        return receiveFilePath;
     }
 
 }
