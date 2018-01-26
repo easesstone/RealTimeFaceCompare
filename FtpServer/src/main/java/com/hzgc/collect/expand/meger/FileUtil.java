@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public class FileUtil {
 
-    private static Logger LOG = Logger.getLogger(FileUtil.class);
+    private Logger LOG = Logger.getLogger(FileUtil.class);
     private List<String> allFileOfDir = new ArrayList<>();
 
     /**
@@ -139,7 +139,12 @@ public class FileUtil {
      * @return 文件是否存在
      */
     public boolean isFileExist(String filePath){
-        return (new File(filePath).exists());
+        if (filePath == null || filePath == ""){
+            return false;
+        }
+        else {
+            return (new File(filePath).exists());
+        }
     }
 
 }

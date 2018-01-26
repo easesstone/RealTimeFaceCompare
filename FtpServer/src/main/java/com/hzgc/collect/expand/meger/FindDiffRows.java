@@ -18,7 +18,7 @@ import java.util.List;
  * getAllDiffRows：获取集合中不同行；
  */
 public class FindDiffRows {
-    private static Logger LOG = Logger.getLogger(FindDiffRows.class);
+    private Logger LOG = Logger.getLogger(FindDiffRows.class);
 
     /**
      * 获取日志中未处理的的所有数据
@@ -26,7 +26,7 @@ public class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  未处理数据的集合
      */
-    public static List<String> getNotProRows(List<String> allRows) {
+    public List<String> getNotProRows(List<String> allRows) {
         List<String> notProList = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -71,7 +71,7 @@ public class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  合并后集合中数据处理失败的集合
      */
-    public static List<String> getErrProRows(List<String> allRows) {
+    public List<String> getErrProRows(List<String> allRows) {
         List<String> failList = new ArrayList<>();
         String tmp;
         if (allRows == null || allRows.size() == 0) {
@@ -98,7 +98,7 @@ public class FindDiffRows {
      * @param allRows 合并后日志集合
      * @return List对象       返回合并后不同行的集合
      */
-    public static List<String> getAllDiffRows(List<String> allRows) {
+    public List<String> getAllDiffRows(List<String> allRows) {
         List<String> rows = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -131,7 +131,7 @@ public class FindDiffRows {
      * @param row 日志中一行数据
      * @return String        数据在日志中序号
      */
-    private static String getRowNumber(String row) {
+    private String getRowNumber(String row) {
         String rowNumber = "";
         String split = ",";
         if (row == null || row.length() == 0) {
@@ -148,7 +148,7 @@ public class FindDiffRows {
      * @param row 日志中一行数据
      * @return String        数据处理的状态
      */
-    private static String getProcessState(String row) {
+    private String getProcessState(String row) {
         String processState = "";
         String split = ",";
         if (row == null || row.length() == 0) {
