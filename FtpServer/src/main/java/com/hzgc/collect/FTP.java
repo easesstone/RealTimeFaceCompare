@@ -28,13 +28,16 @@ public class FTP extends ClusterOverFtp {
       Set the dynamic log configuration file refresh time
      */
     static {
+        //加载所有配置文件
+        HelperFactory.regist();
         new LoggerConfig();
     }
 
     @Override
     public void startFtpServer() {
-        HelperFactory.regist();
+        //expand模块的公共Conf对象
         CommonConf commonConf = new CommonConf();
+        //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         log.info("Create " + FtpServerFactory.class + " successful");
         ListenerFactory listenerFactory = new ListenerFactory();
