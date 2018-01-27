@@ -1,6 +1,7 @@
 package com.hzgc.collect;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.HelperFactory;
 import com.hzgc.collect.ftp.ClusterOverFtp;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
 import com.hzgc.collect.ftp.FtpServer;
@@ -32,6 +33,7 @@ public class FTP extends ClusterOverFtp {
 
     @Override
     public void startFtpServer() {
+        HelperFactory.regist();
         CommonConf commonConf = new CommonConf();
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         log.info("Create " + FtpServerFactory.class + " successful");
