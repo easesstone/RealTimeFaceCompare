@@ -108,17 +108,20 @@ public class FindDiffRows {
             rows.add(allRows.get(0));
         } else {
             Collections.sort(allRows);
-            for (int i = 1; i < allRows.size() - 2; i++) {
-                row = allRows.get(i);
-                if (!row.equals(allRows.get(i - 1)) && !row.equals(allRows.get(i + 1))) {
+            for (String tmp : allRows) {
+                System.out.println(tmp);
+            }
+            for (int i = 1; i <= allRows.size() - 2; i++) {
+                row = allRows.get(i).trim();
+                if (!row.equals(allRows.get(i - 1).trim()) && !row.equals(allRows.get(i + 1).trim())) {
                     rows.add(row);
                 }
             }
-            if (!allRows.get(0).equals(allRows.get(1))) {
-                rows.add(allRows.get(0));
+            if (!allRows.get(0).trim().equals(allRows.get(1).trim())) {
+                rows.add(allRows.get(0).trim());
             }
-            if (!allRows.get(allRows.size() - 1).equals(allRows.get(allRows.size() - 2))) {
-                rows.add(allRows.get(allRows.size() - 1));
+            if (!allRows.get(allRows.size() - 1).trim().equals(allRows.get(allRows.size() - 2).trim())) {
+                rows.add(allRows.get(allRows.size() - 1).trim());
             }
 
         }
