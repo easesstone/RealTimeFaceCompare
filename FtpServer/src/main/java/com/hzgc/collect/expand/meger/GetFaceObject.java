@@ -12,14 +12,17 @@ import java.util.Date;
 import java.util.Map;
 
 class GetFaceObject {
-    private  Logger LOG = Logger.getLogger(GetFaceObject.class);
+    private Logger LOG = Logger.getLogger(GetFaceObject.class);
+    private static final String SPLIT = ",";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
-     static FaceObject getFaceObject(String row) {
+    static FaceObject getFaceObject(String row) {
         FaceObject faceObject = new FaceObject();
         if (row != null && row.length() != 0) {
-            String path = row.substring(row.lastIndexOf(":") + 1, row.lastIndexOf(","));
+            String[] splits = row.split(SPLIT);
+            String ftpUrl =splits[1].substring(splits[1].indexOf(":")+2,splits[1].lastIndexOf("\""));
+            String path = row.substring(ftpUrl.lastIndexOf(":") + 1);
             String fileName = path.substring(path.indexOf("/"));
             byte[] photo = FaceFunction.inputPicture(fileName);
             FaceAttribute faceAttribute = FaceFunction.featureExtract(photo);

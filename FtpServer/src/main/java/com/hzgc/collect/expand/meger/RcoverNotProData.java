@@ -23,13 +23,13 @@ public class RcoverNotProData {
     public boolean recoverNotProData(CommonConf commonConf) {
         FileUtil fileUtil = new FileUtil();
         LogEvent logEvent = new LogEvent();
-
         String processLogDir = commonConf.getProcessLogDir();
 
         FileFactory fileFactory = new FileFactory(processLogDir);
         List<String> processFiles = fileFactory.getAllProcessFiles();
         //标记恢复数据是否成功，默认false
         boolean recoverSuccess = false;
+
         //判断process根目录下是否有文件
         if (processFiles != null && processFiles.size() != 0) {
             for (String processFile : processFiles) {
@@ -42,9 +42,9 @@ public class RcoverNotProData {
                     DataProcessLogWriter dataProcessLogWriter = new DataProcessLogWriter(commonConf, queueID);
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile);
                     //获取未处理的数据
-                    List<String> notProFiles = rowsListFactory.getNotProRows();
-                    for (int j = 0; j < notProFiles.size(); j++) {
-                        String row = notProFiles.get(j);
+                    List<String> notProRows = rowsListFactory.getNotProRows();
+                    for (int j = 0; j < notProRows.size(); j++) {
+                        String row = notProRows.get(j);
                         String[] splits = row.split(SPLIT);
                         //获取未处理数据的ftpUrl
                         String ftpUrl =splits[1].substring(splits[1].indexOf(":")+2,splits[1].lastIndexOf("\""));

@@ -1,7 +1,6 @@
 package com.hzgc.collect.expand.meger;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.collect.expand.processer.ProducerOverFtp;
 import org.apache.kafka.clients.producer.Callback;
@@ -11,19 +10,18 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 class SendDataToKafka extends ProducerOverFtp implements Serializable {
     private Logger LOG = Logger.getLogger(SendDataToKafka.class);
     private KafkaProducer<String, FaceObject> kafkaProducer;
-    private Properties kafkaPropers = new Properties();
-    private MetricRegistry metric = new MetricRegistry();
-    private final Counter counter = metric.counter("sendKafkaCount");
+    private final Counter counter;
     private static SendDataToKafka sendDataToKafka;
     private boolean successToKafka;
 
     private SendDataToKafka() {
         super();
+        kafkaProducer = ProducerOverFtp.kafkaProducer;
+        counter = ProducerOverFtp.counter;
     }
 
     static synchronized SendDataToKafka getSendDataToKafka() {
@@ -64,9 +62,8 @@ class SendDataToKafka extends ProducerOverFtp implements Serializable {
     @Override
     public void sendKafkaMessage(final String topic, final String key, FaceObject value) {
 
-        if (kafkaPropers != null) {
-            kafkaProducer.send(new ProducerRecord<>(topic, key, value), new SendCallback(topic, key));
-        }
+        kafkaProducer.send(new ProducerRecord<>(topic, key, value), new SendCallback(topic, key));
+
     }
 
     boolean isSuccessToKafka() {
