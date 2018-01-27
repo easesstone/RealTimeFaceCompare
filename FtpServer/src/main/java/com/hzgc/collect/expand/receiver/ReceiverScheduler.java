@@ -15,9 +15,13 @@ import java.util.concurrent.Executors;
 public class ReceiverScheduler {
     private Logger LOG = Logger.getLogger(ReceiverScheduler.class);
     private final List<ReceiverImpl> container = new ArrayList<>();
+    //公共配置类
     private CommonConf conf;
+    //配置文件中配置的receiver的数量
     private int receiveNumber;
+    //用来计算调用getReceiver的次数，并用此数量和receiver的数量的余数，对receiver依次get
     private int pollingCount;
+    //用来存放工作线程的线程池
     private ExecutorService pool;
 
     public ReceiverScheduler(CommonConf conf) {
@@ -76,9 +80,9 @@ public class ReceiverScheduler {
                 pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
             }
         } else {
-            for (int i = 0; i < conf.getReceiveNumber(); i++){
+            for (int i = 0; i < conf.getReceiveNumber(); i++) {
                 pool = Executors.newFixedThreadPool(conf.getReceiveNumber());
-                ReceiverImpl receiver = new ReceiverImpl(conf,i + "");
+                ReceiverImpl receiver = new ReceiverImpl(conf, i + "");
                 regist(receiver);
                 pool.execute(new ProcessThread(conf, receiver.getQueue(), i + ""));
             }
@@ -107,7 +111,7 @@ public class ReceiverScheduler {
             if (fileList != null) {
                 if (receiverNum == fileList.length) {
                     for (String fl : fileList) {
-                        queueIDList.add(fl.split("-")[1]);
+                        queueIDList.add(fl.split("-")[1].split("\\.")[0]);
                     }
                 } else if (receiverNum > fileList.length) {
                     for (int i = 0; i < receiverNum; i++) {
@@ -116,7 +120,7 @@ public class ReceiverScheduler {
                 } else {
                     int[] queueIdArr = new int[fileList.length];
                     for (int i = 0; i < fileList.length; i++) {
-                        queueIdArr[i] = Integer.parseInt(fileList[i].split("-")[1]);
+                        queueIdArr[i] = Integer.parseInt(fileList[i].split("-")[1].split("\\.")[0]);
                     }
                     Arrays.sort(queueIdArr);
                     for (int j = 0; j < receiverNum; j++) {
@@ -134,5 +138,9 @@ public class ReceiverScheduler {
             return queueIDList;
         }
         return queueIDList;
+    }
+
+    public ExecutorService getPool() {
+        return pool;
     }
 }
