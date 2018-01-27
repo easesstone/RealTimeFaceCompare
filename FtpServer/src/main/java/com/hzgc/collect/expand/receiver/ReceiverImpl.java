@@ -16,7 +16,7 @@ public class ReceiverImpl implements Receiver {
     private ReceiverImpl() {
     }
 
-    public ReceiverImpl(CommonConf conf, String queueID) {
+    ReceiverImpl(CommonConf conf, String queueID) {
         this.queueID = queueID;
         this.queue = new ArrayBlockingQueue<>(conf.getCapacity());
         this.receiveWriter = new DataReceiveLogWriter(conf, queueID);

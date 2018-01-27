@@ -1,11 +1,12 @@
 package com.hzgc.collect;
 
+import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.HelperFactory;
 import com.hzgc.collect.ftp.ClusterOverFtp;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
 import com.hzgc.collect.ftp.FtpServer;
 import com.hzgc.collect.ftp.FtpServerFactory;
 import com.hzgc.collect.ftp.util.LoggerConfig;
-import com.hzgc.collect.expand.util.DataProcesser;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.nativefs.filesystem.NativeFileSystemFactory;
@@ -27,12 +28,17 @@ public class FTP extends ClusterOverFtp {
       Set the dynamic log configuration file refresh time
      */
     static {
+        //加载所有配置文件
+        HelperFactory.regist();
         new LoggerConfig();
     }
 
     @Override
     public void startFtpServer() {
-        FtpServerFactory serverFactory = new FtpServerFactory();
+        //expand模块的公共Conf对象
+        CommonConf commonConf = new CommonConf();
+        //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
+        FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         log.info("Create " + FtpServerFactory.class + " successful");
         ListenerFactory listenerFactory = new ListenerFactory();
         log.info("Create " + ListenerFactory.class + " successful");
@@ -83,7 +89,5 @@ public class FTP extends ClusterOverFtp {
         FTP ftp = new FTP();
         ftp.loadConfig();
         ftp.startFtpServer();
-        DataProcesser data = new DataProcesser();
-        data.reader();
     }
 }
