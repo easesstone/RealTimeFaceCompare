@@ -1,8 +1,12 @@
 package com.hzgc.collect.ftp.command.impl;
 
+import com.hzgc.collect.expand.log.LogEvent;
+import com.hzgc.collect.expand.processer.FtpPathMessage;
+import com.hzgc.collect.expand.processer.RocketMQProducer;
 import com.hzgc.collect.ftp.command.AbstractCommand;
 import com.hzgc.collect.ftp.ftplet.*;
 import com.hzgc.collect.ftp.impl.*;
+import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.util.common.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +69,27 @@ public class STOR extends AbstractCommand {
                 return;
             }
             fileName = file.getAbsolutePath();
+
+            //此处产生LogEvent对象用来进行异步处理
+            if (fileName.contains("unknown")) {
+                LOG.error(fileName + ":contain unknown ipcID, Not send to rocketMQ and Kafka!");
+            } else {
+                int faceNum = FtpUtils.pickPicture(fileName);
+                if (fileName.contains(".jpg") && faceNum > 0) {
+                    LogEvent event = new LogEvent();
+                    event.setTimeStamp(System.currentTimeMillis());
+                    event.setAbsolutePath(file.getFileAbsolutePa());
+                    event.setPath(fileName);
+                    FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
+                    //拼装ftpUrl (带主机名的ftpUrl)
+                    String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
+                    //获取ftpUrl (带IP地址的ftpUrl)
+                    String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
+                    //发送到rocketMQ
+                    RocketMQProducer.getInstance().send(message.getIpcid(), message.getTimeStamp(), ftpIpUrl.getBytes());
+                    context.getScheduler().putData(event);
+                }
+            }
 
             // get permission
             if (!file.isWritable()) {

@@ -19,6 +19,7 @@
 
 package com.hzgc.collect.ftp;
 
+import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.ftp.command.CommandFactory;
 import com.hzgc.collect.ftp.ftplet.FileSystemFactory;
 import com.hzgc.collect.ftp.ftplet.Ftplet;
@@ -26,6 +27,7 @@ import com.hzgc.collect.ftp.ftplet.UserManager;
 import com.hzgc.collect.ftp.ftpletcontainer.impl.DefaultFtpletContainer;
 import com.hzgc.collect.ftp.impl.DefaultFtpServer;
 import com.hzgc.collect.ftp.impl.DefaultFtpServerContext;
+import com.hzgc.collect.ftp.impl.ReceiverFtpServerContext;
 import com.hzgc.collect.ftp.listener.Listener;
 import com.hzgc.collect.ftp.message.MessageResource;
 
@@ -47,6 +49,13 @@ public class FtpServerFactory {
      */
     public FtpServerFactory() {
         serverContext = new DefaultFtpServerContext();
+    }
+
+    /**
+     * 通过CommonConf创建一个FtpServerContext
+     */
+    public FtpServerFactory(CommonConf conf) {
+        this.serverContext = new ReceiverFtpServerContext(conf);
     }
 
     /**

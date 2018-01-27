@@ -36,8 +36,7 @@ public class ProcessThread implements Runnable {
                             , message.getDate()
                             , message.getTimeslot()
                             , attribute
-                            , event.getTimeStamp());
-
+                            , event.getTimeStamp() + "");
                     kafka.sendKafkaMessage(KafkaProducer.getFEATURE()
                             , FtpUtils.getFtpUrl(event.getPath())
                             , faceObject);

@@ -24,7 +24,6 @@ public class ReceiverScheduler {
         this.conf = conf;
         this.receiveNumber = conf.getReceiveNumber();
         this.pollingCount = 0;
-        this.preapreRecvicer();
     }
 
     /**

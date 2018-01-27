@@ -19,6 +19,7 @@
 
 package com.hzgc.collect.ftp.impl;
 
+import com.hzgc.collect.expand.receiver.ReceiverScheduler;
 import com.hzgc.collect.ftp.command.CommandFactory;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.ftplet.*;
@@ -81,11 +82,8 @@ public class DefaultFtpServerContext implements FtpServerContext {
 
     private Map<String, Listener> listeners = new HashMap<>();
 
-    private KafkaProducer kafkaProducer = KafkaProducer.getInstance();
-
-    private RocketMQProducer producerRocketMQ = RocketMQProducer.getInstance();
-
     private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList<>();
+
     private static final List<Authority> ANON_AUTHORITIES = new ArrayList<>();
 
     /**
@@ -214,6 +212,11 @@ public class DefaultFtpServerContext implements FtpServerContext {
         }
     }
 
+    @Override
+    public ReceiverScheduler getScheduler() {
+        return null;
+    }
+
     public Listener getListener(String name) {
         return listeners.get(name);
     }
@@ -282,13 +285,5 @@ public class DefaultFtpServerContext implements FtpServerContext {
             threadPoolExecutor = new OrderedThreadPoolExecutor(maxThreads);
         }
         return threadPoolExecutor;
-    }
-
-    public KafkaProducer getKafkaProducer() {
-        return kafkaProducer;
-    }
-
-    public RocketMQProducer getProducerRocketMQ() {
-        return producerRocketMQ;
     }
 }
