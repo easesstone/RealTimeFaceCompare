@@ -23,7 +23,7 @@ public class KafkaProducer implements Serializable {
     private static String FEATURE = "feature";
 
     private static MetricRegistry metric = new MetricRegistry();
-    private final static Counter counter = metric.counter("sendKafkaCount");
+    protected final static Counter counter = metric.counter("sendKafkaCount");
 
     KafkaProducer() {
         try {
