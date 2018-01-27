@@ -38,7 +38,7 @@ public class DataProcessLogWriter extends AbstractLogWrite {
     private String currentFile;
 
 
-    DataProcessLogWriter(CommonConf conf, String queueID) {
+    public DataProcessLogWriter(CommonConf conf, String queueID) {
         super(conf, queueID);
         this.processLogSize = conf.getProcessLogSize();
         this.processLogName = conf.getProcessLogName();
