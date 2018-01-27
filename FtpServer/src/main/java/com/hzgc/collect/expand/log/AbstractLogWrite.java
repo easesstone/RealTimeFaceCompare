@@ -1,10 +1,11 @@
 package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.util.JSONHelper;
+import org.apache.log4j.Logger;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.LineNumberReader;
+import java.io.*;
+import java.util.Arrays;
 
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
@@ -14,26 +15,78 @@ import java.io.LineNumberReader;
  * 如果需要实现LogWriter定义的功能需要继承AbstractLogGroupWrite
  */
 abstract class AbstractLogWrite implements LogWriter {
+    static Logger LOG;
     /**
      * 当前队列ID
      */
-    protected String queueID;
+    String queueID;
 
     /**
-     * 私有无参构造器
+     * 处理日志文件大小
      */
-    private AbstractLogWrite() {
-
-    }
+    int logSize;
 
     /**
-     * @param conf    ReceiverConf对象
+     * 处理日志文件名称
+     */
+    String logName;
+
+    /**
+     * 当前队列序号,默认从1开始
+     */
+    long count;
+
+    /**
+     * 当前日志所在目录
+     */
+    String currentDir;
+
+    /**
+     * 当前日志绝对路径
+     */
+    String currentFile;
+
+    /**
+     * 系统换行符
+     */
+    private String newLine;
+
+    /**
+     * 构造LogWriter的公共字段
+     *
+     * @param conf 全局配置
      * @param queueID 当前队列ID
+     * @param clz 当前类Class
      */
-    AbstractLogWrite(CommonConf conf, String queueID) {
+    AbstractLogWrite(CommonConf conf, String queueID, Class clz){
+        LOG = Logger.getLogger(clz);
+        this.queueID = queueID;
+        this.newLine = System.getProperty("line.separator");
+        this.logSize = conf.getLogSize();
+        this.logName = conf.getLogName();
     }
 
-    abstract protected void prepare();
+    /**
+     * 前置方法，通过此方法，可以初始化当前队列的序号（count）、
+     * 如果当前队列之前有日志记录，则找到最后一个序号
+     * 如果未找到序号或者是第一次创建此队列，序号（count）为1
+     */
+    void prepare() {
+        File logDir = new File(this.currentDir);
+        if (!logDir.exists()) {
+            logDir.mkdirs();
+            this.count = 1;
+        } else if (null == logDir.list()) {
+            this.count = 1;
+        } else {
+            File logFile = new File(this.currentFile);
+            if (!logFile.exists()) {
+                this.count = getLastCount(getLastLogFile(this.currentDir));
+            } else {
+                this.count = getLastCount(this.currentFile);
+            }
+        }
+    }
 
     /**
      * 当默认日志文件写入的日志个数大于配置的个数时,
@@ -41,10 +94,10 @@ abstract class AbstractLogWrite implements LogWriter {
      * 此方法用来生成这个文件名称
      *
      * @param defaultName 默认写入的日志文件名称
-     * @param count 要标记的count值
+     * @param count       要标记的count值
      * @return 最终合并的文件名称
      */
-    String logNameUpdate(String defaultName, long count) {
+    private String logNameUpdate(String defaultName, long count) {
         char[] oldChar = defaultName.toCharArray();
         char[] content = (count + "").toCharArray();
         for (int i = 0; i < content.length; i++) {
@@ -53,20 +106,92 @@ abstract class AbstractLogWrite implements LogWriter {
         return new String(oldChar);
     }
 
-    long getLastCount(String currentLogFile) {
+    /**
+     * 获取当前队列的最后一行日志的序号
+     *
+     * @param currentLogFile 当前队列的日志文件绝对路径
+     * @return 当前队列的序号
+     */
+    private long getLastCount(String currentLogFile) {
         try {
-            LineNumberReader numberReader = new LineNumberReader(new FileReader(currentLogFile));
-//            numberReader.skip()
-        } catch (FileNotFoundException e) {
+            RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
+            long length = raf.length();
+            long position = length - 1;
+            if (position == -1) {
+                return 0;
+            } else {
+                while (position >= 0) {
+                    position--;
+                    raf.seek(position);
+                    if (raf.readByte() == '\n') {
+                        break;
+                    }
+                }
+                byte[] bytes = new byte[(int) (length - position)];
+                String json = new String(bytes);
+                LogEvent event = JSONHelper.toObject(json, LogEvent.class);
+                return event.getCount();
+            }
+        } catch (java.io.IOException e) {
             e.printStackTrace();
         }
         return 1;
     }
-    public String getQueueID() {
-        return queueID;
+
+    /**
+     * 获取最大序号（count）所在的日志文件的绝对路径
+     *
+     * @param currentDir 当前队列所在的目录
+     * @return 日志文件的绝对路径
+     */
+    private String getLastLogFile(String currentDir) {
+        File file = new File(currentDir);
+        String[] fileArray = file.list();
+        if (fileArray != null) {
+            Arrays.sort(fileArray);
+            return fileArray[fileArray.length - 1];
+        } else {
+            return "";
+        }
     }
 
-    public void setQueueID(String queueID) {
-        this.queueID = queueID;
+    /**
+     * 写日志操作，使用追加的方法
+     *
+     * @param event 封装的日志信息
+     */
+    private void action(LogEvent event) {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(this.currentFile, true);
+            event.setCount(this.count);
+            fw.write(JSONHelper.toJson(event));
+            fw.write(newLine);
+            fw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fw != null) {
+                    fw.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.count++;
+        }
+    }
+
+    @Override
+    public void writeEvent(LogEvent event) {
+        if (this.count % this.logSize == 0) {
+            File oldFile = new File(this.currentFile);
+            File newFile = new File(currentDir + logNameUpdate(this.logName, count));
+            oldFile.renameTo(newFile);
+            action(event);
+        } else {
+            action(event);
+        }
+
     }
 }
