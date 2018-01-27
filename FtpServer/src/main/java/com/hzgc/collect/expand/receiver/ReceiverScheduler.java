@@ -15,10 +15,14 @@ import java.util.concurrent.Executors;
 public class ReceiverScheduler {
     private Logger LOG = Logger.getLogger(ReceiverScheduler.class);
     private final List<ReceiverImpl> container = new ArrayList<>();
+    //公共配置类
     private CommonConf conf;
+    //配置文件中配置的receiver的数量
     private int receiveNumber;
+    //用来计算调用getReceiver的次数，并用此数量和receiver的数量的余数，对receiver依次get
     private int pollingCount;
-    private ExecutorService pool = Executors.newCachedThreadPool();
+    //用来存放工作线程的线程池
+    private ExecutorService pool;
 
     public ReceiverScheduler(CommonConf conf) {
         this.conf = conf;
@@ -66,15 +70,28 @@ public class ReceiverScheduler {
      * 取得对应的queueIdList，根据这些queueId去初始化receiver
      */
     private void preapreRecvicer() {
-        List<String> queueIdList = reblanceRecevicer(conf.getReceiveNumber(), conf.getProcessLogDir());
-        if (queueIdList.size() > 0) {
-            for (String id : queueIdList) {
-                ReceiverImpl receiver = new ReceiverImpl(conf, id);
-                regist(receiver);
-                pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
+        int receiveNumber = conf.getReceiveNumber();
+        String logDir = conf.getProcessLogDir();
+        if (receiveNumber != 0 && logDir != null) {
+            List<String> queueIdList = reblanceRecevicer(receiveNumber, logDir);
+            if (queueIdList.size() > 0) {
+                pool = Executors.newFixedThreadPool(queueIdList.size());
+                for (String id : queueIdList) {
+                    ReceiverImpl receiver = new ReceiverImpl(conf, id);
+                    regist(receiver);
+                    pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
+                }
+            } else {
+                for (int i = 0; i < receiveNumber; i++) {
+                    pool = Executors.newFixedThreadPool(receiveNumber);
+                    ReceiverImpl receiver = new ReceiverImpl(conf, i + "");
+                    regist(receiver);
+                    pool.execute(new ProcessThread(conf, receiver.getQueue(), i + ""));
+                }
+                LOG.info("This is the initialization receiver, please wait for the initialization to complete!");
             }
         } else {
-            LOG.error("Can not to get the queueIdList,please check your ReceiverNumber and your FileDir!");
+            LOG.error("The receiveNumber or the logDir is empty, please check your properties file!");
         }
     }
 
@@ -99,7 +116,7 @@ public class ReceiverScheduler {
             if (fileList != null) {
                 if (receiverNum == fileList.length) {
                     for (String fl : fileList) {
-                        queueIDList.add(fl.split("-")[1]);
+                        queueIDList.add(fl.split("-")[1].split("\\.")[0]);
                     }
                 } else if (receiverNum > fileList.length) {
                     for (int i = 0; i < receiverNum; i++) {
@@ -108,7 +125,7 @@ public class ReceiverScheduler {
                 } else {
                     int[] queueIdArr = new int[fileList.length];
                     for (int i = 0; i < fileList.length; i++) {
-                        queueIdArr[i] = Integer.parseInt(fileList[i].split("-")[1]);
+                        queueIdArr[i] = Integer.parseInt(fileList[i].split("-")[1].split("\\.")[0]);
                     }
                     Arrays.sort(queueIdArr);
                     for (int j = 0; j < receiverNum; j++) {
@@ -118,13 +135,17 @@ public class ReceiverScheduler {
                 }
 
             } else {
-                LOG.error("This file directory is null,please check your file dir!");
+                LOG.info("This directory is empty, please check the directory!");
                 return queueIDList;
             }
         } else {
-            LOG.error("This file directory is not exist,please mkdir the file directory!");
+            LOG.info("This directory does not exist, please create this directory frist!");
             return queueIDList;
         }
         return queueIDList;
+    }
+
+    public ExecutorService getPool() {
+        return pool;
     }
 }
