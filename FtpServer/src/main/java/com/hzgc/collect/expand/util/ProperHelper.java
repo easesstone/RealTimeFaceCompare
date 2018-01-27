@@ -156,8 +156,8 @@ abstract class ProperHelper {
                 System.exit(1);
             }
             else {
-                //键值存在，才能getProperty取到值。
-                String valueFromKey = props.getProperty(key);
+                //键值存在，才能getProperty取到值（去一下空格）。
+                String valueFromKey = props.getProperty(key).trim();
                 //对于“IP：PORT，IP：PORT，IP：PORT”中的每个IP：PORT（以逗号分隔）：
                 int count = 0;
                 for (String ipPlusPort : valueFromKey.split(",")) {
