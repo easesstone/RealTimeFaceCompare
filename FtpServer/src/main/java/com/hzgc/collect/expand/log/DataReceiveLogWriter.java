@@ -13,7 +13,7 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
         super.currentDir = conf.getProcessLogDir() + "/" + "receive-" + super.queueID + "/";
         super.currentFile = super.currentDir + super.logName;
         super.prepare();
-        LOG.info("Init DataReceiveLogWriter successfull [" + queueID + ":" + super.queueID
+        LOG.info("Init DataReceiveLogWriter successful [" + queueID + ":" + super.queueID
                 + ", count:" + count
                 + ", LogName:" + super.logName
                 + ", LogSize:" + super.logSize

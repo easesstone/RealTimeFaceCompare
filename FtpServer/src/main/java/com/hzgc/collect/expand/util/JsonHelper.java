@@ -26,6 +26,7 @@ public class JsonHelper {
     public static <T> T toObject(String jsonData, Class<T> beanType) {
         T t = null;
         try {
+            // TODO: 2018-1-27 此处报错
             t = mapper.readValue(jsonData, beanType);
         } catch (IOException e) {
             e.printStackTrace();

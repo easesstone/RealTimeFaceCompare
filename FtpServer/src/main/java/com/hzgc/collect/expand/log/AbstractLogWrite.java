@@ -4,7 +4,10 @@ import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.util.JsonHelper;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
 
 /**
@@ -54,11 +57,11 @@ abstract class AbstractLogWrite implements LogWriter {
     /**
      * 构造LogWriter的公共字段
      *
-     * @param conf 全局配置
+     * @param conf    全局配置
      * @param queueID 当前队列ID
-     * @param clz 当前类Class
+     * @param clz     当前类Class
      */
-    AbstractLogWrite(CommonConf conf, String queueID, Class clz){
+    AbstractLogWrite(CommonConf conf, String queueID, Class clz) {
         LOG = Logger.getLogger(clz);
         this.queueID = queueID;
         this.newLine = System.getProperty("line.separator");
@@ -99,7 +102,8 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     private String logNameUpdate(String defaultName, long count) {
         char[] oldChar = defaultName.toCharArray();
-        char[] content = (count + "").toCharArray();
+        // TODO: 2018-1-27 此处添加.log 
+        char[] content = (count + ".log").toCharArray();
         for (int i = 0; i < content.length; i++) {
             oldChar[oldChar.length - 1 - i] = content[content.length - 1 - i];
         }
@@ -129,7 +133,7 @@ abstract class AbstractLogWrite implements LogWriter {
                 }
                 byte[] bytes = new byte[(int) (length - position)];
                 String json = new String(bytes);
-                LogEvent event = JsonHelper.toObject(json, LogEvent.class);
+                LogEvent event = JsonHelper.toObject(json.trim(), LogEvent.class);
                 return event.getCount();
             }
         } catch (java.io.IOException e) {
@@ -137,6 +141,45 @@ abstract class AbstractLogWrite implements LogWriter {
         }
         return 1;
     }
+    // TODO: 2018-1-27 新增读取最后一行方法
+
+    /**
+     * 快速读取文件最后一行序号（count）
+     *
+     * @param file 要读取的文件
+     * @return lastLine 文件的最后一行内容序号（count）
+     */
+    public String readLastLineCount(File file) {
+        RandomAccessFile randomAccessFile = null;
+        String lastLine = "";
+        try {
+            randomAccessFile = new RandomAccessFile(file, "r");
+            long len = randomAccessFile.length();
+            if (len != 0L) {
+                long pos = len - 1;
+                while (pos > 0) {
+                    pos--;
+                    randomAccessFile.seek(pos);
+                    if (randomAccessFile.readByte() == '\n') {
+                        lastLine = new String(randomAccessFile.readLine().getBytes("ISO-8859-1"), "UTF-8");
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (randomAccessFile != null) {
+                    randomAccessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return lastLine;
+    }
+
 
     /**
      * 获取最大序号（count）所在的日志文件的绝对路径
@@ -164,6 +207,7 @@ abstract class AbstractLogWrite implements LogWriter {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
+            event.setCount(count);
             fw.write(JsonHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
@@ -186,8 +230,10 @@ abstract class AbstractLogWrite implements LogWriter {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            oldFile.renameTo(newFile);
+            event.setCount(this.count);
+            // TODO: 2018-1-27 修改后面两行代码顺序
             action(event);
+            oldFile.renameTo(newFile);
         } else {
             action(event);
         }
