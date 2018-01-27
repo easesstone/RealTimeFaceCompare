@@ -1,6 +1,6 @@
 package com.hzgc.collect.expand.processer;
 
-import com.hzgc.collect.expand.util.FaceObjectUtils;
+import com.hzgc.util.common.ObjectUtil;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ public class FaceObjectEncoder implements org.apache.kafka.common.serialization.
 
     @Override
     public byte[] serialize(String s, FaceObject faceObject) {
-        return FaceObjectUtils.objectToBytes(faceObject);
+        return ObjectUtil.objectToByte(faceObject);
     }
 
     @Override

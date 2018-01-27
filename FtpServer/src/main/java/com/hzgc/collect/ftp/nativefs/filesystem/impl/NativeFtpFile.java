@@ -87,6 +87,11 @@ public class NativeFtpFile implements FtpFile {
         return fullName;
     }
 
+    @Override
+    public String getFileAbsolutePa() {
+        return file.getAbsolutePath();
+    }
+
     /**
      * Get short name.
      */
@@ -530,8 +535,7 @@ public class NativeFtpFile implements FtpFile {
         return false;
     }
 
-
-	@Override
+    @Override
 	public int hashCode() {
 		try {
 			return file.getCanonicalPath().hashCode();
