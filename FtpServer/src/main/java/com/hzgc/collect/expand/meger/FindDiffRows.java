@@ -16,7 +16,6 @@ import java.util.*;
  */
 public class FindDiffRows {
     private Logger LOG = Logger.getLogger(FindDiffRows.class);
-    private final String SPLIT = ",";
 
     /**
      * 获取日志中未处理的的所有数据
