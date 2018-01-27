@@ -1,6 +1,8 @@
 package com.hzgc.collect.expand.processer;
 
-public class FtpPathMessage {
+import java.io.Serializable;
+
+public class FtpPathMessage implements Serializable {
     private String ipcid;
     private String timeStamp;
     private String date;
