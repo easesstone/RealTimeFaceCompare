@@ -18,15 +18,15 @@ import java.util.Properties;
 
 public class ProducerOverFtp implements Serializable {
     private static Logger LOG = Logger.getLogger(ProducerOverFtp.class);
-    private static KafkaProducer<String, FaceObject> kafkaProducer;
+    protected static KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
     private static String FEATURE = "feature";
 
     private static MetricRegistry metric = new MetricRegistry();
-    private final static Counter counter = metric.counter("sendKafkaCount");
+    protected final static Counter counter = metric.counter("sendKafkaCount");
 
-    ProducerOverFtp() {
+     protected ProducerOverFtp() {
         try {
             File file = FileUtil.loadResourceFile("producer-over-ftp.properties");
             if (file != null) {
