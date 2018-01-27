@@ -12,14 +12,14 @@ import java.util.Properties;
  */
 public class ClusterOverFtpProperHelper extends ProperHelper {
 	private static Logger log = Logger.getLogger(ClusterOverFtpProperHelper.class);
-    private static Properties props = new Properties();
+	private static String properName = "cluster-over-ftp.properties";
+	private static Properties props = new Properties();
 	private static String port;
 	private static String implicitSsl;
 	private static String threadNum;
 
 	static {
-        String properName = "cluster-over-ftp.properties";
-        try {
+		try {
 			props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
 			log.info("Load configuration for ftp server from ./conf/cluster-over-ftp.properties");
 
@@ -37,17 +37,17 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
 	 * set方法。验证配置文件中的值是否为符合条件的格式。
 	 */
 
-	private static void setPort() {
-        port = verifyPort("listener-port", "2121", props, log);
-    }
+	private static String setPort() {
+		return port = verifyPort("listener-port","2121", props, log);
+	}
 
-	private static void setImplicitSsl() {
-        implicitSsl = verifyBooleanValue("implicitSsl", "false", props, log);
-    }
+	private static String setImplicitSsl() {
+		return implicitSsl = verifyBooleanValue("implicitSsl","false", props, log);
+	}
 
-	private static void setThreadNum() {
-        threadNum = verifyPositiveIntegerValue("thread.number", "3", props, log);
-    }
+	private static String setThreadNum() {
+		return threadNum = verifyPositiveIntegerValue("thread.number","3", props, log);
+	}
 
 
 	/**
@@ -62,7 +62,7 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
 	public static String getImplicitSsl() {
 		log.info("Load the configuration implicitSsl, the value is \"" + implicitSsl + "\"");
 		return implicitSsl;
-    }
+	}
 
 	public static String getThreadNum() {
 		log.info("Load the configuration thread.number, the value is \"" + threadNum + "\"");

@@ -1,7 +1,7 @@
 package com.hzgc.collect.expand.processer;
 
 
-import com.hzgc.collect.expand.util.FaceObjectUtils;
+import com.hzgc.util.common.ObjectUtil;
 import kafka.serializer.Decoder;
 import kafka.utils.VerifiableProperties;
 
@@ -10,6 +10,6 @@ public class FaceObjectDecoder implements Decoder<FaceObject> {
     }
     @Override
     public FaceObject fromBytes(byte[] bytes) {
-        return FaceObjectUtils.bytesToObject(bytes);
+        return ObjectUtil.byteToObject(bytes, FaceObject.class);
     }
 }

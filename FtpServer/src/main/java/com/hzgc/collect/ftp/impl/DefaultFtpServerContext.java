@@ -19,7 +19,7 @@
 
 package com.hzgc.collect.ftp.impl;
 
-import com.hzgc.collect.expand.util.DataReciver;
+import com.hzgc.collect.expand.receiver.ReceiverScheduler;
 import com.hzgc.collect.ftp.command.CommandFactory;
 import com.hzgc.collect.ftp.command.CommandFactoryFactory;
 import com.hzgc.collect.ftp.ftplet.*;
@@ -29,7 +29,7 @@ import com.hzgc.collect.ftp.usermanager.PropertiesUserManagerFactory;
 import com.hzgc.collect.ftp.usermanager.impl.BaseUser;
 import com.hzgc.collect.ftp.usermanager.impl.TransferRatePermission;
 import com.hzgc.collect.ftp.usermanager.impl.WritePermission;
-import com.hzgc.collect.expand.processer.ProducerOverFtp;
+import com.hzgc.collect.expand.processer.KafkaProducer;
 import com.hzgc.collect.expand.processer.RocketMQProducer;
 import com.hzgc.collect.ftp.ConnectionConfig;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
@@ -82,14 +82,10 @@ public class DefaultFtpServerContext implements FtpServerContext {
 
     private Map<String, Listener> listeners = new HashMap<>();
 
-    private ProducerOverFtp producerOverFtp = ProducerOverFtp.getInstance();
-
-    private RocketMQProducer producerRocketMQ = RocketMQProducer.getInstance();
-
     private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList<>();
+
     private static final List<Authority> ANON_AUTHORITIES = new ArrayList<>();
-    private DataReciver bufferQueue = DataReciver.getInstance();
-    
+
     /**
      * The thread pool executor to be used by the server using this context
      */
@@ -216,6 +212,11 @@ public class DefaultFtpServerContext implements FtpServerContext {
         }
     }
 
+    @Override
+    public ReceiverScheduler getScheduler() {
+        return null;
+    }
+
     public Listener getListener(String name) {
         return listeners.get(name);
     }
@@ -284,16 +285,5 @@ public class DefaultFtpServerContext implements FtpServerContext {
             threadPoolExecutor = new OrderedThreadPoolExecutor(maxThreads);
         }
         return threadPoolExecutor;
-    }
-
-    public ProducerOverFtp getProducerOverFtp() {
-        return producerOverFtp;
-    }
-
-    public RocketMQProducer getProducerRocketMQ() {
-        return producerRocketMQ;
-    }
-    public DataReciver getBufferQueue() {
-        return bufferQueue;
     }
 }
