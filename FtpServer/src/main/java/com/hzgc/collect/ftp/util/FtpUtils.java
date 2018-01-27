@@ -1,6 +1,8 @@
 package com.hzgc.collect.ftp.util;
 
 import com.hzgc.collect.FTP;
+import com.hzgc.collect.expand.processer.FtpPathMessage;
+import com.hzgc.collect.expand.processer.FtpUrlMessage;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
@@ -90,7 +92,8 @@ public class FtpUtils implements Serializable {
      * @param fileName 文件上传至ftp的绝对路径，例如：/3B0383FPAG51511/2017/05/23/16/00/2017_05_23_16_00_15_5704_0.jpg
      * @return 设备、时间等信息 例如：{date=2017-05-23, sj=1600, ipcID=3B0383FPAG51511, time=2017-05-23 16:00:15}
      */
-    public static Map<String, String> getFtpPathMessage(String fileName) {
+    public static FtpPathMessage getFtpPathMessage(String fileName) {
+        FtpPathMessage message = new FtpPathMessage();
         String ipcID = fileName.substring(1, fileName.indexOf("/", 1));
         String timeStr = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.lastIndexOf("_")).replace("_", "");
 
@@ -112,18 +115,17 @@ public class FtpUtils implements Serializable {
         StringBuilder sj = new StringBuilder();
         sj = sj.append(hour).append(minute);
 
-        Map<String, String> map = new HashMap<>();
         try {
             /*Date date = sdf.parse(time.toString());
             long timeStamp = date.getTime();*/
-            map.put("ipcID", ipcID);
-            map.put("time", time.toString());
-            map.put("date", date.toString());
-            map.put("sj", sj.toString());
+            message.setIpcid(ipcID);
+            message.setTimeStamp(time.toString());
+            message.setDate(date.toString());
+            message.setTimeslot(sj.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return map;
+        return message;
     }
 
     /**
@@ -133,27 +135,23 @@ public class FtpUtils implements Serializable {
      * @return 设备、时间等信息 例如：{date=2017-11-09, filepath=/ABCVS20160823CCCH/2017_11_09_10_53_35_2_0.jpg, port=2121, ip=172.18.18.109
      * , timeslot=1053, ipcid=ABCVS20160823CCCH, timestamp=2017-11-09 10:53:35}
      */
-    public static Map<String, String> getFtpUrlMessage(String ftpUrl) {
-        Map<String, String> map = new HashMap<>();
+    public static FtpUrlMessage getFtpUrlMessage(String ftpUrl) {
+        FtpUrlMessage message = new FtpUrlMessage();
         String ip = ftpUrl.substring(ftpUrl.indexOf(":") + 3, ftpUrl.lastIndexOf(":"));
         String portStr = ftpUrl.substring(ftpUrl.lastIndexOf(":") + 1);
         String port = portStr.substring(0, portStr.indexOf("/"));
         String filePath = portStr.substring(portStr.indexOf("/"));
-        Map<String, String> filePathMap = getFtpPathMessage(filePath);
-        if (!filePathMap.isEmpty()) {
-            String ipcID = filePathMap.get("ipcID");
-            String timeStamp = filePathMap.get("time");
-            String date = filePathMap.get("date");
-            String timeSlot = filePathMap.get("sj");
-            map.put("ip", ip);
-            map.put("port", port);
-            map.put("filepath", filePath);
-            map.put("ipcid", ipcID);
-            map.put("timestamp", timeStamp);
-            map.put("date", date);
-            map.put("timeslot", timeSlot);
+        FtpPathMessage pathMessage = getFtpPathMessage(filePath);
+        if (pathMessage != null) {
+            message.setIpcid(pathMessage.getIpcid());
+            message.setTimeStamp(pathMessage.getTimeStamp());
+            message.setDate(pathMessage.getDate());
+            message.setTimeslot(pathMessage.getTimeslot());
+            message.setIp(ip);
+            message.setPort(port);
+            message.setFilePath(filePath);
         }
-        return map;
+        return message;
     }
 
     /**

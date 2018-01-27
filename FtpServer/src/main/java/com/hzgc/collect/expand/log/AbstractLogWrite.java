@@ -1,7 +1,7 @@
 package com.hzgc.collect.expand.log;
 
 import com.hzgc.collect.expand.conf.CommonConf;
-import com.hzgc.collect.expand.util.JsonHelper;
+import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -133,7 +133,7 @@ abstract class AbstractLogWrite implements LogWriter {
                 }
                 byte[] bytes = new byte[(int) (length - position)];
                 String json = new String(bytes);
-                LogEvent event = JsonHelper.toObject(json.trim(), LogEvent.class);
+                LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
                 return event.getCount();
             }
         } catch (java.io.IOException e) {
@@ -141,8 +141,8 @@ abstract class AbstractLogWrite implements LogWriter {
         }
         return 1;
     }
-    // TODO: 2018-1-27 新增读取最后一行方法
 
+    // TODO: 2018-1-27 新增读取最后一行方法
     /**
      * 快速读取文件最后一行序号（count）
      *
@@ -207,8 +207,8 @@ abstract class AbstractLogWrite implements LogWriter {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
-            event.setCount(count);
-            fw.write(JsonHelper.toJson(event));
+            event.setCount(this.count);
+            fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
         } catch (IOException e) {
