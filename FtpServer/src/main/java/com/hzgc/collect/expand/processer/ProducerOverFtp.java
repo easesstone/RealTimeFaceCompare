@@ -26,7 +26,7 @@ public class ProducerOverFtp implements Serializable {
     private static MetricRegistry metric = new MetricRegistry();
     private final static Counter counter = metric.counter("sendKafkaCount");
 
-    ProducerOverFtp() {
+     protected ProducerOverFtp() {
         try {
             File file = FileUtil.loadResourceFile("producer-over-ftp.properties");
             if (file != null) {

@@ -2,23 +2,19 @@ package com.hzgc.collect.expand.meger;
 
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
- * 工具类FindDiffRows中包含以下三个方法：
+ * 工具类FindDiffRows(曹大报)
+ * 其中包含以下三个方法：
  * <p>
  * getNotProRows：获取集合中未处理的所有行；
  * getErrProRows：获取集合中处理失败的所有行；
  * getAllDiffRows：获取集合中不同行；
  */
-public class FindDiffRows {
+class FindDiffRows {
     private Logger LOG = Logger.getLogger(FindDiffRows.class);
+    private final String SPLIT = ",";
 
     /**
      * 获取日志中未处理的的所有数据
@@ -26,7 +22,7 @@ public class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  未处理数据的集合
      */
-    public List<String> getNotProRows(List<String> allRows) {
+    List<String> getNotProRows(List<String> allRows) {
         List<String> notProList = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -71,7 +67,7 @@ public class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  合并后集合中数据处理失败的集合
      */
-    public List<String> getErrProRows(List<String> allRows) {
+    List<String> getErrProRows(List<String> allRows) {
         List<String> failList = new ArrayList<>();
         String tmp;
         if (allRows == null || allRows.size() == 0) {
@@ -98,7 +94,7 @@ public class FindDiffRows {
      * @param allRows 合并后日志集合
      * @return List对象       返回合并后不同行的集合
      */
-    public List<String> getAllDiffRows(List<String> allRows) {
+    List<String> getAllDiffRows(List<String> allRows) {
         List<String> rows = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -133,11 +129,11 @@ public class FindDiffRows {
      */
     private String getRowNumber(String row) {
         String rowNumber = "";
-        String split = ",";
         if (row == null || row.length() == 0) {
             LOG.warn("This row of data is empty");
         } else {
-            rowNumber = row.substring(0, row.indexOf(split));
+            String[] splits = row.split(SPLIT);
+            rowNumber = splits[0].substring(splits[0].indexOf(":")+1);
         }
         return rowNumber;
     }
@@ -150,11 +146,11 @@ public class FindDiffRows {
      */
     private String getProcessState(String row) {
         String processState = "";
-        String split = ",";
         if (row == null || row.length() == 0) {
             LOG.warn("This row of data is empty");
         } else {
-            processState = row.substring(row.lastIndexOf(split) + 1);
+            String[] splits = row.split(SPLIT);
+            processState = splits[3].substring(10, 11);
         }
         return processState;
     }
