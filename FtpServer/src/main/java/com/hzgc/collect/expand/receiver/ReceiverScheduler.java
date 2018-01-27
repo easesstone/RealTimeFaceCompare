@@ -71,22 +71,28 @@ public class ReceiverScheduler {
      * 取得对应的queueIdList，根据这些queueId去初始化receiver
      */
     private void preapreRecvicer() {
-        List<String> queueIdList = reblanceRecevicer(conf.getReceiveNumber(), conf.getProcessLogDir());
-        if (queueIdList.size() > 0) {
-            pool = Executors.newFixedThreadPool(queueIdList.size());
-            for (String id : queueIdList) {
-                ReceiverImpl receiver = new ReceiverImpl(conf, id);
-                regist(receiver);
-                pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
+        int receiveNumber = conf.getReceiveNumber();
+        String logDir = conf.getProcessLogDir();
+        if (receiveNumber != 0 && logDir != null) {
+            List<String> queueIdList = reblanceRecevicer(receiveNumber, logDir);
+            if (queueIdList.size() > 0) {
+                pool = Executors.newFixedThreadPool(queueIdList.size());
+                for (String id : queueIdList) {
+                    ReceiverImpl receiver = new ReceiverImpl(conf, id);
+                    regist(receiver);
+                    pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
+                }
+            } else {
+                for (int i = 0; i < receiveNumber; i++) {
+                    pool = Executors.newFixedThreadPool(receiveNumber);
+                    ReceiverImpl receiver = new ReceiverImpl(conf, i + "");
+                    regist(receiver);
+                    pool.execute(new ProcessThread(conf, receiver.getQueue(), i + ""));
+                }
+                LOG.info("This is the initialization receiver, please wait for the initialization to complete!");
             }
         } else {
-            for (int i = 0; i < conf.getReceiveNumber(); i++) {
-                pool = Executors.newFixedThreadPool(conf.getReceiveNumber());
-                ReceiverImpl receiver = new ReceiverImpl(conf, i + "");
-                regist(receiver);
-                pool.execute(new ProcessThread(conf, receiver.getQueue(), i + ""));
-            }
-            LOG.info("This is the initialization receiver, please wait for the initialization to complete");
+            LOG.error("The receiveNumber or the logDir is empty, please check your properties file!");
         }
     }
 
