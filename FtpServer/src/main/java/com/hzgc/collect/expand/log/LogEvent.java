@@ -21,7 +21,7 @@ public class LogEvent {
     /**
      * 接收时间戳
      */
-    private String timeStamp;
+    private long timeStamp;
 
     /**
      * 处理是否成功的标志
@@ -38,11 +38,11 @@ public class LogEvent {
         this.path = path;
     }
 
-    public String getTimeStamp() {
+    public long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(String timeStamp) {
+    public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 

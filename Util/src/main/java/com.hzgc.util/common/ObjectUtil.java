@@ -43,4 +43,25 @@ public class ObjectUtil {
         }
         return (T) obj;
     }
+
+    public static Object byteToObject(byte[] bc) {
+        Object obj = null;
+        ByteArrayInputStream bis = null;
+        ObjectInputStream ois = null;
+        try {
+            bis = new ByteArrayInputStream(bc);
+            ois = new ObjectInputStream(bis);
+            obj = ois.readObject();
+            bis.close();
+            ois.close();
+        }
+        catch(Exception e) {
+            System.out.println("translation"+e.getMessage());
+            e.printStackTrace();
+        } finally {
+            IOUtil.closeStream(bis);
+            IOUtil.closeStream(ois);
+        }
+        return obj;
+    }
 }

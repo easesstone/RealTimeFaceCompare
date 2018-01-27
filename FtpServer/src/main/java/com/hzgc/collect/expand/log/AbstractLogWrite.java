@@ -164,6 +164,7 @@ abstract class AbstractLogWrite implements LogWriter {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
+            event.setCount(this.count);
             fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
