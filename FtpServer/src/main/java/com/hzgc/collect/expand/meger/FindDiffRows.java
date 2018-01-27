@@ -12,7 +12,7 @@ import java.util.*;
  * getErrProRows：获取集合中处理失败的所有行；
  * getAllDiffRows：获取集合中不同行；
  */
-class FindDiffRows {
+public class FindDiffRows {
     private Logger LOG = Logger.getLogger(FindDiffRows.class);
     private final String SPLIT = ",";
 
@@ -22,7 +22,7 @@ class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  未处理数据的集合
      */
-    List<String> getNotProRows(List<String> allRows) {
+    public List<String> getNotProRows(List<String> allRows) {
         List<String> notProList = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -67,7 +67,7 @@ class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  合并后集合中数据处理失败的集合
      */
-    List<String> getErrProRows(List<String> allRows) {
+    public List<String> getErrProRows(List<String> allRows) {
         List<String> failList = new ArrayList<>();
         String tmp;
         if (allRows == null || allRows.size() == 0) {
@@ -94,7 +94,7 @@ class FindDiffRows {
      * @param allRows 合并后日志集合
      * @return List对象       返回合并后不同行的集合
      */
-    List<String> getAllDiffRows(List<String> allRows) {
+    public List<String> getAllDiffRows(List<String> allRows) {
         List<String> rows = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -133,7 +133,7 @@ class FindDiffRows {
             LOG.warn("This row of data is empty");
         } else {
             String[] splits = row.split(SPLIT);
-            rowNumber = splits[0].substring(splits[0].indexOf(":")+1);
+            rowNumber = splits[0].substring(splits[0].indexOf(":") + 1);
         }
         return rowNumber;
     }
