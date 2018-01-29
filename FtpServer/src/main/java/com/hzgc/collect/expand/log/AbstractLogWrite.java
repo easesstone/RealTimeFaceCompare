@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
@@ -85,11 +86,7 @@ abstract class AbstractLogWrite implements LogWriter {
             File logFile = new File(this.currentFile);
             System.out.println("currentFile:" + currentFile);
             if (!logFile.exists()) {
-                // TODO: 2018-1-27
-                //this.count = getLastCount(getLastLogFile(this.currentDir));
                 this.count = getLastCount(this.currentDir + getLastLogFile(this.currentDir));
-                // TODO: 2018-1-27  
-                System.out.println(this.currentDir);
             } else {
                 this.count = getLastCount(this.currentFile);
                 System.out.println(this.currentFile);
@@ -123,7 +120,6 @@ abstract class AbstractLogWrite implements LogWriter {
      * @return 当前队列的序号
      */
     private long getLastCount(String currentLogFile) {
-        String lastLine = "";
         try {
             System.out.println(currentLogFile);
             RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
@@ -142,13 +138,16 @@ abstract class AbstractLogWrite implements LogWriter {
                 if (position == 0) {
                     raf.seek(0);
                 }
-               /* byte[] bytes = new byte[(int) (length - position)];
+                byte[] bytes = new byte[(int) (length - position)];
+                raf.read(bytes);
                 String json = new String(bytes);
-                LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);*/
-                // TODO: 2018-1-29
-                lastLine = new String(raf.readLine().getBytes("ISO-8859-1"), "UTF-8");
-                LogEvent event = JSONHelper.toObject(lastLine.trim(), LogEvent.class);
-                return event.getCount();
+                if (json.trim().length() > 0) {
+                    LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
+                    return event.getCount();
+                } else {
+                    return 1;
+                }
+
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
@@ -168,9 +167,13 @@ abstract class AbstractLogWrite implements LogWriter {
         String[] fileArray = file.list();
         if (fileArray != null && fileArray.length > 0) {
             Arrays.sort(fileArray);
-            return fileArray[fileArray.length - 1];
+            if (fileArray.length == 1 && Objects.equals(fileArray[0], this.currentFile)) {
+                return this.currentFile;
+            } else {
+                return fileArray[fileArray.length - 1];
+            }
         } else {
-            return "";
+            return this.currentFile;
         }
     }
 
@@ -206,8 +209,6 @@ abstract class AbstractLogWrite implements LogWriter {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            // TODO: 2018-1-27 修改后面两行代码顺序
-            //event.setCount(this.count);
             action(event);
             oldFile.renameTo(newFile);
         } else {
