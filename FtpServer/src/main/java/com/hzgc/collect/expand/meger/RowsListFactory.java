@@ -1,17 +1,18 @@
 package com.hzgc.collect.expand.meger;
 
+import org.apache.kafka.common.protocol.types.Field;
+
 import java.util.List;
 
 /**
  * 数据封装类：RowsListFactory
+ * 用于获取一个processFile与其对应的receiveFile之间不同的数据。
  * 成员变量含义：
  * allDiffRows：合并后日志中所有不同的数据；
- * notProRows：未处理的数据
- * errProRows：处理失败的数据
+ * notProRows：未处理的数据（receiveFile中有，processFile中没有的数据）
+ * errProRows：处理失败的数据（receiveFile中状态为0，processFile中状态为1的数据）
  */
 public class RowsListFactory {
-
-    private  String receiveFileDir; //要处理的一个process日志对应的receive日志路径
 
     //初始化要用到的两个工具类
     private  FileUtil fileUtil = new FileUtil();
@@ -21,11 +22,9 @@ public class RowsListFactory {
     private  List<String> notProRows;
     private  List<String> errProRows;
 
-    //有参构造函数，传入需要处理的某个process文件路径
-    public RowsListFactory(String processFileDir){
-        //调用FileUtil中的方法，获取process文件对应的receive文件
-        receiveFileDir = fileUtil.getRecFileFromProFile(processFileDir);
-        setAllDiffRows(processFileDir);
+    //有参构造函数，传入需要处理的某个process文件路径，及其对应的receiveFileDir文件路径
+    public RowsListFactory(String processFileDir, String receiveFileDir){
+        setAllDiffRows(processFileDir, receiveFileDir);
         setNotProRows();
         setErrProRows();
     }
@@ -33,17 +32,17 @@ public class RowsListFactory {
     /**
      * set 方法
      */
-    private  List<String> setAllDiffRows(String processFileDir) {
-        List<String> allContentRows = fileUtil.getAllContentFromFile(processFileDir);
-        return allDiffRows = findDiffRows.getAllDiffRows(allContentRows);
+    private void setAllDiffRows(String processFileDir, String receiveFileDir) {
+        List<String> allContentRows = fileUtil.getAllContentFromFile(processFileDir, receiveFileDir);
+        allDiffRows = findDiffRows.getAllDiffRows(allContentRows);
     }
 
-    private  List<String> setNotProRows() {
-        return notProRows = findDiffRows.getNotProRows(allDiffRows);
+    private void setNotProRows() {
+        notProRows = findDiffRows.getNotProRows(allDiffRows);
     }
 
-    private  List<String> setErrProRows() {
-        return errProRows = findDiffRows.getErrProRows(allDiffRows);
+    private void setErrProRows() {
+        errProRows = findDiffRows.getErrProRows(allDiffRows);
     }
 
     /**

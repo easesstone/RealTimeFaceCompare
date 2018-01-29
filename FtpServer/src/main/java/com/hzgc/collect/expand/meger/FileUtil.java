@@ -1,15 +1,16 @@
 package com.hzgc.collect.expand.meger;
 
+import com.hzgc.collect.expand.log.LogEvent;
+import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -20,6 +21,8 @@ public class FileUtil {
 
     private Logger LOG = Logger.getLogger(FileUtil.class);
     private List<String> allFileOfDir = new ArrayList<>();
+    //系统换行符
+    private String newLine = System.getProperty("line.separator");
 
     /**
      * 内部类：filePathVistor，用于对文件进行递归遍历的listAllFileOfDir方法。
@@ -188,6 +191,77 @@ public class FileUtil {
         String receiveFilePath = recSubstring1 + recSubstring2 + recSubstring3;
 
         return receiveFilePath;
+    }
+
+
+    /**
+     * 根据processFile的文件路径：/opt/logdata/process/p-0/000000000001.log
+     * 获取对应mergeReceiveFile的文件路径：/opt/logdata/merge/receive/r-0/000000000001.log
+     */
+    public String getMergeRecFilePath(String receiveFile){
+//        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("/opt/logdata"),receiveFile.indexOf("receive"));
+//        String mergeRecSubstring2 = "/merge";
+//        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("/receive"));
+
+        //****************************test********************************/
+        //本地测试时路径为：
+        // D:\Test\opt\logdata\process\p-0
+        // D:\Test\opt\logdata\receive\p-0
+        // D:\Test\opt\logdata\merge\process\p-0
+        // D:\Test\opt\logdata\merge\receive\p-0
+        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("\\opt\\logdata"),receiveFile.indexOf("receive"));
+        String mergeRecSubstring2 = "\\merge";
+        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("\\receive"));
+        String mergeRecFilePath = mergeRecSubstring1 +mergeRecSubstring2 +mergeRecSubstring3;
+
+        return mergeRecFilePath;
+    }
+
+    /**
+     * 根据processFile的日志路径：/opt/logdata/process/r-0/000000000001.log
+     * 获取对应mergeProeiveFile的日志路径：/opt/logdata/merge/process/r-0/000000000001.log
+     */
+    public String getMergeProFilePath(String processFile){
+//        String mergeProSubstring1 = processFile.substring(processFile.indexOf("/opt/logdata"),processFile.indexOf("process"));
+//        String mergeProSubstring2 = "/merge";
+//        String mergeProSubstring3 = processFile.substring(processFile.indexOf("/process"));
+        String mergeProSubstring1 = processFile.substring(processFile.indexOf("\\opt/logdata"),processFile.indexOf("process"));
+        String mergeProSubstring2 = "\\merge";
+        String mergeProSubstring3 = processFile.substring(processFile.indexOf("\\process"));
+        String mergeProFilePath = mergeProSubstring1 +mergeProSubstring2 +mergeProSubstring3;
+
+        return mergeProFilePath;
+    }
+
+
+    /**
+     * 以追加的方式写日志
+     * 把errProFiles中的每一条数据，保存到/opt/logdata/merge/receive（或process）目录下对应的文件名中
+     * @param row errProFiles中的每一条数据
+     * @param mergeFilePath 要保存到的文件的绝对路径
+     */
+    public void writeMergeFile(String row, String mergeFilePath){
+        //将每行数据用JSONHelper转化为LogEvent格式
+        LogEvent event = JSONHelper.toObject(row, LogEvent.class);
+
+        FileWriter fw = null;
+        try {
+            //用File对象构造FileWriter，如果第二个参数为true，表示以追加的方式写数据，从文件尾部开始写起
+            fw = new FileWriter(mergeFilePath, true);
+            fw.write(JSONHelper.toJson(event));
+            fw.write(newLine);
+            fw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fw != null){
+                    fw.close();
+                }
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 
 }
