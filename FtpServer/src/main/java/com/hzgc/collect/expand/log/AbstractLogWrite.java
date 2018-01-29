@@ -120,16 +120,19 @@ abstract class AbstractLogWrite implements LogWriter {
             if (position == -1) {
                 return 0;
             } else {
-                while (position >= 0) {
+                while (position > 0) {
                     position--;
                     raf.seek(position);
                     if (raf.readByte() == '\n') {
                         break;
                     }
                 }
+                if (position == 0) {
+                    raf.seek(0);
+                }
                 byte[] bytes = new byte[(int) (length - position)];
                 String json = new String(bytes);
-                LogEvent event = JSONHelper.toObject(json, LogEvent.class);
+                LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
                 return event.getCount();
             }
         } catch (java.io.IOException e) {
