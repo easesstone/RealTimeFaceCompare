@@ -80,6 +80,7 @@ public class RecoverErrProData implements Runnable{
                 //判断processFile文件对应的receiveFile是否存在
                 if (!fileUtil.isFileExist(receiveFile)) { // V1-B if start
                     //若对应的receiveFile不存在，删除这个processFile
+                    LOG.info("Not found receiveFile, delete processFile :" + processFile);
                     fileUtil.deleteFile(processFile);
                 } // V1-B if end
                 //若processFile文件对应的receiveFile存在，则获取处理出错的数据
@@ -131,15 +132,15 @@ public class RecoverErrProData implements Runnable{
                                 logEvent.setCount(count);
                                 logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
                                 fileUtil.writeMergeFile(event, mergeProFilePath);
-                            } // V1-E if end
-                        } // V1-D for each end
-                    } // V1-C if end
+                            } // V1-E if end：faceObject为空
+                        } // V1-D for each end：对errProFiles的遍历结束
+                    } // V1-C if end：errProFiles不为空的判断结束
                     //删除原来的processFile和receiveFile
                     fileUtil.deleteFile(processFile, receiveFile);
-                } // V1-B else end
-            } // V1-A foreach end
+                } // V1-B else end：若processFile文件对应的receiveFile存在的判断结束
+            } // V1-A foreach end：对proFilePaths的遍历结束
 
-            //扫描merge/process的根目录，得到处理过的日记文件的绝对路径totalFilePaths
+            //扫描merge/process的根目录，得到处理过的日记文件的绝对路径mergeProFilePaths
             FileFactory mergeFileFactory = new FileFactory(MERGE_PRO_PATH);
             List<String> mergeProFilePaths = mergeFileFactory.getAllProcessFiles();
             //若mergeProFilePaths这个list不为空（merge/process日志根目录下有日志）
@@ -149,6 +150,7 @@ public class RecoverErrProData implements Runnable{
                     //判断mergeProcessFile文件对应的mergeReceiveFile是否存在
                     if (!fileUtil.isFileExist(mergeReceiveFile)) { // V2-B if start
                         //若对应的mergeReceiveFile不存在，删除这个mergeProcessFile
+                        LOG.info("Not found mergeReceiveFile, delete mergeProcessFile :" + mergeProcessFile);
                         fileUtil.deleteFile(mergeProcessFile);
                     } // V2-B if end
                     //若mergeProcessFile文件对应的mergeReceiveFile存在，则获取处理出错的数据
@@ -171,7 +173,7 @@ public class RecoverErrProData implements Runnable{
                             fileUtil.writeMergeFile(event, mergeReceiveFile);
                         } // V2-C foreach end
                         //若mergeErrProFiles中无内容，跳过；若有内容：
-                        // 遍历mergeErrProFiles，将内容发送到kafka，并覆盖日志/opt/logdata/merge/receive/r-0/000000000001.log
+                        //遍历mergeErrProFiles，将内容发送到kafka，并覆盖日志/opt/logdata/merge/receive/r-0/000000000001.log
                         if (mergeErrProFiles.size() != 0) { // V2-D if start
                             for (String row : mergeErrProFiles) { // V2-E foreach start
                                 LogEvent event = JSONHelper.toObject(row, LogEvent.class);
@@ -203,27 +205,32 @@ public class RecoverErrProData implements Runnable{
 
                                 //对比两个文件：/opt/logdata/merge/receive/r-0/000000000001.log
                                 //                 和 /opt/logdata/merge/process/p-0/000000000001.log
-                                //获取两个文件出错的数据集合列表。若列表为空，则删除这两个文件。若不为空，不进行处理，退出程序。
+                                //获取两个文件出错的数据集合列表
                                 RowsListFactory rowsListFactoryV3 = new RowsListFactory(mergeProcessFile, mergeReceiveFile);
                                 List<String> mergeErrProFilesV2 = rowsListFactoryV3.getErrProRows();
+                                //若列表为空，则删除这两个文件。若不为空，不进行处理，退出程序。
                                 if (mergeErrProFilesV2 == null || mergeErrProFilesV2.size() == 0) {
+                                    LOG.info("There is no error data in " + mergeProcessFile + " and " + mergeReceiveFile + ", delete these two files！");
                                     fileUtil.deleteFile(mergeProcessFile, mergeReceiveFile);
                                 } else { //do nothing
-
+                                    LOG.warn("Waiting for next time to handle the error data in " + mergeProcessFile + ", exit program!" );
                                 }
-                            } // V2-E foreach end
-                        } // V2-D if end
-                        else { // V2-D else
-                            //do nothing
+                            } // V2-E foreach end：对mergeErrProFiles的遍历结束
+                        } // V2-D if end：mergeErrProFiles中有内容的判断结束
+                        else { // V2-D else：若mergeErrProFiles中无内容
+                            LOG.info("There is no error data in " + mergeProcessFile + " and " + mergeProcessFile +"!");
                         }
-                    } // V2-B else end
-                } // V2-A foreach end
-            } // V2 if end
-        } // V1 if end
+                    } // V2-B else end：对mergeProcessFile文件对应的mergeReceiveFile存在的判断结束
+                } // V2-A foreach end：对mergeProFilePaths的遍历结束
+            } // V2 if end：对merge/process日志目录下有日志的判断结束
+            else{ // V2 else：若merge/process日志目录下无日志
+                LOG.info("Nothing in " + MERGE_PRO_PATH);
+            }
+        } // V1 if end：对process日志根目录下有日志的判断结束
 
         //若proFilePaths这个list为空（process日志根目录下无日志），结束
         else { // V1 else
-            //do nothing
+            LOG.info("Nothing in " + processLogDir);
         }
 
     }
