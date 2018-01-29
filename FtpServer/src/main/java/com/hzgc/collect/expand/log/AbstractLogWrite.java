@@ -81,7 +81,7 @@ abstract class AbstractLogWrite implements LogWriter {
         } else {
             File logFile = new File(this.currentFile);
             if (!logFile.exists()) {
-                this.count = getLastCount(getLastLogFile(this.currentDir));
+                this.count = getLastCount(this.currentDir + getLastLogFile(this.currentDir));
             } else {
                 this.count = getLastCount(this.currentFile);
             }
