@@ -75,15 +75,15 @@ public class RecoverErrProData implements Runnable{
 
         //若proFilePaths这个list不为空（process日志根目录下有日志）
         if (proFilePaths != null && proFilePaths.size() != 0){ // V1 if start
-            for (String processFile : proFilePaths) {                                                   // V1-A foreach start
+            for (String processFile : proFilePaths) { // V1-A foreach start
                 String receiveFile = fileUtil.getRecFileFromProFile(processFile);
                 //判断processFile文件对应的receiveFile是否存在
-                if (!fileUtil.isFileExist(receiveFile)) {                                                     // V1-B if start
+                if (!fileUtil.isFileExist(receiveFile)) { // V1-B if start
                     //若对应的receiveFile不存在，删除这个processFile
                     fileUtil.deleteFile(processFile);
-                }                                                                                                       // V1-B if end
+                } // V1-B if end
                 //若processFile文件对应的receiveFile存在，则获取处理出错的数据
-                else {                                                                                               // V1-B else start
+                else { // V1-B else start
                     //获取队列ID
                     String queueID = processFile.substring(processFile.lastIndexOf("-") + 1, processFile.lastIndexOf("/"));
                     //初始化RowsListFactory工厂类
@@ -131,28 +131,28 @@ public class RecoverErrProData implements Runnable{
                                 logEvent.setCount(count);
                                 logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
                                 fileUtil.writeMergeFile(event, mergeProFilePath);
-                            }                                                                                           // V1-E if end
-                        }                                                                                               // V1-D for each end
-                    }                                                                                                   // V1-C if end
+                            } // V1-E if end
+                        } // V1-D for each end
+                    } // V1-C if end
                     //删除原来的processFile和receiveFile
                     fileUtil.deleteFile(processFile, receiveFile);
-                }                                                                                                       // V1-B else end
-            }                                                                                                           // V1-A foreach end
+                } // V1-B else end
+            } // V1-A foreach end
 
             //扫描merge/process的根目录，得到处理过的日记文件的绝对路径totalFilePaths
             FileFactory mergeFileFactory = new FileFactory(MERGE_PRO_PATH);
             List<String> mergeProFilePaths = mergeFileFactory.getAllProcessFiles();
             //若mergeProFilePaths这个list不为空（merge/process日志根目录下有日志）
-            if (mergeProFilePaths != null && mergeProFilePaths.size() != 0){           // V2 if start
-                for (String mergeProcessFile : mergeProFilePaths) {                           // V2-A foreach start
+            if (mergeProFilePaths != null && mergeProFilePaths.size() != 0){ // V2 if start
+                for (String mergeProcessFile : mergeProFilePaths) { // V2-A foreach start
                     String mergeReceiveFile = fileUtil.getRecFileFromProFile(mergeProcessFile);
                     //判断mergeProcessFile文件对应的mergeReceiveFile是否存在
-                    if (!fileUtil.isFileExist(mergeReceiveFile)) {                                       // V2-B if start
+                    if (!fileUtil.isFileExist(mergeReceiveFile)) { // V2-B if start
                         //若对应的mergeReceiveFile不存在，删除这个mergeProcessFile
                         fileUtil.deleteFile(mergeProcessFile);
-                    }                                                                                                   // V2-B if end
+                    } // V2-B if end
                     //若mergeProcessFile文件对应的mergeReceiveFile存在，则获取处理出错的数据
-                    else {                                                                                           // V2-B else start
+                    else { // V2-B else start
                         //获取队列ID
                         String queueID = mergeProcessFile.substring(mergeProcessFile.lastIndexOf("-") + 1,
                                 mergeProcessFile.lastIndexOf("/"));
@@ -165,15 +165,15 @@ public class RecoverErrProData implements Runnable{
 
                         //用mergeErrProFiles中的数据，覆盖原mergeReceiveFile日志中的内容
                         // 例如/opt/logdata/merge/receive/r-0/000000000001.log
-                        for (String row : mergeErrProFiles) {                                         // V2-C foreach start
+                        for (String row : mergeErrProFiles) { // V2-C foreach start
                             //用JSONHelper将某行数据转化为LogEvent格式
                             LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                             fileUtil.writeMergeFile(event, mergeReceiveFile);
-                        }                                                                                              // V2-C foreach end
+                        } // V2-C foreach end
                         //若mergeErrProFiles中无内容，跳过；若有内容：
                         // 遍历mergeErrProFiles，将内容发送到kafka，并覆盖日志/opt/logdata/merge/receive/r-0/000000000001.log
-                        if (mergeErrProFiles.size() != 0) {                                             // V2-D if start
-                            for (String row : mergeErrProFiles) {                                     // V2-E foreach start
+                        if (mergeErrProFiles.size() != 0) { // V2-D if start
+                            for (String row : mergeErrProFiles) { // V2-E foreach start
                                 LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                                 //用LogEvent获取该条数据的ftpUrl
                                 String ftpUrl = event.getPath();
@@ -182,7 +182,7 @@ public class RecoverErrProData implements Runnable{
 
                                 //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                                 FaceObject faceObject = GetFaceObject.getFaceObject(row);
-                                if (faceObject != null) {                                                     // V2-F if start
+                                if (faceObject != null) { // V2-F if start
                                     SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                                     sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
                                     boolean success = sendDataToKafka.isSuccessToKafka();
@@ -199,7 +199,7 @@ public class RecoverErrProData implements Runnable{
                                     logEvent.setCount(count);
                                     logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
                                     fileUtil.writeMergeFile(event, mergeProcessFile);
-                                }                                                                                       // V2-F if end
+                                } // V2-F if end
 
                                 //对比两个文件：/opt/logdata/merge/receive/r-0/000000000001.log
                                 //                 和 /opt/logdata/merge/process/p-0/000000000001.log
@@ -211,19 +211,19 @@ public class RecoverErrProData implements Runnable{
                                 } else { //do nothing
 
                                 }
-                            }                                                                                           // V2-E foreach end
-                        }                                                                                               // V2-D if end
-                        else { //do nothing                                                                    // V2-D else
-
+                            } // V2-E foreach end
+                        } // V2-D if end
+                        else { // V2-D else
+                            //do nothing
                         }
-                    }                                                                                                   // V2-B else end
-                }                                                                                                       // V2-A foreach end
-            }                                                                                                           // V2 if end
-        }                                                                                                               // V1 if end
+                    } // V2-B else end
+                } // V2-A foreach end
+            } // V2 if end
+        } // V1 if end
 
         //若proFilePaths这个list为空（process日志根目录下无日志），结束
-        else { //do nothing                                                                                    // V1 else
-
+        else { // V1 else
+            //do nothing
         }
 
     }
