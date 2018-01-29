@@ -182,10 +182,10 @@ public class FileUtil {
 
         //****************************test********************************/
         //本地测试时路径为：D:\Test\opt\logdata\process\p-0
-        String recSubstring1 = processFilePath.substring(processFilePath.indexOf("\\opt"),processFilePath.indexOf("process"));
-        String recSubstring2 = "receive\\r";
-//        String recSubstring1 = processFilePath.substring(processFilePath.indexOf("/opt"),processFilePath.indexOf("process"));
-//        String recSubstring2 = "receive/r";
+//        String recSubstring1 = processFilePath.substring(processFilePath.indexOf("\\opt"),processFilePath.indexOf("process"));
+//        String recSubstring2 = "receive\\r";
+        String recSubstring1 = processFilePath.substring(processFilePath.indexOf("/opt"),processFilePath.indexOf("process"));
+        String recSubstring2 = "receive/r";
         String recSubstring3 = processFilePath.substring(processFilePath.indexOf("-"));
 
         String receiveFilePath = recSubstring1 + recSubstring2 + recSubstring3;
@@ -199,9 +199,9 @@ public class FileUtil {
      * 获取对应mergeReceiveFile的文件路径：/opt/logdata/merge/receive/r-0/000000000001.log
      */
     public String getMergeRecFilePath(String receiveFile){
-//        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("/opt/logdata"),receiveFile.indexOf("receive"));
-//        String mergeRecSubstring2 = "/merge";
-//        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("/receive"));
+        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("/opt/logdata"),receiveFile.indexOf("receive"));
+        String mergeRecSubstring2 = "/merge";
+        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("/receive"));
 
         //****************************test********************************/
         //本地测试时路径为：
@@ -209,9 +209,9 @@ public class FileUtil {
         // D:\Test\opt\logdata\receive\p-0
         // D:\Test\opt\logdata\merge\process\p-0
         // D:\Test\opt\logdata\merge\receive\p-0
-        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("\\opt\\logdata"),receiveFile.indexOf("receive"));
-        String mergeRecSubstring2 = "\\merge";
-        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("\\receive"));
+//        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("\\opt\\logdata"),receiveFile.indexOf("receive"));
+//        String mergeRecSubstring2 = "\\merge";
+//        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("\\receive"));
         String mergeRecFilePath = mergeRecSubstring1 +mergeRecSubstring2 +mergeRecSubstring3;
 
         return mergeRecFilePath;
@@ -222,12 +222,12 @@ public class FileUtil {
      * 获取对应mergeProeiveFile的日志路径：/opt/logdata/merge/process/r-0/000000000001.log
      */
     public String getMergeProFilePath(String processFile){
-//        String mergeProSubstring1 = processFile.substring(processFile.indexOf("/opt/logdata"),processFile.indexOf("process"));
-//        String mergeProSubstring2 = "/merge";
-//        String mergeProSubstring3 = processFile.substring(processFile.indexOf("/process"));
-        String mergeProSubstring1 = processFile.substring(processFile.indexOf("\\opt/logdata"),processFile.indexOf("process"));
-        String mergeProSubstring2 = "\\merge";
-        String mergeProSubstring3 = processFile.substring(processFile.indexOf("\\process"));
+        String mergeProSubstring1 = processFile.substring(processFile.indexOf("/opt/logdata"),processFile.indexOf("process"));
+        String mergeProSubstring2 = "/merge";
+        String mergeProSubstring3 = processFile.substring(processFile.indexOf("/process"));
+//        String mergeProSubstring1 = processFile.substring(processFile.indexOf("\\opt/logdata"),processFile.indexOf("process"));
+//        String mergeProSubstring2 = "\\merge";
+//        String mergeProSubstring3 = processFile.substring(processFile.indexOf("\\process"));
         String mergeProFilePath = mergeProSubstring1 +mergeProSubstring2 +mergeProSubstring3;
 
         return mergeProFilePath;
