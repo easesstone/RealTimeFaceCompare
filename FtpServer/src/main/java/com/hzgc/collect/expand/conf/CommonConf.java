@@ -13,7 +13,7 @@ public class CommonConf {
     /**
      * 日志文件大小
      */
-    private int logSize = 300000;
+    private int logSize = 10;
 
     /**
      * 当前队列缓冲容量
@@ -40,11 +40,11 @@ public class CommonConf {
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
-        HelperFactory.regist();
+        /*HelperFactory.regist();
         this.capacity = Integer.valueOf(ClusterOverFtpProperHelper.getCapacity());
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();
         this.processLogDir = ClusterOverFtpProperHelper.getProcessLogDir();
-        this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());
+        this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());*/
 
     }
 

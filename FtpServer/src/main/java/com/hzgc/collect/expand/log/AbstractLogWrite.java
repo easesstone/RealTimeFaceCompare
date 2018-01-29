@@ -83,10 +83,17 @@ abstract class AbstractLogWrite implements LogWriter {
             this.count = 1;
         } else {
             File logFile = new File(this.currentFile);
+            System.out.println("currentFile:" + currentFile);
             if (!logFile.exists()) {
-                this.count = getLastCount(getLastLogFile(this.currentDir));
+                // TODO: 2018-1-27
+                //this.count = getLastCount(getLastLogFile(this.currentDir));
+                this.count = getLastCount(this.currentDir + getLastLogFile(this.currentDir));
+                // TODO: 2018-1-27  
+                System.out.println(this.currentDir);
             } else {
                 this.count = getLastCount(this.currentFile);
+                System.out.println(this.currentFile);
+                System.out.println(this.count);
             }
         }
     }
@@ -102,7 +109,6 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     private String logNameUpdate(String defaultName, long count) {
         char[] oldChar = defaultName.toCharArray();
-        // TODO: 2018-1-27 此处添加.log 
         char[] content = (count + ".log").toCharArray();
         for (int i = 0; i < content.length; i++) {
             oldChar[oldChar.length - 1 - i] = content[content.length - 1 - i];
@@ -117,67 +123,37 @@ abstract class AbstractLogWrite implements LogWriter {
      * @return 当前队列的序号
      */
     private long getLastCount(String currentLogFile) {
+        String lastLine = "";
         try {
+            System.out.println(currentLogFile);
             RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
             long length = raf.length();
             long position = length - 1;
             if (position == -1) {
                 return 0;
             } else {
-                while (position >= 0) {
+                while (position > 0) {
                     position--;
                     raf.seek(position);
                     if (raf.readByte() == '\n') {
                         break;
                     }
                 }
-                byte[] bytes = new byte[(int) (length - position)];
+                if (position == 0) {
+                    raf.seek(0);
+                }
+               /* byte[] bytes = new byte[(int) (length - position)];
                 String json = new String(bytes);
-                LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
+                LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);*/
+                // TODO: 2018-1-29
+                lastLine = new String(raf.readLine().getBytes("ISO-8859-1"), "UTF-8");
+                LogEvent event = JSONHelper.toObject(lastLine.trim(), LogEvent.class);
                 return event.getCount();
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
         return 1;
-    }
-
-    // TODO: 2018-1-27 新增读取最后一行方法
-    /**
-     * 快速读取文件最后一行序号（count）
-     *
-     * @param file 要读取的文件
-     * @return lastLine 文件的最后一行内容序号（count）
-     */
-    public String readLastLineCount(File file) {
-        RandomAccessFile randomAccessFile = null;
-        String lastLine = "";
-        try {
-            randomAccessFile = new RandomAccessFile(file, "r");
-            long len = randomAccessFile.length();
-            if (len != 0L) {
-                long pos = len - 1;
-                while (pos > 0) {
-                    pos--;
-                    randomAccessFile.seek(pos);
-                    if (randomAccessFile.readByte() == '\n') {
-                        lastLine = new String(randomAccessFile.readLine().getBytes("ISO-8859-1"), "UTF-8");
-                        break;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (randomAccessFile != null) {
-                    randomAccessFile.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return lastLine;
     }
 
 
@@ -190,7 +166,7 @@ abstract class AbstractLogWrite implements LogWriter {
     private String getLastLogFile(String currentDir) {
         File file = new File(currentDir);
         String[] fileArray = file.list();
-        if (fileArray != null) {
+        if (fileArray != null && fileArray.length > 0) {
             Arrays.sort(fileArray);
             return fileArray[fileArray.length - 1];
         } else {
@@ -230,8 +206,8 @@ abstract class AbstractLogWrite implements LogWriter {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            event.setCount(this.count);
             // TODO: 2018-1-27 修改后面两行代码顺序
+            //event.setCount(this.count);
             action(event);
             oldFile.renameTo(newFile);
         } else {
