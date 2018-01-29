@@ -11,6 +11,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -63,8 +64,8 @@ public class FileUtil {
 
     /**
      * 判断文件名是否是“.log”结尾
-     * @param dir
-     * @return
+     * @param dir 文件路径，Path格式
+     * @return 文件是否以.log结尾的布尔值
      */
     private boolean isLogFile(Path dir){
         return dir.getFileName().toString().contains(".log");
@@ -76,7 +77,7 @@ public class FileUtil {
      * @param path 需扫描的根目录
      * @return 该根目录下所有文件的FileList
      */
-    public List<String> listAllFileOfDir(String path){
+    List<String> listAllFileOfDir(String path){
         FilePathVistor FPV = new FilePathVistor();
         try {
             //若传入的参数是一个目录
@@ -98,13 +99,13 @@ public class FileUtil {
      * @param filePaths 两个文件的路径
      * @return 包含两个文件中所有内容的List
      */
-    public List<String> getAllContentFromFile(String ... filePaths){
+    List<String> getAllContentFromFile(String... filePaths){
         //最终添加到的List
         List<String> allContentList = new ArrayList<>();
         try {
-            for (int i = 0; i < filePaths.length; i++){
+            for (String filePath : filePaths) {
                 //先将每个文件的内容，导入到各自的allContentList_i中
-                List<String> allContentList_i = Files.readAllLines(Paths. get(filePaths[i]));
+                List<String> allContentList_i = Files.readAllLines(Paths.get(filePath));
                 //先将每个allContentList_i，导入到最终的allContentList中
                 allContentList.addAll(allContentList_i);
             }
@@ -119,27 +120,21 @@ public class FileUtil {
      * @param filePaths 要删除的文件的路径
      * @return 是否删除成功
      */
-    public boolean deleteFile(String ... filePaths){
+    boolean deleteFile(String... filePaths){
 
         //用于标记删除文件成功的个数
         int flag = 0;
-        for (int i = 0; i < filePaths.length; i++){
-            File file = new File(filePaths[i]);
-            if (file.exists() && file.isFile() && file.delete()){
-                flag ++;
-            }
-            else {
+        for (String filePath : filePaths) {
+            File file = new File(filePath);
+            if (file.exists() && file.isFile() && file.delete()) {
+                flag++;
+            } else {
                 LOG.error("The file " + file + " is not a file, delete failed!");
             }
         }
 
         //文件删除成功的个数（标记的flag）是否等于传入的文件的个数
-        if (flag == filePaths.length) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return flag == filePaths.length;
     }
 
 
@@ -148,21 +143,16 @@ public class FileUtil {
      * @param filePath 需判断的文件所在路径
      * @return 文件是否存在
      */
-    public boolean isFileExist(String filePath){
+    boolean isFileExist(String filePath){
         //若输入为空
-        if (filePath == null || filePath == ""){
+        if (filePath == null || Objects.equals(filePath, "")){
             return false;
         }
         //输入不为空，文件为目录
         else {
             File file = new File(filePath);
             //输入为目录或文件不存在
-            if (!file.isFile() || !file.exists()) {
-                return false;
-            }
-            else{
-                return true;
-            }
+            return file.isFile() && file.exists();
         }
     }
 
@@ -188,9 +178,7 @@ public class FileUtil {
         String recSubstring2 = "receive/r";
         String recSubstring3 = processFilePath.substring(processFilePath.indexOf("-"));
 
-        String receiveFilePath = recSubstring1 + recSubstring2 + recSubstring3;
-
-        return receiveFilePath;
+        return recSubstring1 + recSubstring2 + recSubstring3;
     }
 
 
@@ -198,7 +186,7 @@ public class FileUtil {
      * 根据processFile的文件路径：/opt/logdata/process/p-0/000000000001.log
      * 获取对应mergeReceiveFile的文件路径：/opt/logdata/merge/receive/r-0/000000000001.log
      */
-    public String getMergeRecFilePath(String receiveFile){
+    String getMergeRecFilePath(String receiveFile){
         String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("/opt/logdata"),receiveFile.indexOf("receive"));
         String mergeRecSubstring2 = "/merge";
         String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("/receive"));
@@ -212,38 +200,33 @@ public class FileUtil {
 //        String mergeRecSubstring1 = receiveFile.substring(receiveFile.indexOf("\\opt\\logdata"),receiveFile.indexOf("receive"));
 //        String mergeRecSubstring2 = "\\merge";
 //        String mergeRecSubstring3 = receiveFile.substring(receiveFile.indexOf("\\receive"));
-        String mergeRecFilePath = mergeRecSubstring1 +mergeRecSubstring2 +mergeRecSubstring3;
 
-        return mergeRecFilePath;
+        return mergeRecSubstring1 +mergeRecSubstring2 +mergeRecSubstring3;
     }
 
     /**
      * 根据processFile的日志路径：/opt/logdata/process/r-0/000000000001.log
      * 获取对应mergeProeiveFile的日志路径：/opt/logdata/merge/process/r-0/000000000001.log
      */
-    public String getMergeProFilePath(String processFile){
+    String getMergeProFilePath(String processFile){
         String mergeProSubstring1 = processFile.substring(processFile.indexOf("/opt/logdata"),processFile.indexOf("process"));
         String mergeProSubstring2 = "/merge";
         String mergeProSubstring3 = processFile.substring(processFile.indexOf("/process"));
 //        String mergeProSubstring1 = processFile.substring(processFile.indexOf("\\opt/logdata"),processFile.indexOf("process"));
 //        String mergeProSubstring2 = "\\merge";
 //        String mergeProSubstring3 = processFile.substring(processFile.indexOf("\\process"));
-        String mergeProFilePath = mergeProSubstring1 +mergeProSubstring2 +mergeProSubstring3;
 
-        return mergeProFilePath;
+        return mergeProSubstring1 +mergeProSubstring2 +mergeProSubstring3;
     }
 
 
     /**
-     * 以追加的方式写日志
+     * 以追加的方式写日志（参照AbstractLogWrite类中的action方法，但多了一个保存目录的入参）
      * 把errProFiles中的每一条数据，保存到/opt/logdata/merge/receive（或process）目录下对应的文件名中
-     * @param row errProFiles中的每一条数据
+     * @param event errProFiles中的每一条数据（LogEvent格式）
      * @param mergeFilePath 要保存到的文件的绝对路径
      */
-    public void writeMergeFile(String row, String mergeFilePath){
-        //将每行数据用JSONHelper转化为LogEvent格式
-        LogEvent event = JSONHelper.toObject(row, LogEvent.class);
-
+    void writeMergeFile(LogEvent event, String mergeFilePath){
         FileWriter fw = null;
         try {
             //用File对象构造FileWriter，如果第二个参数为true，表示以追加的方式写数据，从文件尾部开始写起
