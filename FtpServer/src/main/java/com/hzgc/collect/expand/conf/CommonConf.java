@@ -8,7 +8,7 @@ public class CommonConf {
     /**
      * 队列日志名称
      */
-    private String logName = "0000000000000000000";
+    private String logName = "0000000000000000000.log";
 
     /**
      * 日志文件大小
