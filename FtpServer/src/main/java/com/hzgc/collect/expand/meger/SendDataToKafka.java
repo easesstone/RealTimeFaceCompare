@@ -2,26 +2,25 @@ package com.hzgc.collect.expand.meger;
 
 import com.codahale.metrics.Counter;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.ProducerOverFtp;
+import com.hzgc.collect.expand.processer.KafkaProducer;
 import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 
-class SendDataToKafka extends ProducerOverFtp implements Serializable {
+class SendDataToKafka extends KafkaProducer implements Serializable {
     private Logger LOG = Logger.getLogger(SendDataToKafka.class);
-    private KafkaProducer<String, FaceObject> kafkaProducer;
+    private org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
     private final Counter counter;
     private static SendDataToKafka sendDataToKafka;
     private boolean successToKafka;
 
     private SendDataToKafka() {
         super();
-        kafkaProducer = ProducerOverFtp.kafkaProducer;
-        counter = ProducerOverFtp.counter;
+        kafkaProducer = KafkaProducer.kafkaProducer;
+        counter = KafkaProducer.counter;
     }
 
     static synchronized SendDataToKafka getSendDataToKafka() {
