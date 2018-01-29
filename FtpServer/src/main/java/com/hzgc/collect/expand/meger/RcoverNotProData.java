@@ -4,7 +4,8 @@ import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.DataProcessLogWriter;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.ProducerOverFtp;
+import com.hzgc.collect.expand.processer.KafkaProducer;
+import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
 import java.text.SimpleDateFormat;
@@ -17,7 +18,6 @@ import java.util.List;
 public class RcoverNotProData {
     private Logger LOG = Logger.getLogger(RcoverNotProData.class);
     private final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
-    private static final String SPLIT = ",";
 
 
     public boolean recoverNotProData(CommonConf commonConf) {
@@ -45,32 +45,33 @@ public class RcoverNotProData {
                     List<String> notProRows = rowsListFactory.getNotProRows();
                     for (int j = 0; j < notProRows.size(); j++) {
                         String row = notProRows.get(j);
-                        String[] splits = row.split(SPLIT);
                         //获取未处理数据的ftpUrl
-                        String ftpUrl =splits[1].substring(splits[1].indexOf(":")+2,splits[1].lastIndexOf("\""));
+                        LogEvent event = JSONHelper.toObject(row, LogEvent.class);
+                        String ftpUrl = event.getPath();
                         //获取该条数据的序列号
-                        String rowNumber = splits[0].substring(splits[0].indexOf(":") + 1);
-                        long count = Long.valueOf(rowNumber);
+                        long count = event.getCount();
                         FaceObject faceObject = GetFaceObject.getFaceObject(row);
-                        SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                        sendDataToKafka.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                        boolean success = sendDataToKafka.isSuccessToKafka();
-                        if (j == 0 && !success) {
-                            LOG.warn("first data send to Kafka failure");
-                            return false;
-                        } else {
-                            LOG.info("Write log queueID is" + queueID + "" + processFile);
-                            //向对应的processfile中写入日志
-                            logEvent.setUrl(ftpUrl);
-                            if (success) {
-                                logEvent.setStatus("0");
+                        if (faceObject != null) {
+                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
+                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+                            boolean success = sendDataToKafka.isSuccessToKafka();
+                            if (j == 0 && !success) {
+                                LOG.warn("first data send to Kafka failure");
+                                return false;
                             } else {
-                                logEvent.setStatus("1");
+                                LOG.info("Write log queueID is" + queueID + "" + processFile);
+                                //向对应的processfile中写入日志
+                                logEvent.setPath(ftpUrl);
+                                if (success) {
+                                    logEvent.setStatus("0");
+                                } else {
+                                    logEvent.setStatus("1");
+                                }
+                                logEvent.setCount(count);
+                                logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
+                                dataProcessLogWriter.writeEvent(logEvent);
+                                recoverSuccess = true;
                             }
-                            logEvent.setCount(count);
-                            logEvent.setTimeStamp(SDF.format(new Date()));
-                            dataProcessLogWriter.writeEvent(logEvent);
-                            recoverSuccess = true;
                         }
                     }
                 } else {
