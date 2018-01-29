@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
@@ -55,11 +54,11 @@ abstract class AbstractLogWrite implements LogWriter {
     /**
      * 构造LogWriter的公共字段
      *
-     * @param conf 全局配置
+     * @param conf    全局配置
      * @param queueID 当前队列ID
-     * @param clz 当前类Class
+     * @param clz     当前类Class
      */
-    AbstractLogWrite(CommonConf conf, String queueID, Class clz){
+    AbstractLogWrite(CommonConf conf, String queueID, Class clz) {
         LOG = Logger.getLogger(clz);
         this.queueID = queueID;
         this.newLine = System.getProperty("line.separator");
@@ -72,20 +71,16 @@ abstract class AbstractLogWrite implements LogWriter {
      * 如果当前队列之前有日志记录，则找到最后一个序号
      * 如果未找到序号或者是第一次创建此队列，序号（count）为1
      */
-    void prepare() {
+    @Override
+    public void prepare() {
         File logDir = new File(this.currentDir);
-        if (!logDir.exists()) {
+        if (!logDir.exists() || logDir.list() == null) {
             logDir.mkdirs();
             this.count = 1;
-        } else if (null == logDir.list()) {
+        } else if (logDir.length() == 0) {
             this.count = 1;
         } else {
-            File logFile = new File(this.currentFile);
-            if (!logFile.exists()) {
-                this.count = getLastCount(this.currentDir + getLastLogFile(this.currentDir));
-            } else {
-                this.count = getLastCount(this.currentFile);
-            }
+            this.count = getLastCount();
         }
     }
 
@@ -98,7 +93,8 @@ abstract class AbstractLogWrite implements LogWriter {
      * @param count       要标记的count值
      * @return 最终合并的文件名称
      */
-    private String logNameUpdate(String defaultName, long count) {
+    @Override
+    public String logNameUpdate(String defaultName, long count) {
         char[] oldChar = defaultName.toCharArray();
         char[] content = (count + "").toCharArray();
         for (int i = 0; i < content.length; i++) {
@@ -108,64 +104,107 @@ abstract class AbstractLogWrite implements LogWriter {
     }
 
     /**
-     * 获取当前队列的最后一行日志的序号
-     *
-     * @param currentLogFile 当前队列的日志文件绝对路径
-     * @return 当前队列的序号
+     * 获取指定文件的最后一行
+     * @param fileName 指定文件名称
+     * @return 最后一行名称
      */
-    private long getLastCount(String currentLogFile) {
+    @Override
+    public String getLastLine(String fileName) {
         try {
-            RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
+            String tempFile = this.currentDir + fileName;
+            RandomAccessFile raf = new RandomAccessFile(tempFile, "r");
+            LOG.info("Start get last line from " + tempFile);
             long length = raf.length();
             long position = length - 1;
-            if (position == -1) {
-                return 0;
-            } else {
-                while (position > 0) {
-                    position--;
-                    raf.seek(position);
-                    if (raf.readByte() == '\n') {
+            raf.seek(position);
+            if (position != -1) {
+                while (position >= 0) {
+                    if (raf.read() != '\n') {
                         break;
                     }
+                    if (position == 0) {
+                        raf.seek(position);
+                        break;
+                    } else {
+                        position--;
+                        raf.seek(position);
+                    }
                 }
-                if (position == 0) {
-                    raf.seek(0);
+                System.out.println(position);
+                if (position >= 0) {
+                    while (position >= 0) {
+                        if (position == 0) {
+                            raf.seek(position);
+                            break;
+                        } else {
+                            position--;
+                            raf.seek(position);
+                            if (raf.read() == '\n') {
+                                break;
+                            }
+                        }
+                    }
                 }
-                byte[] bytes = new byte[(int) (length - position)];
-                raf.read(bytes);
-                String json = new String(bytes);
-                if (json.trim().length() > 0) {
-                    LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
-                    return event.getCount();
+                String line = raf.readLine();
+                if (line != null) {
+                    LOG.info("Last line from " + tempFile + " is:[" + line + "]");
+                    return line;
                 } else {
-                    return 1;
+                    LOG.warn("Last line from " + tempFile + " is:[" + null + "], maybe this queue never receives data");
+                    return "";
                 }
-
+            } else {
+                LOG.warn("Last line from " + tempFile + " is:[" + null + "], maybe this queue never receives data");
+                return "";
             }
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return 1;
+        return "";
     }
 
     /**
      * 获取最大序号（count）所在的日志文件的绝对路径
      *
-     * @param currentDir 当前队列所在的目录
      * @return 日志文件的绝对路径
      */
-    private String getLastLogFile(String currentDir) {
-        File file = new File(currentDir);
-        String[] fileArray = file.list();
-        if (fileArray != null) {
-            Arrays.sort(fileArray);
-            if (fileArray.length == 1 && Objects.equals(fileArray[0], this.currentFile)) {
-                return this.currentFile;
+    @Override
+    public long getLastCount() {
+        File currentDir = new File(this.currentDir);
+        String[] dirList = currentDir.list();
+        File defaultFile = new File(this.currentFile);
+        if (dirList != null && dirList.length > 0) {
+            if (defaultFile.exists()) {
+                String countLine = getLastLine(defaultFile.getName());
+                if (countLine.length() == 0) {
+                    LOG.info("Get count from " + this.currentFile
+                            + ", but the file content is null, so queue id is "
+                            + this.queueID + ", count is 1");
+                    return 1;
+                } else {
+                    LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                    LOG.info("Get count from " + this.currentFile + "queue id is "
+                            + this.queueID + ", count is " + event.getCount());
+                    return event.getCount();
+                }
             } else {
-                return fileArray[fileArray.length - 1];
+                LOG.info("Default log file "
+                        + this.currentFile
+                        + "is not exists, start check other log file and sort by file name");
+                Arrays.sort(dirList);
+                LOG.info("Sort result is " + Arrays.toString(dirList));
+                String countFile = dirList[dirList.length - 1];
+                String countLine = getLastLine(countFile);
+                LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                LOG.info("Get count from " + countFile
+                        + ", queue is is " + this.queueID
+                        + ", count is " + event.getCount());
+                return event.getCount();
             }
         } else {
-            return this.currentFile;
+            LOG.info("Directory " + this.currentDir + " is not exists or empty, so queue id is "
+                    + this.queueID + ", count is 1");
+            return 1;
         }
     }
 
@@ -174,11 +213,12 @@ abstract class AbstractLogWrite implements LogWriter {
      *
      * @param event 封装的日志信息
      */
-    private void action(LogEvent event) {
+    @Override
+    public void action(LogEvent event) {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
-            event.setCount(this.count);
+            event.setCount(++this.count);
             fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
@@ -192,17 +232,16 @@ abstract class AbstractLogWrite implements LogWriter {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.count++;
         }
     }
 
     @Override
-    public void writeEvent(LogEvent event) {
+    public void countCheck(LogEvent event) {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            oldFile.renameTo(newFile);
             action(event);
+            oldFile.renameTo(newFile);
         } else {
             action(event);
         }
