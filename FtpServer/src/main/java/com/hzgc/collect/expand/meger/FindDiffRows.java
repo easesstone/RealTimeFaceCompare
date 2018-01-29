@@ -1,5 +1,7 @@
 package com.hzgc.collect.expand.meger;
 
+import com.hzgc.collect.expand.log.LogEvent;
+import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -14,7 +16,6 @@ import java.util.*;
  */
 public class FindDiffRows {
     private Logger LOG = Logger.getLogger(FindDiffRows.class);
-    private final String SPLIT = ",";
 
     /**
      * 获取日志中未处理的的所有数据
@@ -30,30 +31,37 @@ public class FindDiffRows {
             return notProList;
         } else if (allRows.size() == 1) {
             LOG.info("The unionAllRows size is OnlyOne");
-            String processState = getProcessState(allRows.get(0));
+            LogEvent eventState = JSONHelper.toObject(allRows.get(0), LogEvent.class);
+            String processState = eventState.getStatus();
             if (processState.equals("0")) {
                 notProList.add(allRows.get(0));
             }
             return notProList;
         } else {
             Collections.sort(allRows);
-            for (int i = 1; i < allRows.size() - 2; i++) {
-                row = allRows.get(i);
-                String lineNumber = getRowNumber(row);
+            for (int i = 1; i <= allRows.size() - 2; i++) {
+                LogEvent rowEvent = JSONHelper.toObject(allRows.get(i), LogEvent.class);
+                LogEvent upRowEvent = JSONHelper.toObject(allRows.get(i - 1), LogEvent.class);
+                LogEvent downRowEvent = JSONHelper.toObject(allRows.get(i + 1), LogEvent.class);
+                long rowCount = rowEvent.getCount();
+                long upRowCount = upRowEvent.getCount();
+                long downRowCount = downRowEvent.getCount();
                 //将日志中一行数据的序号与其上下行的序号进行比较，
                 // 存在相同则表示已处理，没有相同表示未处理
-                if (!lineNumber.equals(getRowNumber(allRows.get(i - 1)))
-                        && !lineNumber.equals(getRowNumber(allRows.get(i + 1)))) {
-                    notProList.add(row);
+                if (rowCount != upRowCount && rowCount != downRowCount) {
+                    notProList.add(allRows.get(i));
                 }
             }
             //判断第一行数据是否已经处理
-            if (!getRowNumber(allRows.get(0)).equals(getRowNumber(allRows.get(1)))) {
+            LogEvent firstEventCount = JSONHelper.toObject(allRows.get(0), LogEvent.class);
+            LogEvent secondEventCount = JSONHelper.toObject(allRows.get(1), LogEvent.class);
+            if (firstEventCount.getCount() != secondEventCount.getCount()) {
                 notProList.add(allRows.get(0));
             }
             //判断最后一行数据是否已经处理
-            if (!getRowNumber(allRows.get(allRows.size() - 1))
-                    .equals(getRowNumber(allRows.get(allRows.size() - 2)))) {
+            LogEvent lastEventCount = JSONHelper.toObject(allRows.get(allRows.size() - 1), LogEvent.class);
+            LogEvent eventCount = JSONHelper.toObject(allRows.get(allRows.size() - 2), LogEvent.class);
+            if (lastEventCount.getCount() != eventCount.getCount()) {
                 notProList.add(allRows.get(allRows.size() - 1));
             }
             return notProList;
@@ -76,11 +84,11 @@ public class FindDiffRows {
         } else {
             Collections.sort(allRows);
             for (String allRow : allRows) {
-                tmp = allRow;
-                String processState = getProcessState(tmp);
+                LogEvent event = JSONHelper.toObject(allRow, LogEvent.class);
+                String processState = event.getStatus();
                 //根据状态是否为零判断数据是否处理成功
                 if (!processState.equals("0")) {
-                    failList.add(tmp);
+                    failList.add(allRow);
                 }
             }
             return failList;
@@ -121,37 +129,4 @@ public class FindDiffRows {
         return rows;
     }
 
-    /**
-     * 获取一行日志中数据在日志中的序号
-     *
-     * @param row 日志中一行数据
-     * @return String        数据在日志中序号
-     */
-    private String getRowNumber(String row) {
-        String rowNumber = "";
-        if (row == null || row.length() == 0) {
-            LOG.warn("This row of data is empty");
-        } else {
-            String[] splits = row.split(SPLIT);
-            rowNumber = splits[0].substring(splits[0].indexOf(":") + 1);
-        }
-        return rowNumber;
-    }
-
-    /**
-     * 获取一行日志中数据处理状态
-     *
-     * @param row 日志中一行数据
-     * @return String        数据处理的状态
-     */
-    private String getProcessState(String row) {
-        String processState = "";
-        if (row == null || row.length() == 0) {
-            LOG.warn("This row of data is empty");
-        } else {
-            String[] splits = row.split(SPLIT);
-            processState = splits[3].substring(10, 11);
-        }
-        return processState;
-    }
 }
