@@ -35,7 +35,7 @@ public class AbstractLogWriteTest {
         logEvent.setStatus("0");
         logEvent.setTimeStamp(1500012313);
         logEvent.setPath("ftp://s100:/2018/01/09");
-        dataProcessLogWriter.writeEvent(logEvent);
+        dataProcessLogWriter.countCheckAndWrite(logEvent);
     }
 
     private void writeMultiLine(DataProcessLogWriter dataProcessLogWriter, int line) {
@@ -44,7 +44,7 @@ public class AbstractLogWriteTest {
             logEvent.setStatus("0");
             logEvent.setTimeStamp(1500012313);
             logEvent.setPath("ftp://s100:/2018/01/09");
-            dataProcessLogWriter.writeEvent(logEvent);
+            dataProcessLogWriter.countCheckAndWrite(logEvent);
         }
     }
 

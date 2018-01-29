@@ -16,7 +16,7 @@ public class ReceiverImpl implements Receiver {
     private ReceiverImpl() {
     }
 
-    ReceiverImpl(CommonConf conf, String queueID) {
+    public ReceiverImpl(CommonConf conf, String queueID) {
         this.queueID = queueID;
         this.queue = new ArrayBlockingQueue<>(conf.getCapacity());
         this.receiveWriter = new DataReceiveLogWriter(conf, queueID);
@@ -30,7 +30,7 @@ public class ReceiverImpl implements Receiver {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            receiveWriter.writeEvent(event);
+            /*receiveWriter.writeEvent(event);*/
         }
     }
 
