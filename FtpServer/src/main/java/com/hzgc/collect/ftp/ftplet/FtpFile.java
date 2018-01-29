@@ -40,6 +40,11 @@ public interface FtpFile {
     String getAbsolutePath();
 
     /**
+     * 获取图片的绝对路径
+     */
+    String getFileAbsolutePa();
+
+    /**
      * Get the file name of the file
      * @return the last part of the file path (the part after the last '/').
      */

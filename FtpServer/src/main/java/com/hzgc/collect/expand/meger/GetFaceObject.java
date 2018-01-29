@@ -1,44 +1,36 @@
 package com.hzgc.collect.expand.meger;
 
+import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
+import com.hzgc.collect.expand.processer.FtpPathMessage;
+import com.hzgc.collect.expand.util.JSONHelper;
 import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
-import org.apache.log4j.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 class GetFaceObject {
-    private Logger LOG = Logger.getLogger(GetFaceObject.class);
-    private static final String SPLIT = ",";
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     static FaceObject getFaceObject(String row) {
-        FaceObject faceObject = new FaceObject();
+        FaceObject faceObject = null;
         if (row != null && row.length() != 0) {
-            String[] splits = row.split(SPLIT);
-            String ftpUrl =splits[1].substring(splits[1].indexOf(":")+2,splits[1].lastIndexOf("\""));
-            String path = row.substring(ftpUrl.lastIndexOf(":") + 1);
-            String fileName = path.substring(path.indexOf("/"));
-            byte[] photo = FaceFunction.inputPicture(fileName);
+            LogEvent event = JSONHelper.toObject(row, LogEvent.class);
+            String path = event.getAbsolutePath();
+            byte[] photo = FaceFunction.getPictureBytes(path);
             FaceAttribute faceAttribute = FaceFunction.featureExtract(photo);
-            Map<String, String> map = FtpUtils.getFtpPathMessage(fileName);
-            String ipcID = map.get("ipcID");
-            String timeStamp = map.get("time");
-            String date = map.get("date");
-            String timeSlot = map.get("sj");
-            faceObject.setIpcId(ipcID);
-            faceObject.setTimeStamp(timeStamp);
-            faceObject.setTimeSlot(timeSlot);
-            faceObject.setDate(date);
-            faceObject.setType(SearchType.PERSON);
-            faceObject.setStartTime(sdf.format(new Date()));
-            faceObject.setImage(photo);
-            faceObject.setAttribute(faceAttribute);
+            FtpPathMessage ftpPathMessage = FtpUtils.getFtpPathMessage(path);
+            String ipcId = ftpPathMessage.getIpcid();
+            String timeStamp = ftpPathMessage.getTimeStamp();
+            String timeSlot = ftpPathMessage.getTimeslot();
+            String date = ftpPathMessage.getDate();
+            SearchType type = SearchType.PERSON;
+            String startTime = sdf.format(new Date());
+            faceObject = new FaceObject(ipcId, timeStamp, type, date, timeSlot, faceAttribute, startTime);
         }
         return faceObject;
     }

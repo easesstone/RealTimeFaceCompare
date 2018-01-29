@@ -6,7 +6,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.collect.ftp.util.IOUtils;
 import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
@@ -16,9 +15,9 @@ import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
-public class ProducerOverFtp implements Serializable {
-    private static Logger LOG = Logger.getLogger(ProducerOverFtp.class);
-    protected static KafkaProducer<String, FaceObject> kafkaProducer;
+public class KafkaProducer implements Serializable {
+    private static Logger LOG = Logger.getLogger(KafkaProducer.class);
+    protected static org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
     private static String FEATURE = "feature";
@@ -26,7 +25,8 @@ public class ProducerOverFtp implements Serializable {
     private static MetricRegistry metric = new MetricRegistry();
     protected final static Counter counter = metric.counter("sendKafkaCount");
 
-     protected ProducerOverFtp() {
+
+    protected KafkaProducer() {
         try {
             File file = FileUtil.loadResourceFile("producer-over-ftp.properties");
             if (file != null) {
@@ -35,7 +35,7 @@ public class ProducerOverFtp implements Serializable {
             this.kafkaPropers.load(fis);
             FEATURE = kafkaPropers.getProperty("topic-feature");
             if (kafkaPropers != null) {
-                kafkaProducer = new KafkaProducer<>(kafkaPropers);
+                kafkaProducer = new org.apache.kafka.clients.producer.KafkaProducer<>(kafkaPropers);
                 LOG.info("Create KafkaProducer successfull");
             }
         } catch (Exception e) {
@@ -72,12 +72,12 @@ public class ProducerOverFtp implements Serializable {
         }
     }
 
-    public static ProducerOverFtp getInstance() {
+    public static KafkaProducer getInstance() {
         return LazyHandler.instanc;
     }
 
     private static class LazyHandler {
-        private static final ProducerOverFtp instanc = new ProducerOverFtp();
+        private static final KafkaProducer instanc = new KafkaProducer();
     }
 
     /*public static String getPicture() {
