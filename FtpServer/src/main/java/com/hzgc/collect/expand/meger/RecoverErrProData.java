@@ -14,8 +14,8 @@ import java.util.List;
  * 恢复处理出错的数据，作为Ftp的一个线程。（马燊偲）
  *
  * 整体流程：
- *	1，遍历process 目录中的文件，得到日记文件的一个绝对路径，放入一个List中，proFilePaths
- *	2，判断proFilePaths是否为空（process 目录下是否有文件），若为空，结束；
+ * 1，遍历process 目录中的文件，得到日记文件的一个绝对路径，放入一个List中，proFilePaths
+ * 2，判断proFilePaths是否为空（process 目录下是否有文件），若为空，结束；
  *	    若不为空，遍历proFilePaths的每一个文件，例如如下：
  *          1，/opt/logdata/process/p-0/000000000001.log
  *          然后查看对应的 /opt/logdata/receive/r-0/000000000001.log 文件是否存在
@@ -74,8 +74,8 @@ public class RecoverErrProData implements Runnable{
         List<String> proFilePaths = fileFactory.getAllProcessFiles();
 
         //若proFilePaths这个list不为空（process日志根目录下有日志）
-        if (proFilePaths != null && proFilePaths.size() != 0){                                  // V1 if start
-            for (String processFile : proFilePaths) {                                                  // V1-A foreach start
+        if (proFilePaths != null && proFilePaths.size() != 0){ // V1 if start
+            for (String processFile : proFilePaths) {                                                   // V1-A foreach start
                 String receiveFile = fileUtil.getRecFileFromProFile(processFile);
                 //判断processFile文件对应的receiveFile是否存在
                 if (!fileUtil.isFileExist(receiveFile)) {                                                     // V1-B if start
@@ -92,8 +92,8 @@ public class RecoverErrProData implements Runnable{
                     List<String> errProFiles = rowsListFactory.getErrProRows();
 
                     //判断errProFiles是否为空，若不为空，则需要处理出错数据
-                    if (errProFiles != null && errProFiles.size() != 0) {                          // V1-C if start
-                        for (String row : errProFiles) {                                                   // V1-D foreach start
+                    if (errProFiles != null && errProFiles.size() != 0) { // V1-C if start
+                        for (String row : errProFiles) { // V1-D foreach start
                             //用JSONHelper将某行数据转化为LogEvent格式
                             LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                             //根据processFile的日志路径，获取对应mergeReceiveFile的日志路径
@@ -110,7 +110,7 @@ public class RecoverErrProData implements Runnable{
 
                             //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                             FaceObject faceObject = GetFaceObject.getFaceObject(row);
-                            if (faceObject != null) {                                                         // V1-E if start
+                            if (faceObject != null) { // V1-E if start
                                 SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                                 sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
                                 boolean success = sendDataToKafka.isSuccessToKafka();
@@ -169,10 +169,10 @@ public class RecoverErrProData implements Runnable{
                             //用JSONHelper将某行数据转化为LogEvent格式
                             LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                             fileUtil.writeMergeFile(event, mergeReceiveFile);
-                        }                                                                                               // V2-C foreach end
+                        }                                                                                              // V2-C foreach end
                         //若mergeErrProFiles中无内容，跳过；若有内容：
                         // 遍历mergeErrProFiles，将内容发送到kafka，并覆盖日志/opt/logdata/merge/receive/r-0/000000000001.log
-                        if (mergeErrProFiles.size() != 0) {   // V2-D if start
+                        if (mergeErrProFiles.size() != 0) {                                             // V2-D if start
                             for (String row : mergeErrProFiles) {                                     // V2-E foreach start
                                 LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                                 //用LogEvent获取该条数据的ftpUrl
@@ -199,7 +199,7 @@ public class RecoverErrProData implements Runnable{
                                     logEvent.setCount(count);
                                     logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
                                     fileUtil.writeMergeFile(event, mergeProcessFile);
-                                }                                                                                      // V2-F if end
+                                }                                                                                       // V2-F if end
 
                                 //对比两个文件：/opt/logdata/merge/receive/r-0/000000000001.log
                                 //                 和 /opt/logdata/merge/process/p-0/000000000001.log
