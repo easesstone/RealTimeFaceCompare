@@ -27,22 +27,27 @@ abstract class ProperHelper {
     static String verifyCommonValue(String key, String defaultValue, Properties props, Logger log){
         String returnValue = null;
         try {
-            Boolean isValueEmpty = props.getProperty(key).isEmpty(); //判断键值是否为空
-            if (isValueEmpty){
-                returnValue = defaultValue;
-                log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+            if (props.containsKey(key)) {
+                Boolean isValueEmpty = props.getProperty(key).isEmpty(); //判断键值是否为空
+                if (isValueEmpty) {
+                    returnValue = defaultValue;
+                    log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+                } else {
+                    String valueFromKey = props.getProperty(key);
+                    if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+                        returnValue = defaultValue;
+                        log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+                    }
+                    //非空，加载
+                    else {
+                        log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
+                        returnValue = valueFromKey;
+                    }
+                }
             }
             else {
-                String valueFromKey = props.getProperty(key);
-                if (valueFromKey == null || Objects.equals(valueFromKey, "")){
-                    returnValue = defaultValue;
-                    log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue+ "\"");
-                }
-                //非空，加载
-                else {
-                    log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                    returnValue = valueFromKey;
-                }
+                log.error("The key " + key + " does not exist in the configuration file, please check it.");
+                System.exit(1);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,25 +91,29 @@ abstract class ProperHelper {
     private static String verifyIpOrPlusPort(String key, Pattern patternIpOrPlusPortLegal, Properties props, Logger log){
         String returnValue = null;
         try {
-            Boolean isValueEmpty = props.getProperty(key).isEmpty();
+            if (props.containsKey(key)) {
+                Boolean isValueEmpty = props.getProperty(key).isEmpty();
 
-            if (isValueEmpty){
-                log.error("The value of " + key + " haven't been set,  you must set it.");
-                System.exit(1);
+                if (isValueEmpty) {
+                    log.error("The value of " + key + " haven't been set,  you must set it.");
+                    System.exit(1);
+                } else {
+                    //键值存在，才能getProperty取到值。
+                    String valueFromKey = props.getProperty(key);
+                    //判断是否是合法的ip / ip:端口号  格式的正则表达式
+                    Boolean isIpOrPlusPortLegal = patternIpOrPlusPortLegal.matcher(valueFromKey).matches();
+                    if (!isIpOrPlusPortLegal) {
+                        log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, please reset it.");
+                        System.exit(1);
+                    } else {
+                        log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
+                        returnValue = valueFromKey;
+                    }
+                }
             }
             else {
-                //键值存在，才能getProperty取到值。
-                String valueFromKey = props.getProperty(key);
-                //判断是否是合法的ip / ip:端口号  格式的正则表达式
-                Boolean isIpOrPlusPortLegal = patternIpOrPlusPortLegal.matcher(valueFromKey).matches();
-                if (!isIpOrPlusPortLegal){
-                    log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, please reset it.");
-                    System.exit(1);
-                }
-                else{
-                    log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                    returnValue = valueFromKey;
-                }
+                log.error("The key " + key + " does not exist in the configuration file, please check it.");
+                System.exit(1);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,38 +159,42 @@ abstract class ProperHelper {
     static String verifyIpPlusPortList(String key, Properties props, Logger log){
         String returnValue = null;
         try {
-            Boolean isValueEmpty = props.getProperty(key).isEmpty();
-            if (isValueEmpty){
-                log.error("The value of " + key + " haven't been set,  you must set it.");
-                System.exit(1);
-            }
-            else {
-                //键值存在，才能getProperty取到值（去一下空格）。
-                String valueFromKey = props.getProperty(key).trim();
-                //对于“IP：PORT，IP：PORT，IP：PORT”中的每个IP：PORT（以逗号分隔）：
-                int count = 0;
-                for (String ipPlusPort : valueFromKey.split(",")) {
-                    //判断每个IP：PORT 是否是合法的 ip:端口号  格式的正则表达式
-                    Boolean isIpPlusPortLegal = patternIpPlusPort().matcher(ipPlusPort).matches();
-                    //若有一个IP：PORT 的格式不正确，就报错，退出程序
-                    if (!isIpPlusPortLegal) {
+            if (props.containsKey(key)) {
+                Boolean isValueEmpty = props.getProperty(key).isEmpty();
+                if (isValueEmpty) {
+                    log.error("The value of " + key + " haven't been set,  you must set it.");
+                    System.exit(1);
+                } else {
+                    //键值存在，才能getProperty取到值（去一下空格）。
+                    String valueFromKey = props.getProperty(key).trim();
+                    //对于“IP：PORT，IP：PORT，IP：PORT”中的每个IP：PORT（以逗号分隔）：
+                    int count = 0;
+                    for (String ipPlusPort : valueFromKey.split(",")) {
+                        //判断每个IP：PORT 是否是合法的 ip:端口号  格式的正则表达式
+                        Boolean isIpPlusPortLegal = patternIpPlusPort().matcher(ipPlusPort).matches();
+                        //若有一个IP：PORT 的格式不正确，就报错，退出程序
+                        if (!isIpPlusPortLegal) {
+                            log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, please reset it.");
+                            System.exit(1);
+                        }
+                        //记录IP：PORT 的格式正确的个数
+                        else {
+                            count++;
+                        }
+                    }
+                    //若每个以逗号分隔的IP：PORT 的格式都正确，且“IP：PORT，IP：PORT，IP：PORT”不以逗号结尾，则格式正确。
+                    if (count == valueFromKey.split(",").length && !valueFromKey.endsWith(",")) {
+                        log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
+                        returnValue = valueFromKey;
+                    } else {
                         log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, please reset it.");
                         System.exit(1);
                     }
-                    //记录IP：PORT 的格式正确的个数
-                    else {
-                        count ++;
-                    }
                 }
-                //若每个以逗号分隔的IP：PORT 的格式都正确，且“IP：PORT，IP：PORT，IP：PORT”不以逗号结尾，则格式正确。
-                if (count == valueFromKey.split(",").length && !valueFromKey.endsWith(",")){
-                    log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                    returnValue = valueFromKey;
-                }
-                else {
-                    log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, please reset it.");
-                    System.exit(1);
-                }
+            }
+            else {
+                log.error("The key " + key + " does not exist in the configuration file, please check it.");
+                System.exit(1);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -202,36 +215,41 @@ abstract class ProperHelper {
     static String verifyPort(String portKey, String portDefault, Properties props, Logger log) {
         String returnPort = null;
         try {
-            Boolean isValueEmpty = props.getProperty(portKey).isEmpty(); //判断键值是否为空
+            if (props.containsKey(portKey)) {
+                Boolean isValueEmpty = props.getProperty(portKey).isEmpty(); //判断键值是否为空
 
-            //若端口号未设置，设置为默认值
-            if (isValueEmpty) {
-                returnPort = portDefault;
-                log.warn("The value of " + portKey + " haven't been set, set it to \"" + portDefault + "\"");
-            }
-            else {
-                //键值存在，才能getProperty取到值。
-                String portValue = props.getProperty(portKey);
-                //若端口号为空
-                if (portValue == null || Objects.equals(portValue, "")) {
+                //若端口号未设置，设置为默认值
+                if (isValueEmpty) {
                     returnPort = portDefault;
                     log.warn("The value of " + portKey + " haven't been set, set it to \"" + portDefault + "\"");
+                } else {
+                    //键值存在，才能getProperty取到值。
+                    String portValue = props.getProperty(portKey);
+                    //若端口号为空
+                    if (portValue == null || Objects.equals(portValue, "")) {
+                        returnPort = portDefault;
+                        log.warn("The value of " + portKey + " haven't been set, set it to \"" + portDefault + "\"");
+                    }
+                    //若端口号非整数，报错
+                    else if (!isValueInteger(portValue)) {
+                        log.error("The value \"" + portValue + "\" of " + portKey + " is illegal, it must be Integer.");
+                        System.exit(1);
+                    }
+                    //若端口号小于1024，报错
+                    else if (Integer.parseInt(portValue) <= 1024) {
+                        log.error("The value \"" + portValue + "\"  of " + portKey + " is illegal, it must larger than 1024.");
+                        System.exit(1);
+                    }
+                    //端口号符合条件，加载
+                    else {
+                        log.info("The configuration " + portKey + "  is right, the value is \"" + portValue + "\"");
+                        returnPort = portValue;
+                    }
                 }
-                //若端口号非整数，报错
-                else if (!isValueInteger(portValue)) {
-                    log.error("The value \"" + portValue + "\" of " + portKey + " is illegal, it must be Integer.");
-                    System.exit(1);
-                }
-                //若端口号小于1024，报错
-                else if (Integer.parseInt(portValue) <= 1024) {
-                    log.error("The value \"" + portValue + "\"  of " + portKey + " is illegal, it must larger than 1024.");
-                    System.exit(1);
-                }
-                //端口号符合条件，加载
-                else {
-                    log.info("The configuration " + portKey + "  is right, the value is \"" + portValue + "\"");
-                    returnPort = portValue;
-                }
+            }
+            else {
+                log.error("The key " + portKey + " does not exist in the configuration file, please check it.");
+                System.exit(1);
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -252,26 +270,30 @@ abstract class ProperHelper {
     static String verifyBooleanValue(String key, String defaultValue, Properties props, Logger log){
         String returnValue = null;
         try {
-            Boolean isValueEmpty = props.getProperty(key).isEmpty(); //判断键值是否为空
-            if (isValueEmpty){
-                returnValue = defaultValue;
-                log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
-            }
-            else {
-                String valueFromKey = props.getProperty(key); //读取配置文件中，Key对应的值
-                if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+            if (props.containsKey(key)) {
+                Boolean isValueEmpty = props.getProperty(key).isEmpty(); //判断键值是否为空
+                if (isValueEmpty) {
                     returnValue = defaultValue;
                     log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+                } else {
+                    String valueFromKey = props.getProperty(key); //读取配置文件中，Key对应的值
+                    if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+                        returnValue = defaultValue;
+                        log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+                    }
+                    //检查key=returnValue的value值类型是否为布尔值，比较时忽略大小写；若符合条件，则加载。
+                    else if (valueFromKey.equalsIgnoreCase("true") || valueFromKey.equalsIgnoreCase("false")) {
+                        log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
+                        returnValue = defaultValue;
+                    } else {
+                        log.error("The value \"" + valueFromKey + "\"  of " + key + " is illegal, it must be Boolean.");
+                        System.exit(1);
+                    }
                 }
-                //检查key=returnValue的value值类型是否为布尔值，比较时忽略大小写；若符合条件，则加载。
-                else if (valueFromKey.equalsIgnoreCase("true") || valueFromKey.equalsIgnoreCase("false")) {
-                    log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                    returnValue = defaultValue;
-                }
-                else {
-                    log.error("The value \"" + valueFromKey + "\"  of " + key + " is illegal, it must be Boolean.");
-                    System.exit(1);
-                }
+            }
+            else {
+                log.error("The key " + key + " does not exist in the configuration file, please check it.");
+                System.exit(1);
             }
         } catch (Exception e) {
             e.printStackTrace();

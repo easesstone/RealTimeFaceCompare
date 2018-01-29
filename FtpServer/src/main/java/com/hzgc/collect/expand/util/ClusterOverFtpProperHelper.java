@@ -2,6 +2,7 @@ package com.hzgc.collect.expand.util;
 
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -16,6 +17,10 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     private static String port;
     private static String implicitSsl;
     private static String threadNum;
+    private static String capacity;
+    private static String receiveLogDir;
+    private static String processLogDir;
+    private static String receiveNumber;
 
     static {
         String properName = "cluster-over-ftp.properties";
@@ -26,6 +31,10 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
             setPort();
             setImplicitSsl();
             setThreadNum();
+            setCapacity();
+            setReceiveLogDir();
+            setProcessLogDir();
+            setReceiveNumber();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -49,6 +58,21 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         threadNum = verifyPositiveIntegerValue("thread.number", "3", props, log);
     }
 
+    private static String setCapacity() {
+        return capacity = verifyPositiveIntegerValue("capacity", String.valueOf(Integer.MAX_VALUE), props, log);
+    }
+
+    private static String setReceiveLogDir() {
+        return receiveLogDir = verifyCommonValue("receiveLogDir", "/opt/", props, log);
+    }
+
+    private static String setProcessLogDir() {
+        return processLogDir = verifyCommonValue("processLogDir", "/opt/", props, log);
+    }
+
+    private static String setReceiveNumber() {
+        return receiveNumber = verifyCommonValue("receiveNumber", String.valueOf(0), props, log);
+    }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
@@ -67,6 +91,26 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     public static String getThreadNum() {
         log.info("Load the configuration thread.number, the value is \"" + threadNum + "\"");
         return threadNum;
+    }
+
+    public static String getCapacity() {
+        log.info("Load the configuration capacity, the value is \"" + capacity + "\"");
+        return capacity;
+    }
+
+    public static String getReceiveLogDir() {
+        log.info("Load the configuration receiveLogDir, the value is \"" + receiveLogDir + "\"");
+        return receiveLogDir;
+    }
+
+    public static String getProcessLogDir() {
+        log.info("Load the configuration processLogDir, the value is \"" + processLogDir + "\"");
+        return processLogDir;
+    }
+
+    public static String getReceiveNumber() {
+        log.info("Load the configuration receiveNumber, the value is \"" + receiveNumber + "\"");
+        return receiveNumber;
     }
 }
 
