@@ -26,13 +26,12 @@ public class AbstractLogWriteTest {
         //writeMultiLine(dataProcessLogWriter, 300001);
         //测试往已经存在的空日志文件中写日志
         for (int i = 0; i < 1; i++) {
-            writeMultiLine(dataProcessLogWriter, 20);
+            writeMultiLine(dataProcessLogWriter, 1);
         }
     }
 
     private void writerOneLine(DataProcessLogWriter dataProcessLogWriter) {
         LogEvent logEvent = new LogEvent();
-        logEvent.setCount(1);
         logEvent.setStatus("0");
         logEvent.setTimeStamp(1500012313);
         logEvent.setPath("ftp://s100:/2018/01/09");

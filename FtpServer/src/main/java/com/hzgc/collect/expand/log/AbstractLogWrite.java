@@ -84,7 +84,6 @@ abstract class AbstractLogWrite implements LogWriter {
             this.count = 1;
         } else {
             File logFile = new File(this.currentFile);
-            System.out.println("currentFile:" + currentFile);
             if (!logFile.exists()) {
                 this.count = getLastCount(this.currentDir + getLastLogFile(this.currentDir));
             } else {
@@ -173,6 +172,7 @@ abstract class AbstractLogWrite implements LogWriter {
                 return fileArray[fileArray.length - 1];
             }
         } else {
+            System.out.println(this.currentFile);
             return this.currentFile;
         }
     }
