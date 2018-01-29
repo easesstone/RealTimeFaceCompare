@@ -4,10 +4,7 @@ import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -58,11 +55,11 @@ abstract class AbstractLogWrite implements LogWriter {
     /**
      * 构造LogWriter的公共字段
      *
-     * @param conf    全局配置
+     * @param conf 全局配置
      * @param queueID 当前队列ID
-     * @param clz     当前类Class
+     * @param clz 当前类Class
      */
-    AbstractLogWrite(CommonConf conf, String queueID, Class clz) {
+    AbstractLogWrite(CommonConf conf, String queueID, Class clz){
         LOG = Logger.getLogger(clz);
         this.queueID = queueID;
         this.newLine = System.getProperty("line.separator");
@@ -88,8 +85,6 @@ abstract class AbstractLogWrite implements LogWriter {
                 this.count = getLastCount(this.currentDir + getLastLogFile(this.currentDir));
             } else {
                 this.count = getLastCount(this.currentFile);
-                System.out.println(this.currentFile);
-                System.out.println(this.count);
             }
         }
     }
@@ -105,7 +100,7 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     private String logNameUpdate(String defaultName, long count) {
         char[] oldChar = defaultName.toCharArray();
-        char[] content = (count + ".log").toCharArray();
+        char[] content = (count + "").toCharArray();
         for (int i = 0; i < content.length; i++) {
             oldChar[oldChar.length - 1 - i] = content[content.length - 1 - i];
         }
@@ -120,7 +115,6 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     private long getLastCount(String currentLogFile) {
         try {
-            System.out.println(currentLogFile);
             RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
             long length = raf.length();
             long position = length - 1;
@@ -154,7 +148,6 @@ abstract class AbstractLogWrite implements LogWriter {
         return 1;
     }
 
-
     /**
      * 获取最大序号（count）所在的日志文件的绝对路径
      *
@@ -164,7 +157,7 @@ abstract class AbstractLogWrite implements LogWriter {
     private String getLastLogFile(String currentDir) {
         File file = new File(currentDir);
         String[] fileArray = file.list();
-        if (fileArray != null && fileArray.length > 0) {
+        if (fileArray != null) {
             Arrays.sort(fileArray);
             if (fileArray.length == 1 && Objects.equals(fileArray[0], this.currentFile)) {
                 return this.currentFile;
@@ -172,7 +165,6 @@ abstract class AbstractLogWrite implements LogWriter {
                 return fileArray[fileArray.length - 1];
             }
         } else {
-            System.out.println(this.currentFile);
             return this.currentFile;
         }
     }
@@ -209,8 +201,8 @@ abstract class AbstractLogWrite implements LogWriter {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            action(event);
             oldFile.renameTo(newFile);
+            action(event);
         } else {
             action(event);
         }
