@@ -18,15 +18,15 @@ public class AbstractLogWriteTest {
     public void writevent() throws Exception {
         CommonConf conf = new CommonConf();
         conf.setLogName(conf.getLogName());
-        String queueID = "22";
+        String queueID = "25";
         conf.setProcessLogDir("E:/getProcessLogDir/process");
         DataProcessLogWriter dataProcessLogWriter = new DataProcessLogWriter(conf, queueID);
         //writerOneLine(dataProcessLogWriter);
         //生成两个日志文件，一个30w行，一个1行，测试日志文件自动生成
         //writeMultiLine(dataProcessLogWriter, 300001);
         //测试往已经存在的空日志文件中写日志
-        for (int i = 0; i < 1; i++) {
-            writeMultiLine(dataProcessLogWriter, 1);
+        for (int i = 0; i < 10; i++) {
+            writeMultiLine(dataProcessLogWriter, 10);
         }
     }
 

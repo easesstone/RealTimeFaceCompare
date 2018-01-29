@@ -1,14 +1,11 @@
 package com.hzgc.collect.expand.conf;
 
-import com.hzgc.collect.expand.util.ClusterOverFtpProperHelper;
-import com.hzgc.collect.expand.util.HelperFactory;
-
 public class CommonConf {
 
     /**
      * 队列日志名称
      */
-    private String logName = "0000000000000000000.log";
+    private String logName = "0000000000000000000";
 
     /**
      * 日志文件大小
@@ -49,7 +46,6 @@ public class CommonConf {
     }
 
     /**
-     *
      * @param properName 指定类路径下资源文件名称
      */
     public CommonConf(String properName) {

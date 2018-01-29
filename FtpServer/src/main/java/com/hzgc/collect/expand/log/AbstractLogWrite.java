@@ -4,7 +4,10 @@ import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -55,11 +58,11 @@ abstract class AbstractLogWrite implements LogWriter {
     /**
      * 构造LogWriter的公共字段
      *
-     * @param conf 全局配置
+     * @param conf    全局配置
      * @param queueID 当前队列ID
-     * @param clz 当前类Class
+     * @param clz     当前类Class
      */
-    AbstractLogWrite(CommonConf conf, String queueID, Class clz){
+    AbstractLogWrite(CommonConf conf, String queueID, Class clz) {
         LOG = Logger.getLogger(clz);
         this.queueID = queueID;
         this.newLine = System.getProperty("line.separator");
@@ -115,6 +118,7 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     private long getLastCount(String currentLogFile) {
         try {
+            System.out.println("***********:"+currentLogFile);
             RandomAccessFile raf = new RandomAccessFile(currentLogFile, "r");
             long length = raf.length();
             long position = length - 1;
@@ -157,7 +161,7 @@ abstract class AbstractLogWrite implements LogWriter {
     private String getLastLogFile(String currentDir) {
         File file = new File(currentDir);
         String[] fileArray = file.list();
-        if (fileArray != null) {
+        if (fileArray != null&&fileArray.length>0) {
             Arrays.sort(fileArray);
             if (fileArray.length == 1 && Objects.equals(fileArray[0], this.currentFile)) {
                 return this.currentFile;
@@ -201,8 +205,9 @@ abstract class AbstractLogWrite implements LogWriter {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            oldFile.renameTo(newFile);
+            // TODO: 2018-1-29
             action(event);
+            oldFile.renameTo(newFile);
         } else {
             action(event);
         }
