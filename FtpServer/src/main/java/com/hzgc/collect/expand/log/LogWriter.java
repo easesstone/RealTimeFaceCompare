@@ -13,7 +13,7 @@ public interface LogWriter {
      *
      * @param event 日志信息
      */
-    void countCheck(LogEvent event);
+    void countCheckAndWrite(LogEvent event);
 
     /**
      * 写日志操作，使用追加的方法

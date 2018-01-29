@@ -236,7 +236,7 @@ abstract class AbstractLogWrite implements LogWriter {
     }
 
     @Override
-    public void countCheck(LogEvent event) {
+    public void countCheckAndWrite(LogEvent event) {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
