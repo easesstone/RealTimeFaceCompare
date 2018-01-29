@@ -24,10 +24,10 @@ public class RowsListFactory {
     //有参构造函数，传入需要处理的某个process文件路径
     public RowsListFactory(String processFileDir){
         //调用FileUtil中的方法，获取process文件对应的receive文件
-        receiveFileDir = fileUtil.getRecFileFromProFile(processFileDir);
-        setAllDiffRows(processFileDir);
-        setNotProRows();
-        setErrProRows();
+        this.receiveFileDir = fileUtil.getRecFileFromProFile(processFileDir);
+        this.setAllDiffRows(processFileDir);
+        this.setNotProRows();
+        this.setErrProRows();
     }
 
     /**
