@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * 此对象为抽象类，实现了LogWriter接口，并在其中定义了如下成员：
@@ -131,9 +132,15 @@ abstract class AbstractLogWrite implements LogWriter {
                     raf.seek(0);
                 }
                 byte[] bytes = new byte[(int) (length - position)];
+                raf.read(bytes);
                 String json = new String(bytes);
-                LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
-                return event.getCount();
+                if (json.trim().length() > 0) {
+                    LogEvent event = JSONHelper.toObject(json.trim(), LogEvent.class);
+                    return event.getCount();
+                } else {
+                    return 1;
+                }
+
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
@@ -152,9 +159,13 @@ abstract class AbstractLogWrite implements LogWriter {
         String[] fileArray = file.list();
         if (fileArray != null) {
             Arrays.sort(fileArray);
-            return fileArray[fileArray.length - 1];
+            if (fileArray.length == 1 && Objects.equals(fileArray[0], this.currentFile)) {
+                return this.currentFile;
+            } else {
+                return fileArray[fileArray.length - 1];
+            }
         } else {
-            return "";
+            return this.currentFile;
         }
     }
 
