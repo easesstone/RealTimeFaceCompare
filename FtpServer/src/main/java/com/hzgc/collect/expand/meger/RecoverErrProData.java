@@ -3,7 +3,7 @@ package com.hzgc.collect.expand.meger;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.ProducerOverFtp;
+import com.hzgc.collect.expand.processer.KafkaProducer;
 import org.apache.log4j.Logger;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -77,22 +77,24 @@ public class RecoverErrProData {
 
                             //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                             FaceObject faceObject = GetFaceObject.getFaceObject(row);
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                            boolean success = sendDataToKafka.isSuccessToKafka();
+                            if (faceObject != null) {
+                                SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
+                                sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+                                boolean success = sendDataToKafka.isSuccessToKafka();
 
-                            //并向对应的merge/process/processFile中写入日志记录（发送kafka是否成功）
-                            LOG.info("Write log queueID is" + queueID + "" + processFile);
-                            //根据processFile的日志路径，获取对应mergeProcessFile的日志路径
-                            String mergeProFilePath = fileUtil.getMergeProFilePath(processFile);
-                            //若未发送成功，不修改这行数据记录的状态（原本记录的状态为发送失败），写入merge/process的日志记录
-                            if (!success) {
-                                //将errProFiles中每一条数据，写入到该日志
-                                fileUtil.writeMergeFile(row, mergeProFilePath);
-                            } else {
-                                //若发送成功，修改这行数据记录的状态为发送成功，写入merge/process的日志记录
-                                String rowAftSuc = row.substring(row.split(SPLIT)[3].indexOf(":\"")) + "1\"";
-                                fileUtil.writeMergeFile(rowAftSuc, mergeProFilePath);
+                                //并向对应的merge/process/processFile中写入日志记录（发送kafka是否成功）
+                                LOG.info("Write log queueID is" + queueID + "" + processFile);
+                                //根据processFile的日志路径，获取对应mergeProcessFile的日志路径
+                                String mergeProFilePath = fileUtil.getMergeProFilePath(processFile);
+                                //若未发送成功，不修改这行数据记录的状态（原本记录的状态为发送失败），写入merge/process的日志记录
+                                if (!success) {
+                                    //将errProFiles中每一条数据，写入到该日志
+                                    fileUtil.writeMergeFile(row, mergeProFilePath);
+                                } else {
+                                    //若发送成功，修改这行数据记录的状态为发送成功，写入merge/process的日志记录
+                                    String rowAftSuc = row.substring(row.split(SPLIT)[3].indexOf(":\"")) + "1\"";
+                                    fileUtil.writeMergeFile(rowAftSuc, mergeProFilePath);
+                                }
                             }
                         }
                     }
@@ -134,20 +136,28 @@ public class RecoverErrProData {
                         if (mergeErrProFiles != null && mergeErrProFiles.size() == 0){
                             for (int k = 0; k < mergeErrProFiles.size() ; k++) {
                                 String row = mergeErrProFiles.get(k);
+
+                                //按分隔符切分每一条记录，记录格式为：
+                                //"count":0, "url":"ftp://s100:/2018/01/09", "timestamp":"2018-01-02", "status":"0"
+                                String splits[] = mergeErrProFiles.get(k).split(SPLIT);
+                                //获取处理出错的数据的ftpUrl：例如ftp://s100:/2018/01/09
+                                String ftpUrl = splits[1].substring(splits[1].indexOf(":") + 2, splits[1].lastIndexOf("\""));
                                 //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                                 FaceObject faceObject = GetFaceObject.getFaceObject(row);
-                                SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                                sendDataToKafka.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
-                                boolean success = sendDataToKafka.isSuccessToKafka();
+                                if (faceObject != null) {
+                                    SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
+                                    sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+                                    boolean success = sendDataToKafka.isSuccessToKafka();
 
-                                //并覆盖对应的merge/process/processFile日志记录（发送kafka是否成功）
-                                //若未发送成功，不修改这行数据记录的状态（原本记录的状态为发送失败），覆盖merge/process的日志记录
-                                if (!success) {
-                                    fileUtil.writeMergeFile(row, mergeProcessFile);
-                                } else {
-                                    //若发送成功，修改这行数据记录的状态为发送成功，覆盖merge/process的日志记录
-                                    String rowAftSuc = row.substring(row.split(SPLIT)[3].indexOf(":\"")) + "1\"";
-                                    fileUtil.writeMergeFile(rowAftSuc, mergeProcessFile);
+                                    //并覆盖对应的merge/process/processFile日志记录（发送kafka是否成功）
+                                    //若未发送成功，不修改这行数据记录的状态（原本记录的状态为发送失败），覆盖merge/process的日志记录
+                                    if (!success) {
+                                        fileUtil.writeMergeFile(row, mergeProcessFile);
+                                    } else {
+                                        //若发送成功，修改这行数据记录的状态为发送成功，覆盖merge/process的日志记录
+                                        String rowAftSuc = row.substring(row.split(SPLIT)[3].indexOf(":\"")) + "1\"";
+                                        fileUtil.writeMergeFile(rowAftSuc, mergeProcessFile);
+                                    }
                                 }
 
                                 //对比/opt/logdata/merge/receive/r-0/000000000001.log  和 /opt/logdata/merge/receive/r-0/000000000001.log
