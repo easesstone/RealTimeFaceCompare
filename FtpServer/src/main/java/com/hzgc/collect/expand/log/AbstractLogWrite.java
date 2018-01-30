@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**
@@ -79,9 +81,9 @@ abstract class AbstractLogWrite implements LogWriter {
         File logDir = new File(this.currentDir);
         if (!logDir.exists() || logDir.list() == null) {
             logDir.mkdirs();
-            this.count = 1;
+            this.count = 0;
         } else if (logDir.length() == 0) {
-            this.count = 1;
+            this.count = 0;
         } else {
             this.count = getLastCount();
         }
@@ -108,6 +110,7 @@ abstract class AbstractLogWrite implements LogWriter {
 
     /**
      * 获取指定文件的最后一行
+     *
      * @param fileName 指定文件名称
      * @return 最后一行名称
      */
@@ -207,7 +210,7 @@ abstract class AbstractLogWrite implements LogWriter {
         } else {
             LOG.info("Directory " + this.currentDir + " is not exists or empty, so queue id is "
                     + this.queueID + ", count is 1");
-            return 1;
+            return 0;
         }
     }
 
@@ -219,9 +222,11 @@ abstract class AbstractLogWrite implements LogWriter {
     @Override
     public void action(LogEvent event) {
         FileWriter fw = null;
+        countCheckAndWrite(event);
         try {
             fw = new FileWriter(this.currentFile, true);
-            event.setCount(this.count++);
+            this.count++;
+            event.setCount(this.count);
             fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
@@ -243,10 +248,10 @@ abstract class AbstractLogWrite implements LogWriter {
         if (this.count % this.logSize == 0) {
             File oldFile = new File(this.currentFile);
             File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            action(event);
             oldFile.renameTo(newFile);
+            //action(event);
         } else {
-            action(event);
+            //action(event);
         }
 
     }
