@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.meger;
+package com.hzgc.collect.expand.merge;
 
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.util.JSONHelper;

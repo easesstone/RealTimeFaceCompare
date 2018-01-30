@@ -1,6 +1,4 @@
-package com.hzgc.collect.expand.meger;
-
-import org.apache.kafka.common.protocol.types.Field;
+package com.hzgc.collect.expand.merge;
 
 import java.util.List;
 

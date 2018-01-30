@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.meger;
+package com.hzgc.collect.expand.merge;
 
 import java.util.List;
 

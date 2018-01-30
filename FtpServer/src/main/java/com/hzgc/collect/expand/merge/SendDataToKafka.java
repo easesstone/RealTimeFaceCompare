@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.meger;
+package com.hzgc.collect.expand.merge;
 
 import com.codahale.metrics.Counter;
 import com.hzgc.collect.expand.processer.FaceObject;
