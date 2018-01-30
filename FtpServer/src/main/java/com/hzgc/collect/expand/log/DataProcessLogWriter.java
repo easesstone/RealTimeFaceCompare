@@ -12,7 +12,7 @@ public class DataProcessLogWriter extends AbstractLogWrite {
         super.currentDir = conf.getProcessLogDir() + "/" + "process-" + super.queueID + "/";
         super.currentFile = super.currentDir + super.logName;
         super.prepare();
-        LOG.info("Init DataProcessLogWriter successfull [" + queueID + ":" + super.queueID
+        LOG.info("Init DataProcessLogWriter successfull [queueID:" + super.queueID
                 + ", count:" + count
                 + ", LogName:" + super.logName
                 + ", LogSize:" + super.logSize

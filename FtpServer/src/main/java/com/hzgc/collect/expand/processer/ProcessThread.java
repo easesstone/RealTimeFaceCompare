@@ -40,7 +40,7 @@ public class ProcessThread implements Runnable {
                     kafka.sendKafkaMessage(KafkaProducer.getFEATURE()
                             , FtpUtils.getFtpUrl(event.getPath())
                             , faceObject);
-                    writer.writeEvent(event);
+                    writer.countCheckAndWrite(event);
                 }
             }
         } catch (InterruptedException e) {
