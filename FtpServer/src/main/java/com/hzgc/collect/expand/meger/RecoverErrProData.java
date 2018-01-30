@@ -83,7 +83,8 @@ public class RecoverErrProData implements Runnable {
                     fileUtil.deleteFile(processFile);
                 } else { //若processFile文件对应的receiveFile存在，则获取处理出错的数据
                     //获取队列ID
-                    String queueID = processFile.substring(processFile.lastIndexOf("-") + 1, processFile.lastIndexOf("/"));
+                    String queueID = processFile.substring(processFile.lastIndexOf("-") + 1,
+                                                                                processFile.lastIndexOf("/"));
                     //初始化RowsListFactory工厂类
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);
                     //调用getErrProRows()方法，取出processFile和receiveFile中处理出错的数据
@@ -203,10 +204,12 @@ public class RecoverErrProData implements Runnable {
                                 List<String> mergeErrProFilesV2 = rowsListFactoryV3.getErrProRows();
                                 //若列表为空，则删除这两个文件。若不为空，不进行处理，退出程序。
                                 if (mergeErrProFilesV2 == null || mergeErrProFilesV2.size() == 0) {
-                                    LOG.info("There is no error data in " + mergeProcessFile + " and " + mergeReceiveFile + ", delete these two files！");
+                                    LOG.info("There is no error data in " + mergeProcessFile + " and "
+                                            + mergeReceiveFile + ", delete these two files！");
                                     fileUtil.deleteFile(mergeProcessFile, mergeReceiveFile);
                                 } else { //do nothing
-                                    LOG.warn("Waiting for next time to handle the error data in " + mergeProcessFile + ", exit program!");
+                                    LOG.warn("Waiting for next time to handle the error data in "
+                                            + mergeProcessFile + ", exit program!");
                                 }
                             }
                         } else { //若mergeErrProFiles中无内容

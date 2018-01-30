@@ -319,7 +319,7 @@ public class FileUtil {
      * @return 文件所在文件夹路径
      */
     private String getFolderPathFromFile(String filePath) {
-        String fileName = filePath.substring(filePath.lastIndexOf("\\"));
+        String fileName = filePath.substring(filePath.lastIndexOf("/"));
         return filePath.replace(fileName, "");
     }
 
