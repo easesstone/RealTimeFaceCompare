@@ -5,6 +5,9 @@ import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**
@@ -111,9 +114,10 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     @Override
     public String getLastLine(String fileName) {
+        RandomAccessFile raf = null;
         try {
             String tempFile = this.currentDir + fileName;
-            RandomAccessFile raf = new RandomAccessFile(tempFile, "r");
+            raf = new RandomAccessFile(tempFile, "r");
             LOG.info("Start get last line from " + tempFile);
             long length = raf.length();
             long position = length - 1;
@@ -159,6 +163,14 @@ abstract class AbstractLogWrite implements LogWriter {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return "";
     }
@@ -176,37 +188,40 @@ abstract class AbstractLogWrite implements LogWriter {
         if (dirList != null && dirList.length > 0) {
             if (defaultFile.exists()) {
                 String countLine = getLastLine(defaultFile.getName());
-                if (countLine.length() == 0 && dirList.length == 1) {
+                if (countLine.length() > 0) {
+                    LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
+                    return event.getCount() + 1;
+                } else if (dirList.length == 1) {
                     LOG.info("Get count from " + this.currentFile
-                            + ", but the file content is null, so queue id is "
-                            + this.queueID + ", count is 1");
+                                    + ", but the file content is null, so queue id is "
+                                    + this.queueID + ", count is 1");
                     return 1;
                 } else {
                     LOG.info("Default log file" + this.currentFile
-                            + " is exists, but can not get count from it, so get count from other log file, " +
-                            "start check other log file and sort by file name");
+                                    + " is exists, but can not get count from it, so get count from other log file, " +
+                                    "start check other log file and sort by file name");
                     Arrays.sort(dirList);
                     LOG.info("Sort result is " + Arrays.toString(dirList));
                     String countFile = dirList[dirList.length - 1];
                     countLine = getLastLine(countFile);
-                    LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                    LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                     LOG.info("Get count from " + countFile
-                            + ", queue is is " + this.queueID
-                            + ", count is " + event.getCount());
+                                    + ", queue is " + this.queueID
+                                    + ", count is " + event.getCount());
                     return event.getCount() + 1;
                 }
             } else {
                 LOG.info("Default log file "
-                        + this.currentFile
-                        + "is not exists, start check other log file and sort by file name");
+                                + this.currentFile
+                                + "is not exists, start check other log file and sort by file name");
                 Arrays.sort(dirList);
                 LOG.info("Sort result is " + Arrays.toString(dirList));
                 String countFile = dirList[dirList.length - 1];
                 String countLine = getLastLine(countFile);
-                LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                 LOG.info("Get count from " + countFile
-                        + ", queue is is " + this.queueID
-                        + ", count is " + event.getCount());
+                                + ", queue is is " + this.queueID
+                                + ", count is " + event.getCount());
                 return event.getCount() + 1;
             }
         } else {
@@ -221,8 +236,7 @@ abstract class AbstractLogWrite implements LogWriter {
      *
      * @param event 封装的日志信息
      */
-    @Override
-    public void action(LogEvent event) {
+    private void action(LogEvent event) {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
@@ -245,19 +259,20 @@ abstract class AbstractLogWrite implements LogWriter {
 
     @Override
     public void countCheckAndWrite(LogEvent event) {
+        Path oldFile;
+        Path newFile;
         if (this.count % this.logSize == 0) {
-            File oldFile = new File(this.currentFile);
-            File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            action(event);
-            oldFile.renameTo(newFile);
             try {
-                oldFile.createNewFile();
+                oldFile = Paths.get(this.currentFile);
+                newFile = Paths.get(currentDir + logNameUpdate(this.logName, count));
+                action(event);
+                Files.move(oldFile, newFile);
+                Files.createFile(oldFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             action(event);
         }
-
     }
 }
