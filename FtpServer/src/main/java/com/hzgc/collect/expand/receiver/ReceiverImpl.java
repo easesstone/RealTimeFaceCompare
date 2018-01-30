@@ -30,7 +30,7 @@ public class ReceiverImpl implements Receiver {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            /*receiveWriter.writeEvent(event);*/
+            receiveWriter.countCheckAndWrite(event);
         }
     }
 
