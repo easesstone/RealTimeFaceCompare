@@ -40,10 +40,10 @@ public class CommonConf {
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
-        this.capacity = Integer.valueOf(ClusterOverFtpProperHelper.getCapacity());
+        this.capacity = ClusterOverFtpProperHelper.getCapacity();
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();
         this.processLogDir = ClusterOverFtpProperHelper.getProcessLogDir();
-        this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());
+        this.receiveNumber = ClusterOverFtpProperHelper.getReceiveNumber();
     }
 
     /**

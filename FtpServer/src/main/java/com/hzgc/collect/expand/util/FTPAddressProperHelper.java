@@ -2,6 +2,8 @@ package com.hzgc.collect.expand.util;
 
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -23,19 +25,34 @@ public class FTPAddressProperHelper extends ProperHelper{
 
     static {
         String properName = "ftpAddress.properties";
+        FileInputStream in = null;
         try {
-            props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
-            log.info("Load configuration for ftp Server from ./conf/ftpAddress.properties");
+            File file = FileUtil.loadResourceFile(properName);
+            if (file != null) {
+                in = new FileInputStream(file);
+                props.load(in);
+                log.info("Load configuration for ftp Server from ./conf/ftpAddress.properties");
 
-            setIp();
-            setPort();
-            setUser();
-            setPassword();
-            setPathRule();
-
+                setIp();
+                setPort();
+                setUser();
+                setPassword();
+                setPathRule();
+            } else {
+                log.error("The property file " + properName + "doesn't exist!");
+                System.exit(1);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Catch an unknown error, can't load the configuration file" + properName);
+        } finally {
+            if (in != null){
+                try {
+                    in.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -62,19 +79,19 @@ public class FTPAddressProperHelper extends ProperHelper{
         pathRule = verifyCommonValue("pathRule","%f/%Y/%m/%d/%H", props, log);
     }
 
+
     /**
      * get方法。提供获取配置文件中的值的方法。
      */
 
     public static String getIp() {
         log.info("Load the configuration ip, the value is \"" + ip + "\"");
-        System.out.println(ip);
         return ip;
     }
 
-    public static String getPort() {
+    public static Integer getPort() {
         log.info("Load the configuration port, the value is \"" + port + "\"");
-        return port;
+        return Integer.valueOf(port);
     }
 
     public static String getUser() {
@@ -91,4 +108,13 @@ public class FTPAddressProperHelper extends ProperHelper{
         log.info("Load the configuration pathRule, the value is \"" + pathRule + "\"");
         return pathRule;
     }
+
+    /**
+     * 获取Properties属性的资源文件变量
+     */
+    public static Properties getProps(){
+        log.info("Load configuration file ./conf/ftpAddress.properties：" + props);
+        return props;
+    }
+
 }

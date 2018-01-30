@@ -3,6 +3,7 @@ package com.hzgc.collect.expand.util;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -20,17 +21,32 @@ public class RocketMQProperHelper extends ProperHelper{
 
     static {
         String properName = "rocketmq.properties";
+        FileInputStream in = null;
         try {
-            props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
-            log.info("Load configuration for ftp server from ./conf/rocketmq.properties");
+            File file = FileUtil.loadResourceFile(properName);
+            if (file != null) {
+                in = new FileInputStream(file);
+                props.load(in);
+                log.info("Load configuration for ftp server from ./conf/rocketmq.properties");
 
-            setAddress();
-            setTopic();
-            setGroup();
-
+                setAddress();
+                setTopic();
+                setGroup();
+            } else {
+                log.error("The property file " + properName + "doesn't exist!");
+                System.exit(1);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Catch an unknown error, can't load the configuration file" + properName);
+        } finally {
+            if (in != null){
+                try {
+                    in.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -66,6 +82,14 @@ public class RocketMQProperHelper extends ProperHelper{
     public static String getGroup() {
         log.info("Load the configuration group, the value is \"" + group + "\"");
         return group;
+    }
+
+    /**
+     * 获取Properties属性的资源文件变量
+     */
+    public static Properties getProps(){
+        log.info("Load configuration file ./conf/rocketmq.properties：" + props);
+        return props;
     }
 
 }

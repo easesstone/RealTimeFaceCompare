@@ -46,8 +46,7 @@ abstract class ProperHelper {
                 }
             }
             else {
-                log.error("The key " + key + " does not exist in the configuration file, please check it.");
-                System.exit(1);
+                log.warn("The key " + key + " does not exist in the configuration file, please check it.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,8 +111,7 @@ abstract class ProperHelper {
                 }
             }
             else {
-                log.error("The key " + key + " does not exist in the configuration file, please check it.");
-                System.exit(1);
+                log.warn("The key " + key + " does not exist in the configuration file, please check it.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -193,8 +191,7 @@ abstract class ProperHelper {
                 }
             }
             else {
-                log.error("The key " + key + " does not exist in the configuration file, please check it.");
-                System.exit(1);
+                log.warn("The key " + key + " does not exist in the configuration file, please check it.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -248,8 +245,7 @@ abstract class ProperHelper {
                 }
             }
             else {
-                log.error("The key " + portKey + " does not exist in the configuration file, please check it.");
-                System.exit(1);
+                log.warn("The key " + portKey + " does not exist in the configuration file, please check it.");
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -292,8 +288,7 @@ abstract class ProperHelper {
                 }
             }
             else {
-                log.error("The key " + key + " does not exist in the configuration file, please check it.");
-                System.exit(1);
+                log.warn("The key " + key + " does not exist in the configuration file, please check it.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -314,33 +309,37 @@ abstract class ProperHelper {
     static String verifyPositiveIntegerValue(String key, String defaultValue, Properties props, Logger log){
         String returnValue = null;
         try {
-            Boolean isValueEmpty = props.getProperty(key).isEmpty();
-            //若未设置，设置为默认值
-            if (isValueEmpty) {
-                log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
-                returnValue = defaultValue;
-            }
-            else {
-                String valueFromKey = props.getProperty(key);
-                if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+            if (props.containsKey(key)) {
+                Boolean isValueEmpty = props.getProperty(key).isEmpty();
+                //若未设置，设置为默认值
+                if (isValueEmpty) {
                     log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
                     returnValue = defaultValue;
+                } else {
+                    String valueFromKey = props.getProperty(key);
+                    if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+                        log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+                        returnValue = defaultValue;
+                    }
+                    //判断是否是整数
+                    else if (!isValueInteger(valueFromKey)) {
+                        log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer.");
+                        System.exit(1);
+                    }
+                    //判断是否大于0
+                    else if (Integer.parseInt(valueFromKey) <= 0) {
+                        log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer and larger than 0.");
+                        System.exit(1);
+                    }
+                    //值符合条件，加载
+                    else {
+                        log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
+                        returnValue = valueFromKey;
+                    }
                 }
-                //判断是否是整数
-                else if (!isValueInteger(valueFromKey)) {
-                    log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer.");
-                    System.exit(1);
-                }
-                //判断是否大于0
-                else if (Integer.parseInt(valueFromKey) <= 0) {
-                    log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer and larger than 0.");
-                    System.exit(1);
-                }
-                //值符合条件，加载
-                else {
-                    log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                    returnValue = valueFromKey;
-                }
+            }
+            else {
+                log.warn("The key " + key + " does not exist in the configuration file, please check it.");
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -361,28 +360,29 @@ abstract class ProperHelper {
     static String verifyIntegerValue(String key, String defaultValue, Properties props, Logger log){
         String returnValue = null;
         try {
-            Boolean isValueEmpty = props.getProperty(key).isEmpty();
-            //若未设置，设置为默认值
-            if (isValueEmpty) {
-                log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
-                returnValue = defaultValue;
-            }
-            else {
-                String valueFromKey = props.getProperty(key);
-                if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+            if (props.containsKey(key)) {
+                Boolean isValueEmpty = props.getProperty(key).isEmpty();
+                //若未设置，设置为默认值
+                if (isValueEmpty) {
                     log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
                     returnValue = defaultValue;
+                } else {
+                    String valueFromKey = props.getProperty(key);
+                    if (valueFromKey == null || Objects.equals(valueFromKey, "")) {
+                        log.warn("The value of " + key + " haven't been set, set it to \"" + defaultValue + "\"");
+                        returnValue = defaultValue;
+                    }
+                    //判断是否是整数
+                    else if (!isValueInteger(valueFromKey)) {
+                        log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer.");
+                        System.exit(1);
+                    } else { //值符合条件，加载
+                        log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
+                        returnValue = valueFromKey;
+                    }
                 }
-                //判断是否是整数
-                else if (!isValueInteger(valueFromKey)) {
-                    log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer.");
-                    System.exit(1);
-                }
-                //值符合条件，加载
-                else {
-                    log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                    returnValue = valueFromKey;
-                }
+            } else {
+                log.warn("The key " + key + " does not exist in the configuration file, please check it.");
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
