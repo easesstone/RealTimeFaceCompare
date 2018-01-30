@@ -188,42 +188,45 @@ abstract class AbstractLogWrite implements LogWriter {
         if (dirList != null && dirList.length > 0) {
             if (defaultFile.exists()) {
                 String countLine = getLastLine(defaultFile.getName());
-                if (countLine.length() == 0 && dirList.length == 1) {
+                if (countLine.length() > 0) {
+                    LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
+                    return event.getCount() + 1;
+                } else if (dirList.length == 1) {
                     LOG.info("Get count from " + this.currentFile
-                            + ", but the file content is null, so queue id is "
-                            + this.queueID + ", count is 1");
+                                    + ", but the file content is null, so queue id is "
+                                    + this.queueID + ", count is 1");
                     return 1;
                 } else {
                     LOG.info("Default log file" + this.currentFile
-                            + " is exists, but can not get count from it, so get count from other log file, " +
-                            "start check other log file and sort by file name");
+                                    + " is exists, but can not get count from it, so get count from other log file, " +
+                                    "start check other log file and sort by file name");
                     Arrays.sort(dirList);
                     LOG.info("Sort result is " + Arrays.toString(dirList));
                     String countFile = dirList[dirList.length - 1];
                     countLine = getLastLine(countFile);
-                    LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                    LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                     LOG.info("Get count from " + countFile
-                            + ", queue is:" + this.queueID
-                            + ", count is:" + event.getCount());
+                                    + ", queue is " + this.queueID
+                                    + ", count is " + event.getCount());
                     return event.getCount() + 1;
                 }
             } else {
                 LOG.info("Default log file "
-                        + this.currentFile
-                        + "is not exists, start check other log file and sort by file name");
+                                + this.currentFile
+                                + "is not exists, start check other log file and sort by file name");
                 Arrays.sort(dirList);
                 LOG.info("Sort result is " + Arrays.toString(dirList));
                 String countFile = dirList[dirList.length - 1];
                 String countLine = getLastLine(countFile);
-                LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                 LOG.info("Get count from " + countFile
-                        + ", queue is:" + this.queueID
-                        + ", count is:" + event.getCount());
+                                + ", queue is is " + this.queueID
+                                + ", count is " + event.getCount());
                 return event.getCount() + 1;
             }
         } else {
-            LOG.info("Directory " + this.currentDir + " is not exists or empty, so queue id is:"
-                    + this.queueID + ", count is:1");
+            LOG.info("Directory " + this.currentDir + " is not exists or empty, so queue id is "
+                    + this.queueID + ", count is 1");
             return 1;
         }
     }
