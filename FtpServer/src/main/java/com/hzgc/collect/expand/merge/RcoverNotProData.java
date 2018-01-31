@@ -69,7 +69,7 @@ public class RcoverNotProData {
                                 }
                                 logEvent.setCount(count);
                                 logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
-                                dataProcessLogWriter.writeEvent(logEvent);
+                                dataProcessLogWriter.countCheckAndWrite(logEvent);
                                 recoverSuccess = true;
                             }
                         }
