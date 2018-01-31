@@ -28,7 +28,6 @@ public class FindDiffRows {
         String row;
         if (allRows == null || allRows.size() == 0) {
             LOG.warn("The unionAllRows size is None");
-            return notProList;
         } else if (allRows.size() == 1) {
             LOG.info("The unionAllRows size is OnlyOne");
             LogEvent eventState = JSONHelper.toObject(allRows.get(0), LogEvent.class);
@@ -36,7 +35,6 @@ public class FindDiffRows {
             if (processState.equals("0")) {
                 notProList.add(allRows.get(0));
             }
-            return notProList;
         } else {
             Collections.sort(allRows);
             for (int i = 1; i <= allRows.size() - 2; i++) {
@@ -64,9 +62,8 @@ public class FindDiffRows {
             if (lastEventCount.getCount() != eventCount.getCount()) {
                 notProList.add(allRows.get(allRows.size() - 1));
             }
-            return notProList;
         }
-
+        return notProList;
     }
 
     /**
@@ -80,7 +77,6 @@ public class FindDiffRows {
         String tmp;
         if (allRows == null || allRows.size() == 0) {
             LOG.warn("The unionAllRows size is None");
-            return failList;
         } else {
             Collections.sort(allRows);
             for (String allRow : allRows) {
@@ -91,8 +87,8 @@ public class FindDiffRows {
                     failList.add(allRow);
                 }
             }
-            return failList;
         }
+        return failList;
     }
 
 

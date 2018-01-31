@@ -139,7 +139,14 @@ public class FileUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return allContentList;
+        List<String> rows = new ArrayList<>();
+        for (String row : allContentList) {
+            String tmp = row.trim();
+            if (tmp != null && !"".equals(tmp)) {
+                rows.add(tmp);
+            }
+        }
+        return rows;
     }
 
     /**
