@@ -113,4 +113,3 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         return receiveNumber;
     }
 }
-

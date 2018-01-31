@@ -17,15 +17,15 @@ import java.util.Properties;
 
 public class KafkaProducer implements Serializable {
     private static Logger LOG = Logger.getLogger(KafkaProducer.class);
-    private static org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
+    protected static org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
     private static String FEATURE = "feature";
 
     private static MetricRegistry metric = new MetricRegistry();
-    private final static Counter counter = metric.counter("sendKafkaCount");
+    protected final static Counter counter = metric.counter("sendKafkaCount");
 
-    KafkaProducer() {
+    protected KafkaProducer() {
         try {
             File file = FileUtil.loadResourceFile("producer-over-ftp.properties");
             if (file != null) {
