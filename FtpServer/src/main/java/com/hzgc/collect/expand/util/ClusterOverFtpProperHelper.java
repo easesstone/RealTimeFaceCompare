@@ -3,6 +3,7 @@ package com.hzgc.collect.expand.util;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -15,6 +16,7 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     private static Logger log = Logger.getLogger(ClusterOverFtpProperHelper.class);
     private static Properties props = new Properties();
     private static String port;
+    private static String dataPorts;
     private static String implicitSsl;
     private static String threadNum;
     private static String capacity;
@@ -24,21 +26,37 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
 
     static {
         String properName = "cluster-over-ftp.properties";
+        FileInputStream in = null;
         try {
-            props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
-            log.info("Load configuration for ftp server from ./conf/cluster-over-ftp.properties");
+            File file = FileUtil.loadResourceFile(properName);
+            if (file != null) {
+                in = new FileInputStream(file);
+                props.load(in);
+                log.info("Load configuration for ftp server from ./conf/cluster-over-ftp.properties");
 
-            setPort();
-            setImplicitSsl();
-            setThreadNum();
-            setCapacity();
-            setReceiveLogDir();
-            setProcessLogDir();
-            setReceiveNumber();
-
+                setPort();
+                setDataPorts();
+                setImplicitSsl();
+                setThreadNum();
+                setCapacity();
+                setReceiveLogDir();
+                setProcessLogDir();
+                setReceiveNumber();
+            } else {
+                log.error("The property file " + properName + "doesn't exist!");
+                System.exit(1);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Catch an unknown error, can't load the configuration file" + properName);
+        } finally {
+            if (in != null){
+                try {
+                    in.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -50,6 +68,10 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         port = verifyPort("listener-port", "2121", props, log);
     }
 
+    private static void setDataPorts() {
+        dataPorts = verifyCommonValue("data-ports", "2223-2225", props, log);
+    }
+
     private static void setImplicitSsl() {
         implicitSsl = verifyBooleanValue("implicitSsl", "false", props, log);
     }
@@ -58,44 +80,49 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         threadNum = verifyPositiveIntegerValue("thread.number", "3", props, log);
     }
 
-    private static String setCapacity() {
-        return capacity = verifyPositiveIntegerValue("capacity", String.valueOf(Integer.MAX_VALUE), props, log);
+    private static void setCapacity() {
+        capacity = verifyPositiveIntegerValue("capacity", String.valueOf(Integer.MAX_VALUE), props, log);
     }
 
-    private static String setReceiveLogDir() {
-        return receiveLogDir = verifyCommonValue("receiveLogDir", "/opt/", props, log);
+    private static void setReceiveLogDir() {
+        receiveLogDir = verifyCommonValue("receiveLogDir", "/opt/", props, log);
     }
 
-    private static String setProcessLogDir() {
-        return processLogDir = verifyCommonValue("processLogDir", "/opt/", props, log);
+    private static void setProcessLogDir() {
+        processLogDir = verifyCommonValue("processLogDir", "/opt/", props, log);
     }
 
-    private static String setReceiveNumber() {
-        return receiveNumber = verifyCommonValue("receiveNumber", String.valueOf(0), props, log);
+    private static void setReceiveNumber() {
+        receiveNumber = verifyCommonValue("receiveNumber", String.valueOf(0), props, log);
     }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
      */
 
-    public static String getPort() {
+    public static Integer getPort() {
         log.info("Load the configuration listener-port, the value is \"" + port + "\"");
-        return port;
+        return Integer.valueOf(port);
     }
 
-    public static String getImplicitSsl() {
+    public static String getDataPorts() {
+        log.info("Load the configuration data-ports, the value is \"" + dataPorts + "\"");
+        return dataPorts;
+    }
+
+    public static Boolean getImplicitSsl() {
         log.info("Load the configuration implicitSsl, the value is \"" + implicitSsl + "\"");
-        return implicitSsl;
+        return Boolean.valueOf(implicitSsl);
     }
 
-    public static String getThreadNum() {
+    public static Integer getThreadNum() {
         log.info("Load the configuration thread.number, the value is \"" + threadNum + "\"");
-        return threadNum;
+        return Integer.valueOf(threadNum);
     }
 
-    public static String getCapacity() {
+    public static Integer getCapacity() {
         log.info("Load the configuration capacity, the value is \"" + capacity + "\"");
-        return capacity;
+        return Integer.valueOf(capacity);
     }
 
     public static String getReceiveLogDir() {
@@ -108,8 +135,16 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         return processLogDir;
     }
 
-    public static String getReceiveNumber() {
+    public static Integer getReceiveNumber() {
         log.info("Load the configuration receiveNumber, the value is \"" + receiveNumber + "\"");
-        return receiveNumber;
+        return Integer.valueOf(receiveNumber);
+    }
+
+    /**
+     * 获取Properties属性的资源文件变量
+     */
+    public static Properties getProps(){
+        log.info("Load configuration file ./conf/cluster-over-ftp.properties：" + props);
+        return props;
     }
 }

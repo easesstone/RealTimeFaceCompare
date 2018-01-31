@@ -1,31 +1,53 @@
 package util;
 
+import com.hzgc.collect.FTP;
 import com.hzgc.collect.expand.util.*;
 import org.junit.Test;
 
 import java.io.IOException;
 
 public class ProperHelperTest {
-	@Test
-	public void clusterOverFtpProperHelperFun() throws IOException {
 
-		HelperFactory.regist();
-		ClusterOverFtpProperHelper.getPort();
-		ClusterOverFtpProperHelper.getImplicitSsl();
-		ClusterOverFtpProperHelper.getThreadNum();
+    public ProperHelperTest() {
+        HelperFactory.regist();
+    }
 
-		FTPAddressProperHelper.getUser();
-		FTPAddressProperHelper.getIp();
+    @Test
+    public void ClusterOverFtpProperHelperTest() {
+        ClusterOverFtpProperHelper.getPort();
+        ClusterOverFtpProperHelper.getDataPorts();
+        ClusterOverFtpProperHelper.getImplicitSsl();
+        ClusterOverFtpProperHelper.getThreadNum();
+        ClusterOverFtpProperHelper.getProps();
+    }
 
-		ProducerOverFtpProperHelper.getBootstrapServers();
-		ProducerOverFtpProperHelper.getClientId();
-		ProducerOverFtpProperHelper.getTopicFeature();
-		ProducerOverFtpProperHelper.getKeySerializer();
+    @Test
+    public void FTPAddressProperHelperTest() {
+        FTPAddressProperHelper.getIp();
+        FTPAddressProperHelper.getPort();
+        FTPAddressProperHelper.getUser();
+        FTPAddressProperHelper.getPassword();
+        FTPAddressProperHelper.getPathRule();
+        FTPAddressProperHelper.getProps();
+    }
 
-		RocketMQProperHelper.getAddress();
-		RocketMQProperHelper.getTopic();
-		RocketMQProperHelper.getGroup();
+    @Test
+    public void ProducerOverFtpProperHelperTest() {
+        ProducerOverFtpProperHelper.getBootstrapServers();
+        ProducerOverFtpProperHelper.getClientId();
+        ProducerOverFtpProperHelper.getRequestRequiredAcks();
+        ProducerOverFtpProperHelper.getRetries();
+        ProducerOverFtpProperHelper.getKeySerializer();
+        ProducerOverFtpProperHelper.getTopicFeature();
+        ProducerOverFtpProperHelper.getProps();
+    }
+
+    @Test
+    public void RocketMQProperHelperTest() {
+        RocketMQProperHelper.getAddress();
+        RocketMQProperHelper.getTopic();
+        RocketMQProperHelper.getGroup();
+    }
 
 
-	}
 }

@@ -3,6 +3,7 @@ package com.hzgc.collect.expand.util;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -25,21 +26,36 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
 
     static {
         String properName = "producer-over-ftp.properties";
+        FileInputStream in = null;
         try {
-            props.load(new FileInputStream(FileUtil.loadResourceFile(properName)));
-            log.info("Load configuration for ftp server from ./conf/producer-over-ftp.properties");
+            File file = FileUtil.loadResourceFile(properName);
+            if (file != null) {
+                in = new FileInputStream(file);
+                props.load(in);
+                log.info("Load configuration for ftp server from ./conf/producer-over-ftp.properties");
 
-            setBootstrapServers();
-            setClientId();
-            setRequestRequiredAcks();
-            setRetries();
-            setKeySerializer();
-            setValueSerializer();
-            setTopicFeature();
-
+                setBootstrapServers();
+                setClientId();
+                setRequestRequiredAcks();
+                setRetries();
+                setKeySerializer();
+                setValueSerializer();
+                setTopicFeature();
+            } else {
+                log.error("The property file " + properName + "doesn't exist!");
+                System.exit(1);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Catch an unknown error, can't load the configuration file" + properName);
+        } finally {
+            if (in != null){
+                try {
+                    in.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -55,7 +71,7 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
     }
 
     private static void setRequestRequiredAcks(){
-        requestRequiredAcks = verifyCommonValue("request.required.acks", "1", props, log);
+        requestRequiredAcks = verifyIntegerValue("request.required.acks", "1", props, log);
     }
 
     private static void setRetries(){
@@ -86,14 +102,14 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
         log.info("Load the configuration client.id, the value is \"" + clientId + "\"");
         return clientId;
     }
-    public static String getRequestRequiredAcks() {
+    public static Integer getRequestRequiredAcks() {
         log.info("Load the configuration request.required.acks, the value is \"" + requestRequiredAcks + "\"");
-        return requestRequiredAcks;
+        return Integer.valueOf(requestRequiredAcks);
     }
 
-    public static String getRetries(){
+    public static Integer getRetries(){
         log.info("Load the configuration retries, the value is \"" + retries + "\"");
-        return retries;
+        return Integer.valueOf(retries);
     }
 
     public static String getKeySerializer(){
@@ -109,6 +125,14 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
     public static String getTopicFeature(){
         log.info("Load the configuration topic-feature, the value is \"" + topicFeature + "\"");
         return topicFeature;
+    }
+
+    /**
+     * 获取Properties属性的资源文件变量
+     */
+    public static Properties getProps(){
+        log.info("Load configuration file ./conf/producer-over-ftp.properties：" + props);
+        return props;
     }
 
 }
