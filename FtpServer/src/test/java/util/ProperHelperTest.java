@@ -17,8 +17,15 @@ public class ProperHelperTest {
         ClusterOverFtpProperHelper.getPort();
         ClusterOverFtpProperHelper.getDataPorts();
         ClusterOverFtpProperHelper.getImplicitSsl();
-        ClusterOverFtpProperHelper.getThreadNum();
         ClusterOverFtpProperHelper.getProps();
+        ClusterOverFtpProperHelper.getMergeLogDir();
+        ClusterOverFtpProperHelper.getSuccessLogDir();
+        ClusterOverFtpProperHelper.getProcessLogDir();
+        ClusterOverFtpProperHelper.getReceiveLogDir();
+        ClusterOverFtpProperHelper.getMergeScanTime();
+        ClusterOverFtpProperHelper.getFaceDetectorNumber();
+        ClusterOverFtpProperHelper.getLogSize();
+        ClusterOverFtpProperHelper.getReceiveQueueCapacity();
     }
 
     @Test
