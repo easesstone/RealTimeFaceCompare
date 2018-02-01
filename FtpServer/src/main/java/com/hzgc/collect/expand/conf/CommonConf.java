@@ -55,7 +55,6 @@ public class CommonConf {
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
-
         this.logSize = ClusterOverFtpProperHelper.getLogSize();
         this.capacity = ClusterOverFtpProperHelper.getReceiveQueueCapacity();
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();
@@ -64,7 +63,6 @@ public class CommonConf {
         this.successLogDir = ClusterOverFtpProperHelper.getSuccessLogDir();
         this.mergeLogDir = ClusterOverFtpProperHelper.getMergeLogDir();
         this.mergeScanTime = ClusterOverFtpProperHelper.getMergeScanTime();
-
     }
 
     /**
