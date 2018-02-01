@@ -29,11 +29,14 @@ LOG_FILE=${LOG_DIR}/create-device-and-dynamic.log
 
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
-cd ../ClusterBuildScripts/conf
-CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
-CONF_HZGC_FILE=$CONF_HZGC_DIR/cluster_conf.properties ### 集群配置文件
+## common 模块根目录
+COMMON_HOME_DIR=${OBJECT_DIR}/common
+## common 模块conf 目录
+COMMON_CONF_DIR=${COMMON_HOME_DIR}/conf
+## project_conf.properties
+PROJECT_CONF_FILE=$COMMON_CONF_DIR/project_conf.properties ### 集群配置文件
 ## 最终安装的根目录，所有bigdata 相关的根目录
-INSTALL_HOME=$(grep Install_HomeDir ${CONF_HZGC_FILE}|cut -d '=' -f2)
+INSTALL_HOME=$(grep Install_HomeDir ${PROJECT_CONF_FILE}|cut -d '=' -f2)
 ## HBASE安装目录
 HBASE_INSTALL_HOME=${INSTALL_HOME}/HBase
 ## HBASE组件的根目录
