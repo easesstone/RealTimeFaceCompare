@@ -18,9 +18,13 @@ cd ..
 SERVICE_DIR=`pwd`
 CONF_DIR=$SERVICE_DIR/conf       ##service根目录
 LIB_DIR=$SERVICE_DIR/lib         ##Jar包目录
-LIB_JARS=`ls $LIB_DIR|grep .jar | grep -v avro-ipc-1.7.7-tests.jar
+LIB_JARS=`ls $LIB_DIR|grep .jar | grep -v avro-ipc-1.7.7-tests.jar \
 | grep -v avro-ipc-1.7.7.jar | grep -v spark-network-common_2.10-1.5.1.jar | \
 awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`   ## jar包位置以及第三方依赖jar包，绝对路径
+cd ../common
+COMMON_DIR=`pwd`
+COMMON_LIB_DIR=$COMMON_DIR/lib
+COMMON_JARS=`ls $COMMON_LIB_DIR | grep .jar | awk '{print "'${COMMON_LIB_DIR}'/"$0}'|tr "\n" ":"`
 LOG_DIR=${SERVICE_DIR}/logs                  ##log日记目录
 LOG_FILE=${LOG_DIR}/dynamicshow-table.log
 
@@ -37,7 +41,7 @@ function start_consumer()
             mkdir $LOG_DIR;
     fi
 
-    java -classpath $CONF_DIR:$LIB_JARS com.hzgc.service.dynamicrepo.CptureNumberImplTimer | tee -a  ${LOG_FILE}
+    java -classpath $CONF_DIR:$LIB_JARS:$COMMON_JARS com.hzgc.service.dynamicrepo.CptureNumberImplTimer | tee -a  ${LOG_FILE}
 }
 #########################################################################
 # 函数名：main

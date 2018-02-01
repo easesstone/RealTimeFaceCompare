@@ -103,8 +103,6 @@ public class CptureNumberImplTimer {
         long addOneHourTime = nowTime + 1000*60*60;
         String addTime = simpleDateFormat.format(addOneHourTime);
         String startTime = addTime.split(":")[0] + ":02:00";
-        System.out.println(rightNow);
-        System.out.println(startTime);
         Date changeTime = null;
         try {
             changeTime = simpleDateFormat.parse(startTime);
