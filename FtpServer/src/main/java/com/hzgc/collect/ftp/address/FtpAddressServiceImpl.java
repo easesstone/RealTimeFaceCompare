@@ -1,5 +1,6 @@
 package com.hzgc.collect.ftp.address;
 
+import com.hzgc.collect.expand.util.FTPAddressProperHelper;
 import com.hzgc.dubbo.address.FtpAddressService;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.util.common.IOUtil;
@@ -8,19 +9,7 @@ import java.io.*;
 import java.util.Properties;
 
 public class FtpAddressServiceImpl implements FtpAddressService, Serializable {
-    private static Properties proper = new Properties();
-
-    public FtpAddressServiceImpl() {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties"));
-            proper.load(fis);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            IOUtil.closeStream(fis);
-        }
-    }
+    private static Properties proper = FTPAddressProperHelper.getProps();
 
     @Override
     public Properties getFtpAddress() {
@@ -37,18 +26,9 @@ public class FtpAddressServiceImpl implements FtpAddressService, Serializable {
     public String getIPAddress(String hostname) {
         String ftpIpAddress = "";
         if (hostname != null && hostname.length() > 0) {
-            Properties properties = new Properties();
-            InputStream inputStream = null;
-            try {
-                inputStream = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-                properties.load(inputStream);
-                ftpIpAddress = properties.getProperty(hostname);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                IOUtil.closeStream(inputStream);
-            }
+            ftpIpAddress = proper.getProperty(hostname);
         }
         return ftpIpAddress;
     }
 }
+

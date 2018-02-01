@@ -16,13 +16,6 @@ public interface LogWriter {
     void countCheckAndWrite(LogEvent event);
 
     /**
-     * 写日志操作，使用追加的方法
-     *
-     * @param event 封装的日志信息
-     */
-    void action(LogEvent event);
-
-    /**
      * 获取最大序号（count）所在的日志文件的绝对路径
      *
      * @return 日志文件的绝对路径

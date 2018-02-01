@@ -1,5 +1,6 @@
 package com.hzgc.collect.ftp.util;
 
+import com.hzgc.collect.expand.util.FTPAddressProperHelper;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.util.common.IOUtil;
 import org.apache.commons.net.ftp.FTP;
@@ -130,20 +131,8 @@ public class FTPDownloadUtils {
             String ftpFileName = path.substring(path.lastIndexOf("/") + 1);
 
             //通过ftpAddress.properties配置文件，ftpUserName、ftpPassword
-            String ftpUserName = "";
-            String ftpPassword = "";
-            Properties properties = new Properties();
-            InputStream inputStream = null;
-            try {
-                inputStream = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-                properties.load(inputStream);
-                ftpUserName = properties.getProperty("user");
-                ftpPassword = properties.getProperty("password");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                IOUtil.closeStream(inputStream);
-            }
+            String ftpUserName = FTPAddressProperHelper.getUser();
+            String ftpPassword = FTPAddressProperHelper.getPassword();
 
             downloadFtpFile(ftpAddress, ftpUserName, ftpPassword, ftpPort, ftpFilePath, ftpFileName, localPath, localFileName);
         }
@@ -166,20 +155,8 @@ public class FTPDownloadUtils {
             String ftpFileName = path.substring(path.lastIndexOf("/") + 1);
 
             //通过ftpAddress.properties配置文件，ftpUserName、ftpPassword
-            String ftpUserName = "";
-            String ftpPassword = "";
-            Properties properties = new Properties();
-            InputStream inputStream = null;
-            try {
-                inputStream = new BufferedInputStream(new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties")));
-                properties.load(inputStream);
-                ftpUserName = properties.getProperty("user");
-                ftpPassword = properties.getProperty("password");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                IOUtil.closeStream(inputStream);
-            }
+            String ftpUserName = FTPAddressProperHelper.getUser();
+            String ftpPassword = FTPAddressProperHelper.getPassword();
 
             FTPClient ftpClient;
             InputStream in;

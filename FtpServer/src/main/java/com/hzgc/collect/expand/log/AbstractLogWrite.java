@@ -3,11 +3,7 @@ package com.hzgc.collect.expand.log;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -198,37 +194,37 @@ abstract class AbstractLogWrite implements LogWriter {
                 if (countLine.length() > 0) {
                     LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                     return event.getCount() + 1;
-                } else if (countLine.length() == 0 && dirList.length == 1) {
+                } else if (dirList.length == 1) {
                     LOG.info("Get count from " + this.currentFile
-                            + ", but the file content is null, so queue id is "
-                            + this.queueID + ", count is 1");
+                                    + ", but the file content is null, so queue id is "
+                                    + this.queueID + ", count is 1");
                     return 1;
                 } else {
                     LOG.info("Default log file" + this.currentFile
-                            + " is exists, but can not get count from it, so get count from other log file, " +
-                            "start check other log file and sort by file name");
+                                    + " is exists, but can not get count from it, so get count from other log file, " +
+                                    "start check other log file and sort by file name");
                     Arrays.sort(dirList);
                     LOG.info("Sort result is " + Arrays.toString(dirList));
                     String countFile = dirList[dirList.length - 1];
                     countLine = getLastLine(countFile);
                     LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                     LOG.info("Get count from " + countFile
-                            + ", queue is " + this.queueID
-                            + ", count is " + event.getCount());
+                                    + ", queue is " + this.queueID
+                                    + ", count is " + event.getCount());
                     return event.getCount() + 1;
                 }
             } else {
                 LOG.info("Default log file "
-                        + this.currentFile
-                        + "is not exists, start check other log file and sort by file name");
+                                + this.currentFile
+                                + "is not exists, start check other log file and sort by file name");
                 Arrays.sort(dirList);
                 LOG.info("Sort result is " + Arrays.toString(dirList));
                 String countFile = dirList[dirList.length - 1];
                 String countLine = getLastLine(countFile);
                 LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                 LOG.info("Get count from " + countFile
-                        + ", queue is is " + this.queueID
-                        + ", count is " + event.getCount());
+                                + ", queue is is " + this.queueID
+                                + ", count is " + event.getCount());
                 return event.getCount() + 1;
             }
         } else {
@@ -243,8 +239,7 @@ abstract class AbstractLogWrite implements LogWriter {
      *
      * @param event 封装的日志信息
      */
-    @Override
-    public void action(LogEvent event) {
+    private void action(LogEvent event) {
         FileWriter fw = null;
         try {
             fw = new FileWriter(this.currentFile, true);
@@ -283,6 +278,5 @@ abstract class AbstractLogWrite implements LogWriter {
         } else {
             action(event);
         }
-
     }
 }

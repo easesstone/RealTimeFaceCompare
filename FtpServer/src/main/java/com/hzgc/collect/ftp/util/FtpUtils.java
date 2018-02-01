@@ -3,6 +3,7 @@ package com.hzgc.collect.ftp.util;
 import com.hzgc.collect.FTP;
 import com.hzgc.collect.expand.processer.FtpPathMessage;
 import com.hzgc.collect.expand.processer.FtpUrlMessage;
+import com.hzgc.collect.expand.util.FTPAddressProperHelper;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
 
@@ -15,25 +16,10 @@ import java.util.Properties;
 public class FtpUtils implements Serializable {
     private static Logger LOG = Logger.getLogger(FtpUtils.class);
 
-    private static Properties properties = new Properties();
+    private static Properties properties = FTPAddressProperHelper.getProps();
 
     static {
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(FileUtil.loadResourceFile("ftpAddress.properties"));
-            properties.load(in);
-            int ftpServerPort = Integer.parseInt(properties.getProperty("port"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        int ftpServerPort = FTPAddressProperHelper.getPort();
     }
 
     public static boolean checkPort(int checkPort) throws Exception {
@@ -57,7 +43,7 @@ public class FtpUtils implements Serializable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(is != null) {
+            if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
@@ -164,7 +150,7 @@ public class FtpUtils implements Serializable {
         StringBuilder url = new StringBuilder();
         String hostName = IPAddressUtils.getHostName();
         Map<Integer, Integer> ftpPIDMap = FTP.getPidMap();
-        if (!ftpPIDMap.isEmpty()){
+        if (!ftpPIDMap.isEmpty()) {
             Integer ftpPID = Integer.valueOf(ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
             //LOG.info("ftp PID = " + ftpPID);
             int ftpPort = ftpPIDMap.get(ftpPID);
