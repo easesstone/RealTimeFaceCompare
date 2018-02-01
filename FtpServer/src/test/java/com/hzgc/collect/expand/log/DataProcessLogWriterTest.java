@@ -4,9 +4,6 @@ import com.hzgc.collect.expand.conf.CommonConf;
 import org.junit.Test;
 
 
-/**
- * Created by Administrator on 2018-2-1.
- */
 public class DataProcessLogWriterTest {
     @Test
     public void errorLogWrite() throws Exception {

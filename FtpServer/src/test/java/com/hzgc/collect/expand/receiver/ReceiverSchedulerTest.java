@@ -29,15 +29,6 @@ public class ReceiverSchedulerTest {
             String a = list1.getQueueID();
             System.out.println(a);
         }
-    /*    Method method_rebalancedReceiver = receiverScheduler.getClass().getDeclaredMethod("reblanceRecevicer", int.class,String.class);
-        method_rebalancedReceiver.setAccessible(true);
-        method_rebalancedReceiver.invoke(receiverScheduler, 5, "E:/getProcessLogDir/process");
-        List<ReceiverImpl> listNew = receiverScheduler.getContainer();
-        for (ReceiverImpl lists : listNew) {
-            String a = lists.getQueueID();
-            System.out.println(a);
-        }*/
-
     }
 
     @Test
