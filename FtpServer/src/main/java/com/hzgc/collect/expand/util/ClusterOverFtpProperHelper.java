@@ -15,14 +15,19 @@ import java.util.Properties;
 public class ClusterOverFtpProperHelper extends ProperHelper {
     private static Logger log = Logger.getLogger(ClusterOverFtpProperHelper.class);
     private static Properties props = new Properties();
+
+    private static String logSize;
+    private static String receiveQueueCapacity;
+    private static String receiveLogDir;
+    private static String processLogDir;
+    private static String successLogDir;
+    private static String mergeLogDir;
+    private static String receiveNumber;
+    private static String mergeScanTime;
+    private static String faceDetectorNumber;
     private static String port;
     private static String dataPorts;
     private static String implicitSsl;
-    private static String threadNum;
-    private static String capacity;
-    private static String receiveLogDir;
-    private static String processLogDir;
-    private static String receiveNumber;
 
     static {
         String properName = "cluster-over-ftp.properties";
@@ -34,14 +39,18 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
                 props.load(in);
                 log.info("Load configuration for ftp server from ./conf/cluster-over-ftp.properties");
 
+                setLogSize();
+                setReceiveQueueCapacity();
+                setReceiveLogDir();
+                setProcessLogDir();
+                setSuccessLogDir();
+                setMergeLogDir();
+                setReceiveNumber();
+                setMergeScanTime();
+                setFaceDetectorNumber();
                 setPort();
                 setDataPorts();
                 setImplicitSsl();
-                setThreadNum();
-                setCapacity();
-                setReceiveLogDir();
-                setProcessLogDir();
-                setReceiveNumber();
             } else {
                 log.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
@@ -76,24 +85,40 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         implicitSsl = verifyBooleanValue("implicitSsl", "false", props, log);
     }
 
-    private static void setThreadNum() {
-        threadNum = verifyPositiveIntegerValue("thread.number", "3", props, log);
-    }
-
-    private static void setCapacity() {
-        capacity = verifyPositiveIntegerValue("capacity", String.valueOf(Integer.MAX_VALUE), props, log);
+    private static void setReceiveQueueCapacity() {
+        receiveQueueCapacity = verifyPositiveIntegerValue("receive.queue.capacity", String.valueOf(Integer.MAX_VALUE), props, log);
     }
 
     private static void setReceiveLogDir() {
-        receiveLogDir = verifyCommonValue("receiveLogDir", "/opt/", props, log);
+        receiveLogDir = verifyCommonValue("receive.log.dir", "/opt/RealTimeFaceCompare/ftp/data/receive", props, log);
     }
 
     private static void setProcessLogDir() {
-        processLogDir = verifyCommonValue("processLogDir", "/opt/", props, log);
+        processLogDir = verifyCommonValue("process.log.dir", "/opt/RealTimeFaceCompare/ftp/data/process", props, log);
+    }
+
+    private static void setSuccessLogDir() {
+        successLogDir = verifyCommonValue("success.log.dir","/opt/RealTimeFaceCompare/ftp/data/success", props, log);
+    }
+
+    private static void setMergeLogDir() {
+        mergeLogDir = verifyCommonValue("merge.log.dir", "/opt/RealTimeFaceCompare/ftp/data/merge", props, log);
+    }
+
+    private static void setMergeScanTime() {
+        mergeScanTime = verifyPositiveIntegerValue("merge.scan.time", "", props, log);
     }
 
     private static void setReceiveNumber() {
-        receiveNumber = verifyCommonValue("receiveNumber", String.valueOf(0), props, log);
+        receiveNumber = verifyCommonValue("receive.number", "6", props, log);
+    }
+
+    private static void setLogSize() {
+        logSize = verifyPositiveIntegerValue("log.Size", "300000", props, log);
+    }
+
+    private static void setFaceDetectorNumber() {
+        faceDetectorNumber = verifyPositiveIntegerValue("face.detector.number","", props, log);
     }
 
     /**
@@ -115,29 +140,49 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         return Boolean.valueOf(implicitSsl);
     }
 
-    public static Integer getThreadNum() {
-        log.info("Load the configuration thread.number, the value is \"" + threadNum + "\"");
-        return Integer.valueOf(threadNum);
-    }
-
-    public static Integer getCapacity() {
-        log.info("Load the configuration capacity, the value is \"" + capacity + "\"");
-        return Integer.valueOf(capacity);
+    public static Integer getReceiveQueueCapacity() {
+        log.info("Load the configuration receive.queue.capacity, the value is \"" + receiveQueueCapacity + "\"");
+        return Integer.valueOf(receiveQueueCapacity);
     }
 
     public static String getReceiveLogDir() {
-        log.info("Load the configuration receiveLogDir, the value is \"" + receiveLogDir + "\"");
+        log.info("Load the configuration receive.log.dir, the value is \"" + receiveLogDir + "\"");
         return receiveLogDir;
     }
 
     public static String getProcessLogDir() {
-        log.info("Load the configuration processLogDir, the value is \"" + processLogDir + "\"");
+        log.info("Load the configuration process.log.dir, the value is \"" + processLogDir + "\"");
         return processLogDir;
     }
 
     public static Integer getReceiveNumber() {
-        log.info("Load the configuration receiveNumber, the value is \"" + receiveNumber + "\"");
+        log.info("Load the configuration receive.number, the value is \"" + receiveNumber + "\"");
         return Integer.valueOf(receiveNumber);
+    }
+
+    public static String getSuccessLogDir() {
+        log.info("Load the configuration success.log.dir, the value is \"" + successLogDir + "\"");
+        return successLogDir;
+    }
+
+    public static String getMergeLogDir() {
+        log.info("Load the configuration merge.log.dir, the value is \"" + mergeLogDir + "\"");
+        return mergeLogDir;
+    }
+
+    public static Integer getMergeScanTime() {
+        log.info("Load the configuration merge.scan.time, the value is \"" + mergeScanTime + "\"");
+        return Integer.valueOf(mergeScanTime);
+    }
+
+    public static Integer getLogSize() {
+        log.info("Load the configuration log.Size, the value is \"" + logSize + "\"");
+        return Integer.valueOf(logSize);
+    }
+
+    public static Integer getFaceDetectorNumber() {
+        log.info("Load the configuration face.detector.number, the value is \"" + faceDetectorNumber + "\"");
+        return Integer.valueOf(faceDetectorNumber);
     }
 
     /**
