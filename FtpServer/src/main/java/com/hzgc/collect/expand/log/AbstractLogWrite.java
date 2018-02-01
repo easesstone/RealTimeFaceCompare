@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -81,9 +82,9 @@ abstract class AbstractLogWrite implements LogWriter {
         File logDir = new File(this.currentDir);
         if (!logDir.exists() || logDir.list() == null) {
             logDir.mkdirs();
-            this.count = 0;
+            this.count = 1;
         } else if (logDir.length() == 0) {
-            this.count = 0;
+            this.count = 1;
         } else {
             this.count = getLastCount();
         }
@@ -116,16 +117,18 @@ abstract class AbstractLogWrite implements LogWriter {
      */
     @Override
     public String getLastLine(String fileName) {
+        RandomAccessFile raf = null;
         try {
             String tempFile = this.currentDir + fileName;
-            RandomAccessFile raf = new RandomAccessFile(tempFile, "r");
+            raf = new RandomAccessFile(tempFile, "r");
             LOG.info("Start get last line from " + tempFile);
             long length = raf.length();
             long position = length - 1;
             if (position != -1) {
                 raf.seek(position);
                 while (position >= 0) {
-                    if (raf.read() != '\n') {
+                    int bb = raf.read();
+                    if (bb != '\r' && bb != '\n') {
                         break;
                     }
                     if (position == 0) {
@@ -136,6 +139,7 @@ abstract class AbstractLogWrite implements LogWriter {
                         raf.seek(position);
                     }
                 }
+                System.out.println(position);
                 if (position >= 0) {
                     while (position >= 0) {
                         if (position == 0) {
@@ -150,6 +154,7 @@ abstract class AbstractLogWrite implements LogWriter {
                         }
                     }
                 }
+                System.out.println(position);
                 String line = raf.readLine();
                 if (line != null) {
                     LOG.info("Last line from " + tempFile + " is:[" + line + "]");
@@ -164,8 +169,17 @@ abstract class AbstractLogWrite implements LogWriter {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return "";
+
     }
 
     /**
@@ -181,7 +195,10 @@ abstract class AbstractLogWrite implements LogWriter {
         if (dirList != null && dirList.length > 0) {
             if (defaultFile.exists()) {
                 String countLine = getLastLine(defaultFile.getName());
-                if (countLine.length() == 0 && dirList.length == 1) {
+                if (countLine.length() > 0) {
+                    LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
+                    return event.getCount() + 1;
+                } else if (countLine.length() == 0 && dirList.length == 1) {
                     LOG.info("Get count from " + this.currentFile
                             + ", but the file content is null, so queue id is "
                             + this.queueID + ", count is 1");
@@ -194,9 +211,9 @@ abstract class AbstractLogWrite implements LogWriter {
                     LOG.info("Sort result is " + Arrays.toString(dirList));
                     String countFile = dirList[dirList.length - 1];
                     countLine = getLastLine(countFile);
-                    LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                    LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                     LOG.info("Get count from " + countFile
-                            + ", queue is is " + this.queueID
+                            + ", queue is " + this.queueID
                             + ", count is " + event.getCount());
                     return event.getCount() + 1;
                 }
@@ -208,7 +225,7 @@ abstract class AbstractLogWrite implements LogWriter {
                 LOG.info("Sort result is " + Arrays.toString(dirList));
                 String countFile = dirList[dirList.length - 1];
                 String countLine = getLastLine(countFile);
-                LogEvent event = JSONHelper.toObject(countLine.trim(), LogEvent.class);
+                LogEvent event = JSONHelper.toObject(countLine, LogEvent.class);
                 LOG.info("Get count from " + countFile
                         + ", queue is is " + this.queueID
                         + ", count is " + event.getCount());
@@ -217,7 +234,7 @@ abstract class AbstractLogWrite implements LogWriter {
         } else {
             LOG.info("Directory " + this.currentDir + " is not exists or empty, so queue id is "
                     + this.queueID + ", count is 1");
-            return 0;
+            return 1;
         }
     }
 
@@ -229,13 +246,13 @@ abstract class AbstractLogWrite implements LogWriter {
     @Override
     public void action(LogEvent event) {
         FileWriter fw = null;
-        countCheckAndWrite(event);
         try {
             fw = new FileWriter(this.currentFile, true);
             event.setCount(this.count++);
             fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
+
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -251,13 +268,15 @@ abstract class AbstractLogWrite implements LogWriter {
 
     @Override
     public void countCheckAndWrite(LogEvent event) {
+        Path oldFile;
+        Path newFile;
         if (this.count % this.logSize == 0) {
-            File oldFile = new File(this.currentFile);
-            File newFile = new File(currentDir + logNameUpdate(this.logName, count));
-            oldFile.renameTo(newFile);
-            action(event);
             try {
-                oldFile.createNewFile();
+                oldFile = Paths.get(this.currentFile);
+                newFile = Paths.get(currentDir + logNameUpdate(this.logName, count));
+                action(event);
+                Files.move(oldFile, newFile);
+                Files.createFile(oldFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

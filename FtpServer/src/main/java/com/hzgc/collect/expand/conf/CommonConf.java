@@ -5,7 +5,7 @@ public class CommonConf {
     /**
      * 队列日志名称
      */
-    private String logName = "0000000000000000000";
+    private String logName = "0000000000000000000.log";
 
     /**
      * 日志文件大小
@@ -37,19 +37,19 @@ public class CommonConf {
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
-<<<<<<< HEAD
-        /*HelperFactory.regist();
+/*<<<<<<< HEAD
+        *//*HelperFactory.regist();
         this.capacity = Integer.valueOf(ClusterOverFtpProperHelper.getCapacity());
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();
         this.processLogDir = ClusterOverFtpProperHelper.getProcessLogDir();
-        this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());*/
+        this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());*//*
 
 =======
         this.capacity = Integer.valueOf(ClusterOverFtpProperHelper.getCapacity());
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();
         this.processLogDir = ClusterOverFtpProperHelper.getProcessLogDir();
         this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());
->>>>>>> f32bbac99c5e9457f503f9d8924669f57e916447
+>>>>>>> f32bbac99c5e9457f503f9d8924669f57e916447*/
     }
 
     /**
