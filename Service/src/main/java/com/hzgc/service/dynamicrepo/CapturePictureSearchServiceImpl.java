@@ -45,9 +45,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     public SearchResult search(SearchOption option) {
         long start = System.currentTimeMillis();
         SearchResult searchResult = null;
-        RealTimeCompareBySparkSQL realTimeCompareBySparkSQL;
+        RealTimeFaceCompareBySparkSQL realTimeFaceCompareBySparkSQL;
         if (null != option) {
-            realTimeCompareBySparkSQL = new RealTimeCompareBySparkSQL();
+            realTimeFaceCompareBySparkSQL = new RealTimeFaceCompareBySparkSQL();
             //搜索类型 是人还是车
             //设置查询Id
             String searchId = UuidUtil.setUuid();
@@ -55,7 +55,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             //查询的对象库是人
             if (option.getImage() != null || option.getImageId() != null) {
                 //根据上传的图片查询
-                searchResult = realTimeCompareBySparkSQL.pictureSearchBySparkSQL(option, searchId);
+                searchResult = realTimeFaceCompareBySparkSQL.pictureSearchBySparkSQL(option, searchId);
             } else {
                 //无图无imageId,通过其他参数查询
                 searchResult = getCaptureHistory(option);

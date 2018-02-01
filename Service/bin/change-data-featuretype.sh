@@ -20,8 +20,8 @@ DEPLOY_DIR=`pwd`
 CONF_DIR=$DEPLOY_DIR/conf                                                                        ### 项目根目录
 LIB_DIR=$DEPLOY_DIR/lib                                                                          ### Jar 包目录
 cd ..
-REALTIMECOMPARE_DIR=`pwd`
-COMMON_LIB=${REALTIMECOMPARE_DIR}/common/lib
+REALTIMEFACECOMPARE_DIR=`pwd`
+COMMON_LIB=${REALTIMEFACECOMPARE_DIR}/common/lib
 LIB_JARS=`ls $LIB_DIR|grep .jar| grep -v avro-ipc-1.7.7-tests.jar | grep -v avro-ipc-1.7.7.jar | grep -v .bak \
 | grep -v spark-network-common_2.10-1.5.1.jar| grep -v service \
  |awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`                                                     ### jar包位置以及第三方依赖jar包，绝对路径
