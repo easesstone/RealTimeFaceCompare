@@ -1,4 +1,4 @@
-package com.hzgc.collect.expand.meger;
+package com.hzgc.collect.expand.merge;
 
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.DataProcessLogWriter;
@@ -40,7 +40,7 @@ public class RcoverNotProData {
                     //获取队列ID
                     String queueID = processFile.substring(processFile.lastIndexOf("-") + 1, processFile.lastIndexOf("/"));
                     DataProcessLogWriter dataProcessLogWriter = new DataProcessLogWriter(commonConf, queueID);
-                    RowsListFactory rowsListFactory = new RowsListFactory(processFile);
+                    RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);
                     //获取未处理的数据
                     List<String> notProRows = rowsListFactory.getNotProRows();
                     for (int j = 0; j < notProRows.size(); j++) {

@@ -1,11 +1,10 @@
-package com.hzgc.collect.expand.meger;
+package com.hzgc.collect.expand.merge;
 
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.collect.expand.processer.FtpPathMessage;
 import com.hzgc.collect.expand.util.JSONHelper;
 import com.hzgc.collect.ftp.util.FtpUtils;
-import com.hzgc.dubbo.attribute.Attribute;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
