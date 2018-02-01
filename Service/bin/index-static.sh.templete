@@ -93,3 +93,12 @@ curl -XPUT 's105:9200/objectinfo/_settings' -d '{
         "max_result_window": 1000000000
     }
 }'
+curl -XPUT "http://s105:9200/objectinfo/_mapping/person/" -H 'Content-Type: application/json' -d'
+{
+  "properties": {
+    "pkey": {
+      "type":     "text",
+      "fielddata": true
+    }
+  }
+}'
