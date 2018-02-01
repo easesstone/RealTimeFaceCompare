@@ -7,9 +7,9 @@ package com.hzgc.collect.expand.util;
  */
 public class HelperFactory {
 	public static void regist() {
-		/*new ClusterOverFtpProperHelper();
+		new ClusterOverFtpProperHelper();
 		new FTPAddressProperHelper();
 		new ProducerOverFtpProperHelper();
-		new RocketMQProperHelper();*/
+		new RocketMQProperHelper();
 	}
 }

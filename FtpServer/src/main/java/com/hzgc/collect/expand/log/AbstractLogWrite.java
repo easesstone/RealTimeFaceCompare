@@ -135,7 +135,6 @@ abstract class AbstractLogWrite implements LogWriter {
                         raf.seek(position);
                     }
                 }
-                System.out.println(position);
                 if (position >= 0) {
                     while (position >= 0) {
                         if (position == 0) {
@@ -150,7 +149,6 @@ abstract class AbstractLogWrite implements LogWriter {
                         }
                     }
                 }
-                System.out.println(position);
                 String line = raf.readLine();
                 if (line != null) {
                     LOG.info("Last line from " + tempFile + " is:[" + line + "]");

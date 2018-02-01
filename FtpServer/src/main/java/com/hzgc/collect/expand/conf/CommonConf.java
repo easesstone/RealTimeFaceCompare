@@ -12,7 +12,7 @@ public class CommonConf {
     /**
      * 日志文件大小
      */
-    private int logSize = 10;
+    private int logSize = 300000;
 
     /**
      * 当前队列缓冲容量
