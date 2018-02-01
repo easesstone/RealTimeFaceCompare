@@ -1,6 +1,7 @@
 package com.hzgc.collect.expand.conf;
 
 import com.hzgc.collect.expand.util.ClusterOverFtpProperHelper;
+import com.hzgc.collect.expand.util.HelperFactory;
 
 public class CommonConf {
 
@@ -66,6 +67,7 @@ public class CommonConf {
     }
 
     /**
+     *
      * @param properName 指定类路径下资源文件名称
      */
     public CommonConf(String properName) {
