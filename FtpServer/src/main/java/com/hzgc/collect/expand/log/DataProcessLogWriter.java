@@ -58,7 +58,7 @@ public class DataProcessLogWriter extends AbstractLogWrite {
                         break;
                     }
                 } catch (Exception e) {
-                    System.out.println("other thread is operating this file,the current thread is: " + Thread.currentThread().getName() + " sleep 1 second and try it again");
+                    LOG.info("other thread is operating this file,the current thread is: " + Thread.currentThread().getName() + " sleep 1 second and try it again");
                     try {
                         //读写线程通过设置不同的睡眠时间解决死锁的问题
                         Thread.sleep(1000);
