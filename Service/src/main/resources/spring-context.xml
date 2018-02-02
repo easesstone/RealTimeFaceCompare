@@ -31,4 +31,7 @@
     <bean id="HBaseHelper" class="com.hzgc.service.util.HBaseHelper"/>
     <bean id="DeviceTable" class="com.hzgc.service.device.DeviceTable"/>
     <bean id="ElasticSearchHelper" class="com.hzgc.service.staticrepo.ElasticSearchHelper"/>
+
+    <bean id="CaptureNumberService" class="com.hzgc.service.dynamicrepo.CptureNumberImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CaptureNumberService" ref="CaptureNumberService"/>
 </beans>
