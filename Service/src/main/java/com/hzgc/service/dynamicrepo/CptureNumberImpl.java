@@ -5,6 +5,7 @@ import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -18,10 +19,21 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * 这个方法是为了大数据可视化而指定的CaptureNumberService，继承于，主要包含三个方法：
+ * 1、dynaicNumberService：查询es的动态库，返回总抓拍数量和今日抓拍数量
+ * 2、staticNumberService：查询es的静态库，返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
+ * 3、timeSoltNumber：根据入参ipcid的list、startTime和endTime去es查询到相应的值
+ */
 public class CptureNumberImpl implements CaptureNumberService {
 
+    /**
+     * 查询es的动态库，返回总抓拍数量和今日抓拍数量
+     * @param ipcId 设备ID：ipcId
+     * @return 返回总抓拍数量和今日抓拍数量
+     */
     @Override
-    public Map<String, Integer> DynaicNumberService(List<String> ipcId) {
+    public Map<String, Integer> dynaicNumberService(List<String> ipcId) {
         String index = DynamicTable.DYNAMIC_INDEX;
         String type = DynamicTable.PERSON_INDEX_TYPE;
         Map<String, Integer> map = new HashMap<>();
@@ -31,25 +43,24 @@ public class CptureNumberImpl implements CaptureNumberService {
         String endTime = format.format(a);
         String startTime = endTime.substring(0, endTime.indexOf(" ")) + " 00:00:00";
         totolBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
-
         BoolQueryBuilder ipcBQ = QueryBuilders.boolQuery();
         if (ipcId != null) {
             for (String ipcid : ipcId) {
-                ipcBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcid).analyzer("standard"));
+                ipcBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcid));
             }
             totolBQ.must(ipcBQ);
         }
-        SearchResponse searchResponse1 = ElasticSearchHelper.getEsClient()
-                .prepareSearch(index)
+        TransportClient client = ElasticSearchHelper.getEsClient();
+        SearchResponse searchResponse1 = client.prepareSearch(index)
                 .setTypes(type)
+                .setSize(1)
                 .get();
         SearchHits searchHits1 = searchResponse1.getHits();
         int totolNumber = (int) searchHits1.getTotalHits();
-
-        SearchResponse searchResponse2 = ElasticSearchHelper.getEsClient()
-                .prepareSearch(index)
+        SearchResponse searchResponse2 = client.prepareSearch(index)
                 .setTypes(type)
                 .setQuery(totolBQ)
+                .setSize(1)
                 .get();
         SearchHits searchHits2 = searchResponse2.getHits();
         int todayTotolNumber = (int) searchHits2.getTotalHits();
@@ -58,6 +69,11 @@ public class CptureNumberImpl implements CaptureNumberService {
         return map;
     }
 
+    /**
+     * 查询es的静态库，返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
+     * @param platformId 平台ID
+     * @return 返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
+     */
     @Override
     public Map<String, Integer> staticNumberService(String platformId) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
@@ -83,13 +99,22 @@ public class CptureNumberImpl implements CaptureNumberService {
         return map;
     }
 
+    /**
+     * 根据入参ipcid的list、startTime和endTime去es查询到相应的值
+     * @param ipcids 设备ID：ipcid
+     * @param startTime 搜索的开始时间
+     * @param endTime 搜索的结束时间
+     * @return 返回某段时间内，这些ipcid的抓拍的总数量
+     */
     @Override
-    public Map<String, Integer> timeSoltNumber(List<String> ipcid, String startTime, String endTime) {
+    public Map<String, Integer> timeSoltNumber(List<String> ipcids, String startTime, String endTime) {
         List<String> times = new ArrayList<>();
         Map<String, Integer> map = new HashMap<>();
         BoolQueryBuilder totolQuery = QueryBuilders.boolQuery();
-        if (ipcid != null && ipcid.size() > 0) {
-            totolQuery.must(QueryBuilders.matchQuery("ipcid", ipcid));
+        if (ipcids != null && ipcids.size() > 0) {
+            for (String ipcid : ipcids){
+                totolQuery.should(QueryBuilders.matchPhraseQuery("ipcid", ipcid));
+            }
         }
         BoolQueryBuilder timeQuery = QueryBuilders.boolQuery();
         if (startTime != null && endTime != null && !startTime.equals("") && !endTime.equals("")) {

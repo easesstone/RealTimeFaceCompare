@@ -47,7 +47,7 @@ public class CptureNumberImplTimer {
                 for (String list : lists) {
                     //查询动态库中数据
                     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-                    boolQueryBuilder.must(QueryBuilders.matchQuery(DynamicTable.IPCID, list));
+                    boolQueryBuilder.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, list));
                     boolQueryBuilder.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
                     SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
                             .setTypes(type)
