@@ -38,6 +38,9 @@ public class DataProcessLogWriter extends AbstractLogWrite {
     void errorLogWrite(String errorPath, LogEvent event) {
         Path errorLogDir = Paths.get(errorPath);
         Path errorLogFile = Paths.get(errorPath, "error.log");
+        RandomAccessFile randomAccessFile = null;
+        FileChannel fileChannel = null;
+        FileLock fileLock = null;
         try {
             if (!Files.isDirectory(errorLogDir)) {
                 Files.createDirectories(errorLogDir);
@@ -46,9 +49,8 @@ public class DataProcessLogWriter extends AbstractLogWrite {
                     Files.createFile(errorLogFile);
                 }
             }
-            RandomAccessFile randomAccessFile = new RandomAccessFile(errorLogFile.toFile(), "rw");
-            FileChannel fileChannel = randomAccessFile.getChannel();
-            FileLock fileLock;
+            randomAccessFile = new RandomAccessFile(errorLogFile.toFile(), "rw");
+            fileChannel = randomAccessFile.getChannel();
             while (true) {
                 try {
                     fileLock = fileChannel.tryLock();
@@ -75,12 +77,22 @@ public class DataProcessLogWriter extends AbstractLogWrite {
             }
             randomAccessFile.write(bytes);
             randomAccessFile.write(System.getProperty("line.separator").getBytes());
-            fileLock.release();
-            fileChannel.close();
-            randomAccessFile.close();
         } catch (IOException e) {
             e.printStackTrace();
-
+        } finally {
+            try {
+                if (fileLock != null) {
+                    fileLock.release();
+                }
+                if (fileChannel != null) {
+                    fileChannel.close();
+                }
+                if (randomAccessFile != null) {
+                    randomAccessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
