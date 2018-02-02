@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
@@ -25,6 +26,7 @@ public class CptureNumberImplTimer {
     public static void main(String[] args) {
         indexTable();
     }
+
     /**
      * 将查出来的数据插入到一个新建的dynamic表中
      */
@@ -40,14 +42,14 @@ public class CptureNumberImplTimer {
             String startTime = lessOneHourStr.split(":")[0] + ":00:00";
             String index = DynamicTable.DYNAMIC_INDEX;
             String type = DynamicTable.PERSON_INDEX_TYPE;
+            TransportClient client = ElasticSearchHelper.getEsClient();
             if (lists != null && lists.size() > 0) {
                 for (String list : lists) {
                     //查询动态库中数据
                     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
                     boolQueryBuilder.must(QueryBuilders.matchQuery(DynamicTable.IPCID, list));
                     boolQueryBuilder.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
-                    SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
-                            .prepareSearch(index)
+                    SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
                             .setTypes(type)
                             .setQuery(boolQueryBuilder);
                     SearchResponse searchResponse = searchRequestBuilder.get();
@@ -56,7 +58,7 @@ public class CptureNumberImplTimer {
                     //将数据插入新表中
                     Map<String, Object> map = new HashMap<>();
                     map.put("ipcid", list);
-                    map.put("time", endTime);
+                    map.put("time", startTime);
                     map.put("count", number);
                     IndexResponse indexResponse = ElasticSearchHelper.getEsClient()
                             .prepareIndex("dynamicshow", "person")
@@ -96,11 +98,10 @@ public class CptureNumberImplTimer {
     /**
      * 获取离整点的差距，判断第一次起线程的延时时间
      */
-    private static long judgementTime(){
+    private static long judgementTime() {
         long nowTime = System.currentTimeMillis();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String rightNow = simpleDateFormat.format(nowTime);
-        long addOneHourTime = nowTime + 1000*60*60;
+        long addOneHourTime = nowTime + 1000 * 60 * 60;
         String addTime = simpleDateFormat.format(addOneHourTime);
         String startTime = addTime.split(":")[0] + ":02:00";
         Date changeTime = null;
@@ -113,7 +114,7 @@ public class CptureNumberImplTimer {
         if (changeTime != null) {
             changeLongTime = changeTime.getTime();
         }
-        long disTime = (changeLongTime - nowTime)/1000;
+        long disTime = (changeLongTime - nowTime) / 1000;
         System.out.println(disTime);
         return disTime;
     }
