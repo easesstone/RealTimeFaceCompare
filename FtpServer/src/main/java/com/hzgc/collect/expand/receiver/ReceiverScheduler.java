@@ -24,6 +24,7 @@ public class ReceiverScheduler {
     //用来存放工作线程的线程池
     private ExecutorService pool;
 
+
     public ReceiverScheduler(CommonConf conf) {
         this.conf = conf;
         this.receiveNumber = conf.getReceiveNumber();
@@ -147,5 +148,9 @@ public class ReceiverScheduler {
 
     public ExecutorService getPool() {
         return pool;
+    }
+
+    public List<ReceiverImpl> getContainer() {
+        return container;
     }
 }

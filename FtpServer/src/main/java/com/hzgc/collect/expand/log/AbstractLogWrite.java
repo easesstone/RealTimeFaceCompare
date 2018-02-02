@@ -3,7 +3,6 @@ package com.hzgc.collect.expand.log;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -124,7 +123,8 @@ abstract class AbstractLogWrite implements LogWriter {
             if (position != -1) {
                 raf.seek(position);
                 while (position >= 0) {
-                    if (raf.read() != '\n') {
+                    int bb = raf.read();
+                    if (bb != '\r' && bb != '\n') {
                         break;
                     }
                     if (position == 0) {
@@ -173,6 +173,7 @@ abstract class AbstractLogWrite implements LogWriter {
             }
         }
         return "";
+
     }
 
     /**
@@ -244,6 +245,7 @@ abstract class AbstractLogWrite implements LogWriter {
             fw.write(JSONHelper.toJson(event));
             fw.write(newLine);
             fw.flush();
+
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
