@@ -2,6 +2,7 @@ package com.hzgc.collect.expand.processer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
+import com.hzgc.collect.expand.util.RocketMQProperHelper;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.util.common.IOUtil;
 import com.hzgc.util.common.StringUtil;
@@ -31,11 +32,9 @@ public class RocketMQProducer implements Serializable {
     private RocketMQProducer() {
         FileInputStream fis = null;
         try {
-            fis = new FileInputStream(FileUtil.loadResourceFile("rocketmq.properties"));
-            properties.load(fis);
-            String namesrvAddr = properties.getProperty("address");
-            topic = properties.getProperty("topic");
-            String producerGroup = properties.getProperty("group", UUID.randomUUID().toString());
+            String namesrvAddr = RocketMQProperHelper.getAddress();
+            topic = RocketMQProperHelper.getTopic();
+            String producerGroup = RocketMQProperHelper.getGroup();
             if (StringUtil.strIsRight(namesrvAddr) && StringUtil.strIsRight(topic) && StringUtil.strIsRight(producerGroup)) {
                 producer = new DefaultMQProducer(producerGroup);
                 producer.setRetryTimesWhenSendFailed(4);
@@ -50,8 +49,6 @@ public class RocketMQProducer implements Serializable {
         } catch (Exception e) {
             LOG.error("producer init error...");
             throw new RuntimeException(e);
-        } finally {
-            IOUtil.closeStream(fis);
         }
     }
 

@@ -3,6 +3,7 @@ package com.hzgc.collect.expand.processer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.collect.ftp.util.IOUtils;
 import org.apache.kafka.clients.producer.Callback;
@@ -17,25 +18,21 @@ import java.util.Properties;
 
 public class KafkaProducer implements Serializable {
     private static Logger LOG = Logger.getLogger(KafkaProducer.class);
-    private static org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
+    protected static org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
     private static String FEATURE = "feature";
 
     private static MetricRegistry metric = new MetricRegistry();
-    private final static Counter counter = metric.counter("sendKafkaCount");
+    protected final static Counter counter = metric.counter("sendKafkaCount");
 
-    KafkaProducer() {
+    protected KafkaProducer() {
         try {
-            File file = FileUtil.loadResourceFile("producer-over-ftp.properties");
-            if (file != null) {
-                this.fis = new FileInputStream(file);
-            }
-            this.kafkaPropers.load(fis);
-            FEATURE = kafkaPropers.getProperty("topic-feature");
+            kafkaPropers = ProducerOverFtpProperHelper.getProps();
+            FEATURE = ProducerOverFtpProperHelper.getTopicFeature();
             if (kafkaPropers != null) {
                 kafkaProducer = new org.apache.kafka.clients.producer.KafkaProducer<>(kafkaPropers);
-                LOG.info("Create KafkaProducer successfull");
+                LOG.info("Create KafkaProducer successfully!");
             }
         } catch (Exception e) {
             e.printStackTrace();

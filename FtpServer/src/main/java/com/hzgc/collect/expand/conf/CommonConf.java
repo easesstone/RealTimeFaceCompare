@@ -8,7 +8,7 @@ public class CommonConf {
     /**
      * 队列日志名称
      */
-    private String logName = "0000000000000000000";
+    private String logName = "0000000000000000000.log";
 
     /**
      * 日志文件大小
@@ -35,17 +35,35 @@ public class CommonConf {
      */
     private int receiveNumber;
 
+    /**
+     * 备份日志目录
+     * 用于存放已处理过的process和receive目录下的日志
+     */
+    private String successLogDir;
+
+    /**
+     * merge模块处理日志目录
+     */
+    private String mergeLogDir;
+
+    /**
+     * merge模块扫描时间
+     */
+    private int mergeScanTime;
+
 
     /**
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
-        HelperFactory.regist();
-        this.capacity = Integer.valueOf(ClusterOverFtpProperHelper.getCapacity());
+        this.logSize = ClusterOverFtpProperHelper.getLogSize();
+        this.capacity = ClusterOverFtpProperHelper.getReceiveQueueCapacity();
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();
         this.processLogDir = ClusterOverFtpProperHelper.getProcessLogDir();
-        this.receiveNumber = Integer.valueOf(ClusterOverFtpProperHelper.getReceiveNumber());
-
+        this.receiveNumber = ClusterOverFtpProperHelper.getReceiveNumber();
+        this.successLogDir = ClusterOverFtpProperHelper.getSuccessLogDir();
+        this.mergeLogDir = ClusterOverFtpProperHelper.getMergeLogDir();
+        this.mergeScanTime = ClusterOverFtpProperHelper.getMergeScanTime();
     }
 
     /**
@@ -96,11 +114,35 @@ public class CommonConf {
         this.processLogDir = processLogDir;
     }
 
+    public String getMergeLogDir() {
+        return mergeLogDir;
+    }
+
+    public void setSuccessLogDir(String successLogDir) {
+        this.successLogDir = successLogDir;
+    }
+
+    public String getSuccessLogDir() {
+        return successLogDir;
+    }
+
+    public void setMergeLogDir(String mergeLogDir) {
+        this.mergeLogDir = mergeLogDir;
+    }
+
     public int getReceiveNumber() {
         return receiveNumber;
     }
 
     public void setReceiveNumber(int receiveNumber) {
         this.receiveNumber = receiveNumber;
+    }
+
+    public int getMergeScanTime() {
+        return mergeScanTime;
+    }
+
+    public void setMergeScanTime(int mergeScanTime) {
+        this.mergeScanTime = mergeScanTime;
     }
 }
