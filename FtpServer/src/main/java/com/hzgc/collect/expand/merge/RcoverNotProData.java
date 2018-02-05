@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 恢复未处理的数据(曹大报)
  *
- *  * 整体流程：
+ * 整体流程：
  * 1，根据CommonConf获取process根路径processLogDir；
  * 2，遍历process 目录中的所有文件，得到日记文件的一个绝对路径，放入一个List中，processFiles；
  *     判断 processFiles 是否为空(process 目录下是否有文件)；
@@ -46,8 +46,6 @@ public class RcoverNotProData {
         String processLogDir = commonConf.getProcessLogDir();
         FileFactory fileFactory = new FileFactory(processLogDir);
         List<String> processFiles = fileFactory.getAllProcessFiles();
-        //标记恢复数据是否成功，默认false
-        boolean recoverSuccess = false;
 
         //判断process根目录下是否有文件
         if (processFiles != null && processFiles.size() != 0) {
@@ -62,6 +60,8 @@ public class RcoverNotProData {
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);
                     //获取未处理的数据
                     List<String> notProRows = rowsListFactory.getNotProRows();
+                    //用于标记发送Kafka数据数
+                    long rowCount = 0;
                     for (int j = 0; j < notProRows.size(); j++) {
                         String row = notProRows.get(j);
                         //获取未处理数据的ftpUrl
@@ -86,29 +86,38 @@ public class RcoverNotProData {
                                     logEvent.setStatus("0");
                                     LOG.info("Send to Kafka success,write log to processFile :" + processFile);
                                     fileUtil.writeMergeFile(logEvent, processFile);
+                                    rowCount++;
                                 } else {
                                     //发送Kafka失败
                                     logEvent.setStatus("1");
                                     String errorFilePath = fileUtil.getErrFileFromProFile();
                                     LOG.warn("Send to Kafka failure ,write log to errorLogFile :");
                                     dataProcessLogWriter.errorLogWrite(errorFilePath, logEvent);
+                                    rowCount++;
                                 }
-                                recoverSuccess = true;
                             }
                         }
+                    }
+                    if (rowCount == notProRows.size()) {
+                        //处理process文件完成，移动process文件和receive文件到success目录下；
+                        String sucProFilePath = fileUtil.getSuccessFilePath(processFile);
+                        fileUtil.moveFile(processFile, sucProFilePath);
+                        String sucRecFilePath = fileUtil.getSuccessFilePath(receiveFile);
+                        fileUtil.moveFile(receiveFile, sucRecFilePath);
+                    } else {
+                        LOG.warn("send to Kafka data less than NotProRows size, Please check it!");
+                        return false;
                     }
                 } else {
                     //对应receive 文件不存在，将process文件移动到success目录下
                     LOG.info("Can't find receiveFile,move processFile To SuccessDir");
                     String successFilePath = fileUtil.getSuccessFilePath(processFile);
                     fileUtil.moveFile(processFile, successFilePath);
-                    recoverSuccess = true;
                 }
             }
-            return recoverSuccess;
         } else {
             LOG.info("The path of " + processLogDir + "is Nothing");
-            return true;
         }
+        return true;
     }
 }
