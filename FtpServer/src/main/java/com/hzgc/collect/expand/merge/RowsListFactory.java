@@ -24,7 +24,6 @@ public class RowsListFactory {
     public RowsListFactory(String processFileDir, String receiveFileDir){
         setAllDiffRows(processFileDir, receiveFileDir);
         setNotProRows();
-        setErrProRows();
     }
 
     /**
@@ -39,9 +38,6 @@ public class RowsListFactory {
         notProRows = findDiffRows.getNotProRows(allDiffRows);
     }
 
-    private void setErrProRows() {
-        errProRows = findDiffRows.getErrProRows(allDiffRows);
-    }
 
     /**
      * get 方法
@@ -54,7 +50,4 @@ public class RowsListFactory {
         return notProRows;
     }
 
-    public List<String> getErrProRows() {
-        return errProRows;
-    }
 }

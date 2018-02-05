@@ -15,11 +15,15 @@ class FileFactory {
     private  FileUtil fileUtil = new FileUtil();
 
     private  String processParentDir;
+    private String writingLogFile;
     private  List<String> allProcessFiles;
+    private  List<String> allFiles;
 
-    //有参构造函数，传入需处理的日志根路径
-    FileFactory(String processLogDir) {
+    //有参构造函数，传入需处理的日志根路径，
+    // 以及CommonConf中的logName（000000.log）
+    FileFactory(String processLogDir, String writingLogFile) {
         this.processParentDir = processLogDir;
+        this.writingLogFile = writingLogFile;
         setAllProcessFiles();
     }
 
@@ -29,8 +33,9 @@ class FileFactory {
      */
 
     private void setAllProcessFiles() {
-        allProcessFiles = fileUtil.listAllFileOfDir(processParentDir);
+        allProcessFiles = fileUtil.listAllProcessFileDir(processParentDir, writingLogFile);
     }
+
 
     /**
      * get方法
