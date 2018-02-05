@@ -13,13 +13,16 @@ import java.util.List;
 /**
  * 恢复处理出错的数据，作为Ftp的一个线程。（马燊偲）
  * 整体流程：
- * 1，扫描data/process/p-0/error/error.log这个文件，获取这个文件的状态。
- *      A、若文件处于lock状态，结束；
- *      B、若文件为unlock状态：
- *          立即移动data/process/p-0/error/error.log到
- *          /success/process/201802/p-0/error/error 2018-02-01-1522148-1758.log（用于备份）
- *          和 /merge/process/p-0/error/error 2018-02-01-1522148-1963.log（用于恢复处理）
- * 2，对 备份目录/merge/process/p-0/error/下的所有错误文件进行扫描，
+ * 1，遍历所有error日志：data/process/p-0/error/error.log
+ *                                  data/process/p-1/error/error.log
+ *                                  data/process/p-2/error/error.log
+ *      对于每个错误日志：获取错误日志的状态：
+ *              A、若文件处于lock状态，结束；
+ *              B、若文件为unlock状态：
+ *                  立即移动data/process/p-0/error/error.log到
+ *                  /success/process/201802/p-0/error/error 2018-02-01-1522148-1758.log（用于备份）和
+ *                  /merge/error/error 2018-02-01-1522148-1963.log（用于恢复处理）
+ * 2，对备份目录/merge/error/ 下的所有错误文件进行扫描，
  *      将所有错误日志路径放入到一个List 里面，errLogPaths。遍历errLogPaths：
  *      1，对于errLogPaths中每一个errorN.log，遍历其中每一条数据：
  *              1，对每条数据，提取特征发送Kafka，
@@ -46,24 +49,28 @@ public class RecoverErrProData implements Runnable {
 
         //获取processLog的根目录：/opt/RealTimeFaceCompare/ftp/data/process
         String processLogDir = commonConf.getProcessLogDir();
-        //获取process/error下的error日志
-        String errorFile = processLogDir + "/error/error.log";
         //获取merge/error目录：/opt/RealTimeFaceCompare/ftp/merge/error
         String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
-        //获取error.log需要移动到的success和merge目录下的路径
-        String successErrFile = fileUtil.getSuccessFilePath(errorFile);
-        String mergeErrFile = fileUtil.getMergeFilePath(errorFile);
-        //移动到merge后，拷贝一份到success
-        fileUtil.moveErrFile(errorFile, mergeErrFile); //其中包括判断锁是否存在
-        fileUtil.copyFile(mergeErrFile, successErrFile);
+
+        //列出process目录下所有error日志路径
+        List<String> allErrorDir = fileUtil.listAllErrorFileDir(processLogDir);
+        for (String errFile:allErrorDir) {
+            //获取每个error.log需要移动到的success和merge目录下的路径
+            String successErrFile = fileUtil.getSuccessFilePath(errFile);
+            String mergeErrFile = fileUtil.getMergeFilePath(errFile);
+            //移动到merge后，拷贝一份到success
+            fileUtil.moveErrFile(errFile, mergeErrFile); //其中包括判断锁是否存在
+            fileUtil.copyFile(mergeErrFile, successErrFile);
+        }
 
         //获取merge/error下所有error日记文件的绝对路径，放入一个List中（errLogPaths）
-        List<String> errLogPaths = fileUtil.listAllFileDir(mergeErrLogDir);
+        List<String> errFilePaths = fileUtil.listAllFileDir(mergeErrLogDir);
         //若errLogPaths这个list不为空（merge/error下有错误日志）
-        if (errLogPaths != null && errLogPaths.size() != 0) { // V-1 if start
-            for (String errorPath : errLogPaths) {
-                //获取每个error.log中每一行数据
-                List<String> errorRows = fileUtil.getAllContentFromFile(errorPath);
+        if (errFilePaths != null && errFilePaths.size() != 0) { // V-1 if start
+            //对于每一个error.log
+            for (String errorFilePath : errFilePaths) {
+                //获取其中每一行数据
+                List<String> errorRows = fileUtil.getAllContentFromFile(errorFilePath);
                 //判断errorRows是否为空，若不为空，则需要处理出错数据
                 if (errorRows != null && errorRows.size() != 0) { // V-2 if start
                     for (String row : errorRows) {
@@ -84,7 +91,7 @@ public class RecoverErrProData implements Runnable {
                             boolean success = sendDataToKafka.isSuccessToKafka();
 
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
-                            String mergeErrFileNew = mergeErrFile+"-N";
+                            String mergeErrFileNew = errorFilePath+"-N";
                             logEvent.setPath(ftpUrl);
                             if (success) {
                                 logEvent.setStatus("0");
@@ -98,10 +105,10 @@ public class RecoverErrProData implements Runnable {
                     }
                 } // V-2 if end：errorRows为空的判断结束
                 //删除已处理过的error日志
-                fileUtil.deleteFile(mergeErrFile);
+                fileUtil.deleteFile(errorFilePath);
             }
         } else { //若merge/error目录下无日志
-            LOG.info("Nothing in " + errLogPaths);
+            LOG.info("Nothing in " + mergeErrLogDir);
         } // V-1 if end：对merge/error下是否有日志的判断结束
     }
 }

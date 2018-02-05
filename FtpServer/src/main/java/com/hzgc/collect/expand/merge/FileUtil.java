@@ -31,7 +31,7 @@ public class FileUtil {
     private static final String ERR_DATE_FORMAT = "yyyy-MM-dd-HHmmSSS-";
 
     /**
-     * 使用Files工具类中的walkFileTree()方法可以很容易的实现对目录下的所有文件进行遍历。
+     * 使用Files工具类中的walkFileTree()方法实现对目录下的所有文件进行遍历。
      * 这个方法需要一个Path和一个FileVisitor参数。
      * 其中Path是要遍历的路径，而FileVisitor则可以看成的一个文件访问器，它主要提供了四个方法。
      * 这四个方法返回的都是FileVisitResult对象，它是一个枚举类，代表的是返回之后的一些后续的操作。
@@ -78,6 +78,43 @@ public class FileUtil {
             e.printStackTrace();
         }
         return allFileDir;
+    }
+
+
+    /**
+     * NIO扫描得到所有错误日志/process/p-N/error/error.log绝对路径的FileList
+     *
+     * @param path 需扫描的根目录
+     * @return          该目录下所有错误日志/process/p-N/error/error.log绝对路径的FileList
+     */
+    public List<String> listAllErrorFileDir(String path) {
+        List<String> allErrorFileDir = new ArrayList<>();
+        try {
+            if (path != null && !Objects.equals(path, "")) {
+                //若传入的参数是一个目录
+                if (Files.isDirectory(Paths.get(path))) {
+                    //用NIO对path目录下的文件进行递归遍历
+                    Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>(){
+                        //访问文件时触发该方法。
+                        @Override
+                        public FileVisitResult visitFile(Path dir, BasicFileAttributes attrs) throws IOException {
+                            //将所有process下所有error日志添加到List
+                            if (Paths.get(path).getFileName().toString().contains("error.log")) {
+                                allErrorFileDir.add(dir.toString());
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } else {
+                    LOG.error(path + " is not a directory!");
+                }
+            } else {
+                LOG.error("The parameter is null!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return allErrorFileDir;
     }
 
 
@@ -253,11 +290,12 @@ public class FileUtil {
 
     /**
      * 以追加的方式一行行写日志（参照AbstractLogWrite类中的action方法，但多了一个保存目录的入参）
-     * 把errProFiles中的每一条数据，保存到/data/merge/error目录下对应的文件名中
-     *
-     * @param event         errProFiles中的每一条数据（LogEvent格式）
-     * @param mergeFilePath 要保存到的文件的绝对路径
-     * @return 写入后的文件名
+     * 包括：
+     * 1、把processFile，写到/data/process/p-0/...指定的文件中
+     * 2、把errProFiles中的每一条数据，写到/data/merge/error目录下指定文件中
+     * @param event               每一条数据（LogEvent格式）
+     * @param mergeFilePath 要写入的文件绝对路径
+     * @return                          写入后的文件绝对路径
      */
     public String writeMergeFile(LogEvent event, String mergeFilePath) {
         FileWriter fw = null;
@@ -299,46 +337,12 @@ public class FileUtil {
         return mergeFilePath;
     }
 
-    /**
-     * NIO写文件，将一个list中的内容，批量写入某个文件中。
-     * 文件存在采用APPEND方式。
-     *
-     * @param list 需要写入的List
-     * @param path 写入到的文件的绝对路径
-     */
-    public void writeMergeFile(List<String> list, String path) {
-        if (path != null && !Objects.equals(path, "")) {
-            File file = new File(path);
-            Path filePath = Paths.get(path);
-            //判断是否为文件格式（不需要这个文件存在）
-            //（假如用file.isFile()来判断，即使这是一个文件，但文件不存在，也会返回false）
-            if (!Files.isDirectory(filePath)) {
-                //获取该文件所在的文件夹目录
-                File folderPath = file.getParentFile();
-                try {
-                    //若文件夹路径不存在，先创建
-                    if (!folderPath.exists()) {
-                        folderPath.mkdirs();
-                    }
-                    //若日志文件存在，先删除
-                    if (file.exists()) {
-                        deleteFile(path);
-                    }
-                    //再创建日志文件
-                    file.createNewFile();
-                    Files.write(Paths.get(path), list, StandardOpenOption.APPEND);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     /**
-     * 用NIO，将源文件移动到目标文件
+     * NIO将源文件移动到目标文件
      *
-     * @param sourceFile      源文件
-     * @param destinationFile 目标文件
+     * @param sourceFile      源文件绝对路径
+     * @param destinationFile 目标文件绝对路径
      */
     public void moveFile(String sourceFile, String destinationFile) {
         if (sourceFile != null && destinationFile != null
@@ -369,7 +373,7 @@ public class FileUtil {
     }
 
     /**
-     * 用NIO，将源文件拷贝到目标文件
+     * NIO将源文件拷贝到目标文件
      *
      * @param sourceFile      源文件
      * @param destinationFile 目标文件
@@ -406,7 +410,7 @@ public class FileUtil {
      * 根据process日志路径，获得对应的receive的日志路径
      *
      * @param processFilePath process日志绝对路径
-     * @return 对应的receive的日志绝对路径
+     * @return                            对应的receive的日志绝对路径
      */
     public String getRecFileFromProFile(String processFilePath) {
         String receiveFilePath = "";
@@ -427,7 +431,11 @@ public class FileUtil {
     /**
      * 根据receiveFile或processFile的文件路径，获取对应merge下的文件路径。例如：
      * /ftp/data/receive/r-0/000000000001.log ->
-     * /ftp/data/merge/receive/r-0/000000000001.log
+     * /ftp/merge/receive/r-0/000000000001.log
+     *
+     * 如果是error日志，需要得到这样的路径：
+     * /ftp/data/process/p-0/error/error.log ->
+     * /ftp/merge/p-0/error/error.log
      *
      * @param file receiveFile或processFile的文件路径
      * @return 对应的merge下的文件路径
@@ -438,14 +446,14 @@ public class FileUtil {
             if (new File(file).isFile()) {
                 String subStrEnd;
                 //如果是receive日志
-                if (file.contains("receive")) {
+                if (file.contains("receive") && !file.contains("error")) { //如果是receive日志
                     subStrEnd = file.substring(file.indexOf("/receive"));
                 } else if (file.contains("process") && !file.contains("error")) { //如果是process日志
                     subStrEnd = file.substring(file.indexOf("/process"));
                 } else { //如果是error日志
                     subStrEnd = file.substring(file.indexOf("/error"));
                 }
-                String subStrStart = file.replace(subStrEnd, "");
+                String subStrStart = file.substring(file.lastIndexOf("/data"));
                 String subStrMerge = "/merge";
                 mergeFilePath = subStrStart + subStrMerge + subStrEnd;
                 // 如果是错误日志，获取其对应的merge目录下路径时，需要重命名。
@@ -601,9 +609,9 @@ public class FileUtil {
      * 例如： error.log -> error 2018-02-01-1522148-1758.log
      *
      * @param sourceFile 错误日志的源文件绝对路径：
-     *                   /data/process/p-0/error/error.log（用来获取文件最后修改时间）
+     *                                  /data/process/p-0/error/error.log（用来获取文件最后修改时间）
      * @param targetFile 错误日志要移动到的但未重命名的目标文件绝对路径：
-     *                   /data/success/process/201802/p-0/error/error.log（用来获取拼接绝对路径）
+     *                                  /success/process/201802/p-0/error/error.log（用来获取拼接绝对路径）
      * @return 重命名后的错误日志绝对路径：/success/process/p-0/error/error 2018-02-01-1522148-1758.log
      */
     private String renameErrorLog(String sourceFile, String targetFile) {
