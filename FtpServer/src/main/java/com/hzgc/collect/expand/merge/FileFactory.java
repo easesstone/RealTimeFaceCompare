@@ -33,7 +33,7 @@ class FileFactory {
      */
 
     private void setAllProcessFiles() {
-        allProcessFiles = fileUtil.listAllProcessFileDir(processParentDir, writingLogFile);
+        allProcessFiles = fileUtil.listAllExecutableFileDir(processParentDir, writingLogFile);
     }
 
 
