@@ -98,11 +98,11 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     }
 
     private static void setSuccessLogDir() {
-        successLogDir = verifyCommonValue("success.log.dir","/opt/RealTimeFaceCompare/ftp/data/success", props, log);
+        successLogDir = verifyCommonValue("success.log.dir","/opt/RealTimeFaceCompare/ftp/success", props, log);
     }
 
     private static void setMergeLogDir() {
-        mergeLogDir = verifyCommonValue("merge.log.dir", "/opt/RealTimeFaceCompare/ftp/data/merge", props, log);
+        mergeLogDir = verifyCommonValue("merge.log.dir", "/opt/RealTimeFaceCompare/ftp/merge", props, log);
     }
 
     private static void setMergeScanTime() {
