@@ -1,4 +1,4 @@
-package util;
+package com.hzgc.collect.expand.util;
 
 import com.hzgc.collect.FTP;
 import com.hzgc.collect.expand.util.*;
