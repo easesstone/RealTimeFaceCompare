@@ -24,7 +24,7 @@ public class JSONHelper {
     public static <T> T toObject(String jsonData, Class<T> beanType) {
         T t = null;
         try {
-            t = mapper.readValue(jsonData, beanType);
+            t = mapper.readValue(jsonData.trim(), beanType);
         } catch (IOException e) {
             e.printStackTrace();
         }
