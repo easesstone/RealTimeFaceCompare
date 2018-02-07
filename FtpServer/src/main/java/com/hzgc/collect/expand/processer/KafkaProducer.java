@@ -3,10 +3,10 @@ package com.hzgc.collect.expand.processer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import com.hzgc.util.common.FileUtil;
 import com.hzgc.collect.ftp.util.IOUtils;
 import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
@@ -16,27 +16,23 @@ import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
-public class ProducerOverFtp implements Serializable {
-    private static Logger LOG = Logger.getLogger(ProducerOverFtp.class);
-    private static KafkaProducer<String, FaceObject> kafkaProducer;
+public class KafkaProducer implements Serializable {
+    private static Logger LOG = Logger.getLogger(KafkaProducer.class);
+    protected static org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
     private Properties kafkaPropers = new Properties();
     private FileInputStream fis;
     private static String FEATURE = "feature";
 
     private static MetricRegistry metric = new MetricRegistry();
-    private final static Counter counter = metric.counter("sendKafkaCount");
+    protected final static Counter counter = metric.counter("sendKafkaCount");
 
-    ProducerOverFtp() {
+    protected KafkaProducer() {
         try {
-            File file = FileUtil.loadResourceFile("producer-over-ftp.properties");
-            if (file != null) {
-                this.fis = new FileInputStream(file);
-            }
-            this.kafkaPropers.load(fis);
-            FEATURE = kafkaPropers.getProperty("topic-feature");
+            kafkaPropers = ProducerOverFtpProperHelper.getProps();
+            FEATURE = ProducerOverFtpProperHelper.getTopicFeature();
             if (kafkaPropers != null) {
-                kafkaProducer = new KafkaProducer<>(kafkaPropers);
-                LOG.info("Create KafkaProducer successfull");
+                kafkaProducer = new org.apache.kafka.clients.producer.KafkaProducer<>(kafkaPropers);
+                LOG.info("Create KafkaProducer successfully!");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,12 +68,12 @@ public class ProducerOverFtp implements Serializable {
         }
     }
 
-    public static ProducerOverFtp getInstance() {
+    public static KafkaProducer getInstance() {
         return LazyHandler.instanc;
     }
 
     private static class LazyHandler {
-        private static final ProducerOverFtp instanc = new ProducerOverFtp();
+        private static final KafkaProducer instanc = new KafkaProducer();
     }
 
     /*public static String getPicture() {

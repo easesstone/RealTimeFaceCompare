@@ -109,10 +109,10 @@ object FaceRecognizeAlarmJob {
           val ftpMess = FtpUtils.getFtpUrlMessage(result._1)
           recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
           recognizeAlarmMessage.setDynamicDeviceID(result._2)
-          recognizeAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
+          recognizeAlarmMessage.setSmallPictureURL(ftpMess.getFilePath)
           recognizeAlarmMessage.setAlarmTime(dateStr)
-          recognizeAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).get("filepath"))
-          recognizeAlarmMessage.setHostName(ftpMess.get("ip"))
+          recognizeAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).getFilePath)
+          recognizeAlarmMessage.setHostName(ftpMess.getIp)
           result._4.foreach(record => {
             val item = new Item()
             item.setSimilarity(record.sim.toString)

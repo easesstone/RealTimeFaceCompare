@@ -10,7 +10,7 @@ import java.util.List;
 public class RealTimeCompareBySparkSQLSuite {
     public static void main(String[] args) {
         CapturePictureSearchServiceImpl capture = new CapturePictureSearchServiceImpl();
-        byte[] image = FaceFunction.inputPicture("/opt/GsFaceLib/example/picture.jpg");
+        byte[] image = FaceFunction.getPictureBytes("/opt/GsFaceLib/example/picture.jpg");
         SearchOption option = new SearchOption();
         option.setImage(image);
         option.setSearchType(SearchType.PERSON);
@@ -25,7 +25,7 @@ public class RealTimeCompareBySparkSQLSuite {
         list.add("i3");
         option.setDeviceIds(list);
         ParseByOption pp = new ParseByOption();
-        System.out.println(pp.getFinalSQLwithOption("pp", option));
+        System.out.println(ParseByOption.getFinalSQLwithOption("pp", option));
 //        SearchResult result = capture.search(option);
 //        for (CapturedPicture capturedPicture: result.getPictures()) {
 //            System.out.println(capturedPicture.getSimilarity());

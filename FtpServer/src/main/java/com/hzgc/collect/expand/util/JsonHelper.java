@@ -3,14 +3,12 @@ package com.hzgc.collect.expand.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.hzgc.collect.expand.log.LogEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JsonHelper {
+public class JSONHelper {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static String toJson(Object o) {
@@ -26,7 +24,7 @@ public class JsonHelper {
     public static <T> T toObject(String jsonData, Class<T> beanType) {
         T t = null;
         try {
-            t = mapper.readValue(jsonData, beanType);
+            t = mapper.readValue(jsonData.trim(), beanType);
         } catch (IOException e) {
             e.printStackTrace();
         }

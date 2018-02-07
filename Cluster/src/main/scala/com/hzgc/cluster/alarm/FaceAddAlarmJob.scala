@@ -97,10 +97,10 @@ object FaceAddAlarmJob {
             val ftpMess = FtpUtils.getFtpUrlMessage(result._1)
             addAlarmMessage.setAlarmTime(dateStr)
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
-            addAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
-            addAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).get("filepath"))
+            addAlarmMessage.setSmallPictureURL(ftpMess.getFilePath)
+            addAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).getFilePath)
             addAlarmMessage.setDynamicDeviceID(result._2)
-            addAlarmMessage.setHostName(ftpMess.get("ip"))
+            addAlarmMessage.setHostName(ftpMess.getIp)
             rocketMQProducer.send(result._3,
               "alarm_" + DeviceTable.ADDED.toString,
               result._1,
