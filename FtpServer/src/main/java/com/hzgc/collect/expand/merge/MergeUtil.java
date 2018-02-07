@@ -555,7 +555,7 @@ public class MergeUtil {
      * tryLock()表示尝试获取锁，获取成功返回true，获取失败（即锁已被其他线程获取），返回false。
      * 这个方法无论如何都会立即返回。
      */
-    public void lockAndMove(String SourceFile, String targetFile) {
+    public void lockAndMove(String sourceFilePath, String targetFilePath) {
         RandomAccessFile fromFile = null;
         FileChannel fromFileChannel = null;
         FileLock fromFileLock = null;
@@ -563,21 +563,36 @@ public class MergeUtil {
         FileChannel toFileChannel = null;
 
         //判断入参不为空，是一个文件。
-        if (SourceFile != null && !Objects.equals(SourceFile, "")
-                && targetFile != null && !Objects.equals(targetFile, "")) {
-            if ((new File(SourceFile).isFile())) {
-                try {
-                    //需读取的error.log
-                    fromFile = new RandomAccessFile(new File(SourceFile), "rw");
-                    fromFileChannel = fromFile.getChannel();
+        if (sourceFilePath != null && !Objects.equals(sourceFilePath, "")
+                && targetFilePath != null && !Objects.equals(targetFilePath, "")) {
+            File sourceFile = new File(sourceFilePath);
+            File targetFile = new File(targetFilePath);
 
+            if (sourceFile.isFile() && sourceFile.exists()) {
+                try {
                     while (true) {
+                        fromFile = new RandomAccessFile(sourceFile, "rw");
+                        fromFileChannel = fromFile.getChannel();
                         fromFileLock = fromFileChannel.tryLock();
                         if (fromFileLock == null) { //不能获取到锁
                             break;
-                        } else {
-                            //能够获取到锁后的操作：新建写入文件通道，通过通道复制文件。
-                            toFile = new RandomAccessFile(new File(targetFile), "rw");
+                        } else { //能够获取到锁后的操作：
+                            //1、判断目标路径（包括父目录与文件路径）是否存在，不存在，先创建。
+                            File targetFolderPath = targetFile.getParentFile();
+                            //若目标文件父目录不存在，先创建
+                            if (!targetFolderPath.exists()) {
+                                targetFolderPath.mkdirs();
+                            }
+                            //若目标文件不存在，先创建
+                            if (!targetFile.exists()) {
+                                try {
+                                    targetFile.createNewFile();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            //2、新建写入文件通道toFileChannel，通过通道复制文件fromFile。
+                            toFile = new RandomAccessFile(targetFile, "rw");
                             toFileChannel = toFile.getChannel();
                             long length = fromFileChannel.size();
                             int position = 0;
