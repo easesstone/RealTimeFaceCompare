@@ -11,10 +11,9 @@ import java.util.*;
  * 其中包含以下三个方法：
  * <p>
  * getNotProRows：获取集合中未处理的所有行；
- * getErrProRows：获取集合中处理失败的所有行；
  * getAllDiffRows：获取集合中不同行；
  */
-public class FindDiffRows {
+class FindDiffRows {
     private Logger LOG = Logger.getLogger(FindDiffRows.class);
 
     /**
@@ -23,9 +22,8 @@ public class FindDiffRows {
      * @param allRows 日志合并后的所有行
      * @return List对象  未处理数据的集合
      */
-    public List<String> getNotProRows(List<String> allRows) {
+    List<String> getNotProRows(List<String> allRows) {
         List<String> notProList = new ArrayList<>();
-        String row;
         if (allRows == null || allRows.size() == 0) {
             LOG.warn("The unionAllRows size is None");
         } else if (allRows.size() == 1) {
@@ -63,34 +61,9 @@ public class FindDiffRows {
                 notProList.add(allRows.get(allRows.size() - 1));
             }
         }
+        Collections.sort(notProList, new ListComparator());
         return notProList;
     }
-
-    /**
-     * 获取合并后日志中数据处理失败的集合
-     *
-     * @param allRows 日志合并后的所有行
-     * @return List对象  合并后集合中数据处理失败的集合
-     */
-    public List<String> getErrProRows(List<String> allRows) {
-        List<String> failList = new ArrayList<>();
-        String tmp;
-        if (allRows == null || allRows.size() == 0) {
-            LOG.warn("The unionAllRows size is None");
-        } else {
-            Collections.sort(allRows);
-            for (String allRow : allRows) {
-                LogEvent event = JSONHelper.toObject(allRow, LogEvent.class);
-                String processState = event.getStatus();
-                //根据状态是否为零判断数据是否处理成功
-                if (!processState.equals("0")) {
-                    failList.add(allRow);
-                }
-            }
-        }
-        return failList;
-    }
-
 
     /**
      * 获取集合中不同行
@@ -98,7 +71,7 @@ public class FindDiffRows {
      * @param allRows 合并后日志集合
      * @return List对象       返回合并后不同行的集合
      */
-    public List<String> getAllDiffRows(List<String> allRows) {
+    List<String> getAllDiffRows(List<String> allRows) {
         List<String> rows = new ArrayList<>();
         String row;
         if (allRows == null || allRows.size() == 0) {
@@ -122,7 +95,17 @@ public class FindDiffRows {
             }
 
         }
+        Collections.sort(rows, new ListComparator());
         return rows;
     }
 
+
+    private class ListComparator implements Comparator<String> {
+        @Override
+        public int compare(String row1, String row2) {
+            LogEvent event1 = JSONHelper.toObject(row1, LogEvent.class);
+            LogEvent event2 = JSONHelper.toObject(row2, LogEvent.class);
+            return Long.compare(event1.getCount(), event2.getCount());
+        }
+    }
 }

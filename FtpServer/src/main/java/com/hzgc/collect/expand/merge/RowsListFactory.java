@@ -13,7 +13,7 @@ import java.util.List;
 public class RowsListFactory {
 
     //初始化要用到的两个工具类
-    private  FileUtil fileUtil = new FileUtil();
+    private MergeUtil mergeUtil = new MergeUtil();
     private  FindDiffRows findDiffRows = new FindDiffRows();
 
     private  List<String> allDiffRows;
@@ -24,14 +24,13 @@ public class RowsListFactory {
     public RowsListFactory(String processFileDir, String receiveFileDir){
         setAllDiffRows(processFileDir, receiveFileDir);
         setNotProRows();
-        setErrProRows();
     }
 
     /**
      * set 方法
      */
     private void setAllDiffRows(String processFileDir, String receiveFileDir) {
-        List<String> allContentRows = fileUtil.getAllContentFromFile(processFileDir, receiveFileDir);
+        List<String> allContentRows = mergeUtil.getAllContentFromFile(processFileDir, receiveFileDir);
         allDiffRows = findDiffRows.getAllDiffRows(allContentRows);
     }
 
@@ -39,9 +38,6 @@ public class RowsListFactory {
         notProRows = findDiffRows.getNotProRows(allDiffRows);
     }
 
-    private void setErrProRows() {
-        errProRows = findDiffRows.getErrProRows(allDiffRows);
-    }
 
     /**
      * get 方法
@@ -54,7 +50,4 @@ public class RowsListFactory {
         return notProRows;
     }
 
-    public List<String> getErrProRows() {
-        return errProRows;
-    }
 }
