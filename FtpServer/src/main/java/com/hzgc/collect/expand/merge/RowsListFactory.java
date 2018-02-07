@@ -13,7 +13,7 @@ import java.util.List;
 public class RowsListFactory {
 
     //初始化要用到的两个工具类
-    private  FileUtil fileUtil = new FileUtil();
+    private MergeUtil mergeUtil = new MergeUtil();
     private  FindDiffRows findDiffRows = new FindDiffRows();
 
     private  List<String> allDiffRows;
@@ -30,7 +30,7 @@ public class RowsListFactory {
      * set 方法
      */
     private void setAllDiffRows(String processFileDir, String receiveFileDir) {
-        List<String> allContentRows = fileUtil.getAllContentFromFile(processFileDir, receiveFileDir);
+        List<String> allContentRows = mergeUtil.getAllContentFromFile(processFileDir, receiveFileDir);
         allDiffRows = findDiffRows.getAllDiffRows(allContentRows);
     }
 

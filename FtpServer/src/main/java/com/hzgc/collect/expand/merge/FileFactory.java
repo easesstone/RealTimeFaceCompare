@@ -14,7 +14,7 @@ import java.util.List;
  */
 class FileFactory {
 
-    private  FileUtil fileUtil = new FileUtil();
+    private MergeUtil mergeUtil = new MergeUtil();
 
     private  String processParentDir;
     private String writingLogFile;
@@ -37,7 +37,7 @@ class FileFactory {
      * 列出process日志根目录下所有文件
      */
     public void setAllFiles(List<String> allFiles) {
-        allFiles = fileUtil.listAllFileAbsPath(processParentDir);
+        allFiles = mergeUtil.listAllFileAbsPath(processParentDir);
     }
 
     /**
@@ -45,7 +45,7 @@ class FileFactory {
      * 所有其他可以移到备份目录的日志文件
      */
     private void setAllBackupLog() {
-        allBackupLog = fileUtil.listAllBackupLogAbsPath(processParentDir, writingLogFile);
+        allBackupLog = mergeUtil.listAllBackupLogAbsPath(processParentDir, writingLogFile);
     }
 
 

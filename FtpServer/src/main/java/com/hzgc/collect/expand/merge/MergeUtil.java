@@ -17,11 +17,11 @@ import java.util.regex.Pattern;
 
 
 /**
- * 与文件读写相关的工具类（马燊偲）
+ * merge模块与文件读写相关的工具类（马燊偲）
  */
-public class FileUtil {
+public class MergeUtil {
 
-    private Logger LOG = Logger.getLogger(FileUtil.class);
+    private Logger LOG = Logger.getLogger(MergeUtil.class);
     //系统换行符
     private String newLine = System.getProperty("line.separator");
     private static final String SUFFIX = ".log";

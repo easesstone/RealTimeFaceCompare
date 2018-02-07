@@ -45,7 +45,7 @@ public class RecoverErrProData implements Runnable {
     @Override
     public void run() {
         //初始化FileUtil工具类
-        FileUtil fileUtil = new FileUtil();
+        MergeUtil mergeUtil = new MergeUtil();
         LogEvent logEvent = new LogEvent();
 
         //获取processLog的根目录：/opt/RealTimeFaceCompare/ftp/data/process
@@ -54,24 +54,24 @@ public class RecoverErrProData implements Runnable {
         String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
 
         //列出process目录下所有error日志路径
-        List<String> allErrorDir = fileUtil.listAllErrorLogAbsPath(processLogDir);
+        List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
         for (String errFile:allErrorDir) {
             //获取每个error.log需要移动到的success和merge目录下的路径
-            String successErrFile = fileUtil.getSuccessFilePath(errFile);
-            String mergeErrFile = fileUtil.getMergeFilePath(errFile);
+            String successErrFile = mergeUtil.getSuccessFilePath(errFile);
+            String mergeErrFile = mergeUtil.getMergeFilePath(errFile);
             //移动到merge后，拷贝一份到success
-            fileUtil.lockAndMove(errFile, mergeErrFile); //其中包括判断锁是否存在
-            fileUtil.copyFile(mergeErrFile, successErrFile);
+            mergeUtil.lockAndMove(errFile, mergeErrFile); //其中包括判断锁是否存在
+            mergeUtil.copyFile(mergeErrFile, successErrFile);
         }
 
         //获取merge/error下所有error日记文件的绝对路径，放入一个List中（errLogPaths）
-        List<String> errFilePaths = fileUtil.listAllFileAbsPath(mergeErrLogDir);
+        List<String> errFilePaths = mergeUtil.listAllFileAbsPath(mergeErrLogDir);
         //若errLogPaths这个list不为空（merge/error下有错误日志）
         if (errFilePaths != null && errFilePaths.size() != 0) { // V-1 if start
             //对于每一个error.log
             for (String errorFilePath : errFilePaths) {
                 //获取其中每一行数据
-                List<String> errorRows = fileUtil.getAllContentFromFile(errorFilePath);
+                List<String> errorRows = mergeUtil.getAllContentFromFile(errorFilePath);
                 //判断errorRows是否为空，若不为空，则需要处理出错数据
                 if (errorRows != null && errorRows.size() != 0) { // V-2 if start
                     for (String row : errorRows) {
@@ -101,12 +101,12 @@ public class RecoverErrProData implements Runnable {
                             }
                             logEvent.setCount(count);
                             logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
-                            fileUtil.writeMergeFile(event, mergeErrFileNew);
+                            mergeUtil.writeMergeFile(event, mergeErrFileNew);
                         } // V-3 if end：faceObject不为空的判断结束
                     }
                 } // V-2 if end：errorRows为空的判断结束
                 //删除已处理过的error日志
-                fileUtil.deleteFile(errorFilePath);
+                mergeUtil.deleteFile(errorFilePath);
             }
         } else { //若merge/error目录下无日志
             LOG.info("Nothing in " + mergeErrLogDir);

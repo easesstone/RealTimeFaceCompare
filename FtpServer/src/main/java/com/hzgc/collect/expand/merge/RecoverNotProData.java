@@ -1,7 +1,6 @@
 package com.hzgc.collect.expand.merge;
 
 import com.hzgc.collect.expand.conf.CommonConf;
-import com.hzgc.collect.expand.log.DataProcessLogWriter;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.collect.expand.processer.KafkaProducer;
@@ -41,7 +40,7 @@ public class RecoverNotProData {
 
 
     public boolean RecoverNotProData(CommonConf commonConf) {
-        FileUtil fileUtil = new FileUtil();
+        MergeUtil mergeUtil = new MergeUtil();
         LogEvent logEvent = new LogEvent();
         String processLogDir = commonConf.getProcessLogDir();
         //获取正在写的日志队列文件
@@ -59,9 +58,9 @@ public class RecoverNotProData {
         if (processFiles != null && processFiles.size() != 0) {
             for (String processFile : processFiles) {
                 //获取receive绝对路径
-                String receiveFile = fileUtil.getRecFilePathFromProFile(processFile);
+                String receiveFile = mergeUtil.getRecFilePathFromProFile(processFile);
                 //判断对应receive文件是否存在，存在则合并，不存在则移动位置
-                if (fileUtil.isFileExist(receiveFile)) {
+                if (mergeUtil.isFileExist(receiveFile)) {
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);
                     //获取未处理的数据
                     List<String> notProRows = rowsListFactory.getNotProRows();
@@ -88,12 +87,12 @@ public class RecoverNotProData {
                                 if (success) {
                                     logEvent.setStatus("0");
                                     LOG.info("Send to Kafka success,write log to processFile :" + processFile);
-                                    fileUtil.writeMergeFile(logEvent, processFile);
+                                    mergeUtil.writeMergeFile(logEvent, processFile);
                                 } else {
                                     //发送Kafka失败,将日志写到merge目录下的error日志文件中
                                     logEvent.setStatus("1");
                                     LOG.warn("Send to Kafka failure ,write log to errorLogFile :");
-                                    fileUtil.writeMergeFile(logEvent,writeErrFile);
+                                    mergeUtil.writeMergeFile(logEvent,writeErrFile);
                                 }
                                 recoverSuccess = true;
                             }
@@ -102,8 +101,8 @@ public class RecoverNotProData {
                 } else {
                     //对应receive 文件不存在，将process文件移动到success目录下
                     LOG.info("Can't find receiveFile,move processFile To SuccessDir");
-                    String successFilePath = fileUtil.getSuccessFilePath(processFile);
-                    fileUtil.moveFile(processFile, successFilePath);
+                    String successFilePath = mergeUtil.getSuccessFilePath(processFile);
+                    mergeUtil.moveFile(processFile, successFilePath);
                     recoverSuccess = true;
                 }
             }
