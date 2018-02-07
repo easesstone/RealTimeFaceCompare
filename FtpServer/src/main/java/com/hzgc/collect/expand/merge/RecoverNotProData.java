@@ -51,7 +51,7 @@ public class RecoverNotProData {
         String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
         //要写入的merge/error日志路径：/opt/RealTimeFaceCompare/ftp/merge/error/error.log
         String writeErrFile = mergeErrLogDir + "/error.log";
-        List<String> processFiles = fileFactory.getAllProcessFiles();
+        List<String> processFiles = fileFactory.getAllFiles();
         //标记恢复数据是否成功，默认false
         boolean recoverSuccess = false;
 
@@ -59,7 +59,7 @@ public class RecoverNotProData {
         if (processFiles != null && processFiles.size() != 0) {
             for (String processFile : processFiles) {
                 //获取receive绝对路径
-                String receiveFile = fileUtil.getRecFileFromProFile(processFile);
+                String receiveFile = fileUtil.getRecFilePathFromProFile(processFile);
                 //判断对应receive文件是否存在，存在则合并，不存在则移动位置
                 if (fileUtil.isFileExist(receiveFile)) {
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);

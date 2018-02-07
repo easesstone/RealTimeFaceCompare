@@ -34,6 +34,7 @@ public class RecoverErrProData implements Runnable {
 
     private Logger LOG = Logger.getLogger(RecoverErrProData.class);
     private final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+    private static final String SUFFIX = ".log";
     private static CommonConf commonConf;
 
     //构造函数
@@ -53,18 +54,18 @@ public class RecoverErrProData implements Runnable {
         String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
 
         //列出process目录下所有error日志路径
-        List<String> allErrorDir = fileUtil.listAllErrorFileDir(processLogDir);
+        List<String> allErrorDir = fileUtil.listAllErrorLogAbsPath(processLogDir);
         for (String errFile:allErrorDir) {
             //获取每个error.log需要移动到的success和merge目录下的路径
             String successErrFile = fileUtil.getSuccessFilePath(errFile);
             String mergeErrFile = fileUtil.getMergeFilePath(errFile);
             //移动到merge后，拷贝一份到success
-            fileUtil.moveErrFile(errFile, mergeErrFile); //其中包括判断锁是否存在
+            fileUtil.lockAndMove(errFile, mergeErrFile); //其中包括判断锁是否存在
             fileUtil.copyFile(mergeErrFile, successErrFile);
         }
 
         //获取merge/error下所有error日记文件的绝对路径，放入一个List中（errLogPaths）
-        List<String> errFilePaths = fileUtil.listAllFileDir(mergeErrLogDir);
+        List<String> errFilePaths = fileUtil.listAllFileAbsPath(mergeErrLogDir);
         //若errLogPaths这个list不为空（merge/error下有错误日志）
         if (errFilePaths != null && errFilePaths.size() != 0) { // V-1 if start
             //对于每一个error.log
@@ -91,7 +92,7 @@ public class RecoverErrProData implements Runnable {
                             boolean success = sendDataToKafka.isSuccessToKafka();
 
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
-                            String mergeErrFileNew = errorFilePath+"-N";
+                            String mergeErrFileNew = errorFilePath.replace(SUFFIX,"")+"-N"+SUFFIX;
                             logEvent.setPath(ftpUrl);
                             if (success) {
                                 logEvent.setStatus("0");

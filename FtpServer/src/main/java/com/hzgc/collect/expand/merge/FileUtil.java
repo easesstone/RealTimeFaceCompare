@@ -47,12 +47,12 @@ public class FileUtil {
      */
 
     /**
-     * NIO扫描得到某个目录下的所有文件的绝对路径的FileList
+     * NIO扫描得到某个目录下的所有文件的绝对路径的List
      *
      * @param path 需扫描的根目录
      * @return 该根目录下所有文件的FileList
      */
-    public List<String> listAllFileDir(String path) {
+    public List<String> listAllFileAbsPath(String path) {
         List<String> allFileDir = new ArrayList<>();
         try {
             if (path != null && !Objects.equals(path, "")) {
@@ -83,12 +83,12 @@ public class FileUtil {
 
 
     /**
-     * NIO扫描得到所有错误日志/process/p-N/error/error.log绝对路径的FileList
+     * NIO扫描得到所有错误日志/process/p-N/error/error.log绝对路径的List
      *
      * @param path 需扫描的根目录
-     * @return 该目录下所有错误日志/process/p-N/error/error.log绝对路径的FileList
+     * @return 该目录下所有错误日志/process/p-N/error/error.log绝对路径的List
      */
-    public List<String> listAllErrorFileDir(String path) {
+    public List<String> listAllErrorLogAbsPath(String path) {
         List<String> allErrorFileDir = new ArrayList<>();
         try {
             if (path != null && !Objects.equals(path, "")) {
@@ -126,7 +126,7 @@ public class FileUtil {
      * @param path 需扫描的根目录
      * @return 该根目录除了0000.log以及最大的日志文件外所有文件的FileList
      */
-    public List<String> listAllExecutableFileDir(String path, String writingLogFile) {
+    public List<String> listAllBackupLogAbsPath(String path, String writingLogFile) {
         //writingLogFile：遍历时需要跳过的0000000.log文件
         List<String> allFileOfDir = new ArrayList<>();
         try {
@@ -152,8 +152,9 @@ public class FileUtil {
                                     for (int i = 0; i < allFiles.length; i++) {
                                         //文件名，不含后缀
                                         String filename = allFiles[i].getName().replace(SUFFIX, "");
-                                        //排除读到error/error.log的可能性
-                                        if (!filename.contains("error")) {
+                                        Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+                                        //判断文件名是否是整数，并排除读到error/error.log的可能性
+                                        if (pattern.matcher(filename).matches() && !filename.contains("error")) {
                                             int fileName = Integer.parseInt(filename);
                                             fileNameMap.put(fileName, allFiles[i].toString());
                                         }
@@ -208,21 +209,21 @@ public class FileUtil {
                 } else {
                     LOG.error("The parameter is empty!");
                 }// if-B end
-                try {
-                    //若入参都是文件的绝对路径
-                    if (count == filePaths.length) { // if-C start
-                        for (int j = 0; j < filePaths.length; j++) {
-                            //先将每个文件的内容，导入到各自的contentList中
-                            List<String> contentList = Files.readAllLines(Paths.get(filePaths[j]));
-                            //再导入到最终的allContentList中
-                            allContentList.addAll(contentList);
-                        }
-                    } else {
-                        LOG.error("The parameter must be file!");
-                    } // if-C end
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            }
+            try {
+                //若入参都是文件的绝对路径
+                if (count == filePaths.length) { // if-C start
+                    for (int j = 0; j < filePaths.length; j++) {
+                        //先将每个文件的内容，导入到各自的contentList中
+                        List<String> contentList = Files.readAllLines(Paths.get(filePaths[j]));
+                        //再导入到最终的allContentList中
+                        allContentList.addAll(contentList);
+                    }
+                } else {
+                    LOG.error("The parameters must be all file and exist!");
+                } // if-C end
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } else {
             LOG.error("The parameter is null!");
@@ -232,42 +233,37 @@ public class FileUtil {
     }
 
     /**
-     * 删除文件
+     * 循环删除文件或者整个目录
      *
-     * @param filePaths 要删除的文件的路径
-     * @return 是否删除成功
+     * @param path 文件或目录
      */
-    public boolean deleteFile(String... filePaths) {
-        //用于标记删除文件成功的个数
-        int flag = 0;
-        //用于标记删除文件是否成功，默认为false
-        boolean deleteSuccess = false;
-        //判断入参是否为Null
-        if (filePaths != null) { //if-A start
-            for (String filePath : filePaths) {
-                //传入的每个参数都不为空
-                if (!Objects.equals(filePath, "")) { //if-B start
-                    File file = new File(filePath);
-                    //判断文件是否存在、类型是否是文件
-                    if (file.exists() && file.isFile()) { //if-C start
-                        if (file.delete()) {
-                            flag++;
-                        }
-                    } else {
-                        LOG.error("The file " + file + " is not a file absolute path or not exists, delete failed!");
-                    } //if-C end
-                    //文件删除成功的个数（标记的flag）是否等于传入的文件的个数
-                    if (flag == filePaths.length) {
-                        deleteSuccess = true;
-                    }
-                } else {
-                    LOG.error("The parameter is empty!");
-                } //if-B end
-            }
+
+    public void deleteFile(String path){
+        if (path != null && !Objects.equals(path, "")){
+            deleteFile(new File(path));
         } else {
-            LOG.error("The parameter is NULL!");
-        } //if-A end
-        return deleteSuccess;
+            LOG.error("The parameter is null or empty!");
+        }
+
+    }
+
+    public void deleteFile(File file){
+        if (file.exists() && file.isFile()){
+            file.delete();
+        }
+        if (file.exists() && file.isDirectory()){
+            File[] files = file.listFiles();
+            if (files == null || files.length == 0){
+                file.delete();
+            }
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()){
+                    deleteFile(files[i]); //递归
+                    continue; //跳出本次循环，继续下次循环
+                }
+                files[i].delete();
+            }
+        }
     }
 
 
@@ -299,41 +295,38 @@ public class FileUtil {
      * @return 写入后的文件绝对路径
      */
     public String writeMergeFile(LogEvent event, String mergeFilePath) {
-        FileWriter fw = null;
-        File mergeFile = new File(mergeFilePath);
-        //获取入参文件绝对路径的父目录
-        File folderPath = mergeFile.getParentFile();
-        try {
-            //若文件夹路径不存在，先创建
-            if (!folderPath.exists()) {
-                folderPath.mkdirs();
-            }
-            //若日志文件不存在，先创建
-            if (!mergeFile.exists()) {
-                mergeFile.createNewFile();
-            }
-            if (mergeFilePath.contains("error")) {
-                // 当错误日志重名时，就重新随机重命名。
-                do {
-                    //前一个path用于获取文件最后修改时间，后一个path用于获取路径
-                    mergeFilePath = renameErrorLog(mergeFilePath, mergeFilePath);
-                } while (new File(mergeFilePath).exists());
-            }
-            //用File对象构造FileWriter，如果第二个参数为true，表示以追加的方式写数据，从文件尾部开始写起
-            fw = new FileWriter(mergeFilePath, true);
-            fw.write(JSONHelper.toJson(event));
-            fw.write(newLine);
-            fw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+        if (mergeFilePath != null && mergeFilePath != "") {
+            FileWriter fw = null;
+            File mergeFile = new File(mergeFilePath);
+            //获取入参文件绝对路径的父目录
+            File folderPath = mergeFile.getParentFile();
             try {
-                if (fw != null) {
-                    fw.close();
+                //若文件夹路径不存在，先创建
+                if (!folderPath.exists()) {
+                    folderPath.mkdirs();
                 }
+                //若日志文件不存在，先创建
+                if (!mergeFile.exists()) {
+                    mergeFile.createNewFile();
+                }
+                //用File对象构造FileWriter，如果第二个参数为true，表示以追加的方式写数据，从文件尾部开始写起
+                fw = new FileWriter(mergeFilePath, true);
+                fw.write(JSONHelper.toJson(event));
+                fw.write(newLine);
+                fw.flush();
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    if (fw != null) {
+                        fw.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        } else {
+            LOG.error("The destination path is null or empty!");
         }
         return mergeFilePath;
     }
@@ -369,7 +362,7 @@ public class FileUtil {
                 LOG.error(sourceFile + " does not exist or isn't a file!");
             }
         } else {
-            LOG.error("The" + sourceFile + "or" + destinationFile + " is null!");
+            LOG.error("The " + sourceFile + " or" + destinationFile + " is null!");
         }
     }
 
@@ -413,17 +406,18 @@ public class FileUtil {
      * @param processFilePath process日志绝对路径
      * @return 对应的receive的日志绝对路径
      */
-    public String getRecFileFromProFile(String processFilePath) {
+    public String getRecFilePathFromProFile(String processFilePath) {
         String receiveFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
-            if (file.isFile() && processFilePath.contains("process\\p-")) {
-                receiveFilePath = processFilePath.replace("process\\p-", "receive\\r-");
+            if (file.isFile() && processFilePath.contains("process" + File.separator + "p-")) {
+                receiveFilePath = processFilePath.replace("process"+ File.separator + "p-",
+                                                                "receive" +File.separator +"r-");
             } else {
                 LOG.error("The " + processFilePath + " is not correct!");
             }
         } else {
-            LOG.error("The " + processFilePath + " is null!");
+            LOG.error("The parameter is null!");
         }
         return receiveFilePath;
     }
@@ -436,19 +430,19 @@ public class FileUtil {
      * @param processFilePath process日志绝对路径
      * @return 对应的error日志绝对路径
      */
-    public String getErrFileFromProFile(String processFilePath) {
+    public String getErrFilePathFromProFile(String processFilePath) {
         String errorFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
-            if (file.isFile() && processFilePath.contains("process/p-")) {
+            if (file.isFile() && processFilePath.contains("process" +File.separator +"p-")) {
                 //获取process日志路径的父目录：/ftp/data/process/p-0/
                 String parentFolder = file.getParent();
-                errorFilePath = parentFolder + "error.log";
+                errorFilePath = parentFolder + File.separator +"error.log";
             } else {
                 LOG.error("The " + processFilePath + " is not correct!");
             }
         } else {
-            LOG.error("The " + processFilePath + " is null!");
+            LOG.error("The parameter is null!");
         }
         return errorFilePath;
     }
@@ -460,7 +454,7 @@ public class FileUtil {
      * <p>
      * 如果是error日志，需要得到这样的路径：
      * /ftp/data/process/p-0/error/error.log ->
-     * /ftp/merge/p-0/error/error.log
+     * /ftp/merge/process/p-0/error/error.log
      *
      * @param file receiveFile或processFile的文件路径
      * @return 对应的merge下的文件路径
@@ -472,14 +466,14 @@ public class FileUtil {
                 String subStrEnd;
                 //如果是receive日志
                 if (file.contains("receive") && !file.contains("error")) { //如果是receive日志
-                    subStrEnd = file.substring(file.indexOf("/receive"));
+                    subStrEnd = file.substring(file.indexOf(File.separator + "receive"));
                 } else if (file.contains("process") && !file.contains("error")) { //如果是process日志
-                    subStrEnd = file.substring(file.indexOf("/process"));
+                    subStrEnd = file.substring(file.indexOf(File.separator + "process"));
                 } else { //如果是error日志
-                    subStrEnd = file.substring(file.indexOf("/error"));
+                    subStrEnd = file.substring(file.indexOf(File.separator + "error"));
                 }
-                String subStrStart = file.substring(file.lastIndexOf("/data"));
-                String subStrMerge = "/merge";
+                String subStrStart = file.replace(file.substring(file.lastIndexOf(File.separator + "data")), "");
+                String subStrMerge = File.separator + "merge";
                 mergeFilePath = subStrStart + subStrMerge + subStrEnd;
                 // 如果是错误日志，获取其对应的merge目录下路径时，需要重命名。
                 if (file.contains("error")) {
@@ -512,7 +506,7 @@ public class FileUtil {
         String successFilePath = "";
         if (datafile != null && !Objects.equals(datafile, "")) {
             File file = new File(datafile);
-            if (file.isFile() && datafile.contains("data/")) {
+            if (file.isFile() && datafile.contains("data" + File.separator)) {
                 //替换data文件路径中的“data”字串为success，得到初步的没有日期的目录：
                 //即/opt/RealTimeFaceCompare/ftp/success/process/p-0/000000001.log
                 String tmpString = datafile.replace("data", "success");
@@ -527,7 +521,7 @@ public class FileUtil {
                 //获取路径子串：/opt/RealTimeFaceCompare/ftp/success/process/
                 String substringStart = tmpString.replace(substringEnd, "");
                 //获取日期路径子串：
-                String substringDate = getFileLastModified(datafile, SUC_DATE_FORMAT) + "/";
+                String substringDate = getFileLastModified(datafile, SUC_DATE_FORMAT) + File.separator;
                 successFilePath = substringStart + substringDate + substringEnd;
 
                 // 如果是错误日志，获取其对应的success目录下路径时，需要对error.log重命名。
@@ -551,7 +545,7 @@ public class FileUtil {
      * 获取锁，处理错误日志
      * <p>
      * 1、尝试获取锁，如果能够获取到，说明没有其他人在操作error.log。
-     * 2、将error.log中的全部内容读写到success目录和merge目录下，并删除原error.log中的内容。
+     * 2、将error.log中的全部内容读写到目标目录下，并删除原error.log中的内容。
      * 3、释放锁。
      * <p>
      * RandomAccessFile：
@@ -561,7 +555,7 @@ public class FileUtil {
      * tryLock()表示尝试获取锁，获取成功返回true，获取失败（即锁已被其他线程获取），返回false。
      * 这个方法无论如何都会立即返回。
      */
-    public void moveErrFile(String SourceFile, String targetFile) {
+    public void lockAndMove(String SourceFile, String targetFile) {
         RandomAccessFile fromFile = null;
         FileChannel fromFileChannel = null;
         FileLock fromFileLock = null;
@@ -642,7 +636,7 @@ public class FileUtil {
     private String renameErrorLog(String sourceFile, String targetFile) {
         File errorFile = new File(targetFile);
         //获取文件的父目录
-        String folderPath = errorFile.getParent() + "/";
+        String folderPath = errorFile.getParent() + File.separator;
         //获取原文件名，去除文件后缀名
         String oldFileName = ERR_FILE_NAME.replace(SUFFIX, "");
         //获取文件最后修改时间
@@ -650,7 +644,7 @@ public class FileUtil {
         //生成随机数
         String random = Integer.toString(new Random().nextInt());
 
-        return folderPath + oldFileName + " " + date + " " + random + SUFFIX;
+        return folderPath + oldFileName + date + random + SUFFIX;
     }
 
 
