@@ -18,7 +18,7 @@
         <fileSet>
             <directory>../Distribution/bin</directory>
             <includes>
-                <include>env_RealTimeCompare.sh</include>
+                <include>env_realTimeFaceCompare.sh</include>
             </includes>
             <outputDirectory>\</outputDirectory>
         </fileSet>
@@ -58,7 +58,7 @@
                 <include>**</include>
             </includes>
             <excludes>
-                <exclude>env_RealTimeCompare.sh</exclude>
+                <exclude>env_realTimeFaceCompare.sh</exclude>
             </excludes>
             <fileMode>0755</fileMode>
             <outputDirectory>common/bin</outputDirectory>

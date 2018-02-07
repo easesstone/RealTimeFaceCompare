@@ -68,7 +68,7 @@
                 </executions>
             </plugin>
         </plugins>
-        <finalName>RealTimeCompare</finalName>
+        <finalName>RealTimeFaceCompare</finalName>
     </build>
 
 </project>
