@@ -5,10 +5,34 @@ import com.hzgc.collect.expand.log.LogEvent;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ReceiverSchedulerTest {
+
+    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        CommonConf conf = new CommonConf();
+        ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
+        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
+        method_prepareReceiver.setAccessible(true);
+        method_prepareReceiver.invoke(receiverScheduler);
+        Thread threadA = new Thread(new ThreadTest(receiverScheduler,"threadA"));
+        Thread threadB = new Thread(new ThreadTest(receiverScheduler,"threadB"));
+        Thread threadC = new Thread(new ThreadTest(receiverScheduler,"threadC"));
+        Thread threadD = new Thread(new ThreadTest(receiverScheduler,"threadD"));
+        Thread threadE = new Thread(new ThreadTest(receiverScheduler,"threadE"));
+        ExecutorService pool = Executors.newFixedThreadPool(5);
+        pool.execute(threadA);
+        pool.execute(threadB);
+        pool.execute(threadC);
+        pool.execute(threadD);
+        pool.execute(threadE);
+        pool.shutdown();
+    }
+
     @Test
     public void preapreRecvicer() throws Exception {
         CommonConf conf = new CommonConf();
@@ -39,19 +63,6 @@ public class ReceiverSchedulerTest {
         Assert.assertTrue(judge);
     }
 
-    @Test
-    public void putData() throws Exception {
-        CommonConf conf = new CommonConf();
-        ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
-        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
-        method_prepareReceiver.setAccessible(true);
-        method_prepareReceiver.invoke(receiverScheduler);
-        ThreadA threadA = new ThreadA(receiverScheduler);
-        threadA.run();
-        ThreadB threadB = new ThreadB(receiverScheduler);
-        threadB.run();
-    }
-
 
     @Test
     public void rebalanceReceiver() throws Exception {
@@ -66,28 +77,31 @@ public class ReceiverSchedulerTest {
     }
 }
 
-class ThreadA implements Runnable {
+class ThreadTest extends Thread {
     private ReceiverScheduler receiverScheduler;
+    private String thread;
 
-    public ThreadA(ReceiverScheduler receiverScheduler) {
+    ThreadTest(ReceiverScheduler receiverScheduler, String thread) {
         super();
         this.receiverScheduler = receiverScheduler;
+        this.thread = thread;
     }
 
     @Override
     public void run() {
-        for (int i = 0; i < 30; i++) {
-            try {
-                LogEvent event = new LogEvent();
-                event.setStatus("A" + i);
-                Method method = receiverScheduler.getClass().getDeclaredMethod("putData", LogEvent.class);
-                method.setAccessible(true);
-                method.invoke(receiverScheduler, event);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        for (int i = 0; i < 10; i++) {
+            LogEvent event = new LogEvent();
+            event.setStatus(thread + i);
+            event.setPath("ftp:s108:2181/2018/02/08");
+            receiverScheduler.putData(event);
+        }
+        try {
+            Thread.sleep(2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
+
 }
 
 class ThreadB implements Runnable {
@@ -101,15 +115,9 @@ class ThreadB implements Runnable {
     @Override
     public void run() {
         for (int i = 0; i < 20; i++) {
-            try {
-                LogEvent event = new LogEvent();
-                event.setStatus("B" + i);
-                Method method = receiverScheduler.getClass().getDeclaredMethod("putData", LogEvent.class);
-                method.setAccessible(true);
-                method.invoke(receiverScheduler, event);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            LogEvent event = new LogEvent();
+            event.setStatus("B" + i);
+            receiverScheduler.putData(event);
         }
     }
 }
