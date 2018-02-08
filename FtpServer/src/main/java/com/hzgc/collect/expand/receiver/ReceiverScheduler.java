@@ -74,7 +74,7 @@ public class ReceiverScheduler {
         int receiveNumber = conf.getReceiveNumber();
         String logDir = conf.getProcessLogDir();
         if (receiveNumber != 0 && logDir != null) {
-            List<String> queueIdList = reblanceRecevicer(receiveNumber, logDir);
+            List<String> queueIdList = rebalanceReceiver(receiveNumber, logDir);
             if (queueIdList.size() > 0) {
                 pool = Executors.newFixedThreadPool(queueIdList.size());
                 for (String id : queueIdList) {
@@ -104,7 +104,7 @@ public class ReceiverScheduler {
      * @param processLogDir 参数Log文件存放地址，用来判断receiver的数量
      * @return 返回经过判断的对应receiver数量的queueID的集合
      */
-    private List<String> reblanceRecevicer(int receiverNum, String processLogDir) {
+    private List<String> rebalanceReceiver(int receiverNum, String processLogDir) {
         List<String> queueIDList = new ArrayList<>();
         File file = new File(processLogDir);
         if (file.exists()) {
