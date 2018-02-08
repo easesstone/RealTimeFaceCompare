@@ -62,9 +62,9 @@ HBASE_COMMON_VERSION=hbase-common-1.2.6.jar
 HBASE_PROTOCOL_VERSION=hbase-protocol-1.2.6.jar
 KAFKA_VERSION=kafka_2.11-0.8.2.1.jar
 ELASTICSEARCH_VERSION=elasticsearch-1.0.jar
-ROCKETMQ_CLIENT_VERSION=rocketmq-client-4.1.0-incubating.jar
-ROCKETMQ_COMMON_VERSION=rocketmq-common-4.1.0-incubating.jar
-ROCKETMQ_REMOTING_VERSION=rocketmq-remoting-4.1.0-incubating.jar
+ROCKETMQ_CLIENT_VERSION=rocketmq-client-4.2.0.jar
+ROCKETMQ_COMMON_VERSION=rocketmq-common-4.2.0.jar
+ROCKETMQ_REMOTING_VERSION=rocketmq-remoting-4.2.0.jar
 FASTJSON_VERSION=fastjson-1.2.29.jar
 KAFKA_CLIENTS_VERSION=kafka-clients-1.0.0.jar
 METRICS_CORE_VERSION=metrics-core-2.2.0.jar
@@ -90,6 +90,13 @@ fi
 if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
     echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
     exit 0
+fi
+if [ ! -e ${CLUSTER_CONF_DIR}/log4j.properties ];then
+    echo "${CLUSTER_CONF_DIR}/log4j.properties does not exit!"
+    exit 0
+else
+    echo "===================开始配置log4j.properties===================="
+    sed -i "s#^log4j.appender.FILE.File=.*#log4j.appender.FILE.File=${LOG_FILE}#g" ${CLUSTER_CONF_DIR}/log4j.properties
 fi
 
 
@@ -210,9 +217,10 @@ ${FTP_LIB_DIR}/${FASTJSON_VERSION},\
 ${COMMON_LIB_DIR}/${UTIL_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION},\
 ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} \
+--conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:${CLUSTER_CONF_DIR}/log4j.properties" \
 --files ${SERVICE_CONF_DIR}/es-config.properties,\
 ${SERVICE_CONF_DIR}/hbase-site.xml,\
 ${FTP_CONF_DIR}/ftpAddress.properties,\
 ${CLUSTER_CONF_DIR}/sparkJob.properties,\
 ${FTP_CONF_DIR}/rocketmq.properties \
-${COMMON_LIB_DIR}/${CLUSTER_VERSION} > ${LOG_FILE} 2>&1 &
+${COMMON_LIB_DIR}/${CLUSTER_VERSION} &
