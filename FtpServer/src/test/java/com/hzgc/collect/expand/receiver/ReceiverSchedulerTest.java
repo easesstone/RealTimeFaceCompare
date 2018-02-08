@@ -12,33 +12,20 @@ public class ReceiverSchedulerTest {
     @Test
     public void preapreRecvicer() throws Exception {
         CommonConf conf = new CommonConf();
-        conf.setMergeScanTime(2);
-        conf.setReceiveLogDir("/opt/test/receive");
-        conf.setProcessLogDir("/opt/test/process");
-        conf.setReceiveNumber(10);
-        conf.setCapacity(100);
-        conf.setLogName("00000000000000000.log");
-        conf.setLogSize(100);
+        int receiverNumber = conf.getReceiveNumber();
         ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
         Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
         method_prepareReceiver.setAccessible(true);
         method_prepareReceiver.invoke(receiverScheduler);
         List<ReceiverImpl> list = receiverScheduler.getContainer();
         System.out.println(list.size());
-        Assert.assertArrayEquals(new int[]{10}, new int[]{list.size()});
+        Assert.assertArrayEquals(new int[]{receiverNumber}, new int[]{list.size()});
     }
 
     @Test
     public void getReceiver() throws Exception {
         boolean judge = false;
         CommonConf conf = new CommonConf();
-        conf.setMergeScanTime(2);
-        conf.setReceiveLogDir("/opt/test/receive");
-        conf.setProcessLogDir("/opt/test/process");
-        conf.setReceiveNumber(10);
-        conf.setCapacity(100);
-        conf.setLogName("00000000000000000.log");
-        conf.setLogSize(100);
         ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
         Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
         method_prepareReceiver.setAccessible(true);
@@ -69,15 +56,8 @@ public class ReceiverSchedulerTest {
     @Test
     public void rebalanceReceiver() throws Exception {
         int receiverNum = 5;
-        String processDir = "/opt/test/process";
         CommonConf conf = new CommonConf();
-        conf.setMergeScanTime(2);
-        conf.setReceiveLogDir("/opt/test/receive");
-        conf.setProcessLogDir("/opt/test/process");
-        conf.setReceiveNumber(10);
-        conf.setCapacity(100);
-        conf.setLogName("00000000000000000.log");
-        conf.setLogSize(100);
+        String processDir = conf.getProcessLogDir();
         ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
         Method method = receiverScheduler.getClass().getDeclaredMethod("rebalanceReceiver", int.class, String.class);
         method.setAccessible(true);
