@@ -198,7 +198,7 @@ public class MergeUtil {
         //记录入参中符合文件路径格式的参数个数（入参可能为文件夹路径）
         int count = 0;
         if (filePaths != null) { // if-A start
-            for (String filePath:filePaths) {
+            for (String filePath : filePaths) {
                 //入参均不为空，再执行以下操作
                 if (filePath != null && !Objects.equals(filePath, "")) { // if-B start
                     File file = new File(filePath);
@@ -238,8 +238,8 @@ public class MergeUtil {
      * @param path 文件或目录
      */
 
-    public void deleteFile(String path){
-        if (path != null && !Objects.equals(path, "")){
+    public void deleteFile(String path) {
+        if (path != null && !Objects.equals(path, "")) {
             deleteFile(new File(path));
         } else {
             LOG.error("The parameter is null or empty!");
@@ -247,17 +247,17 @@ public class MergeUtil {
 
     }
 
-    public void deleteFile(File file){
-        if (file.exists() && file.isFile()){
+    public void deleteFile(File file) {
+        if (file.exists() && file.isFile()) {
             file.delete();
         }
-        if (file.exists() && file.isDirectory()){
+        if (file.exists() && file.isDirectory()) {
             File[] files = file.listFiles();
-            if (files == null || files.length == 0){
+            if (files == null || files.length == 0) {
                 file.delete();
             }
             for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()){
+                if (files[i].isDirectory()) {
                     deleteFile(files[i]); //递归
                     continue; //跳出本次循环，继续下次循环
                 }
@@ -411,8 +411,8 @@ public class MergeUtil {
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
             if (file.isFile() && processFilePath.contains("process" + File.separator + "p-")) {
-                receiveFilePath = processFilePath.replace("process"+ File.separator + "p-",
-                                                                "receive" +File.separator +"r-");
+                receiveFilePath = processFilePath.replace("process" + File.separator + "p-",
+                        "receive" + File.separator + "r-");
             } else {
                 LOG.error("The " + processFilePath + " is not correct!");
             }
@@ -434,10 +434,10 @@ public class MergeUtil {
         String errorFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
-            if (file.isFile() && processFilePath.contains("process" +File.separator +"p-")) {
+            if (file.isFile() && processFilePath.contains("process" + File.separator + "p-")) {
                 //获取process日志路径的父目录：/ftp/data/process/p-0/
                 String parentFolder = file.getParent();
-                errorFilePath = parentFolder + File.separator +"error.log";
+                errorFilePath = parentFolder + File.separator + "error.log";
             } else {
                 LOG.error("The " + processFilePath + " is not correct!");
             }
@@ -555,7 +555,7 @@ public class MergeUtil {
      * tryLock()表示尝试获取锁，获取成功返回true，获取失败（即锁已被其他线程获取），返回false。
      * 这个方法无论如何都会立即返回。
      */
-    public void lockAndMove(String SourceFile, String targetFile) {
+    public void lockAndMove(String sourceFilePath, String targetFilePath) {
         RandomAccessFile fromFile = null;
         FileChannel fromFileChannel = null;
         FileLock fromFileLock = null;
@@ -563,33 +563,44 @@ public class MergeUtil {
         FileChannel toFileChannel = null;
 
         //判断入参不为空，是一个文件。
-        if (SourceFile != null && !Objects.equals(SourceFile, "")
-                && targetFile != null && !Objects.equals(targetFile, "")) {
-            if ((new File(SourceFile).isFile())) {
-                try {
-                    //需读取的error.log
-                    fromFile = new RandomAccessFile(new File(SourceFile), "rw");
-                    fromFileChannel = fromFile.getChannel();
+        if (sourceFilePath != null && !Objects.equals(sourceFilePath, "")
+                && targetFilePath != null && !Objects.equals(targetFilePath, "")) {
+            File sourceFile = new File(sourceFilePath);
+            File targetFile = new File(targetFilePath);
 
+            if (sourceFile.isFile() && sourceFile.exists()) {
+                try {
                     while (true) {
-                        try {
-                            fromFileLock = fromFileChannel.tryLock();
-                            if (fromFileLock == null) { //不能获取到锁
-                                break;
-                            } else {
-                                //能够获取到锁后的操作：新建写入文件通道，通过通道复制文件。
-                                toFile = new RandomAccessFile(new File(targetFile), "rw");
-                                toFileChannel = toFile.getChannel();
-                                long length = fromFileChannel.size();
-                                int position = 0;
-                                // transferTo()：position 开始位置，count 要读取的字节数，target 目标通道。返回实际转化的字节数
-                                fromFileChannel.transferTo(position, length, toFileChannel);
-                                //写入新文件后，将原来的error.log清空
-                                fromFileChannel.truncate(0); //截取一个文件，删除指定长度后面的部分。
+                        fromFile = new RandomAccessFile(sourceFile, "rw");
+                        fromFileChannel = fromFile.getChannel();
+                        fromFileLock = fromFileChannel.tryLock();
+                        if (fromFileLock == null) { //不能获取到锁
+                            break;
+                        } else { //能够获取到锁后的操作：
+                            //1、判断目标路径（包括父目录与文件路径）是否存在，不存在，先创建。
+                            File targetFolderPath = targetFile.getParentFile();
+                            //若目标文件父目录不存在，先创建
+                            if (!targetFolderPath.exists()) {
+                                targetFolderPath.mkdirs();
                             }
-                        } catch (Exception e) {
-                            LOG.info("Another thread is operating this file. ");
-                            e.printStackTrace();
+                            //若目标文件不存在，先创建
+                            if (!targetFile.exists()) {
+                                try {
+                                    targetFile.createNewFile();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            //2、新建写入文件通道toFileChannel，通过通道复制文件fromFile。
+                            toFile = new RandomAccessFile(targetFile, "rw");
+                            toFileChannel = toFile.getChannel();
+                            long length = fromFileChannel.size();
+                            int position = 0;
+                            // transferTo()：position 开始位置，count 要读取的字节数，target 目标通道。返回实际转化的字节数
+                            fromFileChannel.transferTo(position, length, toFileChannel);
+                            //写入新文件后，将原来的error.log清空
+                            fromFileChannel.truncate(0); //截取一个文件，删除指定长度后面的部分。
+                            break;
                         }
                     }
                 } catch (Exception e) {
