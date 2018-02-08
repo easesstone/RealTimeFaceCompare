@@ -99,7 +99,7 @@ class ThreadA implements Runnable {
         for (int i = 0; i < 30; i++) {
             try {
                 LogEvent event = new LogEvent();
-                event.setStatus("" + i);
+                event.setStatus("A" + i);
                 Method method = receiverScheduler.getClass().getDeclaredMethod("putData", LogEvent.class);
                 method.setAccessible(true);
                 method.invoke(receiverScheduler, event);
@@ -123,7 +123,7 @@ class ThreadB implements Runnable {
         for (int i = 0; i < 20; i++) {
             try {
                 LogEvent event = new LogEvent();
-                event.setStatus("" + i);
+                event.setStatus("B" + i);
                 Method method = receiverScheduler.getClass().getDeclaredMethod("putData", LogEvent.class);
                 method.setAccessible(true);
                 method.invoke(receiverScheduler, event);
