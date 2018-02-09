@@ -26,6 +26,7 @@ public class ProperHelperTest {
         ClusterOverFtpProperHelper.getFaceDetectorNumber();
         ClusterOverFtpProperHelper.getLogSize();
         ClusterOverFtpProperHelper.getReceiveQueueCapacity();
+        ClusterOverFtpProperHelper.getFtpdataDir();
     }
 
     @Test

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * merge模块与文件读写相关的工具类（马燊偲）
  */
-public class MergeUtil {
+class MergeUtil {
 
     private Logger LOG = Logger.getLogger(MergeUtil.class);
     //系统换行符
@@ -31,19 +31,19 @@ public class MergeUtil {
     //用于生成错误日志文件名随机数的日期格式
     private static final String ERR_DATE_FORMAT = "yyyy-MM-dd-HHmmSSS-";
 
-    /**
-     * 使用Files工具类中的walkFileTree()方法实现对目录下的所有文件进行遍历。
-     * 这个方法需要一个Path和一个FileVisitor参数。
-     * 其中Path是要遍历的路径，而FileVisitor则可以看成的一个文件访问器，它主要提供了四个方法。
-     * 这四个方法返回的都是FileVisitResult对象，它是一个枚举类，代表的是返回之后的一些后续的操作。
-     *
-     * FileVisitResult主要包含四个常见的操作：
-     * 1、FileVisitResult.CONTINUE 继续遍历
-     * 2、FileVisitResult.TERMINATE 中止访问
-     * 3、FileVisitResult.SKIP_SIBLINGS 不访问同级的文件或目录
-     * 4、FileVisitResult.SKIP_SUBTREE 不访问子目录
-     *
-     * 通过创建SimpleFileVisitor对象来对文件进行遍历即可，它是FileVisitor的实现类，这样可以有选择的重写指定的方法。
+    /*
+      使用Files工具类中的walkFileTree()方法实现对目录下的所有文件进行遍历。
+      这个方法需要一个Path和一个FileVisitor参数。
+      其中Path是要遍历的路径，而FileVisitor则可以看成的一个文件访问器，它主要提供了四个方法。
+      这四个方法返回的都是FileVisitResult对象，它是一个枚举类，代表的是返回之后的一些后续的操作。
+
+      FileVisitResult主要包含四个常见的操作：
+      1、FileVisitResult.CONTINUE 继续遍历
+      2、FileVisitResult.TERMINATE 中止访问
+      3、FileVisitResult.SKIP_SIBLINGS 不访问同级的文件或目录
+      4、FileVisitResult.SKIP_SUBTREE 不访问子目录
+
+      通过创建SimpleFileVisitor对象来对文件进行遍历即可，它是FileVisitor的实现类，这样可以有选择的重写指定的方法。
      */
 
     /**
@@ -52,8 +52,8 @@ public class MergeUtil {
      * @param path 需扫描的根目录
      * @return 该根目录下所有文件的FileList
      */
-    public List<String> listAllFileAbsPath(String path) {
-        List<String> allFileDir = new ArrayList<>();
+    List<String> listAllFileAbsPath(String path) {
+        List<String> allFilePath = new ArrayList<>();
         try {
             if (path != null && !Objects.equals(path, "")) {
                 //若传入的参数是一个目录
@@ -64,7 +64,7 @@ public class MergeUtil {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                             if (file.toString().contains(SUFFIX)) {
-                                allFileDir.add(file.toString());
+                                allFilePath.add(file.toString());
                             }
                             return FileVisitResult.CONTINUE;
                         }
@@ -78,18 +78,18 @@ public class MergeUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return allFileDir;
+        return allFilePath;
     }
 
 
     /**
-     * NIO扫描得到所有错误日志/process/p-N/error/error.log绝对路径的List
+     * NIO扫描得到process目录下所有错误日志/process/p-N/error/error.log绝对路径的List
      *
      * @param path 需扫描的根目录
      * @return 该目录下所有错误日志/process/p-N/error/error.log绝对路径的List
      */
-    public List<String> listAllErrorLogAbsPath(String path) {
-        List<String> allErrorFileDir = new ArrayList<>();
+    List<String> listAllErrorLogAbsPath(String path) {
+        List<String> allErrorFilePath = new ArrayList<>();
         try {
             if (path != null && !Objects.equals(path, "")) {
                 //若传入的参数是一个目录
@@ -98,10 +98,10 @@ public class MergeUtil {
                     Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>() {
                         //访问文件时触发该方法。
                         @Override
-                        public FileVisitResult visitFile(Path dir, BasicFileAttributes attrs) throws IOException {
+                        public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                             //将所有process下所有error日志添加到List
-                            if (dir.toString().contains("error.log")) {
-                                allErrorFileDir.add(dir.toString());
+                            if (path.toString().contains("error.log")) {
+                                allErrorFilePath.add(path.toString());
                             }
                             return FileVisitResult.CONTINUE;
                         }
@@ -115,20 +115,55 @@ public class MergeUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return allErrorFileDir;
+        return allErrorFilePath;
     }
 
-
     /**
-     * NIO扫描得到process目录下的除了0000.log、除了最大的日志文件、除了error/error.log
-     * 之外，所有文件的绝对路径的FileList
+     * NIO扫描得到process目录下除了error/error.log以外的所有log日志的List
+     * （包括0000.log、包括最大的日志文件）
      *
      * @param path 需扫描的根目录
      * @return 该根目录除了0000.log以及最大的日志文件外所有文件的FileList
      */
-    public List<String> listAllBackupLogAbsPath(String path, String writingLogFile) {
+    List<String> listAllProcessLogAbsPath(String path) {
+        List<String> allProcessLogPath = new ArrayList<>();
+        try {
+            if (path != null && !Objects.equals(path, "")) {
+                //若传入的参数是一个目录
+                if (Files.isDirectory(Paths.get(path))) {
+                    //用NIO对path目录下的文件进行递归遍历
+                    Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>() {
+                        //访问文件时触发该方法。
+                        public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                            //将所有process下所有除了error.log的日志添加到List
+                            if (!path.toString().contains("error")) {
+                                allProcessLogPath.add(path.toString());
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } else {
+                    LOG.error(path + " is not a directory!");
+                }
+            } else {
+                LOG.error("The parameter is null!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return allProcessLogPath;
+    }
+
+    /**
+     * NIO扫描得到process目录下的除了0000.log、除了最大的日志文件、除了error/error.log
+     * 之外，所有文件的绝对路径的List
+     *
+     * @param path 需扫描的根目录
+     * @return 该根目录除了0000.log以及最大的日志文件外所有文件的FileList
+     */
+    List<String> listAllBackupLogAbsPath(String path, String writingLogFile) {
         //writingLogFile：遍历时需要跳过的0000000.log文件
-        List<String> allFileOfDir = new ArrayList<>();
+        List<String> allFileOfPath = new ArrayList<>();
         try {
             if (path != null && !Objects.equals(path, "")) {
                 //若传入的参数是一个目录
@@ -138,25 +173,25 @@ public class MergeUtil {
                         // 访问目录时触发该方法
                         // 目录结构为：./data/process/r-0/000000000001.log
                         // 传入目录为 ./data/process/这一级
-                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        public FileVisitResult postVisitDirectory(Path path, IOException exc) throws IOException {
                             //若目录包含“-”，则一定是/data/receive/这一级目录
-                            if (dir.toString().contains("-") && !dir.toString().contains("error")) {
+                            if (path.toString().contains("-") && !path.toString().contains("error")) {
                                 //获取/data/receive/r-0/这一级目录下面的所有日志文件和文件夹，
                                 // 不包括0000.log和最大值的日志文件，不包括error日志文件夹
-                                File[] allFiles = dir.toFile().listFiles();
+                                File[] allFiles = path.toFile().listFiles();
 
                                 //以<文件名数值：文件绝对路径>的k-v方式放入map
                                 //遍历获取目录下最大值的文件Key：2000 -> value：../r-0/2000.log
                                 Map<Integer, String> fileNameMap = new HashMap<>();
                                 if (allFiles != null) {
-                                    for (int i = 0; i < allFiles.length; i++) {
+                                    for (File allFile : allFiles) {
                                         //文件名，不含后缀
-                                        String filename = allFiles[i].getName().replace(SUFFIX, "");
+                                        String filename = allFile.getName().replace(SUFFIX, "");
                                         Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
                                         //判断文件名是否是整数，并排除读到error/error.log的可能性
                                         if (pattern.matcher(filename).matches() && !filename.contains("error")) {
                                             int fileName = Integer.parseInt(filename);
-                                            fileNameMap.put(fileName, allFiles[i].toString());
+                                            fileNameMap.put(fileName, allFile.toString());
                                         }
                                     }
                                     //获取最大的文件名对应的key
@@ -166,7 +201,7 @@ public class MergeUtil {
                                     fileNameMap.remove(Integer.parseInt(writingLogFile.replace(SUFFIX, "")));
                                     //遍历map，将除去这两个文件后的所有文件，放入list
                                     for (Map.Entry<Integer, String> entry : fileNameMap.entrySet()) {
-                                        allFileOfDir.add(entry.getValue());
+                                        allFileOfPath.add(entry.getValue());
                                     }
                                 }
                             }
@@ -182,7 +217,7 @@ public class MergeUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return allFileOfDir;
+        return allFileOfPath;
     }
 
 
@@ -192,7 +227,7 @@ public class MergeUtil {
      * @param filePaths 两个文件的路径
      * @return 包含两个文件中所有内容的List
      */
-    public List<String> getAllContentFromFile(String... filePaths) {
+    List<String> getAllContentFromFile(String... filePaths) {
         //最终添加到的List
         List<String> allContentList = new ArrayList<>();
         //记录入参中符合文件路径格式的参数个数（入参可能为文件夹路径）
@@ -213,9 +248,9 @@ public class MergeUtil {
             try {
                 //若入参都是文件的绝对路径
                 if (count == filePaths.length) { // if-C start
-                    for (int j = 0; j < filePaths.length; j++) {
+                    for (String filePath : filePaths) {
                         //先将每个文件的内容，导入到各自的contentList中
-                        List<String> contentList = Files.readAllLines(Paths.get(filePaths[j]));
+                        List<String> contentList = Files.readAllLines(Paths.get(filePath));
                         //再导入到最终的allContentList中
                         allContentList.addAll(contentList);
                     }
@@ -238,7 +273,7 @@ public class MergeUtil {
      * @param path 文件或目录
      */
 
-    public void deleteFile(String path) {
+    void deleteFile(String path) {
         if (path != null && !Objects.equals(path, "")) {
             deleteFile(new File(path));
         } else {
@@ -247,7 +282,7 @@ public class MergeUtil {
 
     }
 
-    public void deleteFile(File file) {
+    private void deleteFile(File file) {
         if (file.exists() && file.isFile()) {
             file.delete();
         }
@@ -255,13 +290,14 @@ public class MergeUtil {
             File[] files = file.listFiles();
             if (files == null || files.length == 0) {
                 file.delete();
-            }
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    deleteFile(files[i]); //递归
-                    continue; //跳出本次循环，继续下次循环
+            }else {
+                for (File file1 : files) {
+                    if (file1.isDirectory()) {
+                        deleteFile(file1); //递归
+                        continue; //跳出本次循环，继续下次循环
+                    }
+                    file1.delete();
                 }
-                files[i].delete();
             }
         }
     }
@@ -273,7 +309,7 @@ public class MergeUtil {
      * @param filePath 需判断的文件所在路径
      * @return 文件是否存在
      */
-    public boolean isFileExist(String filePath) {
+    boolean isFileExist(String filePath) {
         //若输入为空
         if (filePath == null || Objects.equals(filePath, "")) {
             return false;
@@ -292,10 +328,9 @@ public class MergeUtil {
      *
      * @param event         每一条数据（LogEvent格式）
      * @param mergeFilePath 要写入的文件绝对路径
-     * @return 写入后的文件绝对路径
      */
-    public String writeMergeFile(LogEvent event, String mergeFilePath) {
-        if (mergeFilePath != null && mergeFilePath != "") {
+    void writeMergeFile(LogEvent event, String mergeFilePath) {
+        if (mergeFilePath != null && !Objects.equals(mergeFilePath, "")) {
             FileWriter fw = null;
             File mergeFile = new File(mergeFilePath);
             //获取入参文件绝对路径的父目录
@@ -328,7 +363,6 @@ public class MergeUtil {
         } else {
             LOG.error("The destination path is null or empty!");
         }
-        return mergeFilePath;
     }
 
 
@@ -338,7 +372,7 @@ public class MergeUtil {
      * @param sourceFile      源文件绝对路径
      * @param destinationFile 目标文件绝对路径
      */
-    public void moveFile(String sourceFile, String destinationFile) {
+    void moveFile(String sourceFile, String destinationFile) {
         if (sourceFile != null && destinationFile != null
                 && !Objects.equals(sourceFile, "")
                 && !Objects.equals(destinationFile, "")) {
@@ -372,7 +406,7 @@ public class MergeUtil {
      * @param sourceFile      源文件
      * @param destinationFile 目标文件
      */
-    public void copyFile(String sourceFile, String destinationFile) {
+    void copyFile(String sourceFile, String destinationFile) {
         if (sourceFile != null && destinationFile != null
                 && !Objects.equals(sourceFile, "")
                 && !Objects.equals(destinationFile, "")) {
@@ -406,7 +440,7 @@ public class MergeUtil {
      * @param processFilePath process日志绝对路径
      * @return 对应的receive的日志绝对路径
      */
-    public String getRecFilePathFromProFile(String processFilePath) {
+    String getRecFilePathFromProFile(String processFilePath) {
         String receiveFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
@@ -430,7 +464,7 @@ public class MergeUtil {
      * @param processFilePath process日志绝对路径
      * @return 对应的error日志绝对路径
      */
-    public String getErrFilePathFromProFile(String processFilePath) {
+    String getErrFilePathFromProFile(String processFilePath) {
         String errorFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
@@ -459,7 +493,7 @@ public class MergeUtil {
      * @param file receiveFile或processFile的文件路径
      * @return 对应的merge下的文件路径
      */
-    public String getMergeFilePath(String file) {
+    String getMergeFilePath(String file) {
         String mergeFilePath = "";
         if (file != null && !Objects.equals(file, "")) {
             if (new File(file).isFile()) {
@@ -502,7 +536,7 @@ public class MergeUtil {
      * @param datafile /data目录下文件绝对路径
      * @return data目录下文件对应的在success目录下的绝对路径
      */
-    public String getSuccessFilePath(String datafile) {
+    String getSuccessFilePath(String datafile) {
         String successFilePath = "";
         if (datafile != null && !Objects.equals(datafile, "")) {
             File file = new File(datafile);
@@ -555,7 +589,7 @@ public class MergeUtil {
      * tryLock()表示尝试获取锁，获取成功返回true，获取失败（即锁已被其他线程获取），返回false。
      * 这个方法无论如何都会立即返回。
      */
-    public void lockAndMove(String sourceFilePath, String targetFilePath) {
+    void lockAndMove(String sourceFilePath, String targetFilePath) {
         RandomAccessFile fromFile = null;
         FileChannel fromFileChannel = null;
         FileLock fromFileLock = null;
