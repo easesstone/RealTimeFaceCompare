@@ -43,10 +43,6 @@ public class RecoverNotProData {
         String processLogDir = commonConf.getProcessLogDir();
         //获取正在写的日志队列文件
         String writingLogFile = commonConf.getLogName();
-        //获取merge/error目录：/opt/RealTimeFaceCompare/ftp/merge/error
-        String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
-        //要写入的merge/error日志路径：/opt/RealTimeFaceCompare/ftp/merge/error/error.log
-        String writeErrFile = mergeErrLogDir + "/error.log";
         FileFactory fileFactory = new FileFactory(processLogDir, writingLogFile);
         //获取processLogDir目录下除去error日志所有文件绝对路径
         List<String> processFiles = fileFactory.getAllProcessLogAbsPath();
@@ -88,9 +84,12 @@ public class RecoverNotProData {
                                     rowCount++;
                                 } else {
                                     //发送Kafka失败,将日志写到merge目录下的error日志文件中
+                                    //获取error日志路径
+                                    String processErrLogPath = processFile.substring(0,processFile.lastIndexOf("/"));
+                                    String writeErrFile = processErrLogPath + "/error/error.log";
                                     event.setStatus("1");
                                     LOG.warn("Send to Kafka failure ,write log to errorLogFile :");
-                                    mergeUtil.writeMergeFile(event,processFile);
+                                    mergeUtil.writeMergeFile(event, processFile);
                                     mergeUtil.writeMergeFile(event, writeErrFile);
                                     rowCount++;
                                 }
