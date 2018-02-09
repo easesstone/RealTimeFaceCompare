@@ -19,11 +19,11 @@ public class ReceiverSchedulerTest {
         Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
         method_prepareReceiver.setAccessible(true);
         method_prepareReceiver.invoke(receiverScheduler);
-        Thread threadA = new Thread(new ThreadTest(receiverScheduler,"threadA"));
-        Thread threadB = new Thread(new ThreadTest(receiverScheduler,"threadB"));
-        Thread threadC = new Thread(new ThreadTest(receiverScheduler,"threadC"));
-        Thread threadD = new Thread(new ThreadTest(receiverScheduler,"threadD"));
-        Thread threadE = new Thread(new ThreadTest(receiverScheduler,"threadE"));
+        Thread threadA = new Thread(new PutDataThread(receiverScheduler,"threadA"));
+        Thread threadB = new Thread(new PutDataThread(receiverScheduler,"threadB"));
+        Thread threadC = new Thread(new PutDataThread(receiverScheduler,"threadC"));
+        Thread threadD = new Thread(new PutDataThread(receiverScheduler,"threadD"));
+        Thread threadE = new Thread(new PutDataThread(receiverScheduler,"threadE"));
         ExecutorService pool = Executors.newFixedThreadPool(5);
         pool.execute(threadA);
         pool.execute(threadB);
@@ -77,11 +77,11 @@ public class ReceiverSchedulerTest {
     }
 }
 
-class ThreadTest extends Thread {
+class PutDataThread extends Thread {
     private ReceiverScheduler receiverScheduler;
     private String thread;
 
-    ThreadTest(ReceiverScheduler receiverScheduler, String thread) {
+    PutDataThread(ReceiverScheduler receiverScheduler, String thread) {
         super();
         this.receiverScheduler = receiverScheduler;
         this.thread = thread;
@@ -104,20 +104,3 @@ class ThreadTest extends Thread {
 
 }
 
-class ThreadB implements Runnable {
-    private ReceiverScheduler receiverScheduler;
-
-    public ThreadB(ReceiverScheduler receiverScheduler) {
-        super();
-        this.receiverScheduler = receiverScheduler;
-    }
-
-    @Override
-    public void run() {
-        for (int i = 0; i < 20; i++) {
-            LogEvent event = new LogEvent();
-            event.setStatus("B" + i);
-            receiverScheduler.putData(event);
-        }
-    }
-}
