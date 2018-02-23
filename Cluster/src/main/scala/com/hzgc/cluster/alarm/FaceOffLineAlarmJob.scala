@@ -2,11 +2,12 @@ package com.hzgc.cluster.alarm
 
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import com.google.gson.Gson
 import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.cluster.message.OffLineAlarmMessage
-import com.hzgc.cluster.util.StreamingUtils
+import com.hzgc.cluster.util.PropertiesUtils
 import com.hzgc.ftpserver.producer.RocketMQProducer
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -20,7 +21,7 @@ import scala.collection.JavaConverters
 object FaceOffLineAlarmJob {
   def main(args: Array[String]): Unit = {
     val offLineAlarmMessage = new OffLineAlarmMessage()
-    val properties = StreamingUtils.getProperties
+    val properties = PropertiesUtils.getProperties
     val appName = properties.getProperty("job.offLine.appName")
     val conf = new SparkConf()
       .setAppName(appName)
@@ -30,7 +31,7 @@ object FaceOffLineAlarmJob {
     val separator = "ZHONGXIAN"
     if (offLineAlarmRule != null && !offLineAlarmRule.isEmpty) {
       println("Start offline alarm task data processing ...")
-      val objTypeList = StreamingUtils.getOffLineArarmObjType(offLineAlarmRule)
+      val objTypeList = PropertiesUtils.getOffLineArarmObjType(offLineAlarmRule)
       val returnResult = ObjectInfoInnerHandlerImpl.getInstance().searchByPkeysUpdateTime(objTypeList)
       if (returnResult != null && !returnResult.isEmpty) {
         val totalData = sc.parallelize(JavaConverters.asScalaBufferConverter(returnResult).asScala)
@@ -40,12 +41,12 @@ object FaceOffLineAlarmJob {
           if (objRole == null && objRole.isEmpty) {
             (splitResultElem._1, splitResultElem._2, splitResultElem._3, null)
           } else {
-            val days = StreamingUtils.getSimilarity(objRole)
+            val days = PropertiesUtils.getSimilarity(objRole)
             (splitResultElem._1, splitResultElem._2, splitResultElem._3, days)
           }
         }).filter(_._4 != null)
         val filterResult = getDays.filter(getFilter => getFilter._3 != null && getFilter._3.length != 0).
-          map(getDaysElem => (getDaysElem._1, getDaysElem._2, getDaysElem._3, StreamingUtils.timeTransition(getDaysElem._3), getDaysElem._4)).
+          map(getDaysElem => (getDaysElem._1, getDaysElem._2, getDaysElem._3, PropertiesUtils.timeTransition(getDaysElem._3), getDaysElem._4)).
           filter(ff => ff._4 != null && ff._4.length != 0).
           filter(filter => filter._4 > filter._5.toString)
         //将离线告警信息推送到MQ()

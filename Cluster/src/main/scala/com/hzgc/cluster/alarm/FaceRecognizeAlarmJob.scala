@@ -9,7 +9,7 @@ import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.cluster.message.{Item, RecognizeAlarmMessage}
-import com.hzgc.cluster.util.StreamingUtils
+import com.hzgc.cluster.util.PropertiesUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
 import com.hzgc.ftpserver.util.FtpUtils
 import kafka.serializer.StringDecoder
@@ -32,7 +32,7 @@ object FaceRecognizeAlarmJob {
 
   def main(args: Array[String]): Unit = {
     val deviceUtilI = new DeviceUtilImpl()
-    val properties = StreamingUtils.getProperties
+    val properties = PropertiesUtils.getProperties
     val appName = properties.getProperty("job.recognizeAlarm.appName")
     val itemNum = properties.getProperty("job.recognizeAlarm.items.num").toInt
     val timeInterval = Durations.seconds(properties.getProperty("job.recognizeAlarm.timeInterval").toLong)
