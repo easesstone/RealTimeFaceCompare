@@ -23,7 +23,7 @@ import com.hzgc.ftpserver.ftplet.DataConnection;
 import com.hzgc.ftpserver.ftplet.DataType;
 import com.hzgc.ftpserver.ftplet.FtpSession;
 import com.hzgc.ftpserver.usermanager.impl.TransferRateRequest;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +150,7 @@ public class IODataConnection implements DataConnection {
         try {
             return transfer(session, false, is, out, maxRate);
         } finally {
-            IoUtils.close(is);
+            IOUtils.close(is);
         }
     }
 
@@ -168,7 +168,7 @@ public class IODataConnection implements DataConnection {
         try {
             return transfer(session, false, ins, out, maxRate);
         } finally {
-            IoUtils.close(ins);
+            IOUtils.close(ins);
         }
     }
 
@@ -193,7 +193,7 @@ public class IODataConnection implements DataConnection {
         try {
             return transfer(session, true, in, out, maxRate);
         } finally {
-            IoUtils.close(out);
+            IOUtils.close(out);
         }
     }
 
@@ -221,7 +221,7 @@ public class IODataConnection implements DataConnection {
             if (writer != null) {
                 writer.flush();
             }
-            IoUtils.close(writer);
+            IOUtils.close(writer);
         }
 
     }
@@ -238,9 +238,9 @@ public class IODataConnection implements DataConnection {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
-            bis = IoUtils.getBufferedInputStream(in);
+            bis = IOUtils.getBufferedInputStream(in);
 
-            bos = IoUtils.getBufferedOutputStream(out);
+            bos = IOUtils.getBufferedOutputStream(out);
 
             DefaultFtpSession defaultFtpSession = null;
             if (session instanceof DefaultFtpSession) {

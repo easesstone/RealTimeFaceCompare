@@ -34,7 +34,7 @@ import java.util.Random;
  *
  * @author <a href="http://mina.apache.org">Apache MINA Project</a>
  */
-public class IoUtils {
+public class IOUtils {
 
     /**
      * Random number generator to make unique file name

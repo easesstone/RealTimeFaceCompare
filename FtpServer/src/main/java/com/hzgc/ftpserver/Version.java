@@ -19,7 +19,7 @@
 
 package com.hzgc.ftpserver;
 
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +47,7 @@ public class Version {
         } catch (IOException e) {
             throw new RuntimeException("Failed to read version", e);
         } finally {
-            IoUtils.close(in);
+            IOUtils.close(in);
         }
     }
 }

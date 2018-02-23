@@ -5,6 +5,7 @@ import java.util
 
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
+import org.apache.log4j.Level
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -24,6 +25,7 @@ import org.apache.spark.sql.SparkSession
   */
 object LoadParquetFile {
   val LOG = Logger.getLogger(LoadParquetFile.getClass)
+  Logger.getLogger("org.apache.spark").setLevel(Level.WARN) //设置输出级别为Warn级别
 
   def main(args: Array[String]): Unit = {
     if (args.length != 3) {
@@ -57,14 +59,15 @@ object LoadParquetFile {
       for (parquetFile <- parquetFiles) {
         val date = parquetFile.substring(parquetFile.indexOf("=") + 1, parquetFile.lastIndexOf("/"))
         val ipcId = parquetFile.substring(parquetFile.lastIndexOf("=") + 1)
-        println(date, ipcId)
+        LOG.warn("Hive metadata updated partition is :"+date+"  Ipcid is :"+ipcId+" success")
         sql("set hive.exec.dynamic.partition=true;")
         sql("set hive.exec.dynamic.partition.mode=nonstrict;")
         sql("alter table " + tableName + " add if not exists partition(date='" + date + "',ipcid='" + ipcId + "')")
       }
       sql("REFRESH TABLE " + tableName)
+      LOG.warn(" *********** UpData Done **********")
     } else {
-      LOG.error("parquetFiles is null or parquetFiles size is 0")
+      LOG.warn("parquetFiles is null or parquetFiles size is 0")
     }
   }
 }

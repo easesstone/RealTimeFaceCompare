@@ -22,7 +22,7 @@ package com.hzgc.ftpserver.message.impl;
 import com.hzgc.ftpserver.FtpServerConfigurationException;
 import com.hzgc.ftpserver.message.MessageResource;
 import com.hzgc.ftpserver.message.MessageResourceFactory;
-import com.hzgc.ftpserver.util.IoUtils;
+import com.hzgc.ftpserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +117,7 @@ public class DefaultMessageResource implements MessageResource {
                         "Failed to load messages from \"" + defaultResourceName + "\", file not found in classpath");
             }
         } finally {
-            IoUtils.close(in);
+            IOUtils.close(in);
         }
 
         // load custom resource
@@ -139,7 +139,7 @@ public class DefaultMessageResource implements MessageResource {
             throw new FtpServerConfigurationException(
                     "MessageResourceImpl.createPropertiesPair()", ex);
         } finally {
-            IoUtils.close(in);
+            IOUtils.close(in);
         }
 
         return pair;
