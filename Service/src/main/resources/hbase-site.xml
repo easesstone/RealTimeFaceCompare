@@ -51,7 +51,7 @@
     </property>
     <property>
         <name>hbase.zookeeper.quorum</name>
-        <value>s108:2181,s104:2181,s103:2181</value>
+        <value>s100:2181,s101:2181,s102:2181</value>
     </property>
     <property>
         <name>hbase.tmp.dir</name>
