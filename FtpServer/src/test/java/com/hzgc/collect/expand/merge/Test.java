@@ -30,6 +30,7 @@ public class Test {
         String writeErrFile = mergeErrLogDir + "/error.log";
         //获取processLogDir目录下除去error日志所有文件绝对路径
         FileFactory fileFactory = new FileFactory(processLogDir, writingLogFile);
+        String ftpdataDir = conf.getFtpdataDir();
 
         List<String> processFiles = fileFactory.getAllProcessLogAbsPath();
         //获取processLogDir目录下除去最大,error和000.log的绝对路径
@@ -54,7 +55,7 @@ public class Test {
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         String ftpUrl = event.getPath();
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
                         if (faceObject != null) {
                             SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);

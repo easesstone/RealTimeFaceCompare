@@ -23,6 +23,7 @@ public class RecoverNotProDataTest {
     List<String> backupLogAbsPath;
     MergeUtil mergeUtil = new MergeUtil();
     CommonConf conf = new CommonConf();
+    String ftpdataDir = conf.getFtpdataDir();
 
     SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -133,7 +134,7 @@ public class RecoverNotProDataTest {
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         String ftpUrl = event.getPath();
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
                         if (faceObject != null) {
                             SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
