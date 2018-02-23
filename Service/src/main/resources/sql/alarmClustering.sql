@@ -25,7 +25,7 @@ IN_MEMORY => 'true', BLOCKCACHE => 'true',TTL=>'604800'}
 |日期（年月）_类ID|   List<AlarmInfo>          |
 -----------------------------------------------
 
-create 'DetailInfo',
+create 'detailInfo',
 {NAME => 'c', DATA_BLOCK_ENCODING => 'NONE', BLOOMFILTER => 'ROW', REPLICATION_SCOPE => '0',
 VERSIONS => '1', MIN_VERSIONS => '0', KEEP_DELETED_CELLS => 'false', BLOCKSIZE => '65535',
 IN_MEMORY => 'true', BLOCKCACHE => 'true',TTL=>'604800'}
