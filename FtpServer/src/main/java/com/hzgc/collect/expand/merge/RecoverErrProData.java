@@ -6,8 +6,8 @@ import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.collect.expand.processer.KafkaProducer;
 import com.hzgc.collect.expand.util.JSONHelper;
 import org.apache.log4j.Logger;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
+import java.io.File;
 import java.util.List;
 
 /**
@@ -27,13 +27,13 @@ import java.util.List;
  *      1，对于errLogPaths中每一个errorN.log，遍历其中每一条数据：
  *              1，对每条数据，提取特征发送Kafka，
  *              2，同时把发送失败的数据重新写到/merge/error/下的一个新的errorN-NEW日志中，
+ *              3，发送成功的数据，不进行记录。
  *      2，删除原有已处理过的错误日志errorN.log。
  * 3，结束
  */
 public class RecoverErrProData implements Runnable {
 
     private Logger LOG = Logger.getLogger(RecoverErrProData.class);
-    private final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
     private static final String SUFFIX = ".log";
     private static CommonConf commonConf;
 
@@ -46,12 +46,12 @@ public class RecoverErrProData implements Runnable {
     public void run() {
         //初始化FileUtil工具类
         MergeUtil mergeUtil = new MergeUtil();
-        LogEvent logEvent = new LogEvent();
 
         //获取processLog的根目录：/opt/RealTimeFaceCompare/ftp/data/process
         String processLogDir = commonConf.getProcessLogDir();
         //获取merge/error目录：/opt/RealTimeFaceCompare/ftp/merge/error
-        String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
+        String mergeErrLogDir = commonConf.getMergeLogDir() + File.separator + "error";
+        String ftpdataDir = commonConf.getFtpdataDir();
 
         //列出process目录下所有error日志路径
         List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
@@ -68,6 +68,8 @@ public class RecoverErrProData implements Runnable {
         List<String> errFilePaths = mergeUtil.listAllFileAbsPath(mergeErrLogDir);
         //若errLogPaths这个list不为空（merge/error下有错误日志）
         if (errFilePaths != null && errFilePaths.size() != 0) { // V-1 if start
+            //用于标记kafka正在处理第几条数据
+            int flag = 0;
             //对于每一个error.log
             for (String errorFilePath : errFilePaths) {
                 //获取其中每一行数据
@@ -82,27 +84,30 @@ public class RecoverErrProData implements Runnable {
                         //"count":0, "url":"ftp://s100:/2018/01/09", "timestamp":"2018-01-02", "status":"0"
                         //用LogEvent获取该条数据的ftpUrl
                         String ftpUrl = event.getPath();
-                        //获取该条数据的序列号
-                        long count = event.getCount();
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) { // V-3 if start
                             SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+
+                            if ( flag == 0) {
+                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
+                                //只在处理第一条数据时，执行此步骤
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                             boolean success = sendDataToKafka.isSuccessToKafka();
 
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX,"")+"-N"+SUFFIX;
-                            logEvent.setPath(ftpUrl);
-                            if (success) {
-                                logEvent.setStatus("0");
-                            } else {
-                                logEvent.setStatus("1");
+                            if (!success) {
+                                mergeUtil.writeMergeFile(event, mergeErrFileNew);
                             }
-                            logEvent.setCount(count);
-                            logEvent.setTimeStamp(Long.valueOf(SDF.format(new Date())));
-                            mergeUtil.writeMergeFile(event, mergeErrFileNew);
                         } // V-3 if end：faceObject不为空的判断结束
+                        flag ++;
                     }
                 } // V-2 if end：errorRows为空的判断结束
                 //删除已处理过的error日志
