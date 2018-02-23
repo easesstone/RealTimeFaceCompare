@@ -1,4 +1,3 @@
-/*
 package com.hzgc.kmeans
 
 import com.hzgc.cluster.util.PropertiesUtils
@@ -126,4 +125,3 @@ object KMeansClustering {
   }
 }
 
-*/
