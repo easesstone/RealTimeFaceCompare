@@ -48,6 +48,7 @@ public class RecoverNotProData {
         List<String> processFiles = fileFactory.getAllProcessLogAbsPath();
         //获取processLogDir目录下除去最大,error和000.log的绝对路径
         List<String> backupLogAbsPath = fileFactory.getAllBackupLogAbsPath();
+        String ftpdataDir = commonConf.getFtpdataDir();
 
         //判断process根目录下是否有文件
         if (processFiles != null && processFiles.size() != 0) {
@@ -66,7 +67,7 @@ public class RecoverNotProData {
                         //获取未处理数据的ftpUrl
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         String ftpUrl = event.getPath();
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) {
                             SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
