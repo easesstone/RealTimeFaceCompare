@@ -10,7 +10,7 @@ import com.hzgc.util.common.ObjectUtil
 import org.apache.hadoop.hbase.client.{Put, Table}
 import org.apache.hadoop.hbase.util.Bytes
 
-class PutDataToHBase {
+object PutDataToHBase {
   def main(args: Array[String]): Unit = {
     val clusteringAttributeList: util.List[ClusteringAttribute] = new util.ArrayList[ClusteringAttribute]
     val rowkey: String = "2018-05"
@@ -29,6 +29,7 @@ class PutDataToHBase {
     clusteringAttribute.setCount(3)
     clusteringAttributeList.add(clusteringAttribute)
     putClusteringInfo(rowkey,clusteringAttributeList)
+    print("hello")
   }
   /**
     * 保存聚类信息
