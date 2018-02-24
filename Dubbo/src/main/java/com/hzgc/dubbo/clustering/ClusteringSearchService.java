@@ -3,9 +3,12 @@ package com.hzgc.dubbo.clustering;
 
 import java.util.List;
 
+/**
+ * 告警信息聚类查询接口（彭聪）
+ */
 public interface ClusteringSearchService {
     /**
-     * 查询聚类信息
+     * 查询聚类信息（首页显示，只查询聚类的概要信息）
      *
      * @param time      聚类时间
      * @param start     返回数据下标开始符号
