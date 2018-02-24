@@ -1,6 +1,7 @@
 package com.hzgc.collect.ftp;
 
 import com.hzgc.collect.expand.util.ClusterOverFtpProperHelper;
+import com.hzgc.collect.expand.util.HelperFactory;
 import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.util.common.FileUtil;
 import org.apache.log4j.Logger;
@@ -17,6 +18,7 @@ public abstract class ClusterOverFtp implements Serializable {
 
     public void loadConfig() throws Exception {
 
+        HelperFactory.regist();
         dataConnConf = new DataConnectionConfigurationFactory();
         listenerPort = ClusterOverFtpProperHelper.getPort();
         passivePorts = ClusterOverFtpProperHelper.getDataPorts();

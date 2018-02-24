@@ -31,8 +31,6 @@ public class FTP extends ClusterOverFtp {
       Set the dynamic log configuration file refresh time
      */
     static {
-        //加载所有配置文件
-        HelperFactory.regist();
         new LoggerConfig();
 
     }
