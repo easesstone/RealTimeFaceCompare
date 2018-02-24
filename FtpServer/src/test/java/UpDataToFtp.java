@@ -40,4 +40,4 @@ public class UpDataToFtp {
         }
         System.out.println("上传的文件数量：" + counter.getCount());
     }
-    }
+}
