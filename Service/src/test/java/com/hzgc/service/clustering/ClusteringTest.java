@@ -17,7 +17,7 @@ import java.util.List;
 public class ClusteringTest {
     public static void main(String[] args) {
         List<ClusteringAttribute> clusteringAttributeList = new ArrayList<>();
-        String rowkey = "2018-04";
+        String rowkey = "2018-06";
         ClusteringAttribute clusteringAttribute = new ClusteringAttribute();
         clusteringAttribute.setClusteringId("1");
         clusteringAttribute.setFirstAppearTime("2018-01-15");
@@ -33,9 +33,9 @@ public class ClusteringTest {
         clusteringAttribute.setCount(3);
         clusteringAttributeList.add(clusteringAttribute);
         putDataToHBase(rowkey, clusteringAttributeList);
-        getDataFromHBase("2018-04");
+        getDataFromHBase("2018-06");
         ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
-        List<ClusteringAttribute> clusteringAttributeList1 = clusteringSearchService.clusteringSearch("2018-01", 0, 1, "");
+        List<ClusteringAttribute> clusteringAttributeList1 = clusteringSearchService.clusteringSearch("2018-06", 0, 1, "");
         ClusteringAttribute clusteringAttribute1 = clusteringAttributeList1.get(0);
         System.out.println("count:" + clusteringAttribute1.getCount());
     }

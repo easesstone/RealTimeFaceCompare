@@ -58,7 +58,7 @@ public class ClusteringSearchServiceImpl {
      */
     List<AlarmInfo> detailClusteringSearch(String clusterId, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO);
-        Get get = new Get(Bytes.toBytes(time + "-"+clusterId));
+        Get get = new Get(Bytes.toBytes(time + "-" + clusterId));
         List<AlarmInfo> alarmInfoList = new ArrayList<>();
         try {
             Result result = clusteringInfoTable.get(get);
@@ -85,7 +85,7 @@ public class ClusteringSearchServiceImpl {
      */
     List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO);
-        Get get = new Get(Bytes.toBytes(time + "-"+clusterId));
+        Get get = new Get(Bytes.toBytes(time + "-" + clusterId));
         List<Integer> alarmInfoList = new ArrayList<>();
         try {
             Result result = clusteringInfoTable.get(get);
