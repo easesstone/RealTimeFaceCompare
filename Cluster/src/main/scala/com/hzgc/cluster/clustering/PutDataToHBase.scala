@@ -10,6 +10,9 @@ import com.hzgc.util.common.ObjectUtil
 import org.apache.hadoop.hbase.client.{Put, Table}
 import org.apache.hadoop.hbase.util.Bytes
 
+/**
+  * 将数据保存至HBase
+  */
 object PutDataToHBase {
   /**
     * 保存聚类信息

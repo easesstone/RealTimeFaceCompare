@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 告警聚类信息读写测试类及方法（彭聪）
+ */
 public class ClusteringTest {
     public static void main(String[] args) {
         List<ClusteringAttribute> clusteringAttributeList = new ArrayList<>();
