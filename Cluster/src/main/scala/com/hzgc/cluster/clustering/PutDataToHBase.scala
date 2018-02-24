@@ -11,32 +11,6 @@ import org.apache.hadoop.hbase.client.{Put, Table}
 import org.apache.hadoop.hbase.util.Bytes
 
 object PutDataToHBase {
-  def main(args: Array[String]): Unit = {
-    val clusteringAttributeList: util.List[ClusteringAttribute] = new util.ArrayList[ClusteringAttribute]
-    val rowkey: String = "2018-05"
-    val clusteringAttribute: ClusteringAttribute = new ClusteringAttribute()
-    clusteringAttribute.setClusteringId("1")
-    clusteringAttribute.setFirstAppearTime("2018-01-15")
-    clusteringAttribute.setFtpUrl("ftp://s105/skdfjllj/fjdslafjl.jpg")
-    clusteringAttributeList.add(clusteringAttribute)
-    clusteringAttribute.setClusteringId("2")
-    clusteringAttribute.setFirstAppearTime("2018-01-15")
-    clusteringAttribute.setFtpUrl("ftp://s105/skdfjllj/fjdslafjl.jpg")
-    clusteringAttribute.setClusteringId("3")
-    clusteringAttribute.setFirstAppearTime("2018-01-15")
-    clusteringAttribute.setFtpUrl("ftp://s105/skdfjllj/fjdslafjl.jpg")
-    clusteringAttributeList.add(clusteringAttribute)
-    clusteringAttribute.setCount(3)
-    clusteringAttributeList.add(clusteringAttribute)
-    putClusteringInfo(rowkey, clusteringAttributeList)
-    val alarmInfo: AlarmInfo = new AlarmInfo()
-    alarmInfo.setSurl("ftp://s100/20180102/xxx1.jpc")
-    alarmInfo.setBurl("ftp://s100/20180102/xxx0.jpc")
-    val alarmInfolist: util.List[AlarmInfo] = new util.ArrayList[AlarmInfo]
-    putDetailInfo("20180101", alarmInfolist)
-    print("hello")
-  }
-
   /**
     * 保存聚类信息
     *
