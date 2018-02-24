@@ -23,7 +23,6 @@ public class UpDataToFtp {
      * @param loopNum 循环次数
      * @param IpcId 设备ID
      */
-    @Test
     public static void upDataTest(String path, int loopNum, String IpcId){
         File file = new File(path);
         File[] tempList = file.listFiles();
@@ -33,14 +32,19 @@ public class UpDataToFtp {
             String randPathEnd = String.valueOf(randNum);
             for (int j = 0; j < ( tempList != null ? tempList.length : 0); j++) {
                 if (tempList[j].isFile()){
-                    String originFileName = tempList[j].getAbsolutePath();
+                    String originFilePath = tempList[j].getAbsolutePath();
                     String fileName = tempList[j].getName();
                     StringBuilder filePath = new StringBuilder();
                     //拼接路径
                     filePath = filePath.append(IpcId).append("/")
-                            .append(tempList[j].getName().substring(0, 13)).append(randPathEnd);
-                    FTPDownloadUtils.upLoadFromProduction("172.18.18.163", 2121, "admin",
-                            "123456", "", filePath.toString(), fileName, originFileName);
+                            .append(tempList[j].getName().substring(0, 13).replaceAll("_","/")).append(randPathEnd);
+
+
+                    //basePath FTP服务器基础目录
+                    //filePath FTP服务器文件存放路径。例如分日期存放：/2015/01/01。
+                    //文件的路径为 basePath + filePath
+                    FTPDownloadUtils.upLoadFromProduction("172.18.18.106", 2121, "admin",
+                            "123456", "", filePath.toString(), fileName, originFilePath);
                     counter.inc();
                     System.out.println(counter.getCount());
                 }
@@ -49,6 +53,9 @@ public class UpDataToFtp {
         System.out.println("发送到ftp的图片数量：" + counter.getCount());
     }
 
+    public static void main(String[] args) {
+        upDataTest("/home/test/picFrom",1,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
+    }
 
 
 }
