@@ -2,6 +2,9 @@ package com.hzgc.service.clustering;
 
 import org.apache.hadoop.hbase.util.Bytes;
 
+/**
+ * 聚类有关的HBase表
+ */
 public class ClusteringTable {
     //clusteringInfo表
     public static final String TABLE_ClUSTERINGINFO = "clusteringInfo";
