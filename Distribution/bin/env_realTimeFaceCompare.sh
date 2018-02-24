@@ -3,7 +3,7 @@ set -x
 
 #cd `dirname $0`
 #:pwd
-INSTALL_HOME=/opt/RealTimeCompare
+INSTALL_HOME=/opt/RealTimeFaceCompare
 
 #cluster home
 export CLUSTER_HOME=${INSTALL_HOME}/cluster

@@ -18,10 +18,8 @@ cd `dirname $0`
 BIN_DIR=`pwd`    ### bin目录
 cd ..
 DEPLOY_DIR=`pwd`
-CONF_DIR=$DEPLOY_DIR/conf    ### 项目根目录
-LIB_DIR=$DEPLOY_DIR/lib        ## Jar 包目录
-LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`   ## jar 包位置以及第三方依赖jar包，绝对路径
-LOG_DIR=${DEPLOY_DIR}/logs                       ## log 日记目录
+CONF_DIR=$DEPLOY_DIR/conf    ### 项目根目录                      ## log 日记目录
+LOG_DIR=$DEPLOY_DIR/logs
 LOG_FILE=${LOG_DIR}/schema-merge-parquet-file.log        ##  log 日记文件
 
 cd ..
@@ -59,10 +57,10 @@ function merge_parquet()
     if [ ! -d $LOG_DIR ]; then
         mkdir $LOG_DIR;
     fi
-    nohup spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFile \
+    nohup spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFileV1 \
     --master local[*] \
     --driver-memory 4g \
-${COMMMON_DIR}/lib/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
+${COMMMON_DIR}/lib/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
 }
 
 merge_parquet

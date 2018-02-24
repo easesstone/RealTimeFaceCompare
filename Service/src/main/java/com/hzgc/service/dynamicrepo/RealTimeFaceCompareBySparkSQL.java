@@ -19,11 +19,11 @@ import java.util.List;
 /**
  * 通过parkSQL以图搜图
  */
-class RealTimeCompareBySparkSQL {
-    private Logger LOG = Logger.getLogger(RealTimeCompareBySparkSQL.class);
+class RealTimeFaceCompareBySparkSQL {
+    private Logger LOG = Logger.getLogger(RealTimeFaceCompareBySparkSQL.class);
     private DynamicPhotoService dynamicPhotoService;
 
-    RealTimeCompareBySparkSQL() {
+    RealTimeFaceCompareBySparkSQL() {
         dynamicPhotoService = new DynamicPhotoServiceImpl();
     }
 
