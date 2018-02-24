@@ -32,7 +32,7 @@ public class FTP extends ClusterOverFtp {
      */
     static {
         new LoggerConfig();
-
+        HelperFactory.regist();
     }
 
     @Override
@@ -92,10 +92,12 @@ public class FTP extends ClusterOverFtp {
         Boolean success = recoverNotProData.recoverNotProData(commonConf);
         //若成功恢复未处理的数据，则启动ftp。
         if (success) {
+            log.info("recoverNotProData successfully!");
             FTP ftp = new FTP();
             ftp.loadConfig();
             ftp.startFtpServer();
             //启动ftp后，恢复错误数据。作为一个线程来执行
+            log.info("start RecoverErrProData....");
             ScheRecoErrData scheRecoErrData = new ScheRecoErrData();
             scheRecoErrData.scheduled(commonConf);
         }

@@ -18,12 +18,15 @@ public abstract class ClusterOverFtp implements Serializable {
 
     public void loadConfig() throws Exception {
 
-        HelperFactory.regist();
         dataConnConf = new DataConnectionConfigurationFactory();
         listenerPort = ClusterOverFtpProperHelper.getPort();
         passivePorts = ClusterOverFtpProperHelper.getDataPorts();
-        dataConnConf.setPassivePorts(passivePorts);
-
+        if (passivePorts == null){
+            log.info("The data ports is not set, use any available port");
+        } else {
+            dataConnConf.setPassivePorts(passivePorts);
+            log.warn("The data ports is set:" + passivePorts);
+        }
     }
 
 public abstract void startFtpServer();
