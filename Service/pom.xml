@@ -20,6 +20,7 @@
             <groupId>com.hzgc</groupId>
             <artifactId>bigdata-api</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
