@@ -28,9 +28,15 @@ object PutDataToHBase {
     clusteringAttributeList.add(clusteringAttribute)
     clusteringAttribute.setCount(3)
     clusteringAttributeList.add(clusteringAttribute)
-    putClusteringInfo(rowkey,clusteringAttributeList)
+    putClusteringInfo(rowkey, clusteringAttributeList)
+    val alarmInfo: AlarmInfo = new AlarmInfo()
+    alarmInfo.setSurl("ftp://s100/20180102/xxx1.jpc")
+    alarmInfo.setBurl("ftp://s100/20180102/xxx0.jpc")
+    val alarmInfolist: util.List[AlarmInfo] = new util.ArrayList[AlarmInfo]
+    putDetailInfo("20180101", alarmInfolist)
     print("hello")
   }
+
   /**
     * 保存聚类信息
     *
@@ -48,7 +54,7 @@ object PutDataToHBase {
   /**
     *
     * @param rowKey 年月+类ID（例如，2018-02-1）
-    * @param list 新增告警详细信息
+    * @param list   新增告警详细信息
     */
   def putDetailInfo(rowKey: String, list: util.List[AlarmInfo]): Unit = {
     val detailInfo: Table = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO)
@@ -61,7 +67,7 @@ object PutDataToHBase {
   /**
     *
     * @param rowKey 年月+类ID（例如，2018-02-1）
-    * @param list 每条新增告警id
+    * @param list   每条新增告警id
     */
   def putDetailInfo_v1(rowKey: String, list: List[Integer]): Unit = {
     val detailInfo: Table = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO)
