@@ -1,6 +1,8 @@
 package com.hzgc.collect;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.merge.RecoverNotProData;
+import com.hzgc.collect.expand.merge.ScheRecoErrData;
 import com.hzgc.collect.expand.util.HelperFactory;
 import com.hzgc.collect.ftp.ClusterOverFtp;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
@@ -21,7 +23,8 @@ import java.util.Map;
 
 public class FTP extends ClusterOverFtp {
     private static Logger log = Logger.getLogger(FTP.class);
-
+    //expand模块的公共Conf对象
+    private static CommonConf commonConf = new CommonConf();
     private static Map<Integer, Integer> pidMap = new HashMap<>();
 
     /*
@@ -31,12 +34,13 @@ public class FTP extends ClusterOverFtp {
         //加载所有配置文件
         HelperFactory.regist();
         new LoggerConfig();
+
     }
 
     @Override
     public void startFtpServer() {
-        //expand模块的公共Conf对象
-        CommonConf commonConf = new CommonConf();
+
+
         //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         log.info("Create " + FtpServerFactory.class + " successful");
@@ -86,8 +90,17 @@ public class FTP extends ClusterOverFtp {
     }
 
     public static void main(String args[]) throws Exception {
-        FTP ftp = new FTP();
-        ftp.loadConfig();
-        ftp.startFtpServer();
+        //启动ftp之前，先恢复未处理数据
+        RecoverNotProData recoverNotProData = new RecoverNotProData();
+        Boolean success = recoverNotProData.recoverNotProData(commonConf);
+        //若成功恢复未处理的数据，则启动ftp。
+        if (success) {
+            FTP ftp = new FTP();
+            ftp.loadConfig();
+            ftp.startFtpServer();
+            //启动ftp后，恢复错误数据。作为一个线程来执行
+            ScheRecoErrData scheRecoErrData = new ScheRecoErrData();
+            scheRecoErrData.scheduled(commonConf);
+        }
     }
 }

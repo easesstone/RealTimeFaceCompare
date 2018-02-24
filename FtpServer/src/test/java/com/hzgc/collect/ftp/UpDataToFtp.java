@@ -17,7 +17,7 @@ public class UpDataToFtp {
 
     /**
      *
-     * 对于path路径下的所有文件，循环loopNum次
+     * 对于本地path路径下的所有文件，循环loopNum次，发送到Ftp服务器
      *
      * @param path 文件路径
      * @param loopNum 循环次数
@@ -39,6 +39,7 @@ public class UpDataToFtp {
                     //拼接路径
                     filePath = filePath.append(IpcId).append("/")
                             .append(tempList[j].getName().substring(0, 13)).append(randPathEnd);
+                    //Ftp的用户名密码
                     FTPDownloadUtils.upLoadFromProduction("172.18.18.163", 2121, "admin",
                             "123456", "", filePath.toString(), fileName, originFileName);
                     counter.inc();
