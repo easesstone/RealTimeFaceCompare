@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class ClusteringSearchServiceImpl {
+/**
+ * 告警聚类结果查询接口实现
+ */
+class ClusteringSearchServiceImpl {
     private static Logger LOG = Logger.getLogger(ClusteringSearchServiceImpl.class);
 
     /**
@@ -43,7 +45,7 @@ public class ClusteringSearchServiceImpl {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return clusteringList;
+        return clusteringList.subList(start, start + limit);
     }
 
     /**
@@ -70,7 +72,7 @@ public class ClusteringSearchServiceImpl {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return alarmInfoList;
+        return alarmInfoList.subList(start, start + limit);
     }
 
     /**
@@ -97,6 +99,6 @@ public class ClusteringSearchServiceImpl {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return alarmInfoList;
+        return alarmInfoList.subList(start, start + limit);
     }
 }
