@@ -40,7 +40,6 @@ public class FTP extends ClusterOverFtp {
     @Override
     public void startFtpServer() {
 
-
         //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         log.info("Create " + FtpServerFactory.class + " successful");
