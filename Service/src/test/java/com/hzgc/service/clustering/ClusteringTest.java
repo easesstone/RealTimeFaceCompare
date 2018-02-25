@@ -11,7 +11,6 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ import java.util.List;
  */
 public class ClusteringTest {
     public static void main(String[] args) {
-        List<ClusteringAttribute> clusteringAttributeList = new ArrayList<>();
+       /* List<ClusteringAttribute> clusteringAttributeList = new ArrayList<>();
         String rowkey = "2018-06";
         ClusteringAttribute clusteringAttribute = new ClusteringAttribute();
         clusteringAttribute.setClusteringId("1");
@@ -36,11 +35,26 @@ public class ClusteringTest {
         clusteringAttribute.setCount(3);
         clusteringAttributeList.add(clusteringAttribute);
         putDataToHBase(rowkey, clusteringAttributeList);
-        getDataFromHBase("2018-06");
-        ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
-        List<ClusteringAttribute> clusteringAttributeList1 = clusteringSearchService.clusteringSearch("2018-06", 0, 1, "");
-        ClusteringAttribute clusteringAttribute1 = clusteringAttributeList1.get(0);
-        System.out.println("count:" + clusteringAttribute1.getCount());
+        getDataFromHBase("2018-06");*/
+        /*ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
+        List<ClusteringAttribute> clusteringAttributeList1 = clusteringSearchService.clusteringSearch("2018-02", 0, 50, "");
+        List<Integer> blist = new java.util.ArrayList<>();
+        blist.add(0);
+        blist.add(1);
+        blist.add(3);
+        blist.add(4);
+        blist.add(7);
+        blist.add(8);
+        blist.add(11);
+        blist.add(15);
+        blist.add(18);
+        List<ClusteringAttribute> clusteringAttributeList2 = new ArrayList<>();
+        for (int i = 0; i < clusteringAttributeList1.size(); i++) {
+            if (!blist.contains(i)){
+                clusteringAttributeList2.add(clusteringAttributeList1.get(i));
+            }
+        }
+        putDataToHBase("2018-02", clusteringAttributeList2);*/
     }
 
     private static void putDataToHBase(String rowKey, List<ClusteringAttribute> clusteringAttributeList) {

@@ -2,6 +2,7 @@ package com.hzgc.service.clustering;
 
 import com.hzgc.dubbo.clustering.AlarmInfo;
 import com.hzgc.dubbo.clustering.ClusteringAttribute;
+import com.hzgc.dubbo.clustering.ClusteringSearchService;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
 import com.hzgc.util.sort.ListUtils;
@@ -19,7 +20,7 @@ import java.util.List;
 /**
  * 告警聚类结果查询接口实现
  */
-class ClusteringSearchServiceImpl {
+class ClusteringSearchServiceImpl implements ClusteringSearchService {
     private static Logger LOG = Logger.getLogger(ClusteringSearchServiceImpl.class);
 
     /**
@@ -31,7 +32,8 @@ class ClusteringSearchServiceImpl {
      * @param sortParam 排序参数（默认按出现次数排序）
      * @return 聚类列表
      */
-    List<ClusteringAttribute> clusteringSearch(String time, int start, int limit, String sortParam) {
+    @Override
+    public List<ClusteringAttribute> clusteringSearch(String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
         Get get = new Get(Bytes.toBytes(time));
         List<ClusteringAttribute> clusteringList = new ArrayList<>();
@@ -58,7 +60,8 @@ class ClusteringSearchServiceImpl {
      * @param sortParam 排序参数（默认时间先后排序）
      * @return 返回该类下面所以告警信息
      */
-    List<AlarmInfo> detailClusteringSearch(String clusterId, String time, int start, int limit, String sortParam) {
+    @Override
+    public List<AlarmInfo> detailClusteringSearch(String clusterId, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO);
         Get get = new Get(Bytes.toBytes(time + "-" + clusterId));
         List<AlarmInfo> alarmInfoList = new ArrayList<>();
@@ -85,7 +88,8 @@ class ClusteringSearchServiceImpl {
      * @param sortParam 排序参数（默认时间先后排序）
      * @return 返回该类下面所以告警信息
      */
-    List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
+    @Override
+    public List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO);
         Get get = new Get(Bytes.toBytes(time + "-" + clusterId));
         List<Integer> alarmInfoList = new ArrayList<>();

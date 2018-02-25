@@ -16,7 +16,7 @@ public interface ClusteringSearchService {
      * @param sortParam 排序参数（默认按出现次数排序）
      * @return 聚类列表
      */
-    List<ClusteringAttribute> ClusteringSearch(String time, int start, int limit, String sortParam);
+    List<ClusteringAttribute> clusteringSearch(String time, int start, int limit, String sortParam);
 
     /**
      * 查询单个聚类详细信息(告警记录)
@@ -28,7 +28,7 @@ public interface ClusteringSearchService {
      * @param sortParam 排序参数（默认时间先后排序）
      * @return 返回该类下面所以告警信息
      */
-    List<AlarmInfo> DetailClusteringSearch(String clusterId, String time, int start, int limit, String sortParam);
+    List<AlarmInfo> detailClusteringSearch(String clusterId, String time, int start, int limit, String sortParam);
 
     /**
      * 查询单个聚类详细信息(告警ID)
@@ -40,5 +40,5 @@ public interface ClusteringSearchService {
      * @param sortParam 排序参数（默认时间先后排序）
      * @return 返回该类下面所以告警信息
      */
-    List<Integer> DetailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam);
+    List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam);
 }
