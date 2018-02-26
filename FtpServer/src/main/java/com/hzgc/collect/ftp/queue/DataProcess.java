@@ -1,6 +1,7 @@
 package com.hzgc.collect.ftp.queue;
 
 import com.hzgc.collect.expand.processer.FaceObject;
+import com.hzgc.collect.expand.processer.KafkaProducer;
 import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.ftpserver.util.FtpUtils;
@@ -31,7 +32,7 @@ public class DataProcess {
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private ProducerOverFtp kafkaProducer = ProducerOverFtp.getInstance();
+    private KafkaProducer kafkaProducer = KafkaProducer.getInstance();
 
     public void reader() {
         try {
@@ -61,7 +62,7 @@ public class DataProcess {
                                 if (data != null && data.length != 0) {
                                     faceObject.setAttribute(FaceFunction.featureExtract(data));
                                     String ftpUrl = FtpUtils.filePath2FtpUrl(fileName);
-                                    kafkaProducer.sendKafkaMessage(ProducerOverFtp.getFEATURE(), ftpUrl, faceObject);
+                                    kafkaProducer.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
                                     LOG.info("Send to kafka success, queue size:" + queue.size());
                                 } else {
                                     LOG.info(fileName + " picture data is null");
