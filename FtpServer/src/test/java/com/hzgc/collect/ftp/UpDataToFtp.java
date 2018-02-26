@@ -29,21 +29,26 @@ public class UpDataToFtp {
         for (int i = 0; i < loopNum; i++) {
             Random random = new Random();
             int randNum = random.nextInt(10000000);
-            String randPathEnd = String.valueOf(randNum);
+            String randName = String.valueOf(randNum);
             for (int j = 0; j < ( tempList != null ? tempList.length : 0); j++) {
                 if (tempList[j].isFile()){
                     String originFilePath = tempList[j].getAbsolutePath();
-                    String fileName = tempList[j].getName();
+                    String fileName = randName + tempList[j].getName();
                     StringBuilder filePath = new StringBuilder();
                     //拼接路径
                     filePath = filePath.append(IpcId).append("/")
-                            .append(tempList[j].getName().substring(0, 13).replaceAll("_","/")).append(randPathEnd);
+                            .append(tempList[j].getName().substring(0, 14).replaceAll("_","/"));
 
                     //basePath FTP服务器基础目录
                     //filePath FTP服务器文件存放路径。例如分日期存放：/2015/01/01。
                     //文件的路径为 basePath + filePath
-                    FTPDownloadUtils.upLoadFromProduction("172.18.18.106", 2121, "admin",
+                    FTPDownloadUtils.upLoadFromProduction("172.18.18.163", 2121, "admin",
                             "123456", "", filePath.toString(), fileName, originFilePath);
+
+                    System.out.println(filePath);
+                    System.out.println(fileName);
+                    System.out.println(originFilePath);
+
                     counter.inc();
                     System.out.println(counter.getCount());
                 }
@@ -53,7 +58,7 @@ public class UpDataToFtp {
     }
 
     public static void main(String[] args) {
-        upDataTest("/home/test/picFrom",1,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
+        upDataTest("/home/test/picFrom",10,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
     }
 
 

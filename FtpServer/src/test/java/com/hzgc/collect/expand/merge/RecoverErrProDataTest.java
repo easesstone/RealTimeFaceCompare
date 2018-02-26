@@ -109,10 +109,10 @@ public class RecoverErrProDataTest {
     public void testSendToKafka() {
         MergeUtil mergeUtil = new MergeUtil();
 
-        String ftpdataDir = commonConf.getFtpdataDir();
+        String ftpDataDir = commonConf.getFtpdataDir();
         System.out.println("processDir:" + processLogDir);
         System.out.println("mergeErrLogDir:" + mergeErrLogDir);
-        System.out.println("ftpdataDir:" + ftpdataDir);
+        System.out.println("ftpDataDir:" + ftpDataDir);
 
         List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
         for (String errFile : allErrorDir) {
@@ -123,36 +123,53 @@ public class RecoverErrProDataTest {
         }
 
         List<String> errFilePaths = mergeUtil.listAllFileAbsPath(mergeErrLogDir);
+
         if (errFilePaths != null && errFilePaths.size() != 0) {
             for (String errorFilePath : errFilePaths) {
+
+                //System.out.println("@@@@@@@@@@@errorFilePath = " + errorFilePath);
+
                 List<String> errorRows = mergeUtil.getAllContentFromFile(errorFilePath);
+                for (String row : errorRows) {
+                    System.out.println("@@@@@@@@@@errorRows = " + row);
+                }
+
+
                 if (errorRows != null && errorRows.size() != 0) {
+                    int flag = 0;
                     for (String row : errorRows) {
-                        System.out.println("****************************start scanning...****************************");
-
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
-
                         long count = event.getCount();
                         String ftpUrl = event.getPath();
-                        System.out.println("****************************ftpUrl:" + ftpUrl + "****************************");
-                        System.out.println("****************************get faceObject...****************************");
+                        //System.out.println("****************************ftpUrl:" + ftpUrl + "****************************");
+                        //System.out.println("****************************get faceObject...****************************");
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
-                        System.out.println("****************************faceObject:" + faceObject + "****************************");
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpDataDir);
+                        System.out.println("faceObject:" + faceObject);
                         if (faceObject != null) {
                             SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+
+                            if ( flag == 0) {
+                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
+                                //只在处理第一条数据时，执行此步骤
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
                             boolean success = sendDataToKafka.isSuccessToKafka();
-                            System.out.println("****************************test log!****************************");
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX, "") + "-N" + SUFFIX;
                             if (!success) {
                                 System.out.println("****************************Send the count " + count +
-                                        "message to kafka failed! Rewrite to new merge error file!" +"****************************");
+                                        " message to kafka failed! Rewrite to new merge error file!" +"****************************");
                                 mergeUtil.writeMergeFile(event, mergeErrFileNew);
                             } else {
-                                System.out.println("****************************Send the count " + count +
-                                        "message to kafka successfully!" +"****************************");
+                                System.out.println("#############Send the count " + count +
+                                        " message to kafka successfully!##################");
                             }
                         }
                     }
@@ -162,7 +179,6 @@ public class RecoverErrProDataTest {
         } else { //若merge/error目录下无日志
             System.out.println("****************************Nothing in " + mergeErrLogDir + "****************************");
         }
-
     }
 
 
