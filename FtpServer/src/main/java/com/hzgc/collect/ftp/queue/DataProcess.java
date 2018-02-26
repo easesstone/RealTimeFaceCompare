@@ -4,9 +4,6 @@ import com.hzgc.collect.expand.processer.FaceObject;
 import com.hzgc.collect.expand.processer.KafkaProducer;
 import com.hzgc.collect.ftp.util.FtpUtils;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-import com.hzgc.ftpserver.util.FtpUtils;
-import com.hzgc.ftpserver.producer.FaceObject;
-import com.hzgc.ftpserver.producer.ProducerOverFtp;
 import com.hzgc.jni.FaceFunction;
 
 import java.text.SimpleDateFormat;
@@ -16,7 +13,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.sun.corba.se.impl.encoding.BufferQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
