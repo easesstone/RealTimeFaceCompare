@@ -1,6 +1,6 @@
 package demo
 
-import com.hzgc.cluster.util.StreamingUtils
+import com.hzgc.cluster.util.PropertiesUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
@@ -14,7 +14,7 @@ object AlarmTest {
 
   def main(args: Array[String]): Unit = {
 
-    val properties = StreamingUtils.getProperties
+    val properties = PropertiesUtils.getProperties
     val appName = properties.getProperty("job.recognizeAlarm.appName")
     //    val master = properties.getProperty("job.recognizeAlarm.master")
     val itemNum = properties.getProperty("job.recognizeAlarm.items.num").toInt

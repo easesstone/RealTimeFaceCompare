@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import java.util.{Properties, UUID}
 
 import com.google.common.base.Stopwatch
-import com.hzgc.cluster.util.StreamingUtils
+import com.hzgc.cluster.util.PropertiesUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
@@ -23,7 +23,7 @@ import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
   */
 object KafkaToParquet {
   val LOG: Logger = Logger.getLogger(KafkaToParquet.getClass)
-  val properties: Properties = StreamingUtils.getProperties
+  val properties: Properties = PropertiesUtils.getProperties
 
   case class Picture(ftpurl: String, //图片搜索地址
                      feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
