@@ -93,8 +93,8 @@ public class FTP extends ClusterOverFtp {
     }
 
     public static void main(String args[]) throws Exception {
-        //expand模块的公共Conf对象
-        CommonConf commonConf = new CommonConf();
+//        //expand模块的公共Conf对象
+//        CommonConf commonConf = new CommonConf();
         //启动ftp之前，先恢复未处理数据
         RecoverNotProData recoverNotProData = new RecoverNotProData();
         Boolean success = recoverNotProData.recoverNotProData(commonConf);

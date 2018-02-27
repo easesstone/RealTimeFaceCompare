@@ -13,7 +13,6 @@ class SendDataToKafka extends KafkaProducer implements Serializable {
     private org.apache.kafka.clients.producer.KafkaProducer<String, FaceObject> kafkaProducer;
     private final Counter counter;
     private static SendDataToKafka sendDataToKafka;
-    private boolean successToKafka;
 
     private SendDataToKafka() {
         super();
@@ -30,15 +29,9 @@ class SendDataToKafka extends KafkaProducer implements Serializable {
 
     public void sendKafkaMessage(final String topic, final String key, FaceObject value, SendCallback sendCallback ) {
 
-        kafkaProducer.send(new ProducerRecord<>(topic, key, value), new SendCallback(topic, key));
+        kafkaProducer.send(new ProducerRecord<>(topic, key, value), sendCallback);
 
     }
-
-    boolean isSuccessToKafka() {
-        return successToKafka;
-    }
-
-
 }
 
 
