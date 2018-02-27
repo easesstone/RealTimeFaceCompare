@@ -28,7 +28,7 @@ public class ProcessThread implements Runnable {
         try {
             while ((event = queue.take()) != null) {
                 FaceAttribute attribute = FaceFunction.featureExtract(event.getAbsolutePath());
-                FtpPathMessage message = FtpUtils.getFtpPathMessage(event.getPath());
+                FtpPathMessage message = FtpUtils.getFtpPathMessage(event.getFtpPath());
                 if (attribute.getFeature() != null) {
                     FaceObject faceObject = new FaceObject(message.getIpcid()
                             , message.getTimeStamp()
@@ -38,7 +38,7 @@ public class ProcessThread implements Runnable {
                             , attribute
                             , event.getTimeStamp() + "");
                     kafka.sendKafkaMessage(KafkaProducer.getFEATURE()
-                            , FtpUtils.getFtpUrl(event.getPath())
+                            , FtpUtils.getFtpUrl(event.getFtpPath())
                             , faceObject);
                     writer.countCheckAndWrite(event);
                 }

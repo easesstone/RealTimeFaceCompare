@@ -17,7 +17,7 @@ public class DataProcessLogWriterTest {
         LogEvent logEvent = new LogEvent();
         logEvent.setStatus("0");
         logEvent.setTimeStamp(1500012313);
-        logEvent.setPath("ftp://s100:/2018/01/09");
+        logEvent.setFtpPath("ftp://s100:/2018/01/09");
         for (int i = 0; i < 100000; i++) {
             dataProcessLogWriter.errorLogWrite(errorLogDir, logEvent);
         }
