@@ -92,7 +92,7 @@ class PutDataThread extends Thread {
         for (int i = 0; i < 10; i++) {
             LogEvent event = new LogEvent();
             event.setStatus(thread + i);
-            event.setPath("ftp:s108:2181/2018/02/08");
+            event.setFtpPath("ftp:s108:2181/2018/02/08");
             receiverScheduler.putData(event);
         }
         try {

@@ -72,7 +72,12 @@ public class DefaultFtpServer implements FtpServer {
             throw new IllegalStateException("FtpServer has been stopped. Restart is not supported");
         }
 
-        List<Listener> startedListeners = new ArrayList<Listener>();
+        //+++++++++++++++++++++++++++++++++++++++++++++
+        //在此处启动ReceiverScheduler
+        serverContext.getScheduler().preapreRecvicer();
+        //+++++++++++++++++++++++++++++++++++++++++++++
+        
+        List<Listener> startedListeners = new ArrayList<>();
         
         try {
             Map<String, Listener> listeners = serverContext.getListeners();

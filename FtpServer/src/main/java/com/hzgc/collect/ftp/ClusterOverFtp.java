@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.Properties;
 
 public abstract class ClusterOverFtp implements Serializable {
-    protected static Logger log = Logger.getLogger(ClusterOverFtp.class);
     protected static int listenerPort = 0;
     protected static String passivePorts = null;
     protected static DataConnectionConfigurationFactory dataConnConf;
