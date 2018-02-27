@@ -2,6 +2,7 @@ package com.hzgc.service.clustering;
 
 import com.hzgc.dubbo.clustering.AlarmInfo;
 import com.hzgc.dubbo.clustering.ClusteringAttribute;
+import com.hzgc.dubbo.clustering.ClusteringInfo;
 import com.hzgc.dubbo.clustering.ClusteringSearchService;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
@@ -33,7 +34,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      * @return 聚类列表
      */
     @Override
-    public List<ClusteringAttribute> clusteringSearch(String time, int start, int limit, String sortParam) {
+    public ClusteringInfo clusteringSearch(String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
         Get get = new Get(Bytes.toBytes(time));
         List<ClusteringAttribute> clusteringList = new ArrayList<>();
@@ -47,13 +48,19 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (start > clusteringList.size() - 1) {
-            return clusteringList;
-        } else if ((start + limit) > clusteringList.size() - 1) {
-            return clusteringList.subList(start, clusteringList.size() - 1);
+        int total = clusteringList.size();
+        ClusteringInfo clusteringInfo = new ClusteringInfo();
+        clusteringInfo.setTotalClustering(total);
+        if (start > -1) {
+            if ((start + limit) > total - 1) {
+                clusteringInfo.setClusteringAttributeList(clusteringList.subList(start, total));
+            } else {
+                clusteringInfo.setClusteringAttributeList(clusteringList.subList(start, start + limit));
+            }
         } else {
-            return clusteringList.subList(start, start + limit);
+            LOG.info("start must bigger than -1");
         }
+        return clusteringInfo;
     }
 
     /**
@@ -81,12 +88,15 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (start > alarmInfoList.size() - 1) {
-            return alarmInfoList;
-        } else if ((start + limit) > alarmInfoList.size() - 1) {
-            return alarmInfoList.subList(start, alarmInfoList.size() - 1);
+        if (start > -1) {
+            if ((start + limit) > alarmInfoList.size() - 1) {
+                return alarmInfoList.subList(start, alarmInfoList.size());
+            } else {
+                return alarmInfoList.subList(start, start + limit);
+            }
         } else {
-            return alarmInfoList.subList(start, start + limit);
+            LOG.info("start must bigger than -1");
+            return null;
         }
     }
 
@@ -115,12 +125,15 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (start > alarmInfoList.size() - 1) {
-            return alarmInfoList;
-        } else if ((start + limit) > alarmInfoList.size() - 1) {
-            return alarmInfoList.subList(start, alarmInfoList.size() - 1);
+        if (start > -1) {
+            if ((start + limit) > alarmInfoList.size() - 1) {
+                return alarmInfoList.subList(start, alarmInfoList.size());
+            } else {
+                return alarmInfoList.subList(start, start + limit);
+            }
         } else {
-            return alarmInfoList.subList(start, start + limit);
+            LOG.info("start must bigger than -1");
+            return null;
         }
     }
 }

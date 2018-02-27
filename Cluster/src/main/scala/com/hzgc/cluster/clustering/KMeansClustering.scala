@@ -4,7 +4,6 @@ import java.sql.Timestamp
 import java.util
 import java.util.{Calendar, Properties}
 
-import com.hzgc.cluster.clustering.PutDataToHBase
 import com.hzgc.cluster.util.PropertiesUtils
 import com.hzgc.dubbo.clustering.ClusteringAttribute
 import org.apache.log4j.Logger
