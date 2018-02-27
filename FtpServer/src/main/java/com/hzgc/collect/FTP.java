@@ -27,7 +27,6 @@ public class FTP extends ClusterOverFtp {
     private static Logger LOG = Logger.getLogger(FTP.class);
 
     private static Map<Integer, Integer> pidMap = new HashMap<>();
-    private static CommonConf commonConf = new CommonConf();
 
     /*
       Set the dynamic log configuration file refresh time
@@ -36,6 +35,7 @@ public class FTP extends ClusterOverFtp {
         new LoggerConfig();
         HelperFactory.regist();
     }
+    private static CommonConf commonConf = new CommonConf();
 
     @Override
     public void startFtpServer() {

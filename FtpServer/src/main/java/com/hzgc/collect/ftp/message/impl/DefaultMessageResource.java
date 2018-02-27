@@ -50,7 +50,7 @@ public class DefaultMessageResource implements MessageResource {
     private final Logger LOG = LoggerFactory
             .getLogger(DefaultMessageResource.class);
 
-    private final static String RESOURCE_PATH = "com/hzgc/ftpserver/message/";
+    private final static String RESOURCE_PATH = "com/hzgc/collect/ftp/message/";
 
     private final List<String> languages;
 
