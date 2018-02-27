@@ -64,7 +64,7 @@ object KMeansClustering {
     val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
 
     val idPointRDD = joinData.rdd.map(data => (data.getAs[String]("spic"), Vectors.dense(data.getAs[mutable.WrappedArray[Float]]("feature").toArray.map(_.toDouble)))).cache()
-    val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false,0.4), numClusters, numIterations)
+    val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false, 0.4), numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
     // TODO: 删除 map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
     var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd).groupByKey().map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime))).map(data => (data._1, data._2.toArray.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))

@@ -23,7 +23,9 @@ object PutDataToHBase {
   def putClusteringInfo(rowKey: String, list: util.List[ClusteringAttribute]): Unit = {
     val ClusteringInfo: Table = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO)
     val put: Put = new Put(Bytes.toBytes(rowKey))
-    put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_DATA, ObjectUtil.objectToByte(list))
+    put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY,
+      ClusteringTable.ClUSTERINGINFO_COLUMN_DATA,
+      ObjectUtil.objectToByte(list))
     ClusteringInfo.put(put)
     ClusteringInfo.close()
   }
@@ -36,7 +38,9 @@ object PutDataToHBase {
   def putDetailInfo(rowKey: String, list: util.List[AlarmInfo]): Unit = {
     val detailInfo: Table = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO)
     val put: Put = new Put(Bytes.toBytes(rowKey))
-    put.addColumn(ClusteringTable.DETAILINFO_COLUMNFAMILY, ClusteringTable.DETAILINFO_COLUMN_DATA, ObjectUtil.objectToByte(list))
+    put.addColumn(ClusteringTable.DETAILINFO_COLUMNFAMILY,
+      ClusteringTable.DETAILINFO_COLUMN_DATA,
+      ObjectUtil.objectToByte(list))
     detailInfo.put(put)
     detailInfo.close()
   }
@@ -49,7 +53,9 @@ object PutDataToHBase {
   def putDetailInfo_v1(rowKey: String, list: List[Integer]): Unit = {
     val detailInfo: Table = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO)
     val put: Put = new Put(Bytes.toBytes(rowKey))
-    put.addColumn(ClusteringTable.DETAILINFO_COLUMNFAMILY, ClusteringTable.DETAILINFO_COLUMN_DATA, ObjectUtil.objectToByte(list))
+    put.addColumn(ClusteringTable.DETAILINFO_COLUMNFAMILY,
+      ClusteringTable.DETAILINFO_COLUMN_DATA,
+      ObjectUtil.objectToByte(list))
     detailInfo.put(put)
     detailInfo.close()
   }
