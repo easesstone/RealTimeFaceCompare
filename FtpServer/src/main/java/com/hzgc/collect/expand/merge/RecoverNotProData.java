@@ -37,7 +37,6 @@ import java.util.List;
 public class RecoverNotProData {
     private Logger LOG = Logger.getLogger(RecoverNotProData.class);
 
-
     public boolean recoverNotProData(CommonConf commonConf) {
         MergeUtil mergeUtil = new MergeUtil();
         String processLogDir = commonConf.getProcessLogDir();
@@ -72,6 +71,11 @@ public class RecoverNotProData {
                         if (faceObject != null) {
                             SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                             boolean success = sendCallback.isFlag();
                             if (j == 0 && !success) {
                                 LOG.warn("first data send to Kafka failure");

@@ -91,14 +91,19 @@ public class RecoverErrProData implements Runnable {
                             SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
 
-                            if ( flag == 0) {
-                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
-                                //只在处理第一条数据时，执行此步骤
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
+//                            if ( flag == 0) {
+//                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
+//                                //只在处理第一条数据时，执行此步骤
+//                                try {
+//                                    Thread.sleep(1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
                             boolean success = sendCallback.isFlag();
 
