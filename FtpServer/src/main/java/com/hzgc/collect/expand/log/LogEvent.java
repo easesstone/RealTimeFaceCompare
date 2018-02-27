@@ -11,7 +11,7 @@ public class LogEvent {
     /**
      * face path
      */
-    private String path;
+    private String ftpPath;
 
     /**
      * face absolute path
@@ -30,12 +30,12 @@ public class LogEvent {
      */
     private String status;
 
-    public String getPath() {
-        return path;
+    public String getFtpPath() {
+        return ftpPath;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setFtpPath(String path) {
+        this.ftpPath = path;
     }
 
     public long getTimeStamp() {

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * merge模块与文件读写相关的工具类（马燊偲）
  */
-class MergeUtil {
+public class MergeUtil {
 
     private Logger LOG = Logger.getLogger(MergeUtil.class);
     //系统换行符
@@ -273,7 +273,7 @@ class MergeUtil {
      * @param path 文件或目录
      */
 
-    void deleteFile(String path) {
+    public void deleteFile(String path) {
         if (path != null && !Objects.equals(path, "")) {
             deleteFile(new File(path));
         } else {
