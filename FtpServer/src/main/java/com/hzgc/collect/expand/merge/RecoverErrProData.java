@@ -100,7 +100,7 @@ public class RecoverErrProData implements Runnable {
                                     e.printStackTrace();
                                 }
                             }
-                            boolean success = sendCallback.getFlag();
+                            boolean success = sendCallback.isFlag();
 
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX,"")+"-N"+SUFFIX;
