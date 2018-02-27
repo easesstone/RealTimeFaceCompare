@@ -59,9 +59,11 @@ public class Test {
                         String ftpUrl = event.getFtpPath();
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
-//                        if (faceObject != null) {
-//                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
-//                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+                        if (faceObject != null) {
+                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl, event);
+                            sendCallback.setProcessFile(processFile);
+                            sendCallback.setWriteErrFile(writeErrFile);
+                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
 //                            if ( flag == 0) {
 //                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
 //                                //只在处理第一条数据时，执行此步骤
@@ -93,6 +95,7 @@ public class Test {
 //                                }
 //                            }
 //                        }
+                        }
                     }
                     System.out.println("=====发送Kafka成功数据有:" + successRowCount + "条=====");
                     System.out.println("=====发送Kafka失败数据有:" + failureRowCount + "条=====");
@@ -123,3 +126,4 @@ public class Test {
 
     }
 }
+
