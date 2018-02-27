@@ -23,16 +23,20 @@ class GetFaceObject {
             String path =event.getAbsolutePath();
             // 路径中包含/opt/ftpdata/
             String absolutePath = ftpdataDir + event.getAbsolutePath();
+
             byte[] photo = FaceFunction.getPictureBytes(absolutePath);
-            FaceAttribute faceAttribute = FaceFunction.featureExtract(photo);
-            FtpPathMessage ftpPathMessage = FtpUtils.getFtpPathMessage(path);
-            String ipcId = ftpPathMessage.getIpcid();
-            String timeStamp = ftpPathMessage.getTimeStamp();
-            String timeSlot = ftpPathMessage.getTimeslot();
-            String date = ftpPathMessage.getDate();
-            SearchType type = SearchType.PERSON;
-            String startTime = sdf.format(new Date());
-            faceObject = new FaceObject(ipcId, timeStamp, type, date, timeSlot, faceAttribute, startTime);
+            if (photo != null) {
+
+                FaceAttribute faceAttribute = FaceFunction.featureExtract(photo);
+                FtpPathMessage ftpPathMessage = FtpUtils.getFtpPathMessage(path);
+                String ipcId = ftpPathMessage.getIpcid();
+                String timeStamp = ftpPathMessage.getTimeStamp();
+                String timeSlot = ftpPathMessage.getTimeslot();
+                String date = ftpPathMessage.getDate();
+                SearchType type = SearchType.PERSON;
+                String startTime = sdf.format(new Date());
+                faceObject = new FaceObject(ipcId, timeStamp, type, date, timeSlot, faceAttribute, startTime);
+            }
         }
         return faceObject;
     }
