@@ -154,7 +154,7 @@ public class AbstractLogWriteTest {
                 LogEvent logEvent = new LogEvent();
                 logEvent.setStatus("0");
                 logEvent.setTimeStamp(1500012313);
-                logEvent.setPath("ftp://s100:/2018/01/09");
+                logEvent.setFtpPath("ftp://s100:/2018/01/09");
                 abstractLogWrite.countCheckAndWrite(logEvent);
             }
         } else if (abstractLogWrite instanceof DataProcessLogWriter) {
@@ -164,7 +164,7 @@ public class AbstractLogWriteTest {
                 LogEvent logEvent = new LogEvent();
                 logEvent.setStatus(status);
                 logEvent.setTimeStamp(1500012313);
-                logEvent.setPath("ftp://s100:/2018/01/09");
+                logEvent.setFtpPath("ftp://s100:/2018/01/09");
                 abstractLogWrite.countCheckAndWrite(logEvent);
             }
         } else {

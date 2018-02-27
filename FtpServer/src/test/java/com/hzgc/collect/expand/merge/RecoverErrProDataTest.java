@@ -144,9 +144,9 @@ public class RecoverErrProDataTest {
                         SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         long count = event.getCount();
-                        String ftpUrl = event.getPath();
-                        //System.out.println("****************************ftpUrl:" + ftpUrl + "****************************");
-                        //System.out.println("****************************get faceObject...****************************");
+                        String ftpUrl = event.getFtpPath();
+                        System.out.println("****************************ftpUrl:" + ftpUrl + "****************************");
+                        System.out.println("****************************get faceObject...****************************");
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpDataDir);
                         System.out.println("faceObject:" + faceObject);

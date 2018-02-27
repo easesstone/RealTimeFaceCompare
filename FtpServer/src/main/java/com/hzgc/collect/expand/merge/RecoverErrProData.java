@@ -84,7 +84,7 @@ public class RecoverErrProData implements Runnable {
                         //每一条记录的格式为：
                         //"count":0, "url":"ftp://s100:/2018/01/09", "timestamp":"2018-01-02", "status":"0"
                         //用LogEvent获取该条数据的ftpUrl
-                        String ftpUrl = event.getPath();
+                        String ftpUrl = event.getFtpPath();
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                         FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) { // V-3 if start

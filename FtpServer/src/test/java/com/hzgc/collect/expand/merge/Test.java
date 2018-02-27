@@ -53,7 +53,7 @@ public class Test {
                         String row = notProRows.get(j);
                         //获取未处理数据的ftpUrl
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
-                        String ftpUrl = event.getPath();
+                        String ftpUrl = event.getFtpPath();
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
                         if (faceObject != null) {

@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.util.Properties;
 
 public abstract class ClusterOverFtp implements Serializable {
-    protected static Logger log = Logger.getLogger(ClusterOverFtp.class);
     protected static int listenerPort = 0;
     protected static String passivePorts = null;
     protected static DataConnectionConfigurationFactory dataConnConf;
@@ -21,11 +20,8 @@ public abstract class ClusterOverFtp implements Serializable {
         dataConnConf = new DataConnectionConfigurationFactory();
         listenerPort = ClusterOverFtpProperHelper.getPort();
         passivePorts = ClusterOverFtpProperHelper.getDataPorts();
-        if (passivePorts == null){
-            log.info("The data ports is not set, use any available port");
-        } else {
+        if (passivePorts != null){
             dataConnConf.setPassivePorts(passivePorts);
-            log.warn("The data ports is set:" + passivePorts);
         }
     }
 
