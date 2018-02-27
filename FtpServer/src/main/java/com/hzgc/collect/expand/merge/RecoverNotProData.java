@@ -59,6 +59,12 @@ public class RecoverNotProData {
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);
                     //获取未处理的数据
                     List<String> notProRows = rowsListFactory.getNotProRows();
+
+                    LOG.info("test RecoverNotProData...notProRows:");
+                    for (int i = 0; i < notProRows.size(); i++) {
+                        LOG.info(notProRows.get(i));
+                    }
+
                     //用于标记发送Kafka数据数
                     long rowCount = 0;
                     SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();

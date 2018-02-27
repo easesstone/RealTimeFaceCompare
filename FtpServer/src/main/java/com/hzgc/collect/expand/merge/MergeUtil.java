@@ -444,9 +444,9 @@ public class MergeUtil {
         String receiveFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
-            if (file.isFile() && processFilePath.contains("process" + File.separator + "p-")) {
-                receiveFilePath = processFilePath.replace("process" + File.separator + "p-",
-                        "receive" + File.separator + "r-");
+            if (file.isFile() && processFilePath.contains("process" + File.separator + "process-")) {
+                receiveFilePath = processFilePath.replace("process" + File.separator + "process-",
+                        "receive" + File.separator + "receive-");
             } else {
                 LOG.error("The " + processFilePath + " is not correct!");
             }
@@ -468,7 +468,7 @@ public class MergeUtil {
         String errorFilePath = "";
         if (processFilePath != null && !Objects.equals(processFilePath, "")) {
             File file = new File(processFilePath);
-            if (file.isFile() && processFilePath.contains("process" + File.separator + "p-")) {
+            if (file.isFile() && processFilePath.contains("process" + File.separator + "process-")) {
                 //获取process日志路径的父目录：/ftp/data/process/p-0/
                 String parentFolder = file.getParent();
                 errorFilePath = parentFolder + File.separator + "error.log";
@@ -548,9 +548,9 @@ public class MergeUtil {
                 String substringEnd = "";
                 //获取路径子串：p-0/000000001.log或r-0/000000001.log
                 if (datafile.contains("process")) {
-                    substringEnd = tmpString.substring(tmpString.indexOf("p-"));
+                    substringEnd = tmpString.substring(tmpString.indexOf("process-"));
                 } else if (datafile.contains("receive")) {
-                    substringEnd = tmpString.substring(tmpString.indexOf("r-"));
+                    substringEnd = tmpString.substring(tmpString.indexOf("receive-"));
                 }
                 //获取路径子串：/opt/RealTimeFaceCompare/ftp/success/process/
                 String substringStart = tmpString.replace(substringEnd, "");
