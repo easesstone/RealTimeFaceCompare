@@ -1,6 +1,7 @@
 package com.hzgc.service.clustering;
 
 import com.hzgc.dubbo.clustering.ClusteringAttribute;
+import com.hzgc.dubbo.clustering.ClusteringInfo;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
 import com.hzgc.util.common.ObjectUtil;
@@ -11,7 +12,6 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,7 +38,11 @@ public class ClusteringTest {
         putDataToHBase(rowkey, clusteringAttributeList);
         getDataFromHBase("2018-06");*/
         ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
-        List<ClusteringAttribute> clusteringAttributeList1 = clusteringSearchService.clusteringSearch("2018-02", 0, 50, "");
+        ClusteringInfo clusteringInfo = clusteringSearchService.clusteringSearch("2018-02", 0, 50, "");
+        System.out.println(clusteringInfo.getTotalClustering());
+        List<ClusteringAttribute> clusteringAttributeList = clusteringInfo.getClusteringAttributeList();
+        System.out.println(clusteringAttributeList.get(0).getCount());
+        System.out.println(clusteringAttributeList.get(0).getClusteringId());
        /* List<Integer> blist = new java.util.ArrayList<>();
         blist.add(1);
         blist.add(2);
@@ -54,10 +58,10 @@ public class ClusteringTest {
             if (blist.contains(i)){
                 clusteringAttributeList2.add(clusteringAttributeList1.get(i));
             }
-        }*/
+        }
         List<ClusteringAttribute> clusteringAttributeList2 = new ArrayList<>();
         clusteringAttributeList2.addAll(clusteringAttributeList1);
-        putDataToHBase("2018-02-bak", clusteringAttributeList2);
+        putDataToHBase("2018-02-bak", clusteringAttributeList2);*/
     }
 
     private static void putDataToHBase(String rowKey, List<ClusteringAttribute> clusteringAttributeList) {
