@@ -1,6 +1,7 @@
 package com.hzgc.collect.expand.merge;
 
 import com.codahale.metrics.Counter;
+import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.KafkaProducer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -8,24 +9,43 @@ import org.apache.log4j.Logger;
 
 public class SendCallback implements Callback {
     private Logger LOG = Logger.getLogger(SendCallback.class);
-    final long startTime = System.currentTimeMillis();
-    String topic;
-    String key;
-    //发送kafka是否成功的标志
-    boolean flag;
+    private final long startTime = System.currentTimeMillis();
+    private static MergeUtil mergeUtil = new MergeUtil();
 
-    public boolean isFlag() {
-        return flag;
+    private String topic;
+    private String key;
+    private LogEvent event;
+    private String writeErrFile;  //发送kafka错误日记
+    private String processFile;   //写本地文件记录的日记
+
+    public String getWriteErrFile() {
+        return writeErrFile;
     }
 
-    public void setFlag(boolean flag) {
-        this.flag = flag;
+    public void setWriteErrFile(String writeErrFile) {
+        this.writeErrFile = writeErrFile;
     }
 
+    public String getProcessFile() {
+        return processFile;
+    }
 
-    SendCallback(String topic, String key) {
+    public void setProcessFile(String processFile) {
+        this.processFile = processFile;
+    }
+
+    public LogEvent getEvent() {
+        return event;
+    }
+
+    public void setEvent(LogEvent event) {
+        this.event = event;
+    }
+
+    public SendCallback(String topic, String key, LogEvent event) {
         this.topic = topic;
         this.key = key;
+        this.event = event;
     }
 
     @Override
@@ -33,16 +53,17 @@ public class SendCallback implements Callback {
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         if (metadata != null) {
-            setFlag(true);
+            event.setStatus("0");
             LOG.info("Send Kafka successfully! message:[topic:" + topic + ", key:" + key +
                     "], send to partition(" + metadata.partition() + "), offset(" + metadata.offset() + ") in " + elapsedTime + "ms");
-//            counter.inc();
-//            LOG.info("Send Kafka total:" + counter.getCount());
         } else {
-            setFlag(false);
+            event.setStatus("1");
             LOG.error("message:[" + key + "Send to Kafka failed! ");
+            mergeUtil.writeMergeFile(event, writeErrFile);
             e.printStackTrace();
         }
-
+        if (processFile != null) {
+            mergeUtil.writeMergeFile(event, processFile);
+        }
     }
 }

@@ -88,30 +88,10 @@ public class RecoverErrProData implements Runnable {
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                         FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) { // V-3 if start
-                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-
-//                            if ( flag == 0) {
-//                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
-//                                //只在处理第一条数据时，执行此步骤
-//                                try {
-//                                    Thread.sleep(1000);
-//                                } catch (InterruptedException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            }
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            boolean success = sendCallback.isFlag();
-
-                            //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
+                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl, event);
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX,"")+"-N"+SUFFIX;
-                            if (!success) {
-                                mergeUtil.writeMergeFile(event, mergeErrFileNew);
-                            }
+                            sendCallback.setWriteErrFile(mergeErrFileNew);
+                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
                         } // V-3 if end：faceObject不为空的判断结束
                         flag ++;
                     }

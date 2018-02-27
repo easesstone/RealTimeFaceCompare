@@ -50,7 +50,7 @@ public class RecoverNotProData {
         String ftpdataDir = commonConf.getFtpdataDir();
 
         //判断process根目录下是否有文件
-        if (processFiles != null && processFiles.size() != 0) {
+        if (processFiles != null) {
             for (String processFile : processFiles) {
                 //获取receive绝对路径
                 String receiveFile = mergeUtil.getRecFilePathFromProFile(processFile);
@@ -75,37 +75,16 @@ public class RecoverNotProData {
                         String ftpUrl = event.getFtpPath();
                         FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) {
-                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
+                            //发送Kafka失败,将日志写到merge目录下的error日志文件中
+                            //获取error日志路径
+                            String processErrLogPath = processFile.substring(0,processFile.lastIndexOf("/"));
+                            String writeErrFile = processErrLogPath + "/error/error.log";
+
+                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl, event);
+                            sendCallback.setProcessFile(processFile);
+                            sendCallback.setWriteErrFile(writeErrFile);
+
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            boolean success = sendCallback.isFlag();
-                            if (j == 0 && !success) {
-                                LOG.warn("first data send to Kafka failure");
-                                return false;
-                            } else {
-                                //向对应的processFile中写入日志
-                                event.setTimeStamp(System.currentTimeMillis());
-                                if (success) {
-                                    event.setStatus("0");
-                                    LOG.info("Send to Kafka success,write log to processFile :" + processFile);
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    rowCount++;
-                                } else {
-                                    //发送Kafka失败,将日志写到merge目录下的error日志文件中
-                                    //获取error日志路径
-                                    String processErrLogPath = processFile.substring(0,processFile.lastIndexOf("/"));
-                                    String writeErrFile = processErrLogPath + "/error/error.log";
-                                    event.setStatus("1");
-                                    LOG.warn("Send to Kafka failure ,write log to errorLogFile :");
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    mergeUtil.writeMergeFile(event, writeErrFile);
-                                    rowCount++;
-                                }
-                            }
                         }
                     }
                     if (rowCount == notProRows.size()) {

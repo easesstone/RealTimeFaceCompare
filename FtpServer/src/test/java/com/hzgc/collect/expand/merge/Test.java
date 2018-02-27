@@ -59,40 +59,40 @@ public class Test {
                         String ftpUrl = event.getFtpPath();
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
-                        if (faceObject != null) {
-                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-                            if ( flag == 0) {
-                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
-                                //只在处理第一条数据时，执行此步骤
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            boolean success = sendCallback.isFlag();
-                            flag ++;
-                            if (j == 0 && !success) {
-                                System.out.println("first data send to Kafka failure");
-                            } else {
-                                event.setTimeStamp(System.currentTimeMillis());
-                                if (success) {
-                                    //向对应的processFile中写入日志
-                                    event.setStatus("0");
-                                    System.out.println("=====Send to Kafka success,write log to processFile :" + processFile);
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    successRowCount++;
-                                } else {
-                                    //发送Kafka失败,将日志写到merge目录下的error日志文件中
-                                    event.setStatus("1");
-                                    System.out.println("=====Send to Kafka failure ,write log to errorLogFile :" + writeErrFile);
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    mergeUtil.writeMergeFile(event, writeErrFile);
-                                    failureRowCount++;
-                                }
-                            }
-                        }
+//                        if (faceObject != null) {
+//                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
+//                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+//                            if ( flag == 0) {
+//                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
+//                                //只在处理第一条数据时，执行此步骤
+//                                try {
+//                                    Thread.sleep(1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                            boolean success = sendCallback.isFlag();
+//                            flag ++;
+//                            if (j == 0 && !success) {
+//                                System.out.println("first data send to Kafka failure");
+//                            } else {
+//                                event.setTimeStamp(System.currentTimeMillis());
+//                                if (success) {
+//                                    //向对应的processFile中写入日志
+//                                    event.setStatus("0");
+//                                    System.out.println("=====Send to Kafka success,write log to processFile :" + processFile);
+//                                    mergeUtil.writeMergeFile(event, processFile);
+//                                    successRowCount++;
+//                                } else {
+//                                    //发送Kafka失败,将日志写到merge目录下的error日志文件中
+//                                    event.setStatus("1");
+//                                    System.out.println("=====Send to Kafka failure ,write log to errorLogFile :" + writeErrFile);
+//                                    mergeUtil.writeMergeFile(event, processFile);
+//                                    mergeUtil.writeMergeFile(event, writeErrFile);
+//                                    failureRowCount++;
+//                                }
+//                            }
+//                        }
                     }
                     System.out.println("=====发送Kafka成功数据有:" + successRowCount + "条=====");
                     System.out.println("=====发送Kafka失败数据有:" + failureRowCount + "条=====");

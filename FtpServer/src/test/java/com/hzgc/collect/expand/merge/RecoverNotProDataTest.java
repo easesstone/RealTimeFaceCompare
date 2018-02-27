@@ -138,29 +138,29 @@ public class RecoverNotProDataTest {
 
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpUrl);
                         if (faceObject != null) {
-
-                            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
-                            boolean success = sendCallback.isFlag();
-
-                            if (j == 0 && !success) {
-                                System.out.println("first data send to Kafka failure");
-                            } else {
-                                event.setTimeStamp(System.currentTimeMillis());
-                                if (success) {
-                                    //向对应的processFile中写入日志
-                                    event.setStatus("0");
-                                    System.out.println("=====Send to Kafka success,write log to processFile :" + processFile);
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    successRowCount++;
-                                } else {
-                                    //发送Kafka失败,将日志写到merge目录下的error日志文件中
-                                    event.setStatus("1");
-                                    System.out.println("=====Send to Kafka failure ,write log to errorLogFile :" + writeErrFile);
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    mergeUtil.writeMergeFile(event, writeErrFile);
-                                    failureRowCount++;
-                                }
-                            }
+//
+//                            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
+//                            boolean success = sendCallback.isFlag();
+//
+//                            if (j == 0 && !success) {
+//                                System.out.println("first data send to Kafka failure");
+//                            } else {
+//                                event.setTimeStamp(System.currentTimeMillis());
+//                                if (success) {
+//                                    //向对应的processFile中写入日志
+//                                    event.setStatus("0");
+//                                    System.out.println("=====Send to Kafka success,write log to processFile :" + processFile);
+//                                    mergeUtil.writeMergeFile(event, processFile);
+//                                    successRowCount++;
+//                                } else {
+//                                    //发送Kafka失败,将日志写到merge目录下的error日志文件中
+//                                    event.setStatus("1");
+//                                    System.out.println("=====Send to Kafka failure ,write log to errorLogFile :" + writeErrFile);
+//                                    mergeUtil.writeMergeFile(event, processFile);
+//                                    mergeUtil.writeMergeFile(event, writeErrFile);
+//                                    failureRowCount++;
+//                                }
+//                            }
                         }
                     }
                     System.out.println("=====发送Kafka成功数据有:" + successRowCount + "条=====");
