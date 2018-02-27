@@ -11,6 +11,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,25 +37,27 @@ public class ClusteringTest {
         clusteringAttributeList.add(clusteringAttribute);
         putDataToHBase(rowkey, clusteringAttributeList);
         getDataFromHBase("2018-06");*/
-        /*ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
+        ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
         List<ClusteringAttribute> clusteringAttributeList1 = clusteringSearchService.clusteringSearch("2018-02", 0, 50, "");
-        List<Integer> blist = new java.util.ArrayList<>();
-        blist.add(0);
+       /* List<Integer> blist = new java.util.ArrayList<>();
         blist.add(1);
-        blist.add(3);
+        blist.add(2);
         blist.add(4);
         blist.add(7);
-        blist.add(8);
+        blist.add(9);
+        blist.add(10);
         blist.add(11);
-        blist.add(15);
-        blist.add(18);
+        blist.add(12);
+        blist.add(13);
         List<ClusteringAttribute> clusteringAttributeList2 = new ArrayList<>();
         for (int i = 0; i < clusteringAttributeList1.size(); i++) {
-            if (!blist.contains(i)){
+            if (blist.contains(i)){
                 clusteringAttributeList2.add(clusteringAttributeList1.get(i));
             }
-        }
-        putDataToHBase("2018-02", clusteringAttributeList2);*/
+        }*/
+        List<ClusteringAttribute> clusteringAttributeList2 = new ArrayList<>();
+        clusteringAttributeList2.addAll(clusteringAttributeList1);
+        putDataToHBase("2018-02-bak", clusteringAttributeList2);
     }
 
     private static void putDataToHBase(String rowKey, List<ClusteringAttribute> clusteringAttributeList) {

@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 告警聚类结果查询接口实现
+ * 告警聚类结果查询接口实现(彭聪)
  */
-class ClusteringSearchServiceImpl implements ClusteringSearchService {
+public class ClusteringSearchServiceImpl implements ClusteringSearchService {
     private static Logger LOG = Logger.getLogger(ClusteringSearchServiceImpl.class);
 
     /**
@@ -47,7 +47,13 @@ class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return clusteringList.subList(start, start + limit);
+        if (start > clusteringList.size() - 1) {
+            return clusteringList;
+        } else if ((start + limit) > clusteringList.size() - 1) {
+            return clusteringList.subList(start, clusteringList.size() - 1);
+        } else {
+            return clusteringList.subList(start, start + limit);
+        }
     }
 
     /**
@@ -75,7 +81,13 @@ class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return alarmInfoList.subList(start, start + limit);
+        if (start > alarmInfoList.size() - 1) {
+            return alarmInfoList;
+        } else if ((start + limit) > alarmInfoList.size() - 1) {
+            return alarmInfoList.subList(start, alarmInfoList.size() - 1);
+        } else {
+            return alarmInfoList.subList(start, start + limit);
+        }
     }
 
     /**
@@ -103,6 +115,12 @@ class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return alarmInfoList.subList(start, start + limit);
+        if (start > alarmInfoList.size() - 1) {
+            return alarmInfoList;
+        } else if ((start + limit) > alarmInfoList.size() - 1) {
+            return alarmInfoList.subList(start, alarmInfoList.size() - 1);
+        } else {
+            return alarmInfoList.subList(start, start + limit);
+        }
     }
 }

@@ -1,3 +1,5 @@
+package com.hzgc.cluster.clustering
+
 import java.sql.Timestamp
 import java.util
 import java.util.{Calendar, Properties}
@@ -53,16 +55,18 @@ object KMeansClustering {
 
     sqlProper.setProperty("driver", driverClass)
     val dataSource = spark.read.jdbc(url, preSql, sqlProper)
+    dataSource.printSchema()
     dataSource.map(data => {
       println("ftp://" + data.getAs[String](hostField) + ":2121/" + data.getAs[String](spicField))
       Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
     }).createOrReplaceTempView("mysqlTable")
-    //    }).createOrReplaceTempView("mysqlTable")
+
     val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
 
     val idPointRDD = joinData.rdd.map(data => (data.getAs[String]("spic"), Vectors.dense(data.getAs[mutable.WrappedArray[Float]]("feature").toArray.map(_.toDouble)))).cache()
-    val kMeansModel = KMeans.train(idPointRDD.map(_._2), numClusters, numIterations)
+    val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false,0.4), numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
+    // TODO: 删除 map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
     var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd).groupByKey().map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime))).map(data => (data._1, data._2.toArray.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
 
     val table1List = new util.ArrayList[ClusteringAttribute]()
@@ -82,18 +86,21 @@ object KMeansClustering {
     var monStr = ""
     if (mon < 10) {
       monStr = "0" + mon
+    } else {
+      monStr = String.valueOf(mon)
     }
     val yearMon = calendar.get(Calendar.YEAR) + "-" + monStr
+    LOG.info("write clustering info to HBase...")
     PutDataToHBase.putClusteringInfo(yearMon, table1List)
 
     trainResult.foreach(data => {
-      val rowkey = yearMon + "-" + data._1
-      println(rowkey)
+      val rowKey = yearMon + "-" + data._1
+      println(rowKey)
       val idList = new util.ArrayList[Integer]()
       data._2.foreach(data => idList.add(data.getAs[Long]("id").toInt))
       println(idList)
       println("++++++++++++++++++++++")
-      PutDataToHBase.putDetailInfo_v1(rowkey, idList)
+      PutDataToHBase.putDetailInfo_v1(rowKey, idList)
     })
     spark.stop()
   }
