@@ -25,8 +25,8 @@ public class RecoverErrProDataTest {
     private MergeUtil mergeUtil = new MergeUtil();
 
     private CommonConf commonConf = new CommonConf();
-    private String processLogDir = commonConf.getProcessLogDir();
-    private String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
+    private String processLogDir = "/home/test/ftp/data/process";
+    private String mergeErrLogDir = "/home/test/ftp/merge/error";
 
     private String SUFFIX = ".log";
 
