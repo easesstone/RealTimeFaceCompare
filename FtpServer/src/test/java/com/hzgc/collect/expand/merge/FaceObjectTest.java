@@ -17,25 +17,25 @@ public class FaceObjectTest {
         System.out.println("IpcId---------" + faceObject.getIpcId());
         System.out.println("faceObject----" + faceObject.toString());
 
-        if (faceObject != null) {
-            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
-            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-
-            boolean success = sendCallback.isFlag();
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (!success) {
-                System.out.println("****************************Send the message to kafka failed! Rewrite to new merge error file!" + "****************************");
-            } else {
-                System.out.println("#############Send the message to kafka successfully!##################");
-            }
-
-        }
+//        if (faceObject != null) {
+//            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
+//            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
+//            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+//
+//            boolean success = sendCallback.isFlag();
+//
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//
+//            if (!success) {
+//                System.out.println("****************************Send the message to kafka failed! Rewrite to new merge error file!" + "****************************");
+//            } else {
+//                System.out.println("#############Send the message to kafka successfully!##################");
+//            }
+//
+//        }
     }
 }
