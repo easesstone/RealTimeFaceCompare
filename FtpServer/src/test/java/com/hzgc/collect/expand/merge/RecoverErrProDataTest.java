@@ -9,6 +9,7 @@ import com.hzgc.jni.NativeFunction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import sun.net.NetworkClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,8 @@ public class RecoverErrProDataTest {
 
     //初始化算法
     static {
+        NativeFunction.init();
+        NativeFunction.init();
         NativeFunction.init();
     }
 
@@ -138,6 +141,7 @@ public class RecoverErrProDataTest {
                 if (errorRows != null && errorRows.size() != 0) {
                     int flag = 0;
                     for (String row : errorRows) {
+                        SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         long count = event.getCount();
                         String ftpUrl = event.getPath();
@@ -147,8 +151,11 @@ public class RecoverErrProDataTest {
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpDataDir);
                         System.out.println("faceObject:" + faceObject);
                         if (faceObject != null) {
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+                            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
+                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+
+//                            CallBack sendCallback = new SendCallback();
+//                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendDataToKafka);
 
                             if ( flag == 0) {
                                 //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
@@ -160,7 +167,7 @@ public class RecoverErrProDataTest {
                                 }
                             }
 
-                            boolean success = sendDataToKafka.isSuccessToKafka();
+                            boolean success = sendCallback.getFlag();
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX, "") + "-N" + SUFFIX;
                             if (!success) {
@@ -172,6 +179,7 @@ public class RecoverErrProDataTest {
                                         " message to kafka successfully!##################");
                             }
                         }
+                        flag ++;
                     }
                 }
                 mergeUtil.deleteFile(errorFilePath);

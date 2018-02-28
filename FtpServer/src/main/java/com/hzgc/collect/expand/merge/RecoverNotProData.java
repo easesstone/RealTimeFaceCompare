@@ -62,6 +62,7 @@ public class RecoverNotProData {
                     List<String> notProRows = rowsListFactory.getNotProRows();
                     //用于标记发送Kafka数据数
                     long rowCount = 0;
+                    SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                     for (int j = 0; j < notProRows.size(); j++) {
                         String row = notProRows.get(j);
                         //获取未处理数据的ftpUrl
@@ -69,9 +70,9 @@ public class RecoverNotProData {
                         String ftpUrl = event.getPath();
                         FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) {
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
-                            boolean success = sendDataToKafka.isSuccessToKafka();
+                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
+                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+                            boolean success = sendCallback.getFlag();
                             if (j == 0 && !success) {
                                 LOG.warn("first data send to Kafka failure");
                                 return false;
