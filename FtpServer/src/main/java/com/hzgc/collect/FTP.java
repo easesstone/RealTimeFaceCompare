@@ -35,6 +35,7 @@ public class FTP extends ClusterOverFtp {
         new LoggerConfig();
         HelperFactory.regist();
     }
+    //expand模块的公共Conf对象
     private static CommonConf commonConf = new CommonConf();
 
     @Override
@@ -93,11 +94,12 @@ public class FTP extends ClusterOverFtp {
     }
 
     public static void main(String args[]) throws Exception {
-//        //expand模块的公共Conf对象
-//        CommonConf commonConf = new CommonConf();
+        LOG.info("start testing.........");
         //启动ftp之前，先恢复未处理数据
+        LOG.info("start Recovering not process data...");
         RecoverNotProData recoverNotProData = new RecoverNotProData();
         Boolean success = recoverNotProData.recoverNotProData(commonConf);
+
         //若成功恢复未处理的数据，则启动ftp。
         if (success) {
             LOG.info("recoverNotProData successfully!");

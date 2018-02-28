@@ -92,7 +92,6 @@ public class RecoverErrProData implements Runnable {
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX,"")+"-N"+SUFFIX;
                             sendCallback.setWriteErrFile(mergeErrFileNew);
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-
                         } // V-3 if end：faceObject不为空的判断结束
                         flag ++;
                     }

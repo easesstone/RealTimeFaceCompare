@@ -37,7 +37,6 @@ import java.util.List;
 public class RecoverNotProData {
     private Logger LOG = Logger.getLogger(RecoverNotProData.class);
 
-
     public boolean recoverNotProData(CommonConf commonConf) {
         MergeUtil mergeUtil = new MergeUtil();
         String processLogDir = commonConf.getProcessLogDir();
