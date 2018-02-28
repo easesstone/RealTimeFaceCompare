@@ -62,7 +62,7 @@ public class CommonConf {
      * 默认加载类路径下的cluster-over-ftp.properties文件
      */
     public CommonConf() {
-        HelperFactory.regist();
+        //HelperFactory.regist();
         this.logSize = ClusterOverFtpProperHelper.getLogSize();
         this.capacity = ClusterOverFtpProperHelper.getReceiveQueueCapacity();
         this.receiveLogDir = ClusterOverFtpProperHelper.getReceiveLogDir();

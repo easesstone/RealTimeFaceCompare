@@ -67,7 +67,7 @@ public class RecoverNotProData {
                         String row = notProRows.get(j);
                         //获取未处理数据的ftpUrl
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
-                        String ftpUrl = event.getPath();
+                        String ftpUrl = event.getFtpPath();
                         FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
                         if (faceObject != null) {
                             SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);

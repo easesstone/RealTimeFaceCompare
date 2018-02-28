@@ -70,7 +70,7 @@ public class ReceiverScheduler {
      * 根据配置文件中配置的receiverNumber和日志文件地址调用rebanceReceiver方法
      * 取得对应的queueIdList，根据这些queueId去初始化receiver
      */
-    private void preapreRecvicer() {
+    public void preapreRecvicer() {
         int receiveNumber = conf.getReceiveNumber();
         String logDir = conf.getProcessLogDir();
         if (receiveNumber != 0 && logDir != null) {
