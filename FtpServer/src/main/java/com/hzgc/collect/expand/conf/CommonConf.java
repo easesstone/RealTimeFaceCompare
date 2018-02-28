@@ -51,12 +51,6 @@ public class CommonConf {
      */
     private int mergeScanTime;
 
-    /**
-     * ftp图片保存的路径，从配置文件中获取
-     * 例如/opt/ftpdata
-     */
-    private String ftpdataDir;
-
 
     /**
      * 默认加载类路径下的cluster-over-ftp.properties文件
@@ -71,7 +65,6 @@ public class CommonConf {
         this.successLogDir = ClusterOverFtpProperHelper.getSuccessLogDir();
         this.mergeLogDir = ClusterOverFtpProperHelper.getMergeLogDir();
         this.mergeScanTime = ClusterOverFtpProperHelper.getMergeScanTime();
-        this.ftpdataDir = ClusterOverFtpProperHelper.getFtpdataDir();
     }
 
     /**
@@ -154,11 +147,4 @@ public class CommonConf {
         this.mergeScanTime = mergeScanTime;
     }
 
-    public String getFtpdataDir() {
-        return ftpdataDir;
-    }
-
-    public void setFtpdataDir(String ftpdataDir) {
-        this.ftpdataDir = ftpdataDir;
-    }
 }

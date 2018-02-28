@@ -10,7 +10,7 @@ public class FaceObjectTest {
         String row = "{\"count\":500,\"path\":\"ftp://s100:2121/DS-2CD2T20FD-I320160122AACH571485690/2018/02/01/16/2018_02_01_16_15_03_73602_1.jpg\"," +
                 "\"absolutePath\":\"/DS-2CD2T20FD-I320160122AACH571485690/2018/02/01/16/2018_02_01_16_15_03_73602_1.jpg\",\"timeStamp\":1518074471290,\"status\":\"0\"}";
         String ftpUrl = "ftp://s100:2121/DS-2CD2T20FD-I320160122AACH571485690/2018/02/01/16/2018_02_01_16_15_03_73602_1.jpg";
-        FaceObject faceObject = GetFaceObject.getFaceObject(row, "/opt/ftpdata");
+        FaceObject faceObject = GetFaceObject.getFaceObject(row);
         System.out.println(faceObject);
         System.out.println("Attribute-----" + faceObject.getAttribute().toString());
         System.out.println("Data----------" + faceObject.getDate());

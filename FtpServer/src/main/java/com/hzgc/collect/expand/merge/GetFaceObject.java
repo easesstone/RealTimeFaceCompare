@@ -15,18 +15,17 @@ import java.util.Date;
 class GetFaceObject {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    static FaceObject getFaceObject(String row, String ftpdataDir) {
+    static FaceObject getFaceObject(String row) {
         FaceObject faceObject = null;
         if (row != null && row.length() != 0) {
             LogEvent event = JSONHelper.toObject(row, LogEvent.class);
             // 路径中不包含/opt/ftpdata
-            String path =event.getAbsolutePath();
+            String path =event.getFtpPath();
             // 路径中包含/opt/ftpdata/
-            String absolutePath = ftpdataDir + event.getAbsolutePath();
+            String absolutePath = event.getAbsolutePath();
 
             byte[] photo = FaceFunction.getPictureBytes(absolutePath);
             if (photo != null) {
-
                 FaceAttribute faceAttribute = FaceFunction.featureExtract(photo);
                 FtpPathMessage ftpPathMessage = FtpUtils.getFtpPathMessage(path);
                 String ipcId = ftpPathMessage.getIpcid();

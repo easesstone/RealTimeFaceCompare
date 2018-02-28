@@ -110,10 +110,8 @@ public class RecoverErrProDataTest {
     public void testSendToKafka() {
         MergeUtil mergeUtil = new MergeUtil();
 
-        String ftpDataDir = commonConf.getFtpdataDir();
         System.out.println("processDir:" + processLogDir);
         System.out.println("mergeErrLogDir:" + mergeErrLogDir);
-        System.out.println("ftpDataDir:" + ftpDataDir);
 
         List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
         for (String errFile : allErrorDir) {
@@ -145,7 +143,7 @@ public class RecoverErrProDataTest {
                         sendCallback.setWriteErrFile(mergeErrFileNew);
 
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpDataDir);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) {
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
                         }

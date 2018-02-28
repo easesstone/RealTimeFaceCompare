@@ -47,7 +47,6 @@ public class RecoverNotProData {
         List<String> processFiles = fileFactory.getAllProcessLogAbsPath();
         //获取processLogDir目录下除去最大,error和000.log的绝对路径
         List<String> backupLogAbsPath = fileFactory.getAllBackupLogAbsPath();
-        String ftpdataDir = commonConf.getFtpdataDir();
 
         //判断process根目录下是否有文件
         if (processFiles != null) {
@@ -68,7 +67,7 @@ public class RecoverNotProData {
                         //获取未处理数据的ftpUrl
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         String ftpUrl = event.getFtpPath();
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) {
                             //发送Kafka失败,将日志写到merge目录下的error日志文件中
                             //获取error日志路径

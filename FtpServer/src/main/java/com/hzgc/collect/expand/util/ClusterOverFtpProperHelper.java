@@ -28,7 +28,6 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     private static String port;
     private static String dataPorts;
     private static String implicitSsl;
-    private static String ftpdataDir;
 
     static {
         String properName = "cluster-over-ftp.properties";
@@ -52,7 +51,6 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
                 setPort();
                 setDataPorts();
                 setImplicitSsl();
-                setFtpdataDir();
             } else {
                 log.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
@@ -123,9 +121,6 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         faceDetectorNumber = verifyPositiveIntegerValue("face.detector.number","", props, log);
     }
 
-    public static void setFtpdataDir() {
-        ftpdataDir = verifyCommonValue("ftp.data.dir","/opt/ftpdata",props,log);
-    }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
@@ -191,10 +186,6 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         return Integer.valueOf(faceDetectorNumber);
     }
 
-    public static String getFtpdataDir() {
-        log.info("Load the configuration ftp.data.dir, the value is \"" + ftpdataDir + "\"");
-        return ftpdataDir;
-    }
 
     /**
      * 获取Properties属性的资源文件变量

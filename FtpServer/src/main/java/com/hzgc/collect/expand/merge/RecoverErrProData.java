@@ -51,7 +51,6 @@ public class RecoverErrProData implements Runnable {
         String processLogDir = commonConf.getProcessLogDir();
         //获取merge/error目录：/opt/RealTimeFaceCompare/ftp/merge/error
         String mergeErrLogDir = commonConf.getMergeLogDir() + File.separator + "error";
-        String ftpdataDir = commonConf.getFtpdataDir();
 
         //列出process目录下所有error日志路径
         List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
@@ -84,7 +83,7 @@ public class RecoverErrProData implements Runnable {
                         //用LogEvent获取该条数据的ftpUrl
                         String ftpUrl = event.getFtpPath();
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row,ftpdataDir);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) { // V-3 if start
                             SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl, event);
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX,"")+"-N"+SUFFIX;
