@@ -10,7 +10,7 @@ import com.hzgc.collect.expand.conf.CommonConf;
 public class DataReceiveLogWriter extends AbstractLogWrite {
 
     public DataReceiveLogWriter(CommonConf conf, String queueID) {
-        super(conf, queueID, DataProcessLogWriter.class);
+        super(conf, queueID, DataReceiveLogWriter.class);
         super.currentDir = conf.getReceiveLogDir() + "/" + "receive-" + super.queueID + "/";
         super.currentFile = super.currentDir + super.logName;
         super.prepare();
