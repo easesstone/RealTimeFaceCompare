@@ -68,8 +68,6 @@ public class RecoverErrProData implements Runnable {
         List<String> errFilePaths = mergeUtil.listAllFileAbsPath(mergeErrLogDir);
         //若errLogPaths这个list不为空（merge/error下有错误日志）
         if (errFilePaths != null && errFilePaths.size() != 0) { // V-1 if start
-            //用于标记kafka正在处理第几条数据
-            int flag = 0;
             //对于每一个error.log
             for (String errorFilePath : errFilePaths) {
                 SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
@@ -93,7 +91,6 @@ public class RecoverErrProData implements Runnable {
                             sendCallback.setWriteErrFile(mergeErrFileNew);
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
                         } // V-3 if end：faceObject不为空的判断结束
-                        flag ++;
                     }
                 } // V-2 if end：errorRows为空的判断结束
                 //删除已处理过的error日志

@@ -69,11 +69,7 @@ public class MergeUtil {
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } else {
-                    LOG.error(path + " is not a directory!");
                 }
-            } else {
-                LOG.error("The parameter is null!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -106,11 +102,7 @@ public class MergeUtil {
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } else {
-                    LOG.error(path + " is not a directory!");
                 }
-            } else {
-                LOG.error("The parameter is null!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -142,11 +134,7 @@ public class MergeUtil {
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } else {
-                    LOG.error(path + " is not a directory!");
                 }
-            } else {
-                LOG.error("The parameter is null!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -212,11 +200,7 @@ public class MergeUtil {
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } else {
-                    LOG.error(path + " is not a directory!");
                 }
-            } else {
-                LOG.error("The parameter is null!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -236,37 +220,31 @@ public class MergeUtil {
         List<String> allContentList = new ArrayList<>();
         //记录入参中符合文件路径格式的参数个数（入参可能为文件夹路径）
         int count = 0;
-        if (filePaths != null) { // if-A start
+        if (filePaths != null) {
             for (String filePath : filePaths) {
                 //入参均不为空，再执行以下操作
-                if (filePath != null && !Objects.equals(filePath, "")) { // if-B start
+                if (filePath != null && !Objects.equals(filePath, "")) {
                     File file = new File(filePath);
                     //判断入参类型是文件的个数
                     if (file.isFile()) {
                         count++;
                     }
-                } else {
-                    LOG.error("The parameter is empty!");
-                }// if-B end
+                }
             }
             try {
                 //若入参都是文件的绝对路径
-                if (count == filePaths.length) { // if-C start
+                if (count == filePaths.length) {
                     for (String filePath : filePaths) {
                         //先将每个文件的内容，导入到各自的contentList中
                         List<String> contentList = Files.readAllLines(Paths.get(filePath));
                         //再导入到最终的allContentList中
                         allContentList.addAll(contentList);
                     }
-                } else {
-                    LOG.error("The parameters must be all file and exist!");
-                } // if-C end
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            LOG.error("The parameter is null!");
-        }// if-A end
+        }
 
         return allContentList;
     }
@@ -280,10 +258,7 @@ public class MergeUtil {
     public void deleteFile(String path) {
         if (path != null && !Objects.equals(path, "")) {
             deleteFile(new File(path));
-        } else {
-            LOG.error("The parameter is null or empty!");
         }
-
     }
 
     private void deleteFile(File file) {
@@ -364,8 +339,6 @@ public class MergeUtil {
                     e.printStackTrace();
                 }
             }
-        } else {
-            LOG.error("The destination path is null or empty!");
         }
     }
 
@@ -396,11 +369,7 @@ public class MergeUtil {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else {
-                LOG.error(sourceFile + " does not exist or isn't a file!");
             }
-        } else {
-            LOG.error("The " + sourceFile + " or" + destinationFile + " is null!");
         }
     }
 
@@ -430,11 +399,7 @@ public class MergeUtil {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else {
-                LOG.error(sourceFile + " does not exist or isn't a file!");
             }
-        } else {
-            LOG.error("The" + sourceFile + "or" + destinationFile + " is null!");
         }
     }
 
@@ -451,11 +416,7 @@ public class MergeUtil {
             if (file.isFile() && processFilePath.contains("process" + File.separator + "process-")) {
                 receiveFilePath = processFilePath.replace("process" + File.separator + "process-",
                         "receive" + File.separator + "receive-");
-            } else {
-                LOG.error("The " + processFilePath + " is not correct!");
             }
-        } else {
-            LOG.error("The parameter is null!");
         }
         return receiveFilePath;
     }
@@ -476,11 +437,7 @@ public class MergeUtil {
                 //获取process日志路径的父目录：/ftp/data/process/p-0/
                 String parentFolder = file.getParent();
                 errorFilePath = parentFolder + File.separator + "error.log";
-            } else {
-                LOG.error("The " + processFilePath + " is not correct!");
             }
-        } else {
-            LOG.error("The parameter is null!");
         }
         return errorFilePath;
     }
@@ -520,11 +477,7 @@ public class MergeUtil {
                         mergeFilePath = renameErrorLog(file, mergeFilePath);
                     } while (new File(mergeFilePath).exists());
                 }
-            } else {
-                LOG.error("The " + file + " is not a file!");
             }
-        } else {
-            LOG.error("The parameter is null!");
         }
         return mergeFilePath;
     }
@@ -569,11 +522,7 @@ public class MergeUtil {
                         successFilePath = renameErrorLog(datafile, successFilePath);
                     } while (new File(successFilePath).exists());
                 }
-            } else {
-                LOG.error("The " + datafile + " is not correct!");
             }
-        } else {
-            LOG.error("The parameter is null!");
         }
         return successFilePath;
     }

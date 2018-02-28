@@ -41,10 +41,10 @@ public class FTP extends ClusterOverFtp {
     @Override
     public void startFtpServer() {
 
-        LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
-        for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
-            NativeFunction.init();
-        }
+//        LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
+//        for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
+//            NativeFunction.init();
+//        }
         //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         LOG.info("Create " + FtpServerFactory.class + " successful");
@@ -95,6 +95,10 @@ public class FTP extends ClusterOverFtp {
 
     public static void main(String args[]) throws Exception {
         LOG.info("start testing.........");
+        LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
+        for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
+            NativeFunction.init();
+        }
         //启动ftp之前，先恢复未处理数据
         LOG.info("start Recovering not process data...");
         RecoverNotProData recoverNotProData = new RecoverNotProData();
