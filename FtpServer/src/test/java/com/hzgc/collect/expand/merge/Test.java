@@ -49,6 +49,9 @@ public class Test {
                     //用于标记失败数据
                     long failureRowCount = 0;
                     System.out.println("=====未处理的数据长度:" + notProRows.size());
+                    //用于标记kafka正在处理第几条数据
+                    int flag = 0;
+                    SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
                     for (int j = 0; j < notProRows.size(); j++) {
                         String row = notProRows.get(j);
                         //获取未处理数据的ftpUrl
@@ -57,9 +60,19 @@ public class Test {
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
                         if (faceObject != null) {
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
-                            boolean success = sendDataToKafka.isSuccessToKafka();
+                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
+                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+                            if ( flag == 0) {
+                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
+                                //只在处理第一条数据时，执行此步骤
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            boolean success = sendCallback.isFlag();
+                            flag ++;
                             if (j == 0 && !success) {
                                 System.out.println("first data send to Kafka failure");
                             } else {

@@ -4,14 +4,14 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
 
-class SendCallback implements Callback {
+public class SendCallback implements Callback {
     private Logger LOG = Logger.getLogger(SendCallback.class);
     final long startTime = System.currentTimeMillis();
     String topic;
     String key;
     boolean flag;
 
-    public boolean getFlag() {
+    public boolean isFlag() {
         return flag;
     }
 
@@ -31,6 +31,7 @@ class SendCallback implements Callback {
         long elapsedTime = System.currentTimeMillis() - startTime;
         if (metadata != null) {
             setFlag(true);
+            System.out.println("------------------------in this the boolean value is " + isFlag());
             LOG.info("Send Kafka successfully! message:[topic:" + topic + ", key:" + key +
                     "], send to partition(" + metadata.partition() + "), offset(" + metadata.offset() + ") in " + elapsedTime + "ms");
 //            counter.inc();

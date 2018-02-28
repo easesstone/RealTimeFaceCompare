@@ -28,7 +28,7 @@ class SendDataToKafka extends KafkaProducer implements Serializable {
         return sendDataToKafka;
     }
 
-    public void sendKafkaMessage(final String topic, final String key, FaceObject value, SendCallback sendCallback ) {
+    public void sendKafkaMessage(final String topic, final String key, FaceObject value, SendCallback sendCallback) {
 
         kafkaProducer.send(new ProducerRecord<>(topic, key, value), new SendCallback(topic, key));
 

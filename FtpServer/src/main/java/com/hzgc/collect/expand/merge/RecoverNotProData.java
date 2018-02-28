@@ -72,7 +72,7 @@ public class RecoverNotProData {
                         if (faceObject != null) {
                             SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl);
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-                            boolean success = sendCallback.getFlag();
+                            boolean success = sendCallback.isFlag();
                             if (j == 0 && !success) {
                                 LOG.warn("first data send to Kafka failure");
                                 return false;
