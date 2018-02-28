@@ -20,8 +20,8 @@ public class MergeUtilTest {
 
     //get log dir from CommonConf
     private CommonConf commonConf = new CommonConf();
-    private String processDir = commonConf.getProcessLogDir();
-    private String receiveDir = commonConf.getReceiveLogDir();
+    private String processDir = "/home/test/ftp/data/process";
+    private String receiveDir = "/home/test/ftp/data/receive";
     private String successDir = commonConf.getSuccessLogDir();
     private String writingLogFile = commonConf.getLogName();
 
@@ -193,6 +193,7 @@ public class MergeUtilTest {
         //第1组测试
         LOG.info("第1组测试，传入process目录" + processDir + "的情况：");
         List<String> executableList1 = mergeUtil.listAllBackupLogAbsPath(processDir, writingLogFile);
+        System.out.println(executableList1);
         for (String file : executableList1) {
             System.out.println(file);
         }

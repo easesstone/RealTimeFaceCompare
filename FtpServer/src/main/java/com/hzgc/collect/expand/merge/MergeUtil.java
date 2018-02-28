@@ -196,21 +196,17 @@ public class MergeUtil {
                                     }
 
                                     Set<Integer> fileNameSet = fileNameMap.keySet();
-                                    int maxFile;
-                                    if (fileNameSet.isEmpty())
-
-                                    if (!fileNameSet.isEmpty() && fileNameSet.size() > 1) {
+                                    if (fileNameSet.size() > 1){
                                         //获取最大的文件名对应的key
-                                        maxFile = Collections.max(fileNameMap.keySet());
-                                    } else{
-                                        maxFile = fileNameMap.get(fileNameMap.);
-                                    }
-                                    //从需要遍历的MAP中，删除这个最大的文件，和0000000.log文件
-                                    fileNameMap.remove(maxFile);
-                                    fileNameMap.remove(Integer.parseInt(writingLogFile.replace(SUFFIX, "")));
-                                    //遍历map，将除去这两个文件后的所有文件，放入list
-                                    for (Map.Entry<Integer, String> entry : fileNameMap.entrySet()) {
-                                        allFileOfPath.add(entry.getValue());
+                                        int maxFile = Collections.max(fileNameMap.keySet());
+
+                                        //从需要遍历的MAP中，删除这个最大的文件，和0000000.log文件
+                                        fileNameMap.remove(maxFile);
+                                        fileNameMap.remove(Integer.parseInt(writingLogFile.replace(SUFFIX, "")));
+                                        //遍历map，将除去这两个文件后的所有文件，放入list
+                                        for (Map.Entry<Integer, String> entry : fileNameMap.entrySet()) {
+                                            allFileOfPath.add(entry.getValue());
+                                        }
                                     }
 
                                 }
