@@ -74,7 +74,7 @@ public class DefaultFtpServer implements FtpServer {
 
         //+++++++++++++++++++++++++++++++++++++++++++++
         //在此处启动ReceiverScheduler
-        serverContext.getScheduler().preapreRecvicer();
+        serverContext.getScheduler().prepareReceiver();
         //+++++++++++++++++++++++++++++++++++++++++++++
         
         List<Listener> startedListeners = new ArrayList<>();
