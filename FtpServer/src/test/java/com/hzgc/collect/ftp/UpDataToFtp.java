@@ -58,7 +58,7 @@ public class UpDataToFtp {
     }
 
     public static void main(String[] args) {
-        upDataTest("/home/test/picFrom",10,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
+        upDataTest("/home/test/picFrom",20,"DS-2DE72XYZIW-ABCVS20160823CCCH641752612");
     }
 
 
