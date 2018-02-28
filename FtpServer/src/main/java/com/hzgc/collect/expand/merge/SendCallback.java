@@ -1,6 +1,7 @@
 package com.hzgc.collect.expand.merge;
 
 import com.codahale.metrics.Counter;
+import com.hzgc.collect.expand.processer.KafkaProducer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
@@ -8,7 +9,6 @@ import org.apache.log4j.Logger;
 public class SendCallback implements Callback {
     private Logger LOG = Logger.getLogger(SendCallback.class);
     final long startTime = System.currentTimeMillis();
-    private Counter counter;
     String topic;
     String key;
     //发送kafka是否成功的标志
@@ -34,11 +34,10 @@ public class SendCallback implements Callback {
         long elapsedTime = System.currentTimeMillis() - startTime;
         if (metadata != null) {
             setFlag(true);
-            System.out.println("------------------------in this the boolean value is " + isFlag());
             LOG.info("Send Kafka successfully! message:[topic:" + topic + ", key:" + key +
                     "], send to partition(" + metadata.partition() + "), offset(" + metadata.offset() + ") in " + elapsedTime + "ms");
-            counter.inc();
-            LOG.info("Send Kafka total:" + counter.getCount());
+//            counter.inc();
+//            LOG.info("Send Kafka total:" + counter.getCount());
         } else {
             setFlag(false);
             LOG.error("message:[" + key + "Send to Kafka failed! ");

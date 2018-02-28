@@ -36,8 +36,6 @@ public class RecoverErrProDataTest {
     //初始化算法
     static {
         NativeFunction.init();
-        NativeFunction.init();
-        NativeFunction.init();
     }
 
 
@@ -130,13 +128,10 @@ public class RecoverErrProDataTest {
         if (errFilePaths != null && errFilePaths.size() != 0) {
             for (String errorFilePath : errFilePaths) {
 
-                //System.out.println("@@@@@@@@@@@errorFilePath = " + errorFilePath);
-
                 List<String> errorRows = mergeUtil.getAllContentFromFile(errorFilePath);
                 for (String row : errorRows) {
                     System.out.println("@@@@@@@@@@errorRows = " + row);
                 }
-
 
                 if (errorRows != null && errorRows.size() != 0) {
                     int flag = 0;
@@ -147,13 +142,10 @@ public class RecoverErrProDataTest {
 
                         String ftpUrl = event.getFtpPath();
                         SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
-                        //System.out.println("****************************ftpUrl:" + ftpUrl + "****************************");
-                        //System.out.println("****************************get faceObject...****************************");
 
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpDataDir);
                         System.out.println("+++++++++++++++++++++++++++++faceObject:" + faceObject);
-                        System.out.println("3333333333333333333333333" + sendCallback);
                         if (faceObject != null) {
                             sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
 
@@ -169,16 +161,15 @@ public class RecoverErrProDataTest {
 //                                    e.printStackTrace();
 //                                }
 //                            }
+//
                             try {
-                                Thread.sleep(2000);
+                                Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                             boolean success = sendCallback.isFlag();
-                            System.out.println("4444444444444444444444" + sendCallback);
                             //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
                             String mergeErrFileNew = errorFilePath.replace(SUFFIX, "") + "-N" + SUFFIX;
-                            System.out.println("=============================boolean value is " + success);
                             if (!success) {
                                 System.out.println("****************************Send the count " + count +
                                         " message to kafka failed! Rewrite to new merge error file!" +"****************************");

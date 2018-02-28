@@ -116,6 +116,7 @@ public class RecoverNotProDataTest {
     public void recoverNotProDataTest2() {
         System.out.println(("==========" + "recoverNotProDataTest2：测试发送未处理数据代码，发送Kafka数据" + "=========="));
         if (processFiles != null && processFiles.size() != 0) {
+            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
             for (String processFile : processFiles) {
                 String receiveFile = mergeUtil.getRecFilePathFromProFile(processFile);
                 System.out.println("========对应receive绝对路径为:" + receiveFile);
@@ -137,9 +138,10 @@ public class RecoverNotProDataTest {
 
                         FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpUrl);
                         if (faceObject != null) {
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
-                            boolean success = sendDataToKafka.isSuccessToKafka();
+
+                            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
+                            boolean success = sendCallback.isFlag();
+
                             if (j == 0 && !success) {
                                 System.out.println("first data send to Kafka failure");
                             } else {

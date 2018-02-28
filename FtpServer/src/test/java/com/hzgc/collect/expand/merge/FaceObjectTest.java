@@ -19,7 +19,10 @@ public class FaceObjectTest {
 
         if (faceObject != null) {
             SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
+            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
+            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+
+            boolean success = sendCallback.isFlag();
 
             try {
                 Thread.sleep(1000);
@@ -27,7 +30,6 @@ public class FaceObjectTest {
                 e.printStackTrace();
             }
 
-            boolean success = sendDataToKafka.isSuccessToKafka();
             if (!success) {
                 System.out.println("****************************Send the message to kafka failed! Rewrite to new merge error file!" + "****************************");
             } else {
