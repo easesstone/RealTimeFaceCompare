@@ -148,6 +148,7 @@ public class STOR extends AbstractCommand {
                         event.setTimeStamp(System.currentTimeMillis());
                         event.setAbsolutePath(file.getFileAbsolutePa());
                         event.setFtpPath(fileName);
+                        event.setStatus("0");
                         FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
                         //拼装ftpUrl (带主机名的ftpUrl)
                         String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);

@@ -77,7 +77,6 @@ public class RecoverErrProData implements Runnable {
                     for (String row : errorRows) {
                         //用JSONHelper将某行数据转化为LogEvent格式
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
-
                         //每一条记录的格式为：
                         //"count":0, "url":"ftp://s100:/2018/01/09", "timestamp":"2018-01-02", "status":"0"
                         //用LogEvent获取该条数据的ftpUrl

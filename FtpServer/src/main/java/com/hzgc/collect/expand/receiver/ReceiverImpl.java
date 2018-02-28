@@ -35,7 +35,7 @@ public class ReceiverImpl implements Receiver {
     }
 
     @Override
-    public void registIntoContainer() {
+    public void registerIntoContainer() {
     }
 
     @Override
