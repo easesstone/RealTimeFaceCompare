@@ -94,7 +94,6 @@ public class FTP extends ClusterOverFtp {
     }
 
     public static void main(String args[]) throws Exception {
-        LOG.info("start testing.........");
         LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
         for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
             NativeFunction.init();
