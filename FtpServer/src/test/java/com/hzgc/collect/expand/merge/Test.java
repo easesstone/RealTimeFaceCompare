@@ -4,8 +4,9 @@ package com.hzgc.collect.expand.merge;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.KafkaProducer;
+import com.hzgc.collect.expand.util.ProducerKafka;
 import com.hzgc.collect.expand.util.JSONHelper;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import com.hzgc.jni.NativeFunction;
 
 import java.text.ParseException;
@@ -50,7 +51,7 @@ public class Test {
                     System.out.println("=====未处理的数据长度:" + notProRows.size());
                     //用于标记kafka正在处理第几条数据
                     int flag = 0;
-                    SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
+                    ProducerKafka kafkaProducer = ProducerKafka.getInstance();
                     for (int j = 0; j < notProRows.size(); j++) {
                         String row = notProRows.get(j);
                         //获取未处理数据的ftpUrl
@@ -59,10 +60,10 @@ public class Test {
                         System.out.println("=====未处理的数据对应的 ftpUrl:" + ftpUrl);
                         FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) {
-                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl, event);
-                            sendCallback.setProcessFile(processFile);
-                            sendCallback.setWriteErrFile(writeErrFile);
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+                            MergeSendCallback mergeSendCallback = new MergeSendCallback(ProducerOverFtpProperHelper.getTopicFeature(), ftpUrl, event);
+                            mergeSendCallback.setProcessFile(processFile);
+                            mergeSendCallback.setWriteErrFile(writeErrFile);
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtpProperHelper.getTopicFeature(), ftpUrl, faceObject, mergeSendCallback);
 //                            if ( flag == 0) {
 //                                //确认kafka接收到第一条数据后，再获取success值。否则获取到success值过快，会获取到false。
 //                                //只在处理第一条数据时，执行此步骤
@@ -72,7 +73,7 @@ public class Test {
 //                                    e.printStackTrace();
 //                                }
 //                            }
-//                            boolean success = sendCallback.isFlag();
+//                            boolean success = mergeSendCallback.isFlag();
 //                            flag ++;
 //                            if (j == 0 && !success) {
 //                                System.out.println("first data send to Kafka failure");

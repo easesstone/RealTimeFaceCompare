@@ -1,26 +1,17 @@
-package com.hzgc.collect.ftp.util;
+package com.hzgc.collect.expand.util;
 
 import com.hzgc.collect.FTP;
 import com.hzgc.collect.expand.processer.FtpPathMessage;
 import com.hzgc.collect.expand.processer.FtpUrlMessage;
-import com.hzgc.collect.expand.util.FTPAddressProperHelper;
-import com.hzgc.util.common.FileUtil;
+import com.hzgc.collect.ftp.util.IPAddressUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
-public class FtpUtils implements Serializable {
+public final class FtpUtils implements Serializable {
     private static Logger LOG = Logger.getLogger(FtpUtils.class);
-
-    private static Properties properties = FTPAddressProperHelper.getProps();
-
-    static {
-        int ftpServerPort = FTPAddressProperHelper.getPort();
-    }
 
     public static boolean checkPort(int checkPort) throws Exception {
         return checkPort > 1024;
@@ -184,9 +175,10 @@ public class FtpUtils implements Serializable {
      */
     public static String getFtpUrl(String ftpUrl) {
         String hostName = ftpUrl.substring(ftpUrl.indexOf("/") + 2, ftpUrl.lastIndexOf(":"));
-        String ftpServerIP = properties.getProperty(hostName);
-        if (ftpServerIP != null && ftpServerIP.length() > 0)
+        String ftpServerIP = FTPAddressProperHelper.getIp();
+        if (ftpServerIP != null && ftpServerIP.length() > 0) {
             return ftpUrl.replace(hostName, ftpServerIP);
+        }
         return ftpUrl;
     }
 }

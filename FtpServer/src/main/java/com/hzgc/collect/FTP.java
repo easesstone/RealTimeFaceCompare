@@ -35,16 +35,13 @@ public class FTP extends ClusterOverFtp {
         new LoggerConfig();
         HelperFactory.regist();
     }
+
     //expand模块的公共Conf对象
     private static CommonConf commonConf = new CommonConf();
 
     @Override
     public void startFtpServer() {
 
-//        LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
-//        for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
-//            NativeFunction.init();
-//        }
         //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         LOG.info("Create " + FtpServerFactory.class + " successful");
@@ -94,8 +91,9 @@ public class FTP extends ClusterOverFtp {
     }
 
     public static void main(String args[]) throws Exception {
-        LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
-        for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
+        int detectorNum = ClusterOverFtpProperHelper.getFaceDetectorNumber();
+        LOG.info("Init face detector, number is " + detectorNum);
+        for (int i = 0; i < detectorNum; i++) {
             NativeFunction.init();
         }
         //启动ftp之前，先恢复未处理数据
@@ -111,7 +109,7 @@ public class FTP extends ClusterOverFtp {
             ftp.startFtpServer();
 
             //启动ftp后，恢复错误数据。作为一个线程来执行
-            LOG.info("start RecoverErrProData....");
+            LOG.info("start RecoverErrProDataThread....");
             ScheRecoErrData scheRecoErrData = new ScheRecoErrData();
             scheRecoErrData.scheduled(commonConf);
         }

@@ -6,9 +6,8 @@ import com.hzgc.collect.expand.processer.RocketMQProducer;
 import com.hzgc.collect.ftp.command.AbstractCommand;
 import com.hzgc.collect.ftp.ftplet.*;
 import com.hzgc.collect.ftp.impl.*;
-import com.hzgc.collect.ftp.util.FtpUtils;
+import com.hzgc.collect.expand.util.FtpUtils;
 import com.hzgc.util.common.IOUtil;
-import kafka.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,16 +143,16 @@ public class STOR extends AbstractCommand {
                 } else {
                     int faceNum = FtpUtils.pickPicture(fileName);
                     if (fileName.contains(".jpg") && faceNum > 0) {
-                        LogEvent event = new LogEvent();
-                        event.setTimeStamp(System.currentTimeMillis());
-                        event.setAbsolutePath(file.getFileAbsolutePa());
-                        event.setFtpPath(fileName);
-                        event.setStatus("0");
-                        FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
                         //拼装ftpUrl (带主机名的ftpUrl)
                         String ftpHostNameUrl = FtpUtils.filePath2FtpUrl(fileName);
                         //获取ftpUrl (带IP地址的ftpUrl)
                         String ftpIpUrl = FtpUtils.getFtpUrl(ftpHostNameUrl);
+                        LogEvent event = new LogEvent();
+                        event.setTimeStamp(System.currentTimeMillis());
+                        event.setAbsolutePath(file.getFileAbsolutePa());
+                        event.setFtpPath(ftpHostNameUrl);
+                        event.setStatus("0");
+                        FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
                         //发送到rocketMQ
                         RocketMQProducer
                                 .getInstance()

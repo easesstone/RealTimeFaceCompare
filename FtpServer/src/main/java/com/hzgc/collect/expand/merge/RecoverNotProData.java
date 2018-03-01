@@ -3,12 +3,11 @@ package com.hzgc.collect.expand.merge;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.KafkaProducer;
+import com.hzgc.collect.expand.util.ProducerKafka;
 import com.hzgc.collect.expand.util.JSONHelper;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import org.apache.log4j.Logger;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +35,7 @@ import java.util.List;
  */
 public class RecoverNotProData {
     private Logger LOG = Logger.getLogger(RecoverNotProData.class);
+    private String feature = ProducerOverFtpProperHelper.getTopicFeature();
 
     public boolean recoverNotProData(CommonConf commonConf) {
         MergeUtil mergeUtil = new MergeUtil();
@@ -61,9 +61,8 @@ public class RecoverNotProData {
 
                     //用于标记发送Kafka数据数
                     long rowCount = 0;
-                    SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                    for (int j = 0; j < notProRows.size(); j++) {
-                        String row = notProRows.get(j);
+                    ProducerKafka producerKafka = ProducerKafka.getInstance();
+                    for (String row : notProRows) {
                         //获取未处理数据的ftpUrl
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         String ftpUrl = event.getFtpPath();
@@ -71,15 +70,16 @@ public class RecoverNotProData {
                         if (faceObject != null) {
                             //发送Kafka失败,将日志写到merge目录下的error日志文件中
                             //获取error日志路径
-                            String processErrLogPath = processFile.substring(0,processFile.lastIndexOf("/"));
+                            String processErrLogPath = processFile.substring(0, processFile.lastIndexOf("/"));
                             String writeErrFile = processErrLogPath + "/error/error.log";
 
-                            SendCallback sendCallback = new SendCallback(KafkaProducer.getFEATURE(), ftpUrl, event);
-                            sendCallback.setProcessFile(processFile);
-                            sendCallback.setWriteErrFile(writeErrFile);
+                            MergeSendCallback mergeSendCallback = new MergeSendCallback(
+                                    feature, ftpUrl, event);
+                            mergeSendCallback.setProcessFile(processFile);
+                            mergeSendCallback.setWriteErrFile(writeErrFile);
 
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
-                            rowCount ++;
+                            producerKafka.sendKafkaMessage(feature, ftpUrl, faceObject, mergeSendCallback);
+                            rowCount++;
                         }
                     }
                     if (rowCount == notProRows.size()) {

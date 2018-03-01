@@ -2,8 +2,7 @@ package com.hzgc.collect.ftp;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import com.hzgc.collect.ftp.util.FTPDownloadUtils;
-import org.junit.Test;
+import com.hzgc.collect.expand.util.FTPDownloadUtils;
 
 import java.io.File;
 import java.util.Random;

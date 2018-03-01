@@ -3,13 +3,13 @@ package com.hzgc.collect.expand.merge;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.KafkaProducer;
+import com.hzgc.collect.expand.util.ProducerKafka;
 import com.hzgc.collect.expand.util.JSONHelper;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import com.hzgc.jni.NativeFunction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import sun.net.NetworkClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class RecoverErrProDataTest {
+public class RecoverErrProDataThreadTest {
 
     private MergeUtil mergeUtil = new MergeUtil();
 
@@ -132,20 +132,20 @@ public class RecoverErrProDataTest {
                 }
 
                 if (errorRows != null && errorRows.size() != 0) {
-                    SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
+                    ProducerKafka kafkaProducer = ProducerKafka.getInstance();
                     for (String row : errorRows) {
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         long count = event.getCount();
 
                         String ftpUrl = event.getFtpPath();
-                        SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl, event);
+                        MergeSendCallback mergeSendCallback = new MergeSendCallback(ProducerOverFtpProperHelper.getTopicFeature(), ftpUrl, event);
                         String mergeErrFileNew = errorFilePath.replace(SUFFIX, "") + "-N" + SUFFIX;
-                        sendCallback.setWriteErrFile(mergeErrFileNew);
+                        mergeSendCallback.setWriteErrFile(mergeErrFileNew);
 
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
                         FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) {
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtpProperHelper.getTopicFeature(), ftpUrl, faceObject, mergeSendCallback);
                         }
                     }
                 }

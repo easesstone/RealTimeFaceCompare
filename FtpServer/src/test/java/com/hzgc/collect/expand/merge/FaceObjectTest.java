@@ -1,7 +1,6 @@
 package com.hzgc.collect.expand.merge;
 
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.KafkaProducer;
 import com.hzgc.jni.NativeFunction;
 
 public class FaceObjectTest {
@@ -19,8 +18,8 @@ public class FaceObjectTest {
 
 //        if (faceObject != null) {
 //            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-//            SendCallback sendCallback = new SendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
-//            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject, sendCallback);
+//            MergeSendCallback sendCallback = new MergeSendCallback(sendDataToKafka.getFEATURE(), ftpUrl);
+//            sendDataToKafka.sendKafkaMessage(ProducerKafka.getFEATURE(), ftpUrl, faceObject, sendCallback);
 //
 //            boolean success = sendCallback.isFlag();
 //

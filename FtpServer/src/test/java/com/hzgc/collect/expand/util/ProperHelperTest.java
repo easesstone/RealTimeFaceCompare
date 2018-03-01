@@ -36,6 +36,7 @@ public class ProperHelperTest {
         FTPAddressProperHelper.getPassword();
         FTPAddressProperHelper.getPathRule();
         FTPAddressProperHelper.getProps();
+        FTPAddressProperHelper.getHostname();
     }
 
     @Test
