@@ -3,12 +3,11 @@ package com.hzgc.collect.expand.merge;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.KafkaProducer;
+import com.hzgc.collect.expand.util.ProducerKafka;
 import com.hzgc.collect.expand.util.JSONHelper;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import org.apache.log4j.Logger;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,7 +35,7 @@ import java.util.List;
  */
 public class RecoverNotProData {
     private Logger LOG = Logger.getLogger(RecoverNotProData.class);
-
+    private String feature = ProducerOverFtpProperHelper.getTopicFeature();
 
     public boolean recoverNotProData(CommonConf commonConf) {
         MergeUtil mergeUtil = new MergeUtil();
@@ -50,7 +49,7 @@ public class RecoverNotProData {
         List<String> backupLogAbsPath = fileFactory.getAllBackupLogAbsPath();
 
         //判断process根目录下是否有文件
-        if (processFiles != null && processFiles.size() != 0) {
+        if (processFiles != null) {
             for (String processFile : processFiles) {
                 //获取receive绝对路径
                 String receiveFile = mergeUtil.getRecFilePathFromProFile(processFile);
@@ -59,41 +58,28 @@ public class RecoverNotProData {
                     RowsListFactory rowsListFactory = new RowsListFactory(processFile, receiveFile);
                     //获取未处理的数据
                     List<String> notProRows = rowsListFactory.getNotProRows();
+
                     //用于标记发送Kafka数据数
                     long rowCount = 0;
-                    for (int j = 0; j < notProRows.size(); j++) {
-                        String row = notProRows.get(j);
+                    ProducerKafka producerKafka = ProducerKafka.getInstance();
+                    for (String row : notProRows) {
                         //获取未处理数据的ftpUrl
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
                         String ftpUrl = event.getFtpPath();
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpUrl);
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) {
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
-                            boolean success = sendDataToKafka.isSuccessToKafka();
-                            if (j == 0 && !success) {
-                                LOG.warn("first data send to Kafka failure");
-                                return false;
-                            } else {
-                                //向对应的processFile中写入日志
-                                event.setTimeStamp(System.currentTimeMillis());
-                                if (success) {
-                                    event.setStatus("0");
-                                    LOG.info("Send to Kafka success,write log to processFile :" + processFile);
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    rowCount++;
-                                } else {
-                                    //发送Kafka失败,将日志写到merge目录下的error日志文件中
-                                    //获取error日志路径
-                                    String processErrLogPath = processFile.substring(0,processFile.lastIndexOf("/"));
-                                    String writeErrFile = processErrLogPath + "/error/error.log";
-                                    event.setStatus("1");
-                                    LOG.warn("Send to Kafka failure ,write log to errorLogFile :");
-                                    mergeUtil.writeMergeFile(event, processFile);
-                                    mergeUtil.writeMergeFile(event, writeErrFile);
-                                    rowCount++;
-                                }
-                            }
+                            //发送Kafka失败,将日志写到merge目录下的error日志文件中
+                            //获取error日志路径
+                            String processErrLogPath = processFile.substring(0, processFile.lastIndexOf("/"));
+                            String writeErrFile = processErrLogPath + "/error/error.log";
+
+                            MergeSendCallback mergeSendCallback = new MergeSendCallback(
+                                    feature, ftpUrl, event);
+                            mergeSendCallback.setProcessFile(processFile);
+                            mergeSendCallback.setWriteErrFile(writeErrFile);
+
+                            producerKafka.sendKafkaMessage(feature, ftpUrl, faceObject, mergeSendCallback);
+                            rowCount++;
                         }
                     }
                     if (rowCount == notProRows.size()) {

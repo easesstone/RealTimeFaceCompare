@@ -14,7 +14,7 @@ import java.util.Properties;
  */
 public class FTPAddressProperHelper extends ProperHelper{
 
-    private static Logger log = Logger.getLogger(FTPAddressProperHelper.class);
+    private static Logger LOG = Logger.getLogger(FTPAddressProperHelper.class);
     private static Properties props = new Properties();
 
     private static String ip;
@@ -22,6 +22,7 @@ public class FTPAddressProperHelper extends ProperHelper{
     private static String user;
     private static String password;
     private static String pathRule;
+    private static String hostname;
 
     static {
         String properName = "ftpAddress.properties";
@@ -31,20 +32,21 @@ public class FTPAddressProperHelper extends ProperHelper{
             if (file != null) {
                 in = new FileInputStream(file);
                 props.load(in);
-                log.info("Load configuration for ftp Server from ./conf/ftpAddress.properties");
+                LOG.info("Load configuration for ftp Server from ./conf/ftpAddress.properties");
 
                 setIp();
                 setPort();
                 setUser();
                 setPassword();
                 setPathRule();
+                setHostname();
             } else {
-                log.error("The property file " + properName + "doesn't exist!");
+                LOG.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
             }
         } catch (IOException e) {
             e.printStackTrace();
-            log.error("Catch an unknown error, can't load the configuration file" + properName);
+            LOG.error("Catch an unknown error, can't load the configuration file" + properName);
         } finally {
             if (in != null){
                 try {
@@ -60,60 +62,60 @@ public class FTPAddressProperHelper extends ProperHelper{
      * set方法。验证配置文件中的值是否为符合条件的格式。
      */
     private static void setIp() {
-        ip = verifyIp("ip", props, log);
+        ip = verifyIp("ip", props, LOG);
     }
 
     private static void setPort() {
-        port = verifyPort("port", "2121", props, log);
+        port = verifyPort("port", "2121", props, LOG);
     }
 
     private static void setUser() {
-        user = verifyCommonValue("user","admin", props, log);
+        user = verifyCommonValue("user","admin", props, LOG);
     }
 
     private static void setPassword() {
-        password = verifyCommonValue("password", "123456", props, log);
+        password = verifyCommonValue("password", "123456", props, LOG);
     }
 
     private static void setPathRule() {
-        pathRule = verifyCommonValue("pathRule","%f/%Y/%m/%d/%H", props, log);
+        pathRule = verifyCommonValue("pathRule","%f/%Y/%m/%d/%H", props, LOG);
     }
 
+    private static void setHostname() {
+        hostname = verifyCommonValue("hostname", "", props, LOG);
+    }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
      */
 
     public static String getIp() {
-        log.info("Load the configuration ip, the value is \"" + ip + "\"");
         return ip;
     }
 
     public static Integer getPort() {
-        log.info("Load the configuration port, the value is \"" + port + "\"");
         return Integer.valueOf(port);
     }
 
     public static String getUser() {
-        log.info("Load the configuration user, the value is \"" + user + "\"");
         return user;
     }
 
     public static String getPassword() {
-        log.info("Load the configuration password, the value is \"" + password + "\"");
         return password;
     }
 
     public static String getPathRule() {
-        log.info("Load the configuration pathRule, the value is \"" + pathRule + "\"");
         return pathRule;
+    }
+    public static String getHostname(){
+        return hostname;
     }
 
     /**
      * 获取Properties属性的资源文件变量
      */
     public static Properties getProps(){
-        log.info("Load configuration file ./conf/ftpAddress.properties：" + props);
         return props;
     }
 

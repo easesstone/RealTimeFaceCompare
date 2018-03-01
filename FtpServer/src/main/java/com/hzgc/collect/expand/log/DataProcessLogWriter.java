@@ -17,10 +17,13 @@ import java.nio.file.Paths;
  * @author Zhaozhe
  */
 public class DataProcessLogWriter extends AbstractLogWrite {
+    private String errorLog;
+
     public DataProcessLogWriter(CommonConf conf, String queueID) {
         super(conf, queueID, DataProcessLogWriter.class);
         super.currentDir = conf.getProcessLogDir() + "/" + "process-" + super.queueID + "/";
         super.currentFile = super.currentDir + super.logName;
+        this.errorLog = super.currentDir + "error/error.log";
         super.prepare();
         LOG.info("Init DataProcessLogWriter successful [queueID:" + super.queueID
                 + ", count:" + count
@@ -35,9 +38,9 @@ public class DataProcessLogWriter extends AbstractLogWrite {
      * @param errorPath 错误日志文件路径
      * @param event     错误日志
      */
-    void errorLogWrite(String errorPath, LogEvent event) {
-        Path errorLogDir = Paths.get(errorPath);
-        Path errorLogFile = Paths.get(errorPath, "error.log");
+    public void errorLogWrite(String errorPath, LogEvent event) {
+        Path errorLogDir = Paths.get(errorPath).getParent();
+        Path errorLogFile = Paths.get(errorPath).toAbsolutePath();
         RandomAccessFile randomAccessFile = null;
         FileChannel fileChannel = null;
         FileLock fileLock = null;
@@ -94,6 +97,10 @@ public class DataProcessLogWriter extends AbstractLogWrite {
                 e.printStackTrace();
             }
         }
+    }
+
+    public String getErrorLog() {
+        return errorLog;
     }
 }
 

@@ -13,7 +13,8 @@ import java.util.Properties;
  * 验证其中的配置；读取所需的配置。（马燊偲）
  */
 public class ClusterOverFtpProperHelper extends ProperHelper {
-    private static Logger log = Logger.getLogger(ClusterOverFtpProperHelper.class);
+    private static Logger LOG
+            = Logger.getLogger(ClusterOverFtpProperHelper.class);
     private static Properties props = new Properties();
 
     private static String logSize;
@@ -28,7 +29,6 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     private static String port;
     private static String dataPorts;
     private static String implicitSsl;
-    private static String ftpdataDir;
 
     static {
         String properName = "cluster-over-ftp.properties";
@@ -38,7 +38,7 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
             if (file != null) {
                 in = new FileInputStream(file);
                 props.load(in);
-                log.info("Load configuration for ftp server from ./conf/cluster-over-ftp.properties");
+                LOG.info("Load configuration for ftp server from ./conf/cluster-over-ftp.properties");
 
                 setLogSize();
                 setReceiveQueueCapacity();
@@ -52,14 +52,13 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
                 setPort();
                 setDataPorts();
                 setImplicitSsl();
-                setFtpdataDir();
             } else {
-                log.error("The property file " + properName + "doesn't exist!");
+                LOG.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
             }
         } catch (IOException e) {
             e.printStackTrace();
-            log.error("Catch an unknown error, can't load the configuration file" + properName);
+            LOG.error("Catch an unknown error, can't load the configuration file" + properName);
         } finally {
             if (in != null){
                 try {
@@ -76,131 +75,111 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
      */
 
     private static void setPort() {
-        port = verifyPort("listener-port", "2121", props, log);
+        port = verifyPort("listener-port", "2121", props, LOG);
     }
 
     private static void setDataPorts() {
-        dataPorts = verifyCommonValue("data-ports", "2223-2225", props, log);
+        dataPorts = verifyCommonValue("data-ports", "2223-2225", props, LOG);
     }
 
     private static void setImplicitSsl() {
-        implicitSsl = verifyBooleanValue("implicitSsl", "false", props, log);
+        implicitSsl = verifyBooleanValue("implicitSsl", "false", props, LOG);
     }
 
     private static void setReceiveQueueCapacity() {
-        receiveQueueCapacity = verifyPositiveIntegerValue("receive.queue.capacity", String.valueOf(Integer.MAX_VALUE), props, log);
+        receiveQueueCapacity = verifyPositiveIntegerValue("receive.queue.capacity", String.valueOf(Integer.MAX_VALUE), props, LOG);
     }
 
     private static void setReceiveLogDir() {
-        receiveLogDir = verifyCommonValue("receive.log.dir", "/opt/RealTimeFaceCompare/ftp/data/receive", props, log);
+        receiveLogDir = verifyCommonValue("receive.log.dir", "/opt/RealTimeFaceCompare/ftp/data/receive", props, LOG);
     }
 
     private static void setProcessLogDir() {
-        processLogDir = verifyCommonValue("process.log.dir", "/opt/RealTimeFaceCompare/ftp/data/process", props, log);
+        processLogDir = verifyCommonValue("process.log.dir", "/opt/RealTimeFaceCompare/ftp/data/process", props, LOG);
     }
 
     private static void setSuccessLogDir() {
-        successLogDir = verifyCommonValue("success.log.dir","/opt/RealTimeFaceCompare/ftp/success", props, log);
+        successLogDir = verifyCommonValue("success.log.dir","/opt/RealTimeFaceCompare/ftp/success", props, LOG);
     }
 
     private static void setMergeLogDir() {
-        mergeLogDir = verifyCommonValue("merge.log.dir", "/opt/RealTimeFaceCompare/ftp/merge", props, log);
+        mergeLogDir = verifyCommonValue("merge.log.dir", "/opt/RealTimeFaceCompare/ftp/merge", props, LOG);
     }
 
     private static void setMergeScanTime() {
-        mergeScanTime = verifyPositiveIntegerValue("merge.scan.time", "", props, log);
+        mergeScanTime = verifyPositiveIntegerValue("merge.scan.time", "", props, LOG);
     }
 
     private static void setReceiveNumber() {
-        receiveNumber = verifyCommonValue("receive.number", "6", props, log);
+        receiveNumber = verifyCommonValue("receive.number", "6", props, LOG);
     }
 
     private static void setLogSize() {
-        logSize = verifyPositiveIntegerValue("log.Size", "300000", props, log);
+        logSize = verifyPositiveIntegerValue("log.Size", "300000", props, LOG);
     }
 
     private static void setFaceDetectorNumber() {
-        faceDetectorNumber = verifyPositiveIntegerValue("face.detector.number","", props, log);
+        faceDetectorNumber = verifyPositiveIntegerValue("face.detector.number","", props, LOG);
     }
 
-    public static void setFtpdataDir() {
-        ftpdataDir = verifyCommonValue("ftp.data.dir","/opt/ftpdata",props,log);
-    }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
      */
 
     public static Integer getPort() {
-        log.info("Load the configuration listener-port, the value is \"" + port + "\"");
         return Integer.valueOf(port);
     }
 
     public static String getDataPorts() {
-        log.info("Load the configuration data-ports, the value is \"" + dataPorts + "\"");
         return dataPorts;
     }
 
     public static Boolean getImplicitSsl() {
-        log.info("Load the configuration implicitSsl, the value is \"" + implicitSsl + "\"");
         return Boolean.valueOf(implicitSsl);
     }
 
     public static Integer getReceiveQueueCapacity() {
-        log.info("Load the configuration receive.queue.capacity, the value is \"" + receiveQueueCapacity + "\"");
         return Integer.valueOf(receiveQueueCapacity);
     }
 
     public static String getReceiveLogDir() {
-        log.info("Load the configuration receive.log.dir, the value is \"" + receiveLogDir + "\"");
         return receiveLogDir;
     }
 
     public static String getProcessLogDir() {
-        log.info("Load the configuration process.log.dir, the value is \"" + processLogDir + "\"");
         return processLogDir;
     }
 
     public static Integer getReceiveNumber() {
-        log.info("Load the configuration receive.number, the value is \"" + receiveNumber + "\"");
         return Integer.valueOf(receiveNumber);
     }
 
     public static String getSuccessLogDir() {
-        log.info("Load the configuration success.log.dir, the value is \"" + successLogDir + "\"");
         return successLogDir;
     }
 
     public static String getMergeLogDir() {
-        log.info("Load the configuration merge.log.dir, the value is \"" + mergeLogDir + "\"");
         return mergeLogDir;
     }
 
     public static Integer getMergeScanTime() {
-        log.info("Load the configuration merge.scan.time, the value is \"" + mergeScanTime + "\"");
         return Integer.valueOf(mergeScanTime);
     }
 
     public static Integer getLogSize() {
-        log.info("Load the configuration log.Size, the value is \"" + logSize + "\"");
         return Integer.valueOf(logSize);
     }
 
     public static Integer getFaceDetectorNumber() {
-        log.info("Load the configuration face.detector.number, the value is \"" + faceDetectorNumber + "\"");
         return Integer.valueOf(faceDetectorNumber);
     }
 
-    public static String getFtpdataDir() {
-        log.info("Load the configuration ftp.data.dir, the value is \"" + ftpdataDir + "\"");
-        return ftpdataDir;
-    }
 
     /**
      * 获取Properties属性的资源文件变量
      */
     public static Properties getProps(){
-        log.info("Load configuration file ./conf/cluster-over-ftp.properties：" + props);
         return props;
     }
 }

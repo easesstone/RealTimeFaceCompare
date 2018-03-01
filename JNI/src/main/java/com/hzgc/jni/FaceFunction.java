@@ -28,7 +28,10 @@ public class FaceFunction {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assert baos != null;
+        //assert baos != null;
+        if (baos == null) {
+            return null;
+        }
         return baos.toByteArray();
     }
 

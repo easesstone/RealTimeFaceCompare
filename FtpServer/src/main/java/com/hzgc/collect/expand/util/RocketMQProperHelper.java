@@ -13,7 +13,7 @@ import java.util.Properties;
  * 验证其中的配置；读取所需的配置。（马燊偲）
  */
 public class RocketMQProperHelper extends ProperHelper{
-    private static Logger log = Logger.getLogger(RocketMQProperHelper.class);
+    private static Logger LOG = Logger.getLogger(RocketMQProperHelper.class);
     private static Properties props = new Properties();
     private static String address;
     private static String topic;
@@ -27,18 +27,18 @@ public class RocketMQProperHelper extends ProperHelper{
             if (file != null) {
                 in = new FileInputStream(file);
                 props.load(in);
-                log.info("Load configuration for ftp server from ./conf/rocketmq.properties");
+                LOG.info("Load configuration for ftp server from ./conf/rocketmq.properties");
 
                 setAddress();
                 setTopic();
                 setGroup();
             } else {
-                log.error("The property file " + properName + "doesn't exist!");
+                LOG.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
             }
         } catch (IOException e) {
             e.printStackTrace();
-            log.error("Catch an unknown error, can't load the configuration file" + properName);
+            LOG.error("Catch an unknown error, can't load the configuration file" + properName);
         } finally {
             if (in != null){
                 try {
@@ -54,15 +54,15 @@ public class RocketMQProperHelper extends ProperHelper{
      * set方法。验证配置文件中的值是否为符合条件的格式。
      */
     private static void setAddress(){
-        address = verifyIpPlusPort("address", props, log);
+        address = verifyIpPlusPort("address", props, LOG);
     }
 
     private static void setTopic(){
-        topic = verifyCommonValue("topic", "REALTIME_PIC_MESSAGE", props, log);
+        topic = verifyCommonValue("topic", "REALTIME_PIC_MESSAGE", props, LOG);
     }
 
     private static void setGroup(){
-        group = verifyCommonValue("group", "FaceGroup", props, log);
+        group = verifyCommonValue("group", "FaceGroup", props, LOG);
     }
 
     /**
@@ -70,17 +70,14 @@ public class RocketMQProperHelper extends ProperHelper{
      */
 
     public static String getAddress() {
-        log.info("Load the configuration address, the value is \"" + address + "\"");
         return address;
     }
 
     public static String getTopic() {
-        log.info("Load the configuration topic, the value is \"" + topic + "\"");
         return topic;
     }
 
     public static String getGroup() {
-        log.info("Load the configuration group, the value is \"" + group + "\"");
         return group;
     }
 
@@ -88,7 +85,6 @@ public class RocketMQProperHelper extends ProperHelper{
      * 获取Properties属性的资源文件变量
      */
     public static Properties getProps(){
-        log.info("Load configuration file ./conf/rocketmq.properties：" + props);
         return props;
     }
 

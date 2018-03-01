@@ -1,7 +1,7 @@
 package com.hzgc.service.dynamicrepo;
 
-import com.hzgc.collect.ftp.util.FtpUtils;
-import com.hzgc.collect.ftp.util.FTPDownloadUtils;
+import com.hzgc.collect.expand.util.FtpUtils;
+import com.hzgc.collect.expand.util.FTPDownloadUtils;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.util.JDBCUtil;

@@ -1,6 +1,8 @@
 package com.hzgc.collect;
 
 import com.hzgc.collect.expand.conf.CommonConf;
+import com.hzgc.collect.expand.merge.RecoverNotProData;
+import com.hzgc.collect.expand.merge.ScheRecoErrData;
 import com.hzgc.collect.expand.util.ClusterOverFtpProperHelper;
 import com.hzgc.collect.expand.util.HelperFactory;
 import com.hzgc.collect.ftp.ClusterOverFtp;
@@ -30,19 +32,16 @@ public class FTP extends ClusterOverFtp {
       Set the dynamic log configuration file refresh time
      */
     static {
-        //加载所有配置文件
-        HelperFactory.regist();
         new LoggerConfig();
+        HelperFactory.regist();
     }
+
+    //expand模块的公共Conf对象
+    private static CommonConf commonConf = new CommonConf();
 
     @Override
     public void startFtpServer() {
-        //expand模块的公共Conf对象
-        CommonConf commonConf = new CommonConf();
-        LOG.info("Init face detector, count is " + ClusterOverFtpProperHelper.getFaceDetectorNumber());
-        for (int i = 0; i < ClusterOverFtpProperHelper.getFaceDetectorNumber(); i++) {
-            NativeFunction.init();
-        }
+
         //使用带CommonConf对象的有参构造器可以构造带有expand模块的FtpServerContext
         FtpServerFactory serverFactory = new FtpServerFactory(commonConf);
         LOG.info("Create " + FtpServerFactory.class + " successful");
@@ -92,8 +91,27 @@ public class FTP extends ClusterOverFtp {
     }
 
     public static void main(String args[]) throws Exception {
-        FTP ftp = new FTP();
-        ftp.loadConfig();
-        ftp.startFtpServer();
+        int detectorNum = ClusterOverFtpProperHelper.getFaceDetectorNumber();
+        LOG.info("Init face detector, number is " + detectorNum);
+        for (int i = 0; i < detectorNum; i++) {
+            NativeFunction.init();
+        }
+        //启动ftp之前，先恢复未处理数据
+        LOG.info("start Recovering not process data...");
+        RecoverNotProData recoverNotProData = new RecoverNotProData();
+        Boolean success = recoverNotProData.recoverNotProData(commonConf);
+
+        //若成功恢复未处理的数据，则启动ftp。
+        if (success) {
+            LOG.info("recoverNotProData successfully!");
+            FTP ftp = new FTP();
+            ftp.loadConfig();
+            ftp.startFtpServer();
+
+            //启动ftp后，恢复错误数据。作为一个线程来执行
+            LOG.info("start RecoverErrProDataThread....");
+            ScheRecoErrData scheRecoErrData = new ScheRecoErrData();
+            scheRecoErrData.scheduled(commonConf);
+        }
     }
 }

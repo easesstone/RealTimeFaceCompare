@@ -8,9 +8,8 @@ import com.hzgc.collect.expand.conf.CommonConf;
  * @author Pengcong
  */
 public class DataReceiveLogWriter extends AbstractLogWrite {
-
     public DataReceiveLogWriter(CommonConf conf, String queueID) {
-        super(conf, queueID, DataProcessLogWriter.class);
+        super(conf, queueID, DataReceiveLogWriter.class);
         super.currentDir = conf.getReceiveLogDir() + "/" + "receive-" + super.queueID + "/";
         super.currentFile = super.currentDir + super.logName;
         super.prepare();
@@ -20,5 +19,4 @@ public class DataReceiveLogWriter extends AbstractLogWrite {
                 + ", LogSize:" + super.logSize
                 + ", currentFile:" + super.currentFile + "]");
     }
-
 }

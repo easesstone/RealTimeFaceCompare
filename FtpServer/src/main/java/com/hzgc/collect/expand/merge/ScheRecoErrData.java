@@ -10,7 +10,7 @@ package com.hzgc.collect.expand.merge;
 public class ScheRecoErrData {
     public void scheduled(CommonConf conf) {
         ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor();
-        pool.scheduleAtFixedRate(new RecoverErrProData(conf), 5,
+        pool.scheduleAtFixedRate(new RecoverErrProDataThread(conf), conf.getMergeScanTime(),
                 conf.getMergeScanTime(), TimeUnit.SECONDS);
     }
 }
