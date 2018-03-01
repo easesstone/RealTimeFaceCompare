@@ -16,7 +16,7 @@ public class ReceiverSchedulerTest {
     public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         CommonConf conf = new CommonConf();
         ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
-        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
+        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("prepareReceiver");
         method_prepareReceiver.setAccessible(true);
         method_prepareReceiver.invoke(receiverScheduler);
         Thread threadA = new Thread(new PutDataThread(receiverScheduler,"threadA"));
@@ -38,7 +38,7 @@ public class ReceiverSchedulerTest {
         CommonConf conf = new CommonConf();
         int receiverNumber = conf.getReceiveNumber();
         ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
-        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
+        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("prepareReceiver");
         method_prepareReceiver.setAccessible(true);
         method_prepareReceiver.invoke(receiverScheduler);
         List<ReceiverImpl> list = receiverScheduler.getContainer();
@@ -51,7 +51,7 @@ public class ReceiverSchedulerTest {
         boolean judge = false;
         CommonConf conf = new CommonConf();
         ReceiverScheduler receiverScheduler = new ReceiverScheduler(conf);
-        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("preapreRecvicer");
+        Method method_prepareReceiver = receiverScheduler.getClass().getDeclaredMethod("prepareReceiver");
         method_prepareReceiver.setAccessible(true);
         method_prepareReceiver.invoke(receiverScheduler);
         Method method = receiverScheduler.getClass().getDeclaredMethod("getRecvicer");

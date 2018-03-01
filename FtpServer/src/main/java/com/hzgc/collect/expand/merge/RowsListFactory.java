@@ -16,35 +16,26 @@ public class RowsListFactory {
     private MergeUtil mergeUtil = new MergeUtil();
     private  FindDiffRows findDiffRows = new FindDiffRows();
 
-    private  List<String> allDiffRows;
     private  List<String> notProRows;
-    private  List<String> errProRows;
 
     //有参构造函数，传入需要处理的某个process文件路径，及其对应的receiveFileDir文件路径
     public RowsListFactory(String processFileDir, String receiveFileDir){
-        setAllDiffRows(processFileDir, receiveFileDir);
-        setNotProRows();
+        setNotProRows(processFileDir, receiveFileDir);
     }
 
     /**
      * set 方法
      */
-    private void setAllDiffRows(String processFileDir, String receiveFileDir) {
-        List<String> allContentRows = mergeUtil.getAllContentFromFile(processFileDir, receiveFileDir);
-        allDiffRows = findDiffRows.getAllDiffRows(allContentRows);
-    }
 
-    private void setNotProRows() {
-        notProRows = findDiffRows.getNotProRows(allDiffRows);
+    private void setNotProRows(String processFileDir, String receiveFileDir) {
+        List<String> allContentRows = mergeUtil.getAllContentFromFile(processFileDir, receiveFileDir);
+        notProRows = findDiffRows.getNotProRows(allContentRows);
     }
 
 
     /**
      * get 方法
      */
-    public List<String> getAllDiffRows() {
-        return allDiffRows;
-    }
 
     public List<String> getNotProRows() {
         return notProRows;

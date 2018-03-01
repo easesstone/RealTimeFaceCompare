@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 
 public interface Receiver {
     /**
-     * 此方法可将数据插入当前Recvicer的队列列
+     * 此方法可将数据插入当前Receiver的队列列
      *
      * @param data 数据对象
      */
@@ -15,7 +15,7 @@ public interface Receiver {
     /**
      * 向RecvicerContainer注册Recvicer用来接收数据
      */
-    public void registIntoContainer();
+    public void registerIntoContainer();
 
     /**
      * 开始处理数据

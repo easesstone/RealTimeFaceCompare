@@ -32,7 +32,7 @@ public class ReceiverScheduler {
     }
 
     /**
-     * 将封装的LogEvent的日志对象调用recevier的putData方法，写入
+     * 将封装的LogEvent的日志对象调用receiver的putData方法，写入
      * receiver队列中
      *
      * @param event 封装的数据对象
@@ -40,7 +40,7 @@ public class ReceiverScheduler {
 
     public void putData(final LogEvent event) {
         synchronized (container) {
-            getRecvicer().putData(event);
+            getReceiver().putData(event);
         }
     }
 
@@ -51,7 +51,7 @@ public class ReceiverScheduler {
      *
      * @return 返回Recvicer对象
      */
-    private Receiver getRecvicer() {
+    private Receiver getReceiver() {
         Receiver receiver = container.get(this.pollingCount % this.receiveNumber);
         pollingCount++;
         return receiver;
@@ -62,7 +62,7 @@ public class ReceiverScheduler {
      *
      * @param receiver 参数receiver，注册至容器中
      */
-    private void regist(ReceiverImpl receiver) {
+    private void register(ReceiverImpl receiver) {
         container.add(receiver);
     }
 
@@ -70,7 +70,7 @@ public class ReceiverScheduler {
      * 根据配置文件中配置的receiverNumber和日志文件地址调用rebanceReceiver方法
      * 取得对应的queueIdList，根据这些queueId去初始化receiver
      */
-    public void preapreRecvicer() {
+    public void prepareReceiver() {
         int receiveNumber = conf.getReceiveNumber();
         String logDir = conf.getProcessLogDir();
         if (receiveNumber != 0 && logDir != null) {
@@ -79,14 +79,14 @@ public class ReceiverScheduler {
                 pool = Executors.newFixedThreadPool(queueIdList.size());
                 for (String id : queueIdList) {
                     ReceiverImpl receiver = new ReceiverImpl(conf, id);
-                    regist(receiver);
+                    register(receiver);
                     pool.execute(new ProcessThread(conf, receiver.getQueue(), id));
                 }
             } else {
                 for (int i = 0; i < receiveNumber; i++) {
                     pool = Executors.newFixedThreadPool(receiveNumber);
                     ReceiverImpl receiver = new ReceiverImpl(conf, i + "");
-                    regist(receiver);
+                    register(receiver);
                     pool.execute(new ProcessThread(conf, receiver.getQueue(), i + ""));
                 }
                 LOG.info("This is the initialization receiver, please wait for the initialization to complete!");

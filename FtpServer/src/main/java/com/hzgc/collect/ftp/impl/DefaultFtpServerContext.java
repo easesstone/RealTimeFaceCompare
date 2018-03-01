@@ -29,8 +29,6 @@ import com.hzgc.collect.ftp.usermanager.PropertiesUserManagerFactory;
 import com.hzgc.collect.ftp.usermanager.impl.BaseUser;
 import com.hzgc.collect.ftp.usermanager.impl.TransferRatePermission;
 import com.hzgc.collect.ftp.usermanager.impl.WritePermission;
-import com.hzgc.collect.expand.processer.KafkaProducer;
-import com.hzgc.collect.expand.processer.RocketMQProducer;
 import com.hzgc.collect.ftp.ConnectionConfig;
 import com.hzgc.collect.ftp.ConnectionConfigFactory;
 import com.hzgc.collect.ftp.nativefs.filesystem.NativeFileSystemFactory;

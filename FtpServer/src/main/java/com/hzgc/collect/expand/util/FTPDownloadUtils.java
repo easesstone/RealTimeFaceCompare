@@ -1,8 +1,5 @@
-package com.hzgc.collect.ftp.util;
+package com.hzgc.collect.expand.util;
 
-import com.hzgc.collect.expand.util.FTPAddressProperHelper;
-import com.hzgc.util.common.FileUtil;
-import com.hzgc.util.common.IOUtil;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
@@ -11,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.SocketException;
-import java.util.Properties;
 
 
 /**

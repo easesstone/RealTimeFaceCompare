@@ -13,11 +13,11 @@ import java.util.Properties;
  * 验证其中的配置；读取所需的配置。（马燊偲）
  */
 public class ProducerOverFtpProperHelper extends ProperHelper{
-    private static Logger log = Logger.getLogger(ProducerOverFtpProperHelper.class);
+    private static Logger LOG = Logger.getLogger(ProducerOverFtpProperHelper.class);
     private static Properties props = new Properties();
 
     private static String bootstrapServers;
-    private static String clientId;
+    //private static String clientId;
     private static String requestRequiredAcks;
     private static String retries;
     private static String keySerializer;
@@ -32,22 +32,22 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
             if (file != null) {
                 in = new FileInputStream(file);
                 props.load(in);
-                log.info("Load configuration for ftp server from ./conf/producer-over-ftp.properties");
+                LOG.info("Load configuration for ftp server from ./conf/producer-over-ftp.properties");
 
                 setBootstrapServers();
-                setClientId();
+                //setClientId();
                 setRequestRequiredAcks();
                 setRetries();
                 setKeySerializer();
                 setValueSerializer();
                 setTopicFeature();
             } else {
-                log.error("The property file " + properName + "doesn't exist!");
+                LOG.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
             }
         } catch (IOException e) {
             e.printStackTrace();
-            log.error("Catch an unknown error, can't load the configuration file" + properName);
+            LOG.error("Catch an unknown error, can't load the configuration file" + properName);
         } finally {
             if (in != null){
                 try {
@@ -63,67 +63,61 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
      * set方法。验证配置文件中的值是否为符合条件的格式。
      */
     private static void setBootstrapServers(){
-        bootstrapServers = verifyIpPlusPortList("bootstrap.servers", props, log);
+        bootstrapServers = verifyIpPlusPortList("bootstrap.servers", props, LOG);
     }
 
-    private static void setClientId(){
-        clientId = verifyCommonValue("client.id", "p1", props, log);
-    }
+
+    //private static void setClientId(){
+        //clientId = verifyCommonValue("client.id", "p1", props, LOG);
+    //}
 
     private static void setRequestRequiredAcks(){
-        requestRequiredAcks = verifyIntegerValue("request.required.acks", "1", props, log);
+        requestRequiredAcks = verifyIntegerValue("request.required.acks", "1", props, LOG);
     }
 
     private static void setRetries(){
-        retries = verifyIntegerValue("retries", "0", props, log);
+        retries = verifyIntegerValue("retries", "0", props, LOG);
     }
 
     private static void setKeySerializer(){
-        keySerializer = verifyCommonValue("key.serializer", "org.apache.kafka.common.serialization.StringSerializer", props, log);
+        keySerializer = verifyCommonValue("key.serializer", "org.apache.kafka.common.serialization.StringSerializer", props, LOG);
     }
 
     private static void setValueSerializer(){
-        valueSerializer = verifyCommonValue("value.serializer", "com.hzgc.ftpserver.producer.FaceObjectEncoder", props, log);
+        valueSerializer = verifyCommonValue("value.serializer", "com.hzgc.ftpserver.producer.FaceObjectEncoder", props, LOG);
     }
 
     private static void setTopicFeature(){
-        topicFeature = verifyCommonValue("topic-feature", "feature", props, log);
+        topicFeature = verifyCommonValue("topic-feature", "feature", props, LOG);
     }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
      */
     public static String getBootstrapServers() {
-        log.info("Load the configuration bootstrap.servers, the value is \"" + bootstrapServers + "\"");
         return bootstrapServers;
     }
 
-    public static String getClientId() {
-        log.info("Load the configuration client.id, the value is \"" + clientId + "\"");
-        return clientId;
-    }
+    //public static String getClientId() {
+        //return clientId;
+    //}
     public static Integer getRequestRequiredAcks() {
-        log.info("Load the configuration request.required.acks, the value is \"" + requestRequiredAcks + "\"");
         return Integer.valueOf(requestRequiredAcks);
     }
 
     public static Integer getRetries(){
-        log.info("Load the configuration retries, the value is \"" + retries + "\"");
         return Integer.valueOf(retries);
     }
 
     public static String getKeySerializer(){
-        log.info("Load the configuration key.serializer, the value is \"" + keySerializer + "\"");
         return keySerializer;
     }
 
     public static String getValueSerializer(){
-        log.info("Load the configuration value.serializer, the value is \"" + valueSerializer + "\"");
         return valueSerializer;
     }
 
     public static String getTopicFeature(){
-        log.info("Load the configuration topic-feature, the value is \"" + topicFeature + "\"");
         return topicFeature;
     }
 
@@ -131,7 +125,6 @@ public class ProducerOverFtpProperHelper extends ProperHelper{
      * 获取Properties属性的资源文件变量
      */
     public static Properties getProps(){
-        log.info("Load configuration file ./conf/producer-over-ftp.properties：" + props);
         return props;
     }
 

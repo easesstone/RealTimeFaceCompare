@@ -3,8 +3,9 @@ package com.hzgc.collect.expand.merge;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.processer.FaceObject;
-import com.hzgc.collect.expand.processer.KafkaProducer;
+import com.hzgc.collect.expand.util.ProducerKafka;
 import com.hzgc.collect.expand.util.JSONHelper;
+import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import com.hzgc.jni.NativeFunction;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,13 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class RecoverErrProDataTest {
+public class RecoverErrProDataThreadTest {
 
     private MergeUtil mergeUtil = new MergeUtil();
 
     private CommonConf commonConf = new CommonConf();
-    private String processLogDir = commonConf.getProcessLogDir();
-    private String mergeErrLogDir = commonConf.getMergeLogDir() + "/error";
+    private String processLogDir = "/home/test/ftp/data/process";
+    private String mergeErrLogDir = "/home/test/ftp/merge/error";
 
     private String SUFFIX = ".log";
 
@@ -109,10 +110,8 @@ public class RecoverErrProDataTest {
     public void testSendToKafka() {
         MergeUtil mergeUtil = new MergeUtil();
 
-        String ftpdataDir = commonConf.getFtpdataDir();
         System.out.println("processDir:" + processLogDir);
         System.out.println("mergeErrLogDir:" + mergeErrLogDir);
-        System.out.println("ftpdataDir:" + ftpdataDir);
 
         List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
         for (String errFile : allErrorDir) {
@@ -123,37 +122,30 @@ public class RecoverErrProDataTest {
         }
 
         List<String> errFilePaths = mergeUtil.listAllFileAbsPath(mergeErrLogDir);
+
         if (errFilePaths != null && errFilePaths.size() != 0) {
             for (String errorFilePath : errFilePaths) {
+
                 List<String> errorRows = mergeUtil.getAllContentFromFile(errorFilePath);
+                for (String row : errorRows) {
+                    System.out.println("@@@@@@@@@@errorRows = " + row);
+                }
+
                 if (errorRows != null && errorRows.size() != 0) {
+                    ProducerKafka kafkaProducer = ProducerKafka.getInstance();
                     for (String row : errorRows) {
-                        System.out.println("****************************start scanning...****************************");
-
                         LogEvent event = JSONHelper.toObject(row, LogEvent.class);
-
                         long count = event.getCount();
+
                         String ftpUrl = event.getFtpPath();
-                        System.out.println("****************************ftpUrl:" + ftpUrl + "****************************");
-                        System.out.println("****************************get faceObject...****************************");
+                        MergeSendCallback mergeSendCallback = new MergeSendCallback(ProducerOverFtpProperHelper.getTopicFeature(), ftpUrl, event);
+                        String mergeErrFileNew = errorFilePath.replace(SUFFIX, "") + "-N" + SUFFIX;
+                        mergeSendCallback.setWriteErrFile(mergeErrFileNew);
+
                         //根据路径取得对应的图片，并提取特征，封装成FaceObject，发送Kafka
-                        FaceObject faceObject = GetFaceObject.getFaceObject(row, ftpdataDir);
-                        System.out.println("****************************faceObject:" + faceObject + "****************************");
+                        FaceObject faceObject = GetFaceObject.getFaceObject(row);
                         if (faceObject != null) {
-                            SendDataToKafka sendDataToKafka = SendDataToKafka.getSendDataToKafka();
-                            sendDataToKafka.sendKafkaMessage(KafkaProducer.getFEATURE(), ftpUrl, faceObject);
-                            boolean success = sendDataToKafka.isSuccessToKafka();
-                            System.out.println("****************************test log!****************************");
-                            //若发送kafka不成功，将错误日志写入/merge/error/下一个新的errorN-NEW日志中
-                            String mergeErrFileNew = errorFilePath.replace(SUFFIX, "") + "-N" + SUFFIX;
-                            if (!success) {
-                                System.out.println("****************************Send the count " + count +
-                                        "message to kafka failed! Rewrite to new merge error file!" +"****************************");
-                                mergeUtil.writeMergeFile(event, mergeErrFileNew);
-                            } else {
-                                System.out.println("****************************Send the count " + count +
-                                        "message to kafka successfully!" +"****************************");
-                            }
+                            kafkaProducer.sendKafkaMessage(ProducerOverFtpProperHelper.getTopicFeature(), ftpUrl, faceObject, mergeSendCallback);
                         }
                     }
                 }
@@ -162,7 +154,6 @@ public class RecoverErrProDataTest {
         } else { //若merge/error目录下无日志
             System.out.println("****************************Nothing in " + mergeErrLogDir + "****************************");
         }
-
     }
 
 
@@ -173,10 +164,11 @@ public class RecoverErrProDataTest {
     @Test
     public void testLockAndMove() throws IOException {
 
+        String processErrorLogDir = processLogDir + "/process-0/error";
         System.out.println(("************************************" +
                 "testLockAndMove：将process目录下所有能获取到锁的error日志，移动到success和merge" +
                 "************************************"));
-        List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
+        List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processErrorLogDir);
         for (int i = 0; i < allErrorDir.size(); i++) {
             //获取每个error.log需要移动到的success和merge目录下的路径
             String successErrFile = mergeUtil.getSuccessFilePath(allErrorDir.get(i));
