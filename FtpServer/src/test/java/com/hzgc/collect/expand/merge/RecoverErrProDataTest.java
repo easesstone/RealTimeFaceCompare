@@ -166,10 +166,11 @@ public class RecoverErrProDataTest {
     @Test
     public void testLockAndMove() throws IOException {
 
+        String processErrorLogDir = processLogDir + "/process-0/error";
         System.out.println(("************************************" +
                 "testLockAndMove：将process目录下所有能获取到锁的error日志，移动到success和merge" +
                 "************************************"));
-        List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processLogDir);
+        List<String> allErrorDir = mergeUtil.listAllErrorLogAbsPath(processErrorLogDir);
         for (int i = 0; i < allErrorDir.size(); i++) {
             //获取每个error.log需要移动到的success和merge目录下的路径
             String successErrFile = mergeUtil.getSuccessFilePath(allErrorDir.get(i));

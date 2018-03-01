@@ -555,7 +555,7 @@ public class MergeUtil {
             File sourceFile = new File(sourceFilePath);
             File targetFile = new File(targetFilePath);
 
-            if (sourceFile.isFile() && sourceFile.exists()) {
+            if (sourceFile.isFile() && sourceFile.exists() && sourceFile.length() != 0) {
                 try {
                     while (true) {
                         fromFile = new RandomAccessFile(sourceFile, "rw");
