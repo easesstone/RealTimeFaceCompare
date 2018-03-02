@@ -72,15 +72,16 @@ public class RecoverNotProData {
                             //获取error日志路径
                             String processErrLogPath = processFile.substring(0, processFile.lastIndexOf("/"));
                             String writeErrFile = processErrLogPath + "/error/error.log";
-
                             MergeSendCallback mergeSendCallback = new MergeSendCallback(
                                     feature, ftpUrl, event);
                             mergeSendCallback.setProcessFile(processFile);
                             mergeSendCallback.setWriteErrFile(writeErrFile);
 
                             producerKafka.sendKafkaMessage(feature, ftpUrl, faceObject, mergeSendCallback);
-                            rowCount++;
+                        } else {
+                            mergeUtil.writeMergeFile(event, processFile);
                         }
+                        rowCount++;
                     }
                     if (rowCount == notProRows.size()) {
                         //处理process文件完成，移动process文件和receive文件到success目录下；
