@@ -1,11 +1,11 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
-## Filename:    start-kafka-to-parquet.sh
-## Description: to start kafkaToParquet
-## Version:     1.5.0
-## Author:      chenke
-## Created:     2017-11-09
+## Filename:    start-face-alarm-job.sh
+## Description: to start faceAlarmJob(启动组合告警任务)
+## Version:     master
+## Author:      liushanbin
+## Created:     2018-01-27
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
 
@@ -23,7 +23,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
-LOG_FILE=${CLUSTER_LOG_DIR}/KafkaToParquet.log
+LOG_FILE=${CLUSTER_LOG_DIR}/sparkFaceAlarmJob.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
 COMMON_LIB_DIR=${DEPLOY_DIR}/common/lib
@@ -36,11 +36,10 @@ SERVICE_LIB_DIR=${DEPLOY_DIR}/service/lib
 ## bigdata_env
 BIGDATA_ENV=/opt/hzgc/env_bigdata.sh
 ## spark class
-SPARK_CLASS_PARAM=com.hzgc.cluster.consumer.KafkaToParquet
+SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceAlarmJob
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
-##deploy-mode
-DEPLOY_MODE=client
+
 #---------------------------------------------------------------------#
 #                              jar版本控制                            #
 #---------------------------------------------------------------------#
@@ -62,16 +61,16 @@ HBASE_COMMON_VERSION=hbase-common-1.2.6.jar
 HBASE_PROTOCOL_VERSION=hbase-protocol-1.2.6.jar
 KAFKA_VERSION=kafka_2.11-0.8.2.1.jar
 ELASTICSEARCH_VERSION=elasticsearch-1.0.jar
-ROCKETMQ_CLIENT_VERSION=rocketmq-client-4.2.0.jar
-ROCKETMQ_COMMON_VERSION=rocketmq-common-4.2.0.jar
-ROCKETMQ_REMOTING_VERSION=rocketmq-remoting-4.2.0.jar
+ROCKETMQ_CLIENT_VERSION=rocketmq-client-4.1.0-incubating.jar
+ROCKETMQ_COMMON_VERSION=rocketmq-common-4.1.0-incubating.jar
+ROCKETMQ_REMOTING_VERSION=rocketmq-remoting-4.1.0-incubating.jar
 FASTJSON_VERSION=fastjson-1.2.29.jar
 KAFKA_CLIENTS_VERSION=kafka-clients-1.0.0.jar
 METRICS_CORE_VERSION=metrics-core-2.2.0.jar
-ZKCLIENT_VERSION=zkclient-0.3.jar
 
 
 ############ 创建log目录 ###############
+
 if [ ! -d ${CLUSTER_LOG_DIR} ];then
    mkdir ${CLUSTER_LOG_DIR}
 fi
@@ -87,18 +86,22 @@ if [ ! -e ${SERVICE_CONF_DIR}/es-config.properties ];then
     echo "${SERVICE_CONF_DIR}/es-config.properties does not exit!"
     exit 0
 fi
+if [ ! -e ${FTP_CONF_DIR}/rocketmq.properties ];then
+    echo "${FTP_CONF_DIR}/rocketmq.properties does not exit!"
+    exit 0
+fi
 if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
     echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
     exit 0
 fi
-if [ ! -e ${CLUSTER_CONF_DIR}/log4j.properties ];then
-    echo "${CLUSTER_CONF_DIR}/log4j.properties does not exit!"
+if [ ! -e ${SERVICE_CONF_DIR}/hbase-site.xml ];then
+    echo "${SERVICE_CONF_DIR}/hbase-site.xml does not exit!"
     exit 0
-else
-    echo "===================开始配置log4j.properties===================="
-    sed -i "s#^log4j.appender.FILE.File=.*#log4j.appender.FILE.File=${LOG_FILE}#g" ${CLUSTER_CONF_DIR}/log4j.properties
 fi
-
+if [ ! -e ${FTP_CONF_DIR}/ftpAddress.properties ];then
+    echo "${FTP_CONF_DIR}/ftpAddress.properties does not exit!"
+    exit 0
+fi
 
 ################# 判断是否存在jar ###################
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION} ];then
@@ -186,12 +189,12 @@ if [ ! -e ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} ];then
     exit 0
 fi
 
-################## 存放数据至parquet任务 ###################
+################## 组合告警任务 ###################
 source /etc/profile
 source ${BIGDATA_ENV}
 nohup spark-submit \
 --master yarn \
---deploy-mode ${DEPLOY_MODE} \
+--deploy-mode cluster \
 --executor-memory 4g \
 --executor-cores 2 \
 --num-executors 4 \
@@ -204,7 +207,6 @@ ${CLUSTER_LIB_DIR}/${HBASE_SERVER_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_COMMON_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION},\
-${CLUSTER_LIB_DIR}/${ZKCLIENT_VERSION},\
 ${COMMON_LIB_DIR}/${JNI_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_VERSION},\
 ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION},\
@@ -217,10 +219,9 @@ ${FTP_LIB_DIR}/${FASTJSON_VERSION},\
 ${COMMON_LIB_DIR}/${UTIL_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION},\
 ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} \
---conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:${CLUSTER_CONF_DIR}/log4j.properties" \
 --files ${SERVICE_CONF_DIR}/es-config.properties,\
 ${SERVICE_CONF_DIR}/hbase-site.xml,\
 ${FTP_CONF_DIR}/ftpAddress.properties,\
 ${CLUSTER_CONF_DIR}/sparkJob.properties,\
 ${FTP_CONF_DIR}/rocketmq.properties \
-${COMMON_LIB_DIR}/${CLUSTER_VERSION} &
+${COMMON_LIB_DIR}/${CLUSTER_VERSION} > ${LOG_FILE} 2>&1 &
