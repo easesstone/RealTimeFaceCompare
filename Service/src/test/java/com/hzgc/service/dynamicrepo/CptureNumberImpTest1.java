@@ -20,7 +20,7 @@ public class CptureNumberImpTest1 {
         lists.add("3K01E84PAU00498");
         lists.add("2L04129PAU01933");
         String startTime = "2018-02-01 10:00:00";
-        String endTime = "2018-02-02 11:00:00";
+        String endTime = "2018-03-02 11:00:00";
        CptureNumberImpl cptureNumber = new CptureNumberImpl();
        Map<String,Integer> map = cptureNumber.timeSoltNumber(lists,startTime,endTime);
         System.out.println(map);

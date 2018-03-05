@@ -10,7 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class StreamingUtils implements Serializable {
+public class PropertiesUtils implements Serializable {
     public static Integer getSimilarity(Map<String, Integer> map) {
         for (String key : map.keySet()) {
             if (map.get(key) != null) {
@@ -26,42 +26,9 @@ public class StreamingUtils implements Serializable {
             InputStream is = new FileInputStream(FileUtil.loadResourceFile("sparkJob.properties"));
             ps.load(is);
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         return ps;
-    }
-
-    /**
-     * 字节数组转化为字符串
-     *
-     * @param b
-     * @return
-     * @throws Exception
-     */
-    public static String byteArray2string(byte[] b) throws Exception {
-        String str = new String(b, "ISO-8859-1");
-        return str;
-    }
-
-    /**
-     * scala 数组转化为Java list（刘善彬 To 内）
-     *
-     * @param array
-     * @return
-     */
-    public static List<String> arrayBuffer2javaList(String[] array) {
-        return Arrays.asList(array);
-    }
-
-    /**
-     * java list 转化为Scala数组
-     *
-     * @param list
-     * @return
-     */
-    public static String[] javaList2arrayBuffer(List list) {
-        String[] str = new String[list.size()];
-        return (String[]) list.toArray(str);
     }
 
     /**

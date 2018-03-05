@@ -3,7 +3,7 @@ package com.hzgc.cluster.consumer
 import java.sql.Timestamp
 import java.util.Properties
 
-import com.hzgc.cluster.util.StreamingUtils
+import com.hzgc.cluster.util.PropertiesUtils
 import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.{SaveMode, SparkSession}
@@ -12,7 +12,7 @@ import org.apache.spark.streaming.{Duration, Durations, Seconds, StreamingContex
 import org.apache.spark.{SparkConf, SparkContext}
 
 object kafkaToParquetold {
-  val properties: Properties = StreamingUtils.getProperties
+  val properties: Properties = PropertiesUtils.getProperties
 
   case class Picture(ftpurl: String, //图片搜索地址
                      feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
