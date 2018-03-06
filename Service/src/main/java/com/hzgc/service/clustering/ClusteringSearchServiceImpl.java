@@ -4,6 +4,8 @@ import com.hzgc.dubbo.clustering.AlarmInfo;
 import com.hzgc.dubbo.clustering.ClusteringAttribute;
 import com.hzgc.dubbo.clustering.ClusteringInfo;
 import com.hzgc.dubbo.clustering.ClusteringSearchService;
+import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
 import com.hzgc.util.sort.ListUtils;
@@ -13,6 +15,10 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -112,6 +118,47 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      */
     @Override
     public List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
+        /*Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO);
+        Get get = new Get(Bytes.toBytes(time + "-" + clusterId));
+        List<Integer> alarmInfoList = new ArrayList<>();
+        try {
+            Result result = clusteringInfoTable.get(get);
+            alarmInfoList = (List<Integer>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_DATA));
+            if (sortParam != null && sortParam.length() > 0) {
+                SortParam sortParams = ListUtils.getOrderStringBySort(sortParam);
+                ListUtils.sort(alarmInfoList, sortParams.getSortNameArr(), sortParams.getIsAscArr());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (start > -1) {
+            if ((start + limit) > alarmInfoList.size() - 1) {
+                return alarmInfoList.subList(start, alarmInfoList.size());
+            } else {
+                return alarmInfoList.subList(start, start + limit);
+            }
+        } else {
+            LOG.info("start must bigger than -1");
+            return null;
+        }*/
+        // TODO: 18-3-1 delopy should be change 
+        BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
+        if (clusterId != null && time != null) {
+            totalBQ.must(QueryBuilders.matchPhraseQuery("clusterid", time + "-" + clusterId));
+        }
+        SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
+                .prepareSearch("dynamic_temp")
+                .setTypes("person")
+                .setQuery(totalBQ);
+        SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
+        List<Integer> alarmIdList = new ArrayList<>();
+        for (SearchHit result : results) {
+            alarmIdList.add((int) result.getSource().get("alarmid"));
+        }
+        return alarmIdList;
+    }
+
+    public List<Integer> detailClusteringSearch_Hbase(String clusterId, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_DETAILINFO);
         Get get = new Get(Bytes.toBytes(time + "-" + clusterId));
         List<Integer> alarmInfoList = new ArrayList<>();

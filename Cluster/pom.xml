@@ -43,7 +43,7 @@
             <groupId>com.hzgc</groupId>
             <artifactId>ftp</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -144,10 +144,10 @@
             <resource>
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
-                <!--<excludes>
-                    <exclude>*.properties</exclude>
-                    <exclude>*.xml</exclude>
-                </excludes>-->
+                <includes>
+                    <include>*.properties</include>
+                    <include>*.xml</include>
+                </includes>
             </resource>
         </resources>
         <plugins>

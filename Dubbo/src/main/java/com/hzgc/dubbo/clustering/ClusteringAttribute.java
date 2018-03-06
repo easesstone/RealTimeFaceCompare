@@ -34,6 +34,10 @@ public class ClusteringAttribute implements Serializable {
      * 次数
      */
     private int count;
+    /**
+     *
+     */
+    private String flag;
 
     public String getClusteringId() {
         return clusteringId;

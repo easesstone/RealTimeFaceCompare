@@ -46,7 +46,7 @@ object KMeansClustering {
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
-    val currentYearMon = "'" + calendar.get(Calendar.YEAR) + "-%" + (calendar.get(Calendar.MONTH) + 1) + "%'"
+    val currentYearMon = "'" + calendar.get(Calendar.YEAR) + "-%" + (calendar.get(Calendar.MONTH)) + "%'"
 
     spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).createOrReplaceTempView("parquetTable")
 
@@ -54,7 +54,6 @@ object KMeansClustering {
 
     sqlProper.setProperty("driver", driverClass)
     val dataSource = spark.read.jdbc(url, preSql, sqlProper)
-    dataSource.printSchema()
     dataSource.map(data => {
       println("ftp://" + data.getAs[String](hostField) + ":2121/" + data.getAs[String](spicField))
       Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
@@ -66,7 +65,10 @@ object KMeansClustering {
     val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false, 0.4), numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
     // TODO: 删除 map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
-    var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd).groupByKey().map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime))).map(data => (data._1, data._2.toArray.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
+    var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd)
+      .groupByKey()
+      .sortByKey()
+      .map(data => (data._1, data._2.toArray.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
 
     val table1List = new util.ArrayList[ClusteringAttribute]()
     trainResult.map(data => {
@@ -81,7 +83,7 @@ object KMeansClustering {
       attribute
     }).collect().foreach(data => table1List.add(data))
 
-    val mon = calendar.get(Calendar.MONTH) + 1
+    val mon = calendar.get(Calendar.MONTH)
     var monStr = ""
     if (mon < 10) {
       monStr = "0" + mon
