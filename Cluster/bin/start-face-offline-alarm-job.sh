@@ -21,7 +21,7 @@ cd ..
 DEPLOY_DIR=`pwd`
 ######## cluster目录 ########
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
-CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib/e
+CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
 LOG_FILE=${CLUSTER_LOG_DIR}/sparkFaceOffLineAlarmJob.log
 ######## common目录 ########
