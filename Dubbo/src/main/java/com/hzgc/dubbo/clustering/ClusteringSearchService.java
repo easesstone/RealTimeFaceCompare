@@ -42,7 +42,18 @@ public interface ClusteringSearchService {
      */
     List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam);
 
+    /**
+     * @param clusterId
+     * @param time
+     * @return
+     */
     boolean deleteClustering(String clusterId, String time);
 
-    boolean igoreClustering(String clusterId, String time, String flag);//0 not ignore, 1 ignore
+    /**
+     * @param clusterId
+     * @param time
+     * @param flag      yes is ignore, no is not ignore
+     * @return
+     */
+    boolean igoreClustering(String clusterId, String time, String flag);
 }

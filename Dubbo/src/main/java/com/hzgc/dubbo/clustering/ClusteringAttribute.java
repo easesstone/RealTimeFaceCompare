@@ -35,7 +35,7 @@ public class ClusteringAttribute implements Serializable {
      */
     private int count;
     /**
-     *
+     * ignore flag,yes
      */
     private String flag;
 
@@ -95,5 +95,11 @@ public class ClusteringAttribute implements Serializable {
         this.count = count;
     }
 
+    public String getFlag() {
+        return flag;
+    }
 
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
 }

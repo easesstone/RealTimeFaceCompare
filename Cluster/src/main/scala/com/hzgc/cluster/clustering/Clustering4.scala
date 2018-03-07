@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 
 import scala.collection.mutable
 
-object ClusteringNew {
+object Clustering4 {
 
   case class Data(id: Long, time: Timestamp, ipc: String, host: String, spic: String, bpic: String)
 
@@ -68,11 +68,14 @@ object ClusteringNew {
 
     val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
     //get the url and feature
-    val idPointDS = joinData.map(data => (data.getAs[String]("spic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray
-      .map(_.toDouble))).persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val idPointDF = joinData.map(data => (data.getAs[String]("spic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray
+      .map(_.toDouble))).toDF()
     //zipwithIndex for decrease the computer cost
-    val zipIdPointDs = idPointDS.sample(false, 0.2).rdd.zipWithIndex()
-    val joined = zipIdPointDs.cartesian(zipIdPointDs)
+    val idPointDF1=idPointDF
+    val joinPointDs = idPointDF crossJoin (idPointDF1)
+    joinPointDs.select("*").show(false)
+
+    /*val joined = zipIdPointDs.cartesian(zipIdPointDs)
     val dataPairs = joined.filter(f => f._1._2 < f._2._2)
 
     //calculate the cosine similarity of each two data
@@ -91,58 +94,14 @@ object ClusteringNew {
     val numFilter = numPerUrl.filter(_._3 > timeCount)
 
     //merge two list
-    val joinNumFliter = numFilter.zipWithIndex().cartesian(numFilter.zipWithIndex()).filter(f => f._1._2 < f._2._2)
+    val joinNumFliter = numFilter.zipWithIndex().cartesian(numFilter.zipWithIndex()).filter(f => f._1._2 < f._2._2).persist(StorageLevel.MEMORY_AND_DISK_SER)
     val unionData = joinNumFliter.map(data => (data._1._1._1, data._2._1._1, data._1._1._2, data._2._1._2, dataSetSimilarity(data._1._1._2, data._2._1._2))).filter(data => data._5 > repetitionRate)
     val lastData = unionData.map(data => {
       val key = data._1
       val unionList = data._3.union(data._4).distinct
       (key, unionList, unionList.size)
     })
-    lastData.toDF().show(false)
-    /* val urlWithNum = furlGroup.zip(numFilter).map(data => (data._2._1, data._1._2))*/
-
-    /*val dataPairs = joined.filter(f => f._1._2 < f._2._2)
-
-    //calculate the cosine similarity of each two data
-    val pairSimilarity = dataPairs.map(data => (data._1._1._1, data._2._1._1, cosineMeasure(data._1._1._2, data._2._1._2)))
-
-    //filter by the similarity
-    val filterSimilarity = pairSimilarity.filter(_._3 > threshold).map(data => (data._1, data._2))
-
-    //count each clutering data number,the first image crashed
-    val furlGroup = filterSimilarity.reduceByKey((a, b) => a + "," + b)
-    val numPerUrl = furlGroup.map(data => {
-      val key = data._1
-      val valList = data._2.split(",").toList
-      (key, valList, valList.size)
-    })
-    val numFilter = numPerUrl.filter(_._3 > timeCount)
-
-    //merge two list
-    val joinNumFliter = numFilter.zipWithIndex().cartesian(numFilter.zipWithIndex()).filter(f => f._1._2 < f._2._2)
-    val unionData = joinNumFliter.map(data => (data._1._1._1,data._2._1._1, data._1._1._2,data._2._1._2, dataSetSimilarity(data._1._1._2, data._2._1._2))).filter(data => data._5 > repetitionRate)
-    val lastData = unionData.map(data => {
-      val key = data._1
-      val unionList = data._3.union(data._4).distinct
-      (key, unionList, unionList.size)
-    }).foreach(println(_))
-
-    val urlWithNum = furlGroup.zip(numFilter).map(data => (data._2._1, data._1._2))
-*/
-    //val joinRDD = idPointRDD cartesian idPointRDD
-    /*val joinDF = idPointDS.toDF().crossJoin(idPointDS.toDF())
-    val simDF = joinDF.map(data =>
-      (data.getAs[String](0), data.getAs[String](2), cosineMeasure(data.getAs[mutable.WrappedArray[Float]](1), data.getAs[mutable.WrappedArray[Float]](3)))
-    )
-    // TODO: filter threshold
-    //val simDF1 = simDF.filter(_._3 > threshold).filter(data => (data._1 != data._2)).groupBy("_1").count().filter(data=>(data.getAs[Double](1)>50))
-    val simDF1 = simDF.filter(_._3 > threshold).filter(data => (data._1 != data._2))
-    // TODO:
-    simDF1.rdd.groupBy(key => key._1).flatMap(x => x._2.toList).take(10)
-*/
-    //val simDF2 = simDF1.groupBy("_1").count().filter(data=>(data.getAs("count").asInstanceOf[Long]>50)).show(50,false)
-    //simDF1.join(simDF2,"_1").show(100,false)
-    //val avg_count = spark.sql("select avg(count) from temp")
+    lastData.toDF().printSchema()*/
 
     spark.stop()
   }
