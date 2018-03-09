@@ -4,15 +4,14 @@ import com.hzgc.dubbo.clustering.AlarmInfo;
 import com.hzgc.dubbo.clustering.ClusteringAttribute;
 import com.hzgc.dubbo.clustering.ClusteringInfo;
 import com.hzgc.dubbo.clustering.ClusteringSearchService;
+import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+import com.hzgc.service.dynamicrepo.DynamicTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
 import com.hzgc.util.sort.ListUtils;
 import com.hzgc.util.sort.SortParam;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -22,15 +21,19 @@ import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+
+import static com.hzgc.util.common.ObjectUtil.objectToByte;
 
 /**
  * 告警聚类结果查询接口实现(彭聪)
  */
 public class ClusteringSearchServiceImpl implements ClusteringSearchService {
     private static Logger LOG = Logger.getLogger(ClusteringSearchServiceImpl.class);
-    private static final String IGNORE_FLAG_YES="yes";
-    private static final String IGNORE_FLAG_NO="no";
+    private static final String IGNORE_FLAG_YES = "yes";
+    private static final String IGNORE_FLAG_NO = "no";
 
     /**
      * 查询聚类信息
@@ -120,19 +123,18 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      */
     @Override
     public List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
-
         BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
         if (clusterId != null && time != null) {
-            totalBQ.must(QueryBuilders.matchPhraseQuery("clusterid", time + "-" + clusterId));
+            totalBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.CLUSTERING_ID, time + "-" + clusterId));
         }
         SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
-                .prepareSearch("dynamic_temp")
-                .setTypes("person")
+                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
         for (SearchHit result : results) {
-            alarmIdList.add((int) result.getSource().get("alarmid"));
+            alarmIdList.add((int) result.getSource().get(DynamicTable.ALARM_ID));
         }
         return alarmIdList;
     }
@@ -142,57 +144,71 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      *
      * @param clusterIdList clusteringId include region information
      * @param time          clustering time
-     * @return true or false,indict whether delete successful
+     * @return
      */
     @Override
     public boolean deleteClustering(List<String> clusterIdList, String time) {
-        Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
-        Get get = new Get(Bytes.toBytes(time));
-        Put put = new Put(Bytes.toBytes(time));
-        try {
-            Result result = clusteringInfoTable.get(get);
-            for (String clusterId : clusterIdList) {
-                if (whetherInclude(clusterId, time)) {
-                    List<ClusteringAttribute> clusteringAttributeList_yes = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES));
-                    for (ClusteringAttribute clusteringAttribute : clusteringAttributeList_yes) {
-                        if (clusterId.equals(clusteringAttribute.getClusteringId())) {
-                            clusteringAttributeList_yes.remove(clusteringAttribute);
+        if (clusterIdList != null && time != null) {
+            Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
+            Get get = new Get(Bytes.toBytes(time));
+            Put put = new Put(Bytes.toBytes(time));
+            try {
+                Result result = clusteringInfoTable.get(get);
+                for (String clusterId : clusterIdList) {
+                    if (whetherInclude(clusterId, time)) {
+                        byte[] bytes = result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES);
+                        if (bytes != null) {
+                            List<ClusteringAttribute> clusteringAttributeList_yes = (List<ClusteringAttribute>) ObjectUtil.byteToObject(bytes);
+                            for (ClusteringAttribute clusteringAttribute : clusteringAttributeList_yes) {
+                                if (clusterId.equals(clusteringAttribute.getClusteringId())) {
+                                    clusteringAttributeList_yes.remove(clusteringAttribute);
+                                }
+                            }
+                            byte[] clusteringInfo_yes = ObjectUtil.objectToByte(clusteringAttributeList_yes);
+                            put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES, clusteringInfo_yes);
+                            clusteringInfoTable.put(put);
+                        }
+                    } else {
+                        byte[] bytes = result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES);
+                        if (bytes != null) {
+                            List<ClusteringAttribute> clusteringAttributeList_no = (List<ClusteringAttribute>) ObjectUtil.byteToObject(bytes);
+                            for (ClusteringAttribute clusteringAttribute : clusteringAttributeList_no) {
+                                if (clusterId.equals(clusteringAttribute.getClusteringId())) {
+                                    clusteringAttributeList_no.remove(clusteringAttribute);
+                                }
+                            }
+                            byte[] clusteringInfo_no = ObjectUtil.objectToByte(clusteringAttributeList_no);
+                            put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_NO, clusteringInfo_no);
+                            clusteringInfoTable.put(put);
                         }
                     }
-                    byte[] clusteringInfo_yes = ObjectUtil.objectToByte(clusteringAttributeList_yes);
-                    put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES, clusteringInfo_yes);
-                } else {
-                    List<ClusteringAttribute> clusteringAttributeList_no = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES));
-                    for (ClusteringAttribute clusteringAttribute : clusteringAttributeList_no) {
-                        if (clusterId.equals(clusteringAttribute.getClusteringId())) {
-                            clusteringAttributeList_no.remove(clusteringAttribute);
-                        }
-                    }
-                    byte[] clusteringInfo_no = ObjectUtil.objectToByte(clusteringAttributeList_no);
-                    put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_NO, clusteringInfo_no);
                 }
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            clusteringInfoTable.put(put);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
 
     private boolean whetherInclude(String clusterId, String time) {
-        Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
-        Get get = new Get(Bytes.toBytes(time));
-        try {
-            Result result = clusteringInfoTable.get(get);
-            List<ClusteringAttribute> clusteringAttributeList = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES));
-            for (ClusteringAttribute clusteringAttribute : clusteringAttributeList) {
-                if (clusterId.equals(clusteringAttribute.getClusteringId())) {
-                    return true;
+        if (clusterId != null && time != null) {
+            Get get = new Get(Bytes.toBytes(time));
+            Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
+            try {
+                Result result = clusteringInfoTable.get(get);
+                byte[] bytes = result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES);
+                if (bytes != null) {
+                    List<ClusteringAttribute> clusteringAttributeList = (List<ClusteringAttribute>) ObjectUtil.byteToObject(bytes);
+                    for (ClusteringAttribute clusteringAttribute : clusteringAttributeList) {
+                        if (clusterId.equals(clusteringAttribute.getClusteringId())) {
+                            return true;
+                        }
+                    }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -203,7 +219,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      * @param clusterIdList cluteringId include region information
      * @param time          clutering time
      * @param flag          yes is ignore, no is not ignore
-     * @return true or false indict whether ignore successful
+     * @return
      */
     @Override
     public boolean igoreClustering(List<String> clusterIdList, String time, String flag) {
@@ -224,27 +240,36 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
             }
             //yes 表示数据需要忽略（HBase表中存入"n"列），no 表示数据不需要忽略（HBase表中存入"y"列）
             if (flag.equals(IGNORE_FLAG_YES)) {
-                if (list_yes != null) {
+                if (list_yes != null && list_yes.size() > 0) {
+                    List<ClusteringAttribute> temp = null;
                     for (String clusterId : clusterIdList) {
-                        for (ClusteringAttribute clusteringAttribute : list_yes) {
+                        Iterator<ClusteringAttribute> iterator = list_yes.iterator();
+                        ClusteringAttribute clusteringAttribute;
+                        while (iterator.hasNext()) {
+                            clusteringAttribute = iterator.next();
                             if (clusterId.equals(clusteringAttribute.getClusteringId())) {
                                 clusteringAttribute.setFlag(flag);
-                                list_yes.remove(clusteringAttribute);
                                 list_no.add(clusteringAttribute);
+                                iterator.remove();
                             }
                         }
                     }
-                    byte[] clusteringInfo_yes = ObjectUtil.objectToByte(list_yes);
+                    byte[] clusteringInfo_yes = ObjectUtil.objectToByte(temp);
                     byte[] clusteringInfo_no = ObjectUtil.objectToByte(list_no);
                     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES, clusteringInfo_yes);
                     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_NO, clusteringInfo_no);
                     clusteringInfoTable.put(put);
+                } else {
+                    return false;
                 }
                 return true;
             } else if (flag.equals(IGNORE_FLAG_NO)) {
-                if (list_no != null) {
+                if (list_no != null && list_no.size() > 0) {
                     for (String clusterId : clusterIdList) {
-                        for (ClusteringAttribute clusteringAttribute : list_no) {
+                        Iterator<ClusteringAttribute> iterator = list_no.iterator();
+                        ClusteringAttribute clusteringAttribute;
+                        while (iterator.hasNext()) {
+                            clusteringAttribute = iterator.next();
                             if (clusterId.equals(clusteringAttribute.getClusteringId())) {
                                 list_no.remove(clusteringAttribute);
                                 clusteringAttribute.setFlag(flag);
@@ -257,6 +282,8 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES, clusteringInfo_yes);
                     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_NO, clusteringInfo_no);
                     clusteringInfoTable.put(put);
+                } else {
+                    return false;
                 }
                 return true;
             } else {

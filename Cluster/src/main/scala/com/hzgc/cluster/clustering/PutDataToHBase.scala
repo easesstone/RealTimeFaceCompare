@@ -24,7 +24,7 @@ object PutDataToHBase {
     val ClusteringInfo: Table = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO)
     val put: Put = new Put(Bytes.toBytes(rowKey))
     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY,
-      ClusteringTable.ClUSTERINGINFO_COLUMN_DATA,
+      ClusteringTable.ClUSTERINGINFO_COLUMN_YES,
       ObjectUtil.objectToByte(list))
     ClusteringInfo.put(put)
     ClusteringInfo.close()

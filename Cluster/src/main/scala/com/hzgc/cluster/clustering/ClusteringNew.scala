@@ -87,11 +87,10 @@ object ClusteringNew {
       val key = data._1
       val valList = data._2.split(",").toList
       (key, valList, valList.size)
-    })
-    val numFilter = numPerUrl.filter(_._3 > timeCount)
+    }).filter(_._3 > timeCount).zipWithIndex().cache()
 
     //merge two list
-    val joinNumFliter = numFilter.zipWithIndex().cartesian(numFilter.zipWithIndex()).filter(f => f._1._2 < f._2._2)
+    val joinNumFliter = numPerUrl.zipWithIndex().cartesian(numPerUrl.zipWithIndex()).filter(f => f._1._2 < f._2._2)
     val unionData = joinNumFliter.map(data => (data._1._1._1, data._2._1._1, data._1._1._2, data._2._1._2, dataSetSimilarity(data._1._1._2, data._2._1._2))).filter(data => data._5 > repetitionRate)
     val lastData = unionData.map(data => {
       val key = data._1
