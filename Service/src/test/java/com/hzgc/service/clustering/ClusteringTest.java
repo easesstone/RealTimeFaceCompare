@@ -83,7 +83,7 @@ public class ClusteringTest {
     private static void putDataToHBase(String rowKey, List<ClusteringAttribute> clusteringAttributeList) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
         Put put = new Put(Bytes.toBytes(rowKey));
-        put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_DATA, ObjectUtil.objectToByte(clusteringAttributeList));
+        put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES, ObjectUtil.objectToByte(clusteringAttributeList));
         try {
             clusteringInfoTable.put(put);
         } catch (IOException e) {
@@ -100,7 +100,7 @@ public class ClusteringTest {
         ClusteringAttribute clusteringAttribute;
         try {
             Result result = clusteringInfoTable.get(get);
-            clusteringAttributeList = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_DATA));
+            clusteringAttributeList = (List<ClusteringAttribute>) ObjectUtil.byteToObject(result.getValue(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES));
             clusteringAttribute = clusteringAttributeList.get(0);
             System.out.println(clusteringAttribute.getClusteringId());
             System.out.println(clusteringAttribute.getCount());
