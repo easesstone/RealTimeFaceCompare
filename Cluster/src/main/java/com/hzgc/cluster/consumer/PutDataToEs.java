@@ -68,11 +68,11 @@ public class PutDataToEs implements Serializable {
     public int upDateDataToEs(String ftpurl, String cluserId, String alarmTime, int alarmId) {
         UpdateResponse updateResponse = new UpdateResponse();
         Map<String, Object> map = new HashMap<>();
-        map.put("alarmid", alarmId);
-        map.put("alarm_time", alarmTime);
-        map.put("clusterid", cluserId);
+        map.put(DynamicTable.ALARM_ID, alarmId);
+        map.put(DynamicTable.ALARM_TIME, alarmTime);
+        map.put(DynamicTable.CLUSTERING_ID, cluserId);
         if (ftpurl != null) {
-            updateResponse = ElasticSearchHelper.getEsClient().prepareUpdate("dynamic_temp",
+            updateResponse = ElasticSearchHelper.getEsClient().prepareUpdate(DynamicTable.DYNAMIC_INDEX,
                     DynamicTable.PERSON_INDEX_TYPE, ftpurl).setDoc(map).get();
         }
         if (updateResponse.status().getStatus() == 200) {
