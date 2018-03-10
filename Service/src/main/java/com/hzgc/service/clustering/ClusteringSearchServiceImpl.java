@@ -254,7 +254,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                             }
                         }
                     }
-                    byte[] clusteringInfo_yes = ObjectUtil.objectToByte(temp);
+                    byte[] clusteringInfo_yes = ObjectUtil.objectToByte(list_yes);
                     byte[] clusteringInfo_no = ObjectUtil.objectToByte(list_no);
                     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_YES, clusteringInfo_yes);
                     put.addColumn(ClusteringTable.ClUSTERINGINFO_COLUMNFAMILY, ClusteringTable.ClUSTERINGINFO_COLUMN_NO, clusteringInfo_no);
@@ -271,9 +271,9 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                         while (iterator.hasNext()) {
                             clusteringAttribute = iterator.next();
                             if (clusterId.equals(clusteringAttribute.getClusteringId())) {
-                                list_no.remove(clusteringAttribute);
                                 clusteringAttribute.setFlag(flag);
                                 list_yes.add(clusteringAttribute);
+                                iterator.remove();
                             }
                         }
                     }
