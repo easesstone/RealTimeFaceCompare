@@ -123,7 +123,7 @@ object KMeansClustering2 {
       println("avg:" + avgDistance)*/
 
 
-    val pairs = idPointRDD.map(data => data._2).cache().collect().toList
+    /*val pairs = idPointRDD.map(data => data._2).cache().collect().toList
     val centers=new util.ArrayList[mutable.WrappedArray[Double]]()
     for (i <- pairs.size) {
 
@@ -141,7 +141,7 @@ object KMeansClustering2 {
     println(numClusters)
 
     println("total data number:" + idPointRDD.count())
-
+*/
 
     /*val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false, 0.4), numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))

@@ -18,7 +18,6 @@ object KMeansClustering {
   case class Data(id: Long, time: Timestamp, ipc: String, host: String, spic: String, bpic: String)
 
   val LOG: Logger = Logger.getLogger(KMeansClustering.getClass)
-  val numClusters = 50
   val numIterations = 100000
   var clusterIndex: Int = 0
 
@@ -60,14 +59,36 @@ object KMeansClustering {
     }).createOrReplaceTempView("mysqlTable")
 
     val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
-
     val idPointRDD = joinData.rdd.map(data => (data.getAs[String]("spic"), Vectors.dense(data.getAs[mutable.WrappedArray[Float]]("feature").toArray.map(_.toDouble)))).cache()
-    val trainData = idPointRDD.map(_._2).sample(withReplacement = false, 0.4)
-    val kMeansModel = KMeans.train(trainData, numClusters, numIterations)
-    val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
-    val wsse = kMeansModel.computeCost(trainData)
+    val numData = idPointRDD.count().toInt
+    val trainData = idPointRDD.map(_._2).sample(withReplacement = false, 0.8)
+    val i = 0
+    val k_wsseMap = new mutable.HashMap[Int, Double]()
+    var max_K = math.sqrt(numData).toInt
+    for (i <- 1 to max_K) {
+      var numClusters = i
+      val kMeansModel = KMeans.train(trainData, numClusters, numIterations)
+      val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
+      val wsse = kMeansModel.computeCost(trainData)
+      k_wsseMap.put(numClusters, wsse)
+    }
+    val a = (k_wsseMap(max_K) - k_wsseMap(1)) / (max_K - 1)
+    val b = (max_K * k_wsseMap(1) - k_wsseMap(max_K)) / (max_K - 1)
+    println("k_wsseMap(1):" + k_wsseMap(1))
+    println("k_wsseMap(max_k):" + k_wsseMap(max_K))
+    println("max_K:" + max_K)
+    println("a:" + a)
+    println("b:" + b)
+    spark.sparkContext.broadcast(a)
+    spark.sparkContext.broadcast(b)
+    val dist = new util.ArrayList[Double]()
+    k_wsseMap.map(data =>
+      (data._1, math.abs((a * data._1 - data._2 + b)) / math.sqrt(math.pow(a, 2) + 1))).foreach(println(_))
 
-    var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd)
+
+    /*val kMeansModel = KMeans.train(trainData, numClusters, numIterations)
+    val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))*/
+    /*var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd)
       .groupByKey()
       .sortByKey()
       .map(data => (data._1, data._2.toArray.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
@@ -104,7 +125,7 @@ object KMeansClustering {
       println(idList)
       println("++++++++++++++++++++++")
       PutDataToHBase.putDetailInfo_v1(rowKey, idList)
-    })
+    })*/
     spark.stop()
   }
 }
