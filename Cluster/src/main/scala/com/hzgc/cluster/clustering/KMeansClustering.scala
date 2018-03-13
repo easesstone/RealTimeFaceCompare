@@ -61,8 +61,8 @@ object KMeansClustering {
 
     val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
     val idPointRDD = joinData.rdd.map(data => (data.getAs[String]("spic"), Vectors.dense(data.getAs[mutable.WrappedArray[Float]]("feature").toArray.map(_.toDouble)))).cache()
-    val trainData = idPointRDD.map(_._2)
-    /*val numData = idPointRDD.count().toInt
+    /*val trainData = idPointRDD.map(_._2)*/
+    val numData = idPointRDD.count().toInt
     val trainData = idPointRDD.map(_._2).sample(withReplacement = false, 0.8)
     val i = 0
     val k_wsseMap = new mutable.HashMap[Int, Double]()
@@ -85,10 +85,10 @@ object KMeansClustering {
     spark.sparkContext.broadcast(b)
     val dist = new util.ArrayList[Double]()
     k_wsseMap.map(data =>
-      (data._1, math.abs((a * data._1 - data._2 + b)) / math.sqrt(math.pow(a, 2) + 1))).foreach(println(_))*/
+      (data._1, math.abs((a * data._1 - data._2 + b)) / math.sqrt(math.pow(a, 2) + 1))).foreach(println(_))
 
 
-    val kMeansModel = KMeans.train(trainData, numClusters, numIterations)
+    /*val kMeansModel = KMeans.train(trainData, numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
     var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd)
       .groupByKey()
@@ -127,7 +127,7 @@ object KMeansClustering {
       println(idList)
       println("++++++++++++++++++++++")
       PutDataToHBase.putDetailInfo_v1(rowKey, idList)
-    })
+    })*/
     spark.stop()
   }
 }
