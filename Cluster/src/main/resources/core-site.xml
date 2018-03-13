@@ -33,6 +33,6 @@
     <!-- 指定zookeeper地址 -->
     <property>
 	<name>ha.zookeeper.quorum</name>
-	<value>s108:2181,s104:2181,s103:2181,</value>
+	<value>s107:2181,s106:2181,s105:2181,s102:2181,s101:2181,s100:2181,</value>
     </property>
 </configuration>

@@ -49,6 +49,7 @@ public class ClusteringTest {
         System.out.println(clusteringAttributeList.get(0).getClusteringId());*/
 
 
+
        /* List<Integer> blist = new java.util.ArrayList<>();
         blist.add(1);
         blist.add(2);

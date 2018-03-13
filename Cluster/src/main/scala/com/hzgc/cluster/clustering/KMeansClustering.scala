@@ -62,9 +62,11 @@ object KMeansClustering {
     val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
 
     val idPointRDD = joinData.rdd.map(data => (data.getAs[String]("spic"), Vectors.dense(data.getAs[mutable.WrappedArray[Float]]("feature").toArray.map(_.toDouble)))).cache()
-    val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false, 0.4), numClusters, numIterations)
+    val trainData = idPointRDD.map(_._2).sample(withReplacement = false, 0.4)
+    val kMeansModel = KMeans.train(trainData, numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
-    // TODO: 删除 map(data => (data._1, data._2.toList.sortWith((a, b) => a.getTimestamp(1).getTime > b.getTimestamp(1).getTime)))
+    val wsse = kMeansModel.computeCost(trainData)
+
     var trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd)
       .groupByKey()
       .sortByKey()
@@ -75,10 +77,10 @@ object KMeansClustering {
       val attribute = new ClusteringAttribute()
       attribute.setClusteringId(data._1.toString)
       attribute.setCount(data._2.length)
-      attribute.setFirstAppearTime(data._2(0).getTimestamp(1).toString)
-      attribute.setFirstIpcId(data._2(0).getAs[String]("ipc"))
-      attribute.setLastAppearTime(data._2(data._2.length - 1).getTimestamp(1).toString)
-      attribute.setLastIpcId(data._2(data._2.length - 1).getAs[String]("ipc"))
+      attribute.setFirstAppearTime(data._2(data._2.length - 1).getTimestamp(1).toString)
+      attribute.setFirstIpcId(data._2(data._2.length - 1).getAs[String]("ipc"))
+      attribute.setLastAppearTime(data._2(0).getTimestamp(1).toString)
+      attribute.setLastIpcId(data._2(0).getAs[String]("ipc"))
       attribute.setFtpUrl(data._2(data._2.length / 2).getAs[String]("spic"))
       attribute
     }).collect().foreach(data => table1List.add(data))

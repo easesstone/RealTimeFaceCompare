@@ -53,7 +53,7 @@ object ClusteringNew {
     val bpicField = properties.getProperty("job.clustering.mysql.field.bpic")
     val partitionNum = properties.getProperty("job.clustering.partiton.number").toInt
 
-    val spark = SparkSession.builder().appName(appName).enableHiveSupport().master("local[*]").getOrCreate()
+    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
@@ -80,13 +80,36 @@ object ClusteringNew {
         .map(_.toDouble)))).rdd
     val count = joinData.count()
     println(count)
-    val mat = idPointDS2.map(data => data._2)
+    //use blockMatrix
+    val zipIdPointDs = idPointDS2.zipWithIndex()
+    val mat = zipIdPointDs.map((data) => new IndexedRow(data._2, data._1._2))
+    //transform the mat to block,after tranposed,then change back to IndexedRowMatrix
+    val irm = (new IndexedRowMatrix(mat).toBlockMatrix()).cache()
+    irm.validate();
+    val matB = irm.transpose.toIndexedRowMatrix()
+      .columnSimilarities()
+      .entries
+      .filter(data => data.value > threshold)
+      .groupBy(key => key.i)
+
+    matB.foreach(data=>{
+      val key=data._1
+    })
+
+
+    //use rowMatrix
+    /* val mat = idPointDS2.map(data=>data._2)
+    val temp=new IndexedRowMatrix(mat.zipWithIndex().map(case(v,i)=>(i,v))).toBlockMatrix().cache()
     val rowMatrix=new RowMatrix(mat)
+    rowMatrix
 
     val tranRowMatrix =transposeRowMatrix(rowMatrix)
-    val columnSimilarity=tranRowMatrix.columnSimilarities().entries.foreach(println(_))
+    val columnSimilarity=tranRowMatrix.columnSimilarities().entries
+    val temp=columnSimilarity.count()
+    println(temp)*/
 
     /*Transpose(irm)*/
+
     /*irm.columnSimilarities().entries.groupBy(data=>data.i).sortByKey().foreach(println(_))*/
 
     /* //zipwithIndex for decrease the computer cost
@@ -201,12 +224,13 @@ object ClusteringNew {
       yield {
         m.map(_ (c))
       }
-      ).toArray//每一行取
+      ).toArray //每一行取
   }
 
   def transposeRowMatrix(m: RowMatrix): RowMatrix = {
     val indexedRM = new IndexedRowMatrix(m.rows.zipWithIndex.map({
-      case (row, idx) => new IndexedRow(idx, row)}))
+      case (row, idx) => new IndexedRow(idx, row)
+    }))
     val transposed = indexedRM.toCoordinateMatrix().transpose.toIndexedRowMatrix()
     new RowMatrix(transposed.rows
       .map(idxRow => (idxRow.index, idxRow.vector))

@@ -27,8 +27,8 @@ object KMeansClustering2 {
   var numClusters = 26
   val numIterations = 100000
   var clusterIndex: Int = 0
-  val T2 = 0.4
-  val T1 = 0.7
+  val T2 = 0.1
+  val T1 = 0.3
 
 
   def main(args: Array[String]) {
@@ -77,19 +77,25 @@ object KMeansClustering2 {
 
     val idPointRDD = joinData.rdd.map(
       data => (data.getAs[String]("spic"),
+        data.getAs[mutable.WrappedArray[Float]]("feature")
+          .toArray
+          .map(_.toDouble)))
+
+    /* val idPointRDD = joinData.rdd.map(
+      data => (data.getAs[String]("spic"),
         Vectors.dense(
           data.getAs[mutable.WrappedArray[Float]]("feature")
             .toArray
             .map(_.toDouble))))
-      .cache()
+      .cache()*/
 
-   /* var idPointRDD2 = idPointRDD
+    /*var idPointRDD2 = idPointRDD
     val canopies = mutable.Map[String, mutable.Set[Array[Double]]]()
     val r = Random.shuffle(idPointRDD)
-    val C = r.top(1).map(x => (x._1, x._2.toArray)
-      canopies foreach { x =>
-      canopies(x._1).remove(C)
-    }
+    val C = r.top(1).map(x => (x._1, x._2))
+    canopies.foreach(x =>
+      canopies(x._1).remove(C))
+
     var idPointRDD2 = idPointRDD.filter(x => x != C)
 
     val canopy = mutable.Set[](C)
@@ -100,46 +106,44 @@ object KMeansClustering2 {
         canopy.add(p)
       }
       if (dist < T2) {
-        points = points filter (x => x != p)
+        points = points.filter(x => x != p)
       }
     }
 
     canopies foreach { x =>
       println("Cluster: %s => %s".format(x._1, x._2))
     }*/
-
-    /* var sum = 0.0
-     idPointRDD.zip(idPointRDD).foreach(a => {
-       sum += cosineMeasure(a._1._2.toArray.map(_.toDouble), a._2._2.toArray.map(_.toDouble))
-     })
-     println("total:" + sum)
-     val count = idPointRDD.count().toInt
-     println(count)
-     val avgDistance = sum / count
-     println("avg:" + avgDistance)*/
+    /*  idPointRDD.zip(idPointRDD).foreach(a => {
+        val b = cosineMeasure(a._1._2.toArray, a._2._2.toArray)
+      })
+      println("total:" + sum)
+      val count = idPointRDD.count().toInt
+      println(count)
+      val avgDistance = sum / count
+      println("avg:" + avgDistance)*/
 
 
-    /* try {
-       val pairs = idPointRDD.map(data => (data._1, data._2.toArray.map(_.toDouble)))
-       val map_centers = new mutable.HashSet[(String, Array[Double])]
-       val raw_center_pairs = pairs.map(v => (v._1, canopy_(v, map_centers, t2))).filter(a => a._2 != null).collect().toList
+    val pairs = idPointRDD.map(data => data._2).cache().collect().toList
+    val centers=new util.ArrayList[mutable.WrappedArray[Double]]()
+    for (i <- pairs.size) {
 
-       val center_pairs = new mutable.HashSet[(String, Array[Double])]
+    }
+    val map_centers = new mutable.HashSet[(String, Array[Double])]
+    val raw_center_pairs = pairs.map(v => (v._1, canopy_(v, map_centers, T2))).filter(a => a._2 != null).collect().toList
 
-       for (i <- raw_center_pairs.indices) {
-         canopy_(raw_center_pairs(i)._2, center_pairs, t2)
-       }
-       numClusters = center_pairs.toList.size
-       println("*************")
-       println(numClusters)
-     }
-     catch {
-       case e: Exception => LOG.info(e.getStackTrace.mkString("\n"))
-     }
-     println("total data number:" + idPointRDD.count())*/
+    val center_pairs = new mutable.HashSet[(String, Array[Double])]
+
+    for (i <- raw_center_pairs.indices) {
+      canopy_(raw_center_pairs(i)._2, center_pairs, T2)
+    }
+    numClusters = center_pairs.toList.size
+    println("*************")
+    println(numClusters)
+
+    println("total data number:" + idPointRDD.count())
 
 
-    val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false, 0.4), numClusters, numIterations)
+    /*val kMeansModel = KMeans.train(idPointRDD.map(_._2).sample(withReplacement = false, 0.4), numClusters, numIterations)
     val trainMidResult = kMeansModel.predict(idPointRDD.map(_._2))
     val trainResult = trainMidResult.zip(joinData.select("id", "time", "ipc", "host", "spic", "bpic").rdd)
       .groupByKey()
@@ -183,7 +187,7 @@ object KMeansClustering2 {
           LOG.info("Put data to es failed! And the failed ftpurl is " + data.getAs("spic"))
         }
       })
-    })
+    })*/
     spark.stop()
   }
 
@@ -210,7 +214,7 @@ object KMeansClustering2 {
     //求出分母
     val denominator = temp1 * temp2
     //进行计算
-    member / denominator
+    1 - (member / denominator)
   }
 
   private def getAverageDistance(points: util.ArrayList[Array[Double]]): Double = {
@@ -220,15 +224,15 @@ object KMeansClustering2 {
     val points2 = points
     val iter2 = points2.iterator()
 
-    val distanceNumber = pointSize * (pointSize + 1) / 2
+    val distanceNumber = pointSize * (pointSize - 1) / 2
     val T2 = sum / distanceNumber / 2 // 平均距离的一半
     return T2
   }
 
-  def canopy_(p0: (String, Array[Double]), pair: mutable.HashSet[(String, Array[Double])], t1: Double, t2: Double) = {
-    if (!pair.exists(p => cosineMeasure(p._2, p0._2) < t2)) {
+  def canopy_(p0: (String, Array[Double]), pair: mutable.HashSet[(String, Array[Double])], t2: Double) = {
+    if (!pair.exists(p => cosineMeasure(p._2, p0._2) <= t2)) {
       pair += p0
-      p0
+      pair
     } else null
   }
 }

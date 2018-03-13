@@ -3,86 +3,108 @@
 
 
 <configuration>
-    <property>
-        <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:mysql://s103:3306/hive?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=latin1</value>
-        <description>JDBC connect string for a JDBC metastore</description>
-    </property>
-    <property>
-        <name>javax.jdo.option.ConnectionDriverName</name>
-        <value>com.mysql.jdbc.Driver</value>
-        <description>Driver class name for a JDBC metastore</description>
-    </property>
-    <property>
-        <name>javax.jdo.option.ConnectionUserName</name>
-        <value>root</value>
-        <description>username to use against metastore database</description>
-    </property>
-    <property>
-        <name>javax.jdo.option.ConnectionPassword</name>
-        <value>Hzgc@123</value>
-        <description>password to use against metastore database</description>
-    </property>
-    <property>
-        <name>hive.server2.enable.doAs</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>hive.server2.thrift.port</name>
-        <value>23040</value>
-    </property>
-    <property>
-        <name>hive.server2.thrift.bind.host</name>
-        <value>s103</value>
-    </property>
-    <property>
-        <name>hive.server2.long.polling.timeout</name>
-        <value>5000</value>
-    </property>
-    <property>
-        <name>hive.metastore.uris</name>
-        <value>thrift://s103:9083,thrift://s104:9083,thrift://s108:9083</value>
-    </property>
+<property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:mysql://s100:3306/hive?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=latin1</value>
+    <description>JDBC connect string for a JDBC metastore</description>
+</property>
+<property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>com.mysql.jdbc.Driver</value>
+    <description>Driver class name for a JDBC metastore</description>
+</property>
+<property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>root</value>
+    <description>username to use against metastore database</description>
+</property>
+<property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>Hzgc@123</value>
+    <description>password to use against metastore database</description>
+</property>
+<property>
+    <name>hive.server2.enable.doAs</name>
+    <value>false</value>
+</property> 
+<property> 
+    <name>hive.server2.thrift.port</name> 
+    <value>10000</value> 
+</property>
+<property>
+    <name>hive.server2.thrift.bind.host</name>
+    <value>s100</value>
+</property>
+<property>
+    <name>hive.server2.long.polling.timeout</name>
+    <value>5000</value>
+</property>
+<property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://s100:9083,thrift://s101:9083,thrift://s102:9083,thrift://s105:9083,thrift://s106:9083,thrift://s107:9083</value>
+</property>    
 
-    <property>
-        <name>hive.metastore.schema.verification</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>datanucleus.metadata.validate</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>datanucleus.autoCreateSchema</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>datanucleus.schema.autoCreateTables</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>hive.server2.support.dynamic.service.discovery</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>hive.server2.zookeeper.namespace</name>
-        <value>thriftserver</value>
-    </property>
-    <property>
-        <name>hive.zookeeper.quorum</name>
-        <value>s103:2181,s104:2181,s108:2181</value>
-    </property>
-    <property>
-        <name>hive.zookeeper.client.port</name>
-        <value>2181</value>
-    </property>
-    <property>
-        <name>hive.server2.webui.port</name>
-        <value>10002</value>
-    </property>
-    <property>
-        <name>hive.server2.webui.bind.host</name>
-        <value>s103</value>
-    </property>
+<property>
+    <name>hive.metastore.schema.verification</name>
+    <value>false</value>
+</property>
+<property>
+    <name>datanucleus.metadata.validate</name>
+    <value>false</value>
+</property>
+<property>
+    <name>datanucleus.autoCreateSchema</name>
+    <value>true</value>
+</property>
+<property>
+    <name>datanucleus.schema.autoCreateTables</name>
+    <value>true</value>
+</property>
+<property>
+    <name>hive.server2.support.dynamic.service.discovery</name>
+    <value>true</value>
+</property>
+<property>
+    <name>hive.server2.zookeeper.namespace</name>
+    <value>hiveserver2</value>
+</property>
+<property>
+    <name>hive.zookeeper.quorum</name>
+    <value>s100:2181,s101:2181,s102:2181,s105:2181,s106:2181,s107:2181</value>
+</property>
+<property>
+    <name>hive.zookeeper.client.port</name>
+    <value>2181</value>
+</property>
+<property>
+    <name>hive.server2.webui.port</name>
+    <value>10002</value>
+</property>
+<property>
+    <name>hive.server2.webui.bind.host</name>
+    <value>s100</value>
+</property>
+
+<!--HIVE 支持 acid 设置，2.0开始-->
+<property>  
+    <name>hive.support.concurrency</name>  
+    <value>true</value>  
+</property>  
+<property>  
+    <name>hive.exec.dynamic.partition.mode</name>  
+    <value>nonstrict</value>  
+</property>  
+<property>  
+    <name>hive.txn.manager</name>  
+    <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>  
+</property>  
+<property>  
+    <name>hive.compactor.initiator.on</name>  
+    <value>true</value>  
+</property>  
+<property>  
+    <name>hive.compactor.worker.threads</name>  
+    <value>1</value>  
+</property>  
 
 </configuration>

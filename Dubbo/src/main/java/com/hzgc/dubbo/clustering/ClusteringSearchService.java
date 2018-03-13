@@ -44,12 +44,12 @@ public interface ClusteringSearchService {
 
     /**
      * delete a clustering
-     *
      * @param clusterIdList clusteringId include region information
-     * @param time          clustering time
+     * @param time clustering time
+     * @param flag yes: delete the ignored clustering, no :delete the not ignored clustering
      * @return true or false,indict whether delete successful
      */
-    boolean deleteClustering(List<String> clusterIdList, String time);
+    boolean deleteClustering(List<String> clusterIdList, String time, String flag);
 
     /**
      * ignore a clustering
