@@ -69,8 +69,7 @@ public class CptureNumberImplTimer {
             }
         };
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        long disTime = judgementTime();
-        service.scheduleAtFixedRate(runnable, disTime, 60 * 60, TimeUnit.SECONDS);
+        service.scheduleAtFixedRate(runnable,0, 60 * 60, TimeUnit.SECONDS);
     }
 
     /**
