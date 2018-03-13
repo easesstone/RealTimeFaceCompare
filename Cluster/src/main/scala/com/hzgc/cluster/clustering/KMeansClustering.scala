@@ -120,7 +120,7 @@ object KMeansClustering {
     PutDataToHBase.putClusteringInfo(yearMon, table1List)
 
     trainResult.foreach(data => {
-      val rowKey = yearMon + "-" + data._1 + "test"
+      val rowKey = yearMon + "-" + data._1
       println(rowKey)
       val idList = new util.ArrayList[Integer]()
       data._2.foreach(data => idList.add(data.getAs[Long]("id").toInt))
