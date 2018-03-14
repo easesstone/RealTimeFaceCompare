@@ -121,11 +121,11 @@ public class CptureNumberImpl implements CaptureNumberService {
             times = getHourTime(startTime, endTime);
             timeQuery.must(QueryBuilders.rangeQuery("time").gte(startTime).lte(endTime));
         }
-        totolQuery.must(timeQuery);
+        timeQuery.must(totolQuery);
         SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
                 .prepareSearch("dynamicshow")
                 .setTypes("person")
-                .setQuery(totolQuery)
+                .setQuery(timeQuery)
                 .setSize(100000000)
                 .get();
         SearchHits searchHits = searchResponse.getHits();
