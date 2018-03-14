@@ -14,13 +14,13 @@ class ParseByOption {
 
     static {
         MID_FIELD = DynamicTable.FTPURL +
-                "," +
+                ", " +
                 DynamicTable.IPCID +
-                "," +
+                ", " +
                 DynamicTable.TIMESLOT +
-                "," +
+                ", " +
                 DynamicTable.TIMESTAMP +
-                "," +
+                ", " +
                 DynamicTable.DATE;
     }
 
@@ -47,15 +47,15 @@ class ParseByOption {
      */
     private static String getOnePersonSQL(SearchOption option, boolean printSql) {
         StringBuilder finalSql = new StringBuilder();
-        finalSql.append("select ").append(MID_FIELD).append(", greatest(");
+        finalSql.append("select * from (select ").append(MID_FIELD).append(", greatest(");
         String[] simFieldConatiner = new String[option.getImages().size()];
         for (int i = 0; i < option.getImages().size(); i++) {
             String simField = DynamicTable.SIMILARITY + i;
             simFieldConatiner[i] = simField;
-            if (option.getImages().size() - 1 > 0) {
+            if (option.getImages().size() - i > 1) {
                 finalSql.append(simField).append(", ");
             } else {
-                finalSql.append(") as ")
+                finalSql.append(simField).append(") as ")
                         .append(DynamicTable.SIMILARITY)
                         .append(" from (");
             }
@@ -66,7 +66,7 @@ class ParseByOption {
                 .append(" union all ")
                 .append(prefix)
                 .append(DynamicTable.MID_TABLE)
-                .append(") as temp_table ")
+                .append(")) as temp_table ")
                 .append(getFilterOption(option));
         return finalSql.toString();
     }
@@ -107,6 +107,9 @@ class ParseByOption {
                 if (printSql) {
                     feature = "";
                 } else {
+                    System.out.println("***");
+                    System.out.println(option.getImages());
+                    System.out.println("***");
                     feature = FaceFunction.floatArray2string(option.getImages().get(i).getFaceAttr().getFeature());
                 }
                 StringBuilder strBuilder = new StringBuilder();
@@ -131,12 +134,12 @@ class ParseByOption {
                         .append(") temp_table ")
                         .append(getFilterOption(option))
                         .append(")");
-                if (option.getImages().size() - 1 > 0) {
+                if (option.getImages().size() - i > 1) {
                     strBuilder.append(" union all ");
                 }
                 finalSql.append(strBuilder);
             }
-            finalSql.append(") temp_table");
+            finalSql.append(") temp_table ");
             return finalSql.toString();
         }
 
@@ -382,13 +385,13 @@ class ParseByOption {
                         floatArray2string(option.getImages().get(i).getFaceAttr().getFeature());
             }
             prefix.append(DynamicTable.FUNCTION_NAME)
-                    .append("(")
+                    .append("('")
                     .append(feature)
-                    .append(", ")
+                    .append("', ")
                     .append(DynamicTable.FEATURE)
                     .append(") as ")
                     .append(fieldContainer[i]);
-            if (option.getImages().size() - 1 > 0) {
+            if (option.getImages().size() - i > 1) {
                 prefix.append(", ");
             }
         }
@@ -403,7 +406,7 @@ class ParseByOption {
      */
     private static String getFilterOption(SearchOption option) {
         StringBuilder finalSql = new StringBuilder();
-        finalSql.append("where")
+        finalSql.append("where ")
                 .append(DynamicTable.SIMILARITY)
                 .append(">=")
                 .append(option.getThreshold())
@@ -415,7 +418,7 @@ class ParseByOption {
             getData(finalSql, option);
         }
 
-        if (option.getDeviceIds() != null) {
+        if (option.getDeviceIds() != null && option.getDeviceIds().size() > 0) {
             getDeviceId(finalSql, option);
         }
 

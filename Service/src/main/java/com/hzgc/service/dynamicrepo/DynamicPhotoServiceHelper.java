@@ -169,8 +169,7 @@ public class DynamicPhotoServiceHelper {
     static List<CapturedPicture> pageSplit(List<CapturedPicture> capturedPictures, int offset, int count) {
         List<CapturedPicture> subCapturePictureList;
         int totalPicture = capturedPictures.size();
-        if (offset > -1 && totalPicture > (offset + count - 1)) {
-
+        if (offset >= 0 && totalPicture > (offset + count - 1) && count > 0) {
             //结束行小于总数，取起始行开始后续count条数据
             subCapturePictureList = capturedPictures.subList(offset, offset + count);
         } else {

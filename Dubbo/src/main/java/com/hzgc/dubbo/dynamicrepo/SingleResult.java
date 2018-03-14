@@ -1,6 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 public class SingleResult implements Serializable {
@@ -53,5 +54,17 @@ public class SingleResult implements Serializable {
 
     public void setPicturesByIpc(List<GroupByIpc> picturesByIpc) {
         this.picturesByIpc = picturesByIpc;
+    }
+
+    @Override
+    public String toString() {
+        return "Single search id is:"
+                + id
+                + ", picture is:"
+                + (binPicture != null ? "true":"false")
+                + ", total is:"
+                + total
+                + ", CapturePicture"
+                + Arrays.toString(pictures.toArray());
     }
 }

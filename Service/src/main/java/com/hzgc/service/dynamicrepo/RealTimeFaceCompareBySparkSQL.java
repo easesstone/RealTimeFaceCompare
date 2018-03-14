@@ -141,7 +141,6 @@ class RealTimeFaceCompareBySparkSQL {
             singleResult.setId(searchId + "-0");
             singleResult.setPictures(capturedPictureList);
             singleResult.setTotal(capturedPictureList.size());
-            assert false;
             searchResult.setSearchId(searchId);
             List<SingleResult> singleList = new ArrayList<>();
             singleList.add(singleResult);
@@ -156,6 +155,7 @@ class RealTimeFaceCompareBySparkSQL {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Map<String, List<CapturedPicture>> mapSet = new HashMap<>();
         SearchResult searchResult = new SearchResult();
+        List<SingleResult> singleResultList = new ArrayList<>();
         try {
             while (resultSet.next()) {
                 //小图ftpurl
@@ -195,7 +195,8 @@ class RealTimeFaceCompareBySparkSQL {
                     List<byte[]> list = new ArrayList<>();
                     list.add(option.getImages().get(i).getBinImage());
                     singleResult.setBinPicture(list);
-                    singleResult.setId(searchId + i);
+                    singleResult.setId(searchId + "-" + i);
+                    singleResultList.add(singleResult);
                 } else {
                     List<byte[]> list = new ArrayList<>();
                     list.add(option.getImages().get(i).getBinImage());
@@ -203,8 +204,11 @@ class RealTimeFaceCompareBySparkSQL {
                     singleResult.setTotal(0);
                     singleResult.setPictures(new ArrayList<>());
                     singleResult.setId(searchId + i);
+                    singleResultList.add(singleResult);
                 }
+
             }
+            searchResult.setResults(singleResultList);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -216,11 +220,10 @@ class RealTimeFaceCompareBySparkSQL {
      *
      * @param result 查询结果
      * @param offset 分页偏移量
-     * @param count 分页读取的数量
+     * @param count  分页读取的数量
      * @return 返回结果集
      */
     private SearchResult saveResults(SearchResult result, int offset, int count, String searchId) {
-        SearchResult searchResultTemp = new SearchResult();
         if (result.getResults().size() > 0) {
             boolean flag = DynamicPhotoServiceHelper.insertSearchRes(result);
             if (flag) {
@@ -228,12 +231,12 @@ class RealTimeFaceCompareBySparkSQL {
             } else {
                 LOG.error("The search history of: [" + searchId + "] saved failure");
             }
-            for (SingleResult singleResult: result.getResults()) {
+            for (SingleResult singleResult : result.getResults()) {
                 singleResult.setPictures(DynamicPhotoServiceHelper.pageSplit(singleResult.getPictures(), offset, count));
             }
         } else {
             LOG.error("Find no image by deviceIds or timeStamp");
         }
-        return searchResultTemp;
+        return result;
     }
 }

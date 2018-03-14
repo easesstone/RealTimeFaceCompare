@@ -1,6 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 public class SearchResult implements Serializable {
@@ -32,6 +33,15 @@ public class SearchResult implements Serializable {
 
     public void setSearchType(String searchType) {
         this.searchType = searchType;
+    }
+
+    @Override
+    public String toString() {
+        return "Search ID is:"
+                + this.searchId
+                + ", search type is:"
+                + this.searchType
+                + ", Singleresult " + Arrays.toString(results.toArray());
     }
 }
 
