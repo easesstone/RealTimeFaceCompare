@@ -66,11 +66,6 @@ public class CptureNumberImpl implements CaptureNumberService {
         int todayTotolNumber = (int) searchHits2.getTotalHits();
         map.put(totolNum, totolNumber);
         map.put(todyTotolNumber, todayTotolNumber);
-        System.out.println("++++++++++++++++");
-        System.out.println(Thread.currentThread().getName());
-        System.out.println(todayTotolNumber);
-        System.out.println(totolNumber);
-        System.out.println("================");
         return map;
     }
 
