@@ -1,20 +1,17 @@
 package com.hzgc.service.staticrepo;
 
-import com.hzgc.dubbo.staticrepo.ObjectSearchResult;
-import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
-import com.hzgc.dubbo.staticrepo.SearchRecordHandler;
-import com.hzgc.dubbo.staticrepo.SrecordTable;
+import com.hzgc.dubbo.staticrepo.*;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-
-import org.apache.log4j.*;
 
 public class SearchRecordHandlerImpl implements SearchRecordHandler {
     private static Logger LOG = Logger.getLogger(SearchRecordHandlerImpl.class);
@@ -26,8 +23,7 @@ public class SearchRecordHandlerImpl implements SearchRecordHandler {
      * @param size  需要返回的记录数
      * @return
      */
-    @Override
-    public ObjectSearchResult getRocordOfObjectInfo(String rowkey,int from,int size) {
+    public ObjectSearchResult getRocordOfObjectInfo(String rowkey, int from, int size) {
         ObjectInfoHandlerImpl objectInfoHandler = new ObjectInfoHandlerImpl();
         Table table = HBaseHelper.getTable(SrecordTable.TABLE_NAME);
         Get get = new Get(Bytes.toBytes(rowkey));
@@ -57,6 +53,11 @@ public class SearchRecordHandlerImpl implements SearchRecordHandler {
             e.printStackTrace();
         }
         return objectSearchResult;
+    }
+
+    @Override
+    public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
+        return null;
     }
 
     @Override
