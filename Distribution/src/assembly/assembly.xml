@@ -14,6 +14,14 @@
                 <include>README.md</include>
             </includes>
         </fileSet>
+        <!--项目部署文档 -->
+        <fileSet>
+            <directory>../Distribution/src/resources</directory>
+            <includes>
+                <include>Product-Deployment-Documentation.docx</include>
+            </includes>
+            <outputDirectory>\</outputDirectory>
+        </fileSet>
         <!--项目source文件-->
         <fileSet>
             <directory>../Distribution/bin</directory>
@@ -117,7 +125,7 @@
         <fileSet>
             <directory>../Distribution/src/resources</directory>
             <includes>
-                <include>**</include>
+                <include>*.properties</include>
             </includes>
             <outputDirectory>common/conf</outputDirectory>
         </fileSet>
