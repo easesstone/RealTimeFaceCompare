@@ -64,13 +64,13 @@ object ClusteringNew {
     val preSql = "(select T1.id, T2.host_name, T2.big_picture_url, T2.small_picture_url, T1.alarm_time " + "from t_alarm_record as T1 inner join t_alarm_record_extra as T2 on T1.id=T2.record_id " + "where T2.static_id IS NULL " + "and DATE_FORMAT(T1.alarm_time,'%Y-%m') like " + currentYearMon + ") as temp"
 
     sqlProper.setProperty("driver", driverClass)
-    val dataSource = spark.read.jdbc(url, preSql, sqlProper)
+    val dataSource = spark.read.jdbc(url, preSql, sqlProper).cache()
     dataSource.map(data => {
       println("ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField))
       Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
     }).createOrReplaceTempView("mysqlTable")
 
-    val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic")
+    val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic").cache()
     //get the url and feature
     val idPointDS = joinData.map(data => (data.getAs[String]("spic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray
       .map(_.toDouble))).persist(StorageLevel.MEMORY_AND_DISK_SER)
