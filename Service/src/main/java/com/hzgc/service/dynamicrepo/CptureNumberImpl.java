@@ -33,7 +33,7 @@ public class CptureNumberImpl implements CaptureNumberService {
      * @return 返回总抓拍数量和今日抓拍数量
      */
     @Override
-    public Map<String, Integer> dynaicNumberService(List<String> ipcId) {
+    public synchronized Map<String, Integer> dynaicNumberService(List<String> ipcId) {
         String index = DynamicTable.DYNAMIC_INDEX;
         String type = DynamicTable.PERSON_INDEX_TYPE;
         Map<String, Integer> map = new HashMap<>();
@@ -66,6 +66,11 @@ public class CptureNumberImpl implements CaptureNumberService {
         int todayTotolNumber = (int) searchHits2.getTotalHits();
         map.put(totolNum, totolNumber);
         map.put(todyTotolNumber, todayTotolNumber);
+        System.out.println("++++++++++++++++");
+        System.out.println(Thread.currentThread().getName());
+        System.out.println(todayTotolNumber);
+        System.out.println(totolNumber);
+        System.out.println("================");
         return map;
     }
 
@@ -75,7 +80,7 @@ public class CptureNumberImpl implements CaptureNumberService {
      * @return 返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
      */
     @Override
-    public Map<String, Integer> staticNumberService(String platformId) {
+    public synchronized Map<String, Integer> staticNumberService(String platformId) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         String index = ObjectInfoTable.TABLE_NAME;
         String type = ObjectInfoTable.PERSON_COLF;
