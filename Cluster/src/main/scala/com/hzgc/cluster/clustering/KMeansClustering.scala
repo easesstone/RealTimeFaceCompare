@@ -87,6 +87,7 @@ object KMeansClustering {
 
     val i = 0
     for (i <- region_ipcMap) {
+      val regoin = i._1
       val ipcList = i._2.split(",")
       val j = 0
       var ipcStr = ""
@@ -162,16 +163,17 @@ object KMeansClustering {
       }
       val yearMon = calendar.get(Calendar.YEAR) + "-" + monStr
       LOG.info("write clustering info to HBase...")
-      PutDataToHBase.putClusteringInfo(yearMon, table1List)
+      val rowkey = yearMon + "-" + regoin
+      PutDataToHBase.putClusteringInfo(rowkey, table1List)
 
       trainResult.foreach(data => {
-        val rowKey = yearMon + "-" + data._1
-        println(rowKey)
+        val fullRowKey = rowkey + "-" + data._1
+        println(fullRowKey)
         val idList = new util.ArrayList[Integer]()
         data._2.foreach(data => idList.add(data.getAs[Long]("id").toInt))
         println(idList)
         println("++++++++++++++++++++++")
-        PutDataToHBase.putDetailInfo_v1(rowKey, idList)
+        PutDataToHBase.putDetailInfo_v1(fullRowKey, idList)
       })
     }
     spark.stop()
