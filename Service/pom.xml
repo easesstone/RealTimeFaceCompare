@@ -51,7 +51,7 @@
             <groupId>com.hzgc</groupId>
             <artifactId>util</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <!--阿里数据库连接池-->
         <dependency>
