@@ -14,7 +14,7 @@ public class PSearchArgsModel implements Serializable {
     private String paltaformId; // 平台Id
     private String name;  // 姓名
     private String idCard;  // 身份证号
-    private int sex; // 性别
+    private Integer sex; // 性别
 
     private Map<String,byte[]> images;  //图片列表
     private Map<String,FaceAttribute> faceAttributeMap; //特征值列表
@@ -25,13 +25,13 @@ public class PSearchArgsModel implements Serializable {
     private List<String> pkeys; // 人员类型列表
     private String creator; // 布控人
     private String cphone; // 布控人手机号
-    private int start;  // 开始的行数
-    private int pageSize;  // 需要返回多少行
+    private Integer start;  // 开始的行数
+    private Integer pageSize;  // 需要返回多少行
     private String searchId;  // 搜索Id
     private String searchType; // 搜索类型，对应的是调用的函数的名字
     private boolean moHuSearch; // 是否模糊查询， true ,是，false 不是
-    private int important; //0,重点关注，1非重点关注
-    private int status;  // 0 ,常住人口，1 建议迁出
+    private Integer important; //0,重点关注，1非重点关注
+    private Integer status;  // 0 ,常住人口，1 建议迁出
 
     public PSearchArgsModel() {
     }
@@ -68,11 +68,11 @@ public class PSearchArgsModel implements Serializable {
         this.idCard = idCard;
     }
 
-    public int getSex() {
+    public Integer getSex() {
         return sex;
     }
 
-    public void setSex(int sex) {
+    public void setSex(Integer sex) {
         this.sex = sex;
     }
 
@@ -140,19 +140,19 @@ public class PSearchArgsModel implements Serializable {
         this.cphone = cphone;
     }
 
-    public int getStart() {
+    public Integer getStart() {
         return start;
     }
 
-    public void setStart(int start) {
+    public void setStart(Integer start) {
         this.start = start;
     }
 
-    public int getPageSize() {
+    public Integer getPageSize() {
         return pageSize;
     }
 
-    public void setPageSize(int pageSize) {
+    public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
 
@@ -180,19 +180,19 @@ public class PSearchArgsModel implements Serializable {
         this.moHuSearch = moHuSearch;
     }
 
-    public int getImportant() {
+    public Integer getImportant() {
         return important;
     }
 
-    public void setImportant(int important) {
+    public void setImportant(Integer important) {
         this.important = important;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
