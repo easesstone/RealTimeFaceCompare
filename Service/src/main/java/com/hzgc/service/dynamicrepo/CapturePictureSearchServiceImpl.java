@@ -274,7 +274,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
      * @param ipcId     设备ID
      * @return CaptureCount 查询结果对象。对象内封装了：该时间段内该设备抓拍张数，该时间段内该设备最后一次抓拍时间。
      */
-
     public CaptureCount captureCountQuery(String startTime, String endTime, String ipcId) {
 
         //CaptureCount是一个封装类，用于封装返回的结果。
