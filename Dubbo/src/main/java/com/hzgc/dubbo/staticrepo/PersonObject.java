@@ -2,6 +2,7 @@ package com.hzgc.dubbo.staticrepo;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
@@ -21,20 +22,20 @@ public class PersonObject implements Serializable{
     private float[] feature;  // 特征值
     private String creator;   // 创建者
     private String cphone;  // 创建者手机号
-    private Date createtime;  // 创建时间
-    private Date updatetime;   // 更新时间
+    private Timestamp createtime;  // 创建时间
+    private Timestamp updatetime;   // 更新时间
     private String reason;   // 布控理由
     private String tag;  // 人车标志
     private int important; // 0,重点关注，1，非重点关注
     private int status; // 0,常住人口，1，建议迁出
-    private float threthold; // 相似度
+    private float sim; // 相似度
 
-    public float getThrethold() {
-        return threthold;
+    public float getSim() {
+        return sim;
     }
 
-    public void setThrethold(float threthold) {
-        this.threthold = threthold;
+    public void setSim(float sim) {
+        this.sim = sim;
     }
 
     public String getId() {
@@ -117,19 +118,19 @@ public class PersonObject implements Serializable{
         this.cphone = cphone;
     }
 
-    public Date getCreatetime() {
+    public Timestamp getCreatetime() {
         return createtime;
     }
 
-    public void setCreatetime(Date createtime) {
+    public void setCreatetime(Timestamp createtime) {
         this.createtime = createtime;
     }
 
-    public Date getUpdatetime() {
+    public Timestamp getUpdatetime() {
         return updatetime;
     }
 
-    public void setUpdatetime(Date updatetime) {
+    public void setUpdatetime(Timestamp updatetime) {
         this.updatetime = updatetime;
     }
 
@@ -184,7 +185,7 @@ public class PersonObject implements Serializable{
                 ", tag='" + tag + '\'' +
                 ", important=" + important +
                 ", status=" + status +
-                ", threthold=" + threthold +
+                ", sim=" + sim +
                 '}';
     }
 
@@ -213,7 +214,7 @@ public class PersonObject implements Serializable{
             personObject.setStatus((Integer) person.get(ObjectInfoTable.STATUS));
         }
         long dateNow = System.currentTimeMillis();
-        personObject.setUpdatetime(new Date(dateNow));
+        personObject.setUpdatetime(new Timestamp(dateNow));
         return personObject;
     }
 

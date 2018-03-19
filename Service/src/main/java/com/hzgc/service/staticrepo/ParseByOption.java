@@ -5,6 +5,7 @@ import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
 import com.hzgc.dubbo.staticrepo.PersonObject;
 import com.hzgc.dubbo.staticrepo.StaticSortParam;
+import com.hzgc.jni.FaceFunction;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -16,23 +17,53 @@ import java.util.Map;
 
 public class ParseByOption {
     private static Logger LOG = Logger.getLogger(PSearchArgsModel.class);
-    public static String getSqlFromPSearchArgsModel(Connection conn, PSearchArgsModel pSearchArgsModel) {
+    public static Map<String, List<Object>> getSqlFromPSearchArgsModel(Connection conn, PSearchArgsModel pSearchArgsModel) {
         StringBuffer sql = new StringBuffer("");
 
         Map<String, byte[]> photos = pSearchArgsModel.getImages();
         Map<String, FaceAttribute> faceAttributeMap = pSearchArgsModel.getFaceAttributeMap();
 
-
+        List<Object> setValues = new ArrayList<>();
+        List<StaticSortParam> params = pSearchArgsModel.getStaticSortParams();
         sql.append("select ");
         if (photos != null && photos.size() != 0
                 && faceAttributeMap != null && faceAttributeMap.size() != 0
                 && faceAttributeMap.size() == photos.size()) {
-            List<Object> setValues = new ArrayList<>();
-            if (pSearchArgsModel.isTheSameMan()) {
-
-            } else {
-                // 最终需要返回的内容
+            // 最终需要返回的内容
+            sql.append(sameFieldNeedReturn());
+            if (pSearchArgsModel.isTheSameMan() && faceAttributeMap.size() == 1  && photos.size() == 1) {
+                sql.append(", sim");
+                sql.append(" from (select ");
                 sql.append(sameFieldNeedReturn());
+                sql.append(", FACECOMP(");
+                sql.append(ObjectInfoTable.FEATURE);
+                sql.append(", ?");
+                StringBuffer featureString = new StringBuffer("");
+                int size = faceAttributeMap.size();
+                int count = 1;
+                for (Map.Entry<String, FaceAttribute> entry : faceAttributeMap.entrySet()) {
+                    FaceAttribute faceAttribute = entry.getValue();
+                    if (faceAttribute != null) {
+                        if (count == size) {
+                            featureString.append(FaceFunction.floatArray2string(faceAttribute.getFeature()));
+                        } else {
+                            featureString.append(FaceFunction.floatArray2string(faceAttribute.getFeature()) + ",");
+                        }
+                    }
+                }
+                setValues.add(new String(featureString));
+                sql.append(") as sim from ");
+                sql.append(ObjectInfoTable.TABLE_NAME);
+
+                sql.append(sameWhereSql(pSearchArgsModel, setValues, false));
+                sql.append(")");
+                float threthod = pSearchArgsModel.getThredshold();
+                sql.append(" where sim > ? ");
+                setValues.add(threthod);
+
+                sql.append(" order by ");
+                sql.append(sameSortSql(params, true));
+            } else if (!pSearchArgsModel.isTheSameMan() && faceAttributeMap.size() != 1  && photos.size() != 1){
                 sql.append(", type");
                 sql.append(", sim");
                 sql.append(" from (");
@@ -47,26 +78,19 @@ public class ParseByOption {
                         feature = entry.getValue().getFeature();
                     }
                     StringBuffer subSql = new StringBuffer("");
-                    sql.append("select ");
-                    sql.append(sameFieldNeedReturn());
-                    sql.append(", ? as type");
+                    subSql.append("select ");
+                    subSql.append(sameFieldNeedReturn());
+                    subSql.append(", ? as type");
                     setValues.add(key);
-                    sql.append("FACECOMP(");
-                    sql.append(ObjectInfoTable.FEATURE);
-                    sql.append(", ?");
-                    try {
-                        setValues.add(conn.createArrayOf("FLOAT", PersonObject.otherArrayToObject(feature)));
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    sql.append(") as sim from ");
-                    sql.append(ObjectInfoTable.TABLE_NAME);
+                    subSql.append(", FACECOMP(");
+                    subSql.append(ObjectInfoTable.FEATURE);
+                    subSql.append(", ?");
+                    setValues.add(FaceFunction.floatArray2string(feature));
+                    subSql.append(") as sim from ");
+                    subSql.append(ObjectInfoTable.TABLE_NAME);
 
-                    float threthod = pSearchArgsModel.getThredshold();
-                    sql.append(" where sim > ? ");
-                    setValues.add(threthod);
                     subSqls.add(subSql);
-                    subSql.append(sameWhereSql(pSearchArgsModel, setValues));
+                    subSql.append(sameWhereSql(pSearchArgsModel, setValues, false));
                 }
 
                 //完成子sql 的拼装
@@ -76,79 +100,87 @@ public class ParseByOption {
                     sql.append(subSqls.get(i));
                 }
 
+                float threthod = pSearchArgsModel.getThredshold();
+                sql.append(") where sim > ? ");
+                setValues.add(threthod);
                 //排序sql 拼装
-                List<StaticSortParam> params = pSearchArgsModel.getStaticSortParams();
                 if (params != null && params.size() != 0) {
-                    sql.append(" order by ");
+                    sql.append(" order by type,");
                 }
-
-
+                sql.append(sameSortSql(params, true));
+            } else {
+                LOG.info("传入的参数有错，请确认");
+                return null;
+            }
+        } else {
+            sql.append(sameFieldNeedReturn());
+            sql.append(" from ");
+            sql.append(ObjectInfoTable.TABLE_NAME);
+            sql.append(sameWhereSql(pSearchArgsModel, setValues, false));
+            if (params != null) {
+                sql.append(" order by ");
+                sql.append(sameSortSql(params, false));
             }
         }
-
-
-
-
-        // 拼装条件查询
-        // 用来给后面的占位符进行赋值
-
-
-        // 关于排序参数的sql 拼装
-//
-//        if (faceAttributeMap != null || faceAttributeMap.size() != 0 && theSameMan) {
-//            if (params != null && params.size() != 0) {
-//                sql.append(" order by ");
-//            }
-//            int i = 0;
-//            int paramsMaxIndex = params.size() - 1;
-//            for (StaticSortParam staticSortParam : params) {
-//                if (StaticSortParam.THRESHOLDESC.equals(staticSortParam)) {
-//
-//                } else if (StaticSortParam.THRESHOLASC.equals(staticSortParam)) {
-//
-//                } else if(StaticSortParam.IMPORTANTASC.equals(staticSortParam)){
-//                    sql.append(ObjectInfoTable.IMPORTANT);
-//                    if (i == paramsMaxIndex){
-//                        sql.append(" ASC");
-//                    } else {
-//                        sql.append(" ASC, ");
-//                    }
-//                } else if (StaticSortParam.IMPORTANTDESC.equals(staticSortParam)) {
-//                    sql.append(ObjectInfoTable.IMPORTANT);
-//                    if (i == paramsMaxIndex){
-//                        sql.append("DESC");
-//                    } else {
-//                        sql.append("DESC, ");
-//                    }
-//
-//                } else if (StaticSortParam.TIMEDESC.equals(staticSortParam)) {
-//                    sql.append(ObjectInfoTable.CREATETIME);
-//                    if (i == paramsMaxIndex){
-//                        sql.append(" DESC");
-//                    } else {
-//                        sql.append(" DESC, ");
-//                    }
-//                } else if (StaticSortParam.TIMEASC.equals(staticSortParam)) {
-//                    sql.append(ObjectInfoTable.CREATETIME);
-//                    if (i == paramsMaxIndex) {
-//                        sql.append(" ASC");
-//                    }else {
-//                        sql.append(" ASC, ");
-//                    }
-//                }
-//                i++;
-//            }
-//        }
-
         // 进行分组
         LOG.info(sql);
-        return new String(sql);
+        Map<String, List<Object>> finalReturn = new HashMap<>();
+        finalReturn.put(new String(sql), setValues);
+        return finalReturn;
     }
 
+    /**
+     * 返回排序sql 自句
+     * @param params 排序参数
+     * @param serarchByPics 是否有图片
+     * @return
+     */
+    private static StringBuffer sameSortSql(List<StaticSortParam> params, boolean serarchByPics) {
+        StringBuffer sameSortSql = new StringBuffer("");
+        if (params != null) {
+            if (serarchByPics) {
+                if (params.contains(StaticSortParam.RELATEDASC)) {
+                    sameSortSql.append("sim asc");
+                    if (params.size() > 1) {
+                        sameSortSql.append(", ");
+                    }
+                }
+                if (params.contains(StaticSortParam.RELATEDDESC)) {
+                    sameSortSql.append("sim desc");
+                    if (params.size() > 1) {
+                        sameSortSql.append(", ");
+                    }
+                }
+            }
+            if (params.contains(StaticSortParam.IMPORTANTASC)) {
+                sameSortSql.append(ObjectInfoTable.IMPORTANT);
+                sameSortSql.append(" asc");
+            }
+            if (params.contains(StaticSortParam.IMPORTANTDESC)) {
+                sameSortSql.append(ObjectInfoTable.IMPORTANT);
+                sameSortSql.append(" desc");
+            }
+            if (params.contains(StaticSortParam.TIMEASC)) {
+                sameSortSql.append(", ");
+                sameSortSql.append(ObjectInfoTable.CREATETIME);
+                sameSortSql.append(" asc");
+            }
+            if (params.contains(StaticSortParam.TIMEDESC)) {
+                sameSortSql.append(", ");
+                sameSortSql.append(ObjectInfoTable.CREATETIME);
+                sameSortSql.append(" desc");
+            }
+        }
+        return sameSortSql;
+    }
 
+    /**
+     *
+     * @return 不同情况下需要返回的相同的字段
+     */
     private static StringBuffer sameFieldNeedReturn() {
         StringBuffer sameFieldReturn = new StringBuffer("");
-        sameFieldReturn.append(ObjectInfoTable.ROWKEY);
+        sameFieldReturn.append(ObjectInfoTable.ID);
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.PKEY);
         sameFieldReturn.append(", ");
@@ -161,8 +193,6 @@ public class ParseByOption {
         sameFieldReturn.append(ObjectInfoTable.IDCARD);
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.CREATOR);
-        sameFieldReturn.append(", ");
-        sameFieldReturn.append(ObjectInfoTable.CPHONE);
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.CPHONE);
         sameFieldReturn.append(", ");
@@ -188,25 +218,41 @@ public class ParseByOption {
      * @param setArgsList 需要对sql 设置的值
      * @return 子where查询
      */
-    private static StringBuffer sameWhereSql(PSearchArgsModel pSearchArgsModel, List<Object> setArgsList) {
+    private static StringBuffer sameWhereSql(PSearchArgsModel pSearchArgsModel, List<Object> setArgsList, boolean searchByPics) {
         StringBuffer whereQuery = new StringBuffer("");
         // 关于平台的搜索
         String platformId = pSearchArgsModel.getPaltaformId();
+        int count = 0;
         if (platformId != null && !"".equals(platformId)) {
-            whereQuery.append(" and ");
-            whereQuery.append(ObjectInfoTable.ROWKEY);
+            if (searchByPics) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
+            whereQuery.append(ObjectInfoTable.PLATFORMID);
             whereQuery.append(" = ?");
             setArgsList.add(platformId);
         }
         // 关于姓名的搜索
         String name = pSearchArgsModel.getName();
         if (name != null && !"".equals(name) && pSearchArgsModel.isMoHuSearch()) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.NAME);
             whereQuery.append(" like ?");
             setArgsList.add("%" + name + "%");
         } else if (name != null && !"".equals(name) && !pSearchArgsModel.isMoHuSearch()) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.NAME);
             whereQuery.append(" = ?");
             setArgsList.add(name);
@@ -215,56 +261,88 @@ public class ParseByOption {
         // 关于身份证号的查询
         String idCard = pSearchArgsModel.getIdCard();
         if (idCard != null && !"".equals(idCard) && pSearchArgsModel.isMoHuSearch()) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.IDCARD);
             whereQuery.append(" like ?");
             setArgsList.add("%" + idCard + "%");
         } else if (idCard != null && !"".equals(idCard) && !pSearchArgsModel.isMoHuSearch()) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.IDCARD);
             whereQuery.append(" = ?");
             setArgsList.add(idCard);
         }
 
         // 关于性别的查询
-        int sex = pSearchArgsModel.getSex();
-        if (sex != -1) {
-            whereQuery.append(" and ");
+        Integer sex = pSearchArgsModel.getSex();
+        if (sex != null) {
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.SEX);
             whereQuery.append(" = ?");
             setArgsList.add(sex);
         }
 
         // 关于人员类型列表的查询
-        List<String> pkeys = new ArrayList<>();
-        for (int i = 0;i < pkeys.size(); i++) {
-            if (i == pkeys.size() - 1) {
-                whereQuery.append(" or ");
-                whereQuery.append(ObjectInfoTable.PKEY);
-                whereQuery.append(" = ?)");
-                setArgsList.add(pkeys.get(i));
-            } else if (i == 0){
-                whereQuery.append(" and(");
-                whereQuery.append(ObjectInfoTable.PKEY);
-                whereQuery.append(" = ?");
-                setArgsList.add(pkeys.get(i));
-            } else {
-                whereQuery.append(" or ");
-                whereQuery.append(ObjectInfoTable.PKEY);
-                whereQuery.append(" = ?");
-                setArgsList.add(pkeys.get(i));
+        List<String> pkeys = pSearchArgsModel.getPkeys();
+        if (pkeys != null) {
+            for (int i = 0;i < pkeys.size(); i++) {
+                if (i == pkeys.size() - 1) {
+                    whereQuery.append(" or ");
+                    whereQuery.append(ObjectInfoTable.PKEY);
+                    whereQuery.append(" = ?)");
+                    setArgsList.add(pkeys.get(i));
+                } else if (i == 0){
+                    if (count > 0) {
+                        whereQuery.append(" and (");
+                    } else {
+                        whereQuery.append(" where (");
+                    }
+                    count++;
+                    whereQuery.append(ObjectInfoTable.PKEY);
+                    whereQuery.append(" = ?");
+                    setArgsList.add(pkeys.get(i));
+                } else {
+                    whereQuery.append(" or ");
+                    whereQuery.append(ObjectInfoTable.PKEY);
+                    whereQuery.append(" = ?");
+                    setArgsList.add(pkeys.get(i));
+                }
             }
         }
 
         // 关于创建人姓名的查询
         String creator = pSearchArgsModel.getCreator();
         if (creator != null && !"".equals(creator) && pSearchArgsModel.isMoHuSearch()) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.CREATOR);
             whereQuery.append(" like ?");
             setArgsList.add("%" + creator + "%");
         } else if (creator != null && !"".equals(creator) && !pSearchArgsModel.isMoHuSearch()) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.CREATOR);
             whereQuery.append(" = ?");
             setArgsList.add(creator);
@@ -273,7 +351,12 @@ public class ParseByOption {
         // 关于布控人手机号的查询
         String cPhone = pSearchArgsModel.getCphone();
         if (cPhone != null && !"".equals(cPhone)) {
-            whereQuery.append(" and ");
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.CPHONE);
             whereQuery.append(" = ?");
             setArgsList.add(cPhone);
@@ -281,18 +364,28 @@ public class ParseByOption {
 
         //
         // 关于是否是重点人员的查询
-        int important = pSearchArgsModel.getImportant();
-        if (important != -1) {
-            whereQuery.append(" and ");
+        Integer important = pSearchArgsModel.getImportant();
+        if (important != null) {
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.IMPORTANT);
             whereQuery.append(" = ?");
             setArgsList.add(important);
         }
 
         // 属于人员状态，建议迁入和常住人口的查询
-        int status= pSearchArgsModel.getStatus();
-        if (status != -1) {
-            whereQuery.append(" and ");
+        Integer status= pSearchArgsModel.getStatus();
+        if (status != null) {
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
             whereQuery.append(ObjectInfoTable.STATUS);
             whereQuery.append(" = ?");
             setArgsList.add(status);
@@ -311,10 +404,9 @@ public class ParseByOption {
         sql.append("upsert into ");
         sql.append(ObjectInfoTable.TABLE_NAME);
         sql.append("(");
-        sql.append(ObjectInfoTable.ROWKEY);
+        sql.append(ObjectInfoTable.ID);
 
-
-        setValues.add(person.get(ObjectInfoTable.ROWKEY));
+        setValues.add(person.get(ObjectInfoTable.ID));
         String name = (String) person.get(ObjectInfoTable.NAME);
         if (name != null) {
             sql.append(", ");
@@ -385,7 +477,7 @@ public class ParseByOption {
             setValues.add(status);
         }
         sql.append(") values(?");
-        StringBuffer tmp = new StringBuffer();
+        StringBuffer tmp = new StringBuffer("");
         for (int i = 0;i <= setValues.size() - 2; i++) {
             tmp.append(", ?");
         }
@@ -395,6 +487,4 @@ public class ParseByOption {
         sqlAndSetValues.put(new String(sql), setValues);
         return sqlAndSetValues;
     }
-
-
 }

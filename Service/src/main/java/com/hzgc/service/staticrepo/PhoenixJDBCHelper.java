@@ -6,9 +6,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 
 public class PhoenixJDBCHelper {
@@ -38,6 +36,26 @@ public class PhoenixJDBCHelper {
             conn = DriverManager.getConnection(phoenixJDBCURL);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void closeConnection(Connection conn, Statement pstm) {
+       closeConnection(conn, pstm, null);
+    }
+
+    public static void closeConnection(Connection conn, Statement pstm, ResultSet resultSet) {
+        try {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+            if (pstm != null) {
+                pstm.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
