@@ -28,7 +28,7 @@ public class CptureNumberImpTest1 {
         ipcid.add("3K01E84PAU00498");
         String startTime = "2018-03-10 08:00:00";
         String endTime = "2018-03-10 11:00:00";
-        CptureNumberImpl cptureNumber = new CptureNumberImpl();
+        CaptureNumberImpl cptureNumber = new CaptureNumberImpl();
         Map<String,Integer> map = cptureNumber.timeSoltNumber(ipcid,startTime,endTime);
         System.out.println(map);
 //        System.out.println(Integer.MAX_VALUE);
