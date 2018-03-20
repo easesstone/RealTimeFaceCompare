@@ -59,5 +59,5 @@ public interface ClusteringSearchService {
      * @param flag          yes is ignore, no is not ignore
      * @return true or false indict whether ignore successful
      */
-    boolean igoreClustering(List<String> clusterIdList, String time, String flag);
+    boolean ignoreClustering(List<String> clusterIdList, String time, String flag);
 }
