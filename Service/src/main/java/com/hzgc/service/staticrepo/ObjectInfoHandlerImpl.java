@@ -25,7 +25,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     private static Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
 
     public ObjectInfoHandlerImpl() {
-        NativeFunction.init();
     }
 
     @Override

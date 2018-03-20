@@ -25,7 +25,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
-//        NativeFunction.init();
     }
 
     /**

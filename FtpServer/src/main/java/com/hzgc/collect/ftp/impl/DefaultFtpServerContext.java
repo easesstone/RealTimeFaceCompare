@@ -57,10 +57,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultFtpServerContext implements FtpServerContext {
 
-    static {
-//        NativeFunction.init();
-    }
-
     private final Logger LOG = LoggerFactory
             .getLogger(DefaultFtpServerContext.class);
 
