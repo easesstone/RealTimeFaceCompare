@@ -17,7 +17,7 @@
     <bean id="CapturePictureSearchService" class="com.hzgc.service.dynamicrepo.CapturePictureSearchServiceImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CapturePictureSearchService" ref="CapturePictureSearchService" />
 
-    <bean id="DynamicPhotoServiceImpl" class="com.hzgc.service.dynamicrepo.DynamicPhotoServiceImpl"/>
+    <bean id="DynamicPhotoServiceImpl" class="com.hzgc.service.dynamicrepo.DynamicPhotoServiceHelper"/>
     <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.DynamicPhotoService" ref="DynamicPhotoServiceImpl"/>
     <!--静态信息库的接口，以及相应的实现类-->
     <!--对象信息的处理-->
@@ -34,6 +34,10 @@
 
     <bean id="CaptureNumberService" class="com.hzgc.service.dynamicrepo.CaptureNumberImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CaptureNumberService" ref="CaptureNumberService"/>
+<<<<<<< HEAD
+=======
+
+>>>>>>> multi-picture-search
     <bean id="ClusteringSearchService" class="com.hzgc.service.clustering.ClusteringSearchServiceImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.clustering.ClusteringSearchService" ref="ClusteringSearchService"/>
 </beans>

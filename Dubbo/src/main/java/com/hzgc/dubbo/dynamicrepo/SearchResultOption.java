@@ -1,7 +1,10 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
+<<<<<<< HEAD
 import java.util.Arrays;
+=======
+>>>>>>> multi-picture-search
 import java.util.List;
 
 public class SearchResultOption implements Serializable {
@@ -50,6 +53,7 @@ public class SearchResultOption implements Serializable {
     public void setLimit(int limit) {
         this.limit = limit;
     }
+<<<<<<< HEAD
 
     @Override
     public String toString() {
@@ -64,4 +68,6 @@ public class SearchResultOption implements Serializable {
                 + ", SingleResultOption is "
                 + (null == singleResultOptions ? "null" : Arrays.toString(singleResultOptions.toArray()));
     }
+=======
+>>>>>>> multi-picture-search
 }

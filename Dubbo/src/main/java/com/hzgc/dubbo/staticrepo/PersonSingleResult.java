@@ -1,12 +1,19 @@
 package com.hzgc.dubbo.staticrepo;
 
+<<<<<<< HEAD
 import java.io.Serializable;
+=======
+>>>>>>> multi-picture-search
 import java.util.List;
 
 /**
  * 多个人的的情况下，每个图片对应的
  */
+<<<<<<< HEAD
 public class PersonSingleResult implements Serializable {
+=======
+public class PersonSingleResult {
+>>>>>>> multi-picture-search
     private String searchRowkey;        // 子搜索Id
     private int searchNums;             // 搜索的总数
     private List<byte[]> searchPhotos;      // 图片

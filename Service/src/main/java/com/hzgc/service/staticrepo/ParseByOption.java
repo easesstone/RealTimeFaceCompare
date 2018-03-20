@@ -32,7 +32,11 @@ public class ParseByOption {
             // 最终需要返回的内容
             sql.append(sameFieldNeedReturn());
             if (pSearchArgsModel.isTheSameMan() && faceAttributeMap.size() == 1  && photos.size() == 1) {
+<<<<<<< HEAD
                 sql.append(", sim as sim");
+=======
+                sql.append(", sim");
+>>>>>>> multi-picture-search
                 sql.append(" from (select ");
                 sql.append(sameFieldNeedReturn());
                 sql.append(", FACECOMP(");
@@ -50,7 +54,10 @@ public class ParseByOption {
                             featureString.append(FaceFunction.floatArray2string(faceAttribute.getFeature()) + ",");
                         }
                     }
+<<<<<<< HEAD
                     count ++;
+=======
+>>>>>>> multi-picture-search
                 }
                 setValues.add(new String(featureString));
                 sql.append(") as sim from ");
@@ -181,7 +188,11 @@ public class ParseByOption {
      */
     private static StringBuffer sameFieldNeedReturn() {
         StringBuffer sameFieldReturn = new StringBuffer("");
+<<<<<<< HEAD
         sameFieldReturn.append(ObjectInfoTable.ROWKEY);
+=======
+        sameFieldReturn.append(ObjectInfoTable.ID);
+>>>>>>> multi-picture-search
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.PKEY);
         sameFieldReturn.append(", ");
@@ -300,6 +311,7 @@ public class ParseByOption {
         // 关于人员类型列表的查询
         List<String> pkeys = pSearchArgsModel.getPkeys();
         if (pkeys != null) {
+<<<<<<< HEAD
             if (pkeys.size() == 1) {
                 if (count > 0) {
                     whereQuery.append(" and ");
@@ -336,6 +348,29 @@ public class ParseByOption {
                         whereQuery.append(" = ?");
                         setArgsList.add(pkeys.get(i));
                     }
+=======
+            for (int i = 0;i < pkeys.size(); i++) {
+                if (i == pkeys.size() - 1) {
+                    whereQuery.append(" or ");
+                    whereQuery.append(ObjectInfoTable.PKEY);
+                    whereQuery.append(" = ?)");
+                    setArgsList.add(pkeys.get(i));
+                } else if (i == 0){
+                    if (count > 0) {
+                        whereQuery.append(" and (");
+                    } else {
+                        whereQuery.append(" where (");
+                    }
+                    count++;
+                    whereQuery.append(ObjectInfoTable.PKEY);
+                    whereQuery.append(" = ?");
+                    setArgsList.add(pkeys.get(i));
+                } else {
+                    whereQuery.append(" or ");
+                    whereQuery.append(ObjectInfoTable.PKEY);
+                    whereQuery.append(" = ?");
+                    setArgsList.add(pkeys.get(i));
+>>>>>>> multi-picture-search
                 }
             }
         }
@@ -420,9 +455,15 @@ public class ParseByOption {
         sql.append("upsert into ");
         sql.append(ObjectInfoTable.TABLE_NAME);
         sql.append("(");
+<<<<<<< HEAD
         sql.append(ObjectInfoTable.ROWKEY);
 
         setValues.add(person.get(ObjectInfoTable.ROWKEY));
+=======
+        sql.append(ObjectInfoTable.ID);
+
+        setValues.add(person.get(ObjectInfoTable.ID));
+>>>>>>> multi-picture-search
         String name = (String) person.get(ObjectInfoTable.NAME);
         if (name != null) {
             sql.append(", ");

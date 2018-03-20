@@ -1,16 +1,63 @@
-package com.hzgc.service.util;
+package com.hzgc.util.common.sort;
 
-<<<<<<< HEAD
-=======
 import org.apache.log4j.Logger;
 
->>>>>>> multi-picture-search
 import java.lang.reflect.Field;
 import java.text.NumberFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 public class ListUtils {
+    private static Logger LOG = Logger.getLogger(ListUtils.class);
+
+    /**
+     * 根据排序string来生成sql排序，多个排序字段用逗号隔开。'+'表示升序，'-'表示降序，如+id,-name
+     *
+     * @param sortParams 排序字符串
+     * @return SortParam 排序入参对象
+     */
+    public static SortParam getOrderStringBySort(String sortParams) {
+        SortParam sortParam = new SortParam();
+        if (null != sortParams && sortParams.length() > 0) {
+            StringBuilder orderString = new StringBuilder();
+            String[] orderStringList = sortParams.split(",");
+            for (String s : orderStringList) {
+                char orderTypeChar = s.charAt(0);
+                // 降序
+                if ("-".toCharArray()[0] == orderTypeChar) {
+                    orderString.append(s.substring(1));
+                    orderString.append(" ");
+                    orderString.append("false");
+                }
+                // 升序
+                else {
+                    orderString.append(s.substring(1));
+                    orderString.append(" ");
+                    orderString.append("true");
+                }
+                if (!s.equals(orderStringList[orderStringList.length - 1])) {
+                    orderString.append(",");
+                }
+            }
+
+            String[] splitStr = orderString.toString().split(",");
+            String[] sortNameArr = new String[splitStr.length];
+            boolean[] isAscArr = new boolean[splitStr.length];
+            for (int i = 0; i < splitStr.length; i++) {
+                String[] oneParam = splitStr[i].split(" ");
+                sortNameArr[i] = oneParam[0];
+                isAscArr[i] = oneParam[1].equals("true");
+            }
+            sortParam.setSortNameArr(sortNameArr);
+            sortParam.setIsAscArr(isAscArr);
+        } else {
+            LOG.info("sortParam is null");
+            sortParam = null;
+        }
+        return sortParam;
+    }
 
     /*
      * 对list的元素按照多个属性名称排序,
@@ -21,50 +68,8 @@ public class ListUtils {
      * @param isAsc       true升序，false降序
      */
     public static <CapturedPicture> void sort(List<CapturedPicture> list, final boolean isAsc, final String... sortNameArr) {
-        list.sort((a, b) -> {
-            int ret = 0;
-            if (a == null && b == null) {
-                return 0;
-            }
-            if (a == null) {
-                return -1;
-            }
-            if (b == null) {
-                return 1;
-            }
-            try {
-                for (String sortName : sortNameArr) {
-                    ret = ListUtils.compareObject(sortName, isAsc, a, b);
-                    if (0 != ret) {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return ret;
-        });
-    }
-
-    /**
-     * 给list的每个属性都指定是升序还是降序
-     *
-     * @param list        排序对象
-     * @param sortNameArr 参数数组
-     * @param typeArr     每个属性对应的升降序数组， true升序，false降序
-     */
-
-<<<<<<< HEAD
-    public static <CapturedPicture> void sort(List<CapturedPicture> list, final List<String> sortNameArr, final List<Boolean> typeArr) {
-        if (sortNameArr.size() != typeArr.size()) {
-=======
-    public static <CapturedPicture> void sort(List<CapturedPicture> list, final String[] sortNameArr, final boolean[] typeArr) {
-        if (sortNameArr.length != typeArr.length) {
->>>>>>> multi-picture-search
-            throw new RuntimeException("属性数组元素个数和升降序数组元素个数不相等");
-        }
-        if (list.size() > 1) {
-            list.sort((a, b) -> {
+        Collections.sort(list, new Comparator<CapturedPicture>() {
+            public int compare(CapturedPicture a, CapturedPicture b) {
                 int ret = 0;
                 if (a == null && b == null) {
                     return 0;
@@ -76,21 +81,57 @@ public class ListUtils {
                     return 1;
                 }
                 try {
-<<<<<<< HEAD
-                    for (int i = 0; i < sortNameArr.size(); i++) {
-                        ret = ListUtils.compareObject(sortNameArr.get(i), typeArr.get(i), a, b);
-=======
-                    for (int i = 0; i < sortNameArr.length; i++) {
-                        ret = ListUtils.compareObject(sortNameArr[i], typeArr[i], a, b);
->>>>>>> multi-picture-search
+                    for (String sortName : sortNameArr) {
+                        ret = ListUtils.compareObject(sortName, isAsc, a, b);
                         if (0 != ret) {
-                            break;//如果两个数据根据某个字段相等，则根据下一个字段进行比较
+                            break;
                         }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return ret;
+            }
+        });
+    }
+
+    /**
+     * 给list的每个属性都指定是升序还是降序
+     *
+     * @param list        排序对象
+     * @param sortNameArr 参数数组
+     * @param typeArr     每个属性对应的升降序数组， true升序，false降序
+     */
+
+    public static <CapturedPicture> void sort(List<CapturedPicture> list, final String[] sortNameArr, final boolean[] typeArr) {
+        if (sortNameArr.length != typeArr.length) {
+            throw new RuntimeException("属性数组元素个数和升降序数组元素个数不相等");
+        }
+        if (list.size() > 1) {
+            Collections.sort(list, new Comparator<CapturedPicture>() {
+                public int compare(CapturedPicture a, CapturedPicture b) {
+                    int ret = 0;
+                    if (a == null && b == null) {
+                        return 0;
+                    }
+                    if (a == null) {
+                        return -1;
+                    }
+                    if (b == null) {
+                        return 1;
+                    }
+                    try {
+                        for (int i = 0; i < sortNameArr.length; i++) {
+                            ret = ListUtils.compareObject(sortNameArr[i], typeArr[i], a, b);
+                            if (0 != ret) {
+                                break;//如果两个数据根据某个字段相等，则根据下一个字段进行比较
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return ret;
+                }
             });
         }
     }

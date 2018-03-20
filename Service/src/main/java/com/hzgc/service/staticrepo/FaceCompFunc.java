@@ -16,11 +16,18 @@ import java.util.List;
 @FunctionParseNode.BuiltInFunction(name = FaceCompFunc.NAME,  args = {
         @FunctionParseNode.Argument(allowedTypes = {PFloatArray.class}),
         @FunctionParseNode.Argument(allowedTypes = {PVarchar.class})})
+<<<<<<< HEAD
 
 public class FaceCompFunc extends ScalarFunction {
     public static final String NAME = "FACECOMP";
 
     private List<float[]> thePassfeatures = new ArrayList<>();
+=======
+public class FaceCompFunc extends ScalarFunction {
+    public static final String NAME = "FACECOMP";
+
+    private List<float[]> thePassfeatures = new ArrayList<float[]>();
+>>>>>>> multi-picture-search
 
     public FaceCompFunc(){
     }

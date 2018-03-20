@@ -47,6 +47,7 @@ public interface ObjectInfoHandler {
      */
     ObjectSearchResult searchByRowkey(String rowkey);
 
+<<<<<<< HEAD
 
     /**
      * 根据rowkey 返回人员的照片
@@ -56,6 +57,8 @@ public interface ObjectInfoHandler {
     byte[] getPhotoByKey(String rowkey);
 
 
+=======
+>>>>>>> multi-picture-search
     /**
      * 根据传过来的搜索rowkey 返回搜索记录 （外） （李第亮）
      * @param  searchRecordOpts 历史查询参数

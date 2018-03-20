@@ -86,7 +86,10 @@ public class DynamicTable implements Serializable {
     //
     public static final String CLUSTERING_ID = "clusterid";
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> multi-picture-search
     static final String GROUP_FIELD = "id";
 
     //

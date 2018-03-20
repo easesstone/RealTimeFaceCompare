@@ -2,8 +2,11 @@ package com.hzgc.service.staticreposuite;
 
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+<<<<<<< HEAD
 import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
 import com.hzgc.dubbo.staticrepo.StaticSortParam;
+=======
+>>>>>>> multi-picture-search
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
@@ -33,7 +36,11 @@ public class StaticJDBCSuite {
     @Test
     public void testAddObjectInfo() throws IOException {
         Map<String, Object> person  = new HashMap<>();
+<<<<<<< HEAD
         byte[] phtoto = FaceFunction.getPictureBytes(ClassLoader.getSystemResource("2018_02_01_20_06_03_9288_1.jpg").getPath());
+=======
+        byte[] phtoto = FaceFunction.inputPicture(ClassLoader.getSystemResource("2018_02_01_20_06_03_9288_1.jpg").getPath());
+>>>>>>> multi-picture-search
         System.out.println("photo" + phtoto.toString());
         FaceAttribute faceAttribute = FaceFunction.featureExtract(phtoto);
         float[] feature = faceAttribute.getFeature();
@@ -69,11 +76,16 @@ public class StaticJDBCSuite {
     @Test
     public void testUpdateObjectInfo() {
         Map<String, Object> person = new HashMap<>();
+<<<<<<< HEAD
         person.put(ObjectInfoTable.ROWKEY, "00834612140f491990efa13d573bca4d");
+=======
+        person.put(ObjectInfoTable.ID, "00834612140f491990efa13d573bca4d");
+>>>>>>> multi-picture-search
         person.put(ObjectInfoTable.NAME, "wangnimaenha");
         person.put(ObjectInfoTable.PLATFORMID, "0042");
         infoHandler.updateObjectInfo(person);
     }
+<<<<<<< HEAD
 
     @Test
     public void testGetObjectInfo() {
@@ -118,4 +130,6 @@ public class StaticJDBCSuite {
 
 
 
+=======
+>>>>>>> multi-picture-search
 }

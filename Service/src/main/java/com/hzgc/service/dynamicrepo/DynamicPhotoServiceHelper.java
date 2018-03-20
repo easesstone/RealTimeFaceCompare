@@ -20,7 +20,11 @@ import static com.hzgc.util.common.ObjectUtil.objectToByte;
 /**
  * 动态库实现类
  */
+<<<<<<< HEAD
 class DynamicPhotoServiceHelper {
+=======
+public class DynamicPhotoServiceHelper {
+>>>>>>> multi-picture-search
     private static Logger LOG = Logger.getLogger(DynamicPhotoServiceHelper.class);
 
     /**
@@ -63,6 +67,7 @@ class DynamicPhotoServiceHelper {
             if (result != null) {
                 byte[] searchMessage = result.getValue(DynamicTable.SEARCHRES_COLUMNFAMILY, DynamicTable.SEARCHRES_COLUMN_SEARCHMESSAGE);
                 searchResult = ((SearchResult) ObjectUtil.byteToObject(searchMessage));
+<<<<<<< HEAD
                 if (searchResult != null) {
                     searchResult.setSearchId(searchId);
                 }
@@ -70,6 +75,11 @@ class DynamicPhotoServiceHelper {
             } else {
                 LOG.info("Get searchResult null from table_searchRes, search id is:" + searchId);
                 return null;
+=======
+                searchResult.setSearchId(searchId);
+            } else {
+                LOG.info("Get searchResult null from table_searchRes, search id is:" + searchId);
+>>>>>>> multi-picture-search
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,6 +98,7 @@ class DynamicPhotoServiceHelper {
      */
     static void sortByParamsAndPageSplit(SearchResult result, SearchResultOption option) {
         List<SortParam> paramList = option.getSortParam();
+<<<<<<< HEAD
         List<Boolean> isAscArr = new ArrayList<>();
         List<String> sortNameArr = new ArrayList<>();
         for (SortParam aParamList : paramList) {
@@ -107,6 +118,27 @@ class DynamicPhotoServiceHelper {
                 case SIMDASC:
                     isAscArr.add(true);
                     sortNameArr.add("similarity");
+=======
+        boolean[] isAscArr = new boolean[paramList.size()];
+        String[] sortNameArr = new String[paramList.size()];
+        for (int i = 0; i < paramList.size(); i++) {
+            switch (paramList.get(i)) {
+                case TIMEASC:
+                    isAscArr[i] = true;
+                    sortNameArr[i] = "timeStamp";
+                    break;
+                case TIMEDESC:
+                    isAscArr[i] = false;
+                    sortNameArr[i] = "timeStamp";
+                    break;
+                case SIMDESC:
+                    isAscArr[i] = false;
+                    sortNameArr[i] = "similarity";
+                    break;
+                case SIMDASC:
+                    isAscArr[i] = true;
+                    sortNameArr[i] = "similarity";
+>>>>>>> multi-picture-search
                     break;
             }
         }
