@@ -5,7 +5,7 @@ import java.util.{Properties, UUID}
 
 import com.google.common.base.Stopwatch
 import com.hzgc.cluster.util.PropertiesUtils
-import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
+import com.hzgc.collect.expand.processer.{FaceObject, FaceObjectDecoder}
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
 import kafka.serializer.StringDecoder
@@ -14,9 +14,9 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SaveMode, SparkSession}
-import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
+import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 
 /**
   * Created by Administrator on 2017-12-14.

@@ -3,11 +3,12 @@ package com.hzgc.cluster.alarm
 import java.text.SimpleDateFormat
 import java.util
 import java.util.Date
+
 import com.google.gson.Gson
 import com.hzgc.cluster.message.{AddAlarmMessage, Item, RecognizeAlarmMessage}
 import com.hzgc.cluster.util.PropertiesUtils
-import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
-import com.hzgc.ftpserver.util.FtpUtils
+import com.hzgc.collect.expand.processer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
+import com.hzgc.collect.expand.util.FtpUtils
 import com.hzgc.jni.FaceFunction
 import com.hzgc.service.device.{DeviceTable, DeviceUtilImpl}
 import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
@@ -15,6 +16,7 @@ import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Durations, StreamingContext}
+
 import scala.collection.JavaConverters
 import scala.collection.mutable.ArrayBuffer
 
@@ -128,10 +130,10 @@ object FaceAlarmJob {
             val ftpMess = FtpUtils.getFtpUrlMessage(result._1)
             recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
             recognizeAlarmMessage.setDynamicDeviceID(result._2)
-            recognizeAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
+            recognizeAlarmMessage.setSmallPictureURL(ftpMess.getFilePath)
             recognizeAlarmMessage.setAlarmTime(dateStr)
-            recognizeAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).get("filepath"))
-            recognizeAlarmMessage.setHostName(ftpMess.get("ip"))
+            recognizeAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).getFilePath)
+            recognizeAlarmMessage.setHostName(ftpMess.getIp)
             recognizeAlarmMessage.setItems(itemsResult.toArray)
             rocketMQProducer.send(result._3,
               "alarm_" + DeviceTable.IDENTIFY.toString,
@@ -145,10 +147,10 @@ object FaceAlarmJob {
             val ftpMess = FtpUtils.getFtpUrlMessage(result._1)
             addAlarmMessage.setAlarmTime(dateStr)
             addAlarmMessage.setAlarmType(DeviceTable.ADDED.toString)
-            addAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
-            addAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).get("filepath"))
+            addAlarmMessage.setSmallPictureURL(ftpMess.getFilePath)
+            addAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).getFilePath)
             addAlarmMessage.setDynamicDeviceID(result._2)
-            addAlarmMessage.setHostName(ftpMess.get("ip"))
+            addAlarmMessage.setHostName(ftpMess.getIp)
             rocketMQProducer.send(result._3,
               "alarm_" + DeviceTable.ADDED.toString,
               result._1,
