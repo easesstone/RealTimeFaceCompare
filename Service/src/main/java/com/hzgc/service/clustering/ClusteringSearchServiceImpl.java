@@ -4,16 +4,24 @@ import com.hzgc.dubbo.clustering.AlarmInfo;
 import com.hzgc.dubbo.clustering.ClusteringAttribute;
 import com.hzgc.dubbo.clustering.ClusteringInfo;
 import com.hzgc.dubbo.clustering.ClusteringSearchService;
+<<<<<<< HEAD
+=======
+import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
+>>>>>>> d0d3db2f87105287ccd85fcb08243619c8f00060
 import com.hzgc.service.dynamicrepo.DynamicTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
 import com.hzgc.util.sort.ListUtils;
 import com.hzgc.util.sort.SortParam;
+<<<<<<< HEAD
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+=======
+import org.apache.hadoop.hbase.client.*;
+>>>>>>> d0d3db2f87105287ccd85fcb08243619c8f00060
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -25,6 +33,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+
+import static com.hzgc.util.common.ObjectUtil.byteToObject;
+import static com.hzgc.util.common.ObjectUtil.objectToByte;
 
 /**
  * 告警聚类结果查询接口实现(彭聪)
@@ -46,7 +58,11 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
     @Override
     public ClusteringInfo clusteringSearch(String region, String time, int start, int limit, String sortParam) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
+<<<<<<< HEAD
         Get get = new Get(Bytes.toBytes(time + "-" + region));
+=======
+        Get get = new Get(Bytes.toBytes(time + region));
+>>>>>>> d0d3db2f87105287ccd85fcb08243619c8f00060
         List<ClusteringAttribute> clusteringList = new ArrayList<>();
         try {
             Result result = clusteringInfoTable.get(get);
@@ -200,7 +216,11 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      * @return
      */
     @Override
+<<<<<<< HEAD
     // TODO: 18-3-12 ke you hua
+=======
+    // TODO: 18-3-12 ke you hua 
+>>>>>>> d0d3db2f87105287ccd85fcb08243619c8f00060
     public boolean igoreClustering(List<String> clusterIdList, String time, String flag) {
         Table clusteringInfoTable = HBaseHelper.getTable(ClusteringTable.TABLE_ClUSTERINGINFO);
         Get get = new Get(Bytes.toBytes(time));
