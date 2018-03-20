@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class FaceFunction {
     private static final String SPLIT = ":";
 
-    public static byte[] inputPicture(String picPath) {
+    public static byte[] getPictureBytes(String picPath) {
         File imageFile;
         ByteArrayOutputStream baos = null;
         FileInputStream fis = null;
@@ -28,7 +28,10 @@ public class FaceFunction {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assert baos != null;
+        //assert baos != null;
+        if (baos == null) {
+            return null;
+        }
         return baos.toByteArray();
     }
 
@@ -38,7 +41,7 @@ public class FaceFunction {
      * @param imageData 将图片转为字节数组传入
      * @return 输出float[]形式的特征值
      */
-    public synchronized static FaceAttribute featureExtract(byte[] imageData) {
+    public static FaceAttribute featureExtract(byte[] imageData) {
         BufferedImage faceImage;
         try {
             if (null != imageData) {
@@ -77,7 +80,7 @@ public class FaceFunction {
      * @param imagePath 传入图片的绝对路径
      * @return 返回float[]形式的特征值
      */
-    public synchronized static FaceAttribute featureExtract(String imagePath) {
+    public static FaceAttribute featureExtract(String imagePath) {
         File imageFile;
         ByteArrayInputStream bais = null;
         ByteArrayOutputStream baos = null;

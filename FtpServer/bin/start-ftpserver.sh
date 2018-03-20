@@ -68,7 +68,7 @@ function start_ftpserver()
         mkdir $LOG_DIR;
     fi
     echo "$SERVER_NAME:$SERVER_PORT started ..."
-    nohup java -server -Xms2g -Xmx4g  -XX:PermSize=512m -XX:MaxPermSize=512m  -classpath $CONF_DIR:$LIB_JARS com.hzgc.ftpserver.FTP > ${LOG_FILE} 2>&1 &
+    nohup java -server -Xms2g -Xmx4g  -XX:PermSize=512m -XX:MaxPermSize=512m  -classpath $CONF_DIR:$LIB_JARS com.hzgc.collect.FTP > ${LOG_FILE} 2>&1 &
 }
 
 #####################################################################

@@ -25,7 +25,7 @@ import org.apache.spark.sql.SparkSession
   */
 object LoadParquetFile {
   val LOG = Logger.getLogger(LoadParquetFile.getClass)
-  Logger.getLogger("org.apache.spark").setLevel(Level.WARN) //设置输出级别为Warn级别
+//  Logger.getLogger("org.apache.spark").setLevel(Level.WARN) //设置输出级别为Warn级别
 
   def main(args: Array[String]): Unit = {
     if (args.length != 3) {
