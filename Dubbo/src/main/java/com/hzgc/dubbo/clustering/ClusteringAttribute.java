@@ -34,6 +34,10 @@ public class ClusteringAttribute implements Serializable {
      * 次数
      */
     private int count;
+    /**
+     * ignore flag,yes
+     */
+    private String flag;
 
     public String getClusteringId() {
         return clusteringId;
@@ -91,5 +95,11 @@ public class ClusteringAttribute implements Serializable {
         this.count = count;
     }
 
+    public String getFlag() {
+        return flag;
+    }
 
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
 }
