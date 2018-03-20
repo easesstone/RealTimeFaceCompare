@@ -43,7 +43,7 @@ object FaceAddAlarmJob {
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
-    val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    val df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     val kafkaDynamicPhoto = KafkaUtils.
       createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
     val jsonResult = kafkaDynamicPhoto.

@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class CptureNumberImplTimer {
+public class CaptureNumberImplTimer {
     public static void main(String[] args) {
         indexTable();
     }
@@ -48,7 +48,7 @@ public class CptureNumberImplTimer {
                     //查询动态库中数据
                     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
                     boolQueryBuilder.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, list));
-                    boolQueryBuilder.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lt(endTime));
+                    boolQueryBuilder.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
                     SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
                             .setTypes(type)
                             .setQuery(boolQueryBuilder);
@@ -69,7 +69,7 @@ public class CptureNumberImplTimer {
             }
         };
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(runnable, 0, 60 * 60, TimeUnit.SECONDS);
+        service.scheduleAtFixedRate(runnable,0, 60 * 60, TimeUnit.SECONDS);
     }
 
     /**

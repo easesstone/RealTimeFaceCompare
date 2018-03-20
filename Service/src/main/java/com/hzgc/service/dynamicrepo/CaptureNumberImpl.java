@@ -25,7 +25,7 @@ import java.util.*;
  * 2、staticNumberService：查询es的静态库，返回每个平台下（对应platformId），每个对象库（对应pkey）下的人员的数量
  * 3、timeSoltNumber：根据入参ipcid的list、startTime和endTime去es查询到相应的值
  */
-public class CptureNumberImpl implements CaptureNumberService {
+public class CaptureNumberImpl implements CaptureNumberService {
 
     /**
      * 查询es的动态库，返回总抓拍数量和今日抓拍数量
@@ -107,7 +107,7 @@ public class CptureNumberImpl implements CaptureNumberService {
      * @return 返回某段时间内，这些ipcid的抓拍的总数量
      */
     @Override
-    public Map<String, Integer> timeSoltNumber(List<String> ipcids, String startTime, String endTime) {
+    public synchronized Map<String, Integer> timeSoltNumber(List<String> ipcids, String startTime, String endTime) {
         List<String> times = new ArrayList<>();
         Map<String, Integer> map = new HashMap<>();
         BoolQueryBuilder totolQuery = QueryBuilders.boolQuery();

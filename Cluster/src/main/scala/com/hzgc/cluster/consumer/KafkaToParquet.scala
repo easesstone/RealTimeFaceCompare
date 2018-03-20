@@ -14,9 +14,9 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
-import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 
 /**
   * Created by Administrator on 2017-12-14.
@@ -78,7 +78,7 @@ object KafkaToParquet {
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
       rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append)
-               .parquet(storeAddress)
+               .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-",""))
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
