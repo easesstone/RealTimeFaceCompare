@@ -67,6 +67,17 @@ function merge_parquet()
     --master local[*] \
     --driver-memory 4g \
 ${COMMMON_DIR}/lib/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} ${dateString}>> ${LOG_FILE} 2>&1 &
+
+if [ $? -eq 0 ];then
+    echo "Schema merge final table crash success!!!"
+    echo "==================================================="  | tee -a ${LOG_FILE}
+    echo "$(date "+%Y-%m-%d  %H:%M:%S")  Schema merge final table crash Success!"  | tee  -a  ${LOG_FILE}
+else
+     echo "==================================================="  | tee -a ${LOG_FILE}
+     echo "$(date "+%Y-%m-%d  %H:%M:%S")  Schema merge final table crash  Failure!"     | tee  -a  ${LOG_FILE}
+     exit 1
+fi
+
 }
 
 merge_parquet
