@@ -23,7 +23,7 @@ public interface ClusteringSearchService {
      *
      * @param clusterId 聚类ID
      * @param time      聚类时间
-     * @param start     分页查询开始行a
+     * @param start     分页查询开始行
      * @param limit     查询条数
      * @param sortParam 排序参数（默认时间先后排序）
      * @return 返回该类下面所以告警信息

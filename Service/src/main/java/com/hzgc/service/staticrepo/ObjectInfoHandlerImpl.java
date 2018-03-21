@@ -6,10 +6,7 @@ import com.hzgc.jni.FaceFunction;
 import com.hzgc.jni.NativeFunction;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
-<<<<<<< HEAD
 import com.hzgc.util.common.ObjectUtil;
-=======
->>>>>>> multi-picture-search
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
@@ -19,27 +16,19 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-<<<<<<< HEAD
 import java.util.stream.Collectors;
-=======
-
->>>>>>> multi-picture-search
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
 
-<<<<<<< HEAD
     private static Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
 
-=======
->>>>>>> multi-picture-search
     public ObjectInfoHandlerImpl() {
     }
 
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
-<<<<<<< HEAD
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
@@ -47,14 +36,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("the rowkey off this add person is: " + person.getId());
 
         String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY+ ", " + ObjectInfoTable.NAME  + ", "
-=======
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        long start = System.currentTimeMillis();
-        PersonObject person = PersonObject.mapToPersonObject(personObject);
-        LOG.info("the rowkey off this add person is: " + person.getId());
-
-        String sql = "upsert into objectinfo(" + ObjectInfoTable.ID+ ", " + ObjectInfoTable.NAME  + ", "
->>>>>>> multi-picture-search
                 + ObjectInfoTable.PLATFORMID + ", " + ObjectInfoTable.TAG + ", " + ObjectInfoTable.PKEY + ", "
                 + ObjectInfoTable.IDCARD + ", " + ObjectInfoTable.SEX + ", " + ObjectInfoTable.PHOTO + ", "
                 + ObjectInfoTable.FEATURE + ", " + ObjectInfoTable.REASON + ", " + ObjectInfoTable.CREATOR + ", "
@@ -69,11 +50,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
-<<<<<<< HEAD
-=======
-        } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm);
->>>>>>> multi-picture-search
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         return 0;
@@ -81,17 +57,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public int deleteObjectInfo(List<String> rowkeys) {
-<<<<<<< HEAD
         LOG.info("rowKeys: " + rowkeys);
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
         String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
-=======
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        // 获取table 对象，通过封装HBaseHelper 来获取
-        long start = System.currentTimeMillis();
-        String sql = "delete from objectinfo where " + ObjectInfoTable.ID  +" = ?";
->>>>>>> multi-picture-search
         PreparedStatement pstm = null;
         try {
             pstm = conn.prepareStatement(sql);
@@ -101,22 +70,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 if (i % 10 == 0) {
                     conn.commit();
                 }
-<<<<<<< HEAD
             }
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
-        }
-        LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
-=======
-            }
-            conn.commit();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 1;
-        } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
         return 0;
@@ -127,47 +85,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
      * @return 更新成功与否的标志，0成功，1失败
      */
     @Override
-    public int updateObjectInfo(Map<String, Object> personObject) {
-        long start = System.currentTimeMillis();
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        String thePassId = (String) personObject.get(ObjectInfoTable.ID);
-        if (thePassId == null) {
-            LOG.info("the pass Id can not be null....");
-            return 1;
-        }
-        PreparedStatement pstm = null;
-        try {
-            Map<String, List<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
-            String sql = null;
-            List<Object> setValues = new ArrayList<>();
-            for (Map.Entry<String, List<Object>> entry : sqlAndSetValues.entrySet()) {
-                sql = entry.getKey();
-                setValues = entry.getValue();
-            }
-            pstm = conn.prepareStatement(sql);
-            for (int i = 0; i < setValues.size(); i++) {
-                pstm.setObject(i+1, setValues.get(i));
-            }
-            pstm.executeUpdate();
-            conn.commit();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 1;
-        } finally {
-            PhoenixJDBCHelper.closeConnection(null, pstm);
-        }
-        LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
->>>>>>> multi-picture-search
-        return 0;
-    }
-
-    /**
-     * @param personObject K-V 对，里面存放的是字段和值之间的一一对应关系，参考添加里的描述
-     * @return 更新成功与否的标志，0成功，1失败
-     */
-    @Override
-<<<<<<< HEAD
     public int updateObjectInfo(Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
@@ -207,16 +124,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         PersonObject person;
         ResultSet resultSet = null;
         try {
-=======
-    public ObjectSearchResult searchByRowkey(String id) {
-        long start = System.currentTimeMillis();
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        PreparedStatement pstm = null;
-        ObjectSearchResult result = new ObjectSearchResult();
-        PersonObject person;
-        ResultSet resultSet = null;
-        try {
->>>>>>> multi-picture-search
             String sql = "select * from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, id);
@@ -234,11 +141,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             result.setSearchStatus(1);
             e.printStackTrace();
-<<<<<<< HEAD
-=======
-        } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
->>>>>>> multi-picture-search
         }
         LOG.info("获取一条数据的时间是：" + (System.currentTimeMillis() - start));
         return result;
@@ -248,32 +150,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
         LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
-<<<<<<< HEAD
-=======
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
->>>>>>> multi-picture-search
         // 总的结果
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
         objectSearchResult.setSearchTotalId(searchTotalId);
         List<PersonSingleResult> finalResults = new ArrayList<>();
 
-<<<<<<< HEAD
         //封装的sql 以及需要设置的值
         Map<String, List<Object>> finalSqlAndValues = ParseByOption.getSqlFromPSearchArgsModel(conn, pSearchArgsModel);
 
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
 
-=======
-
-        //封装的sql 以及需要设置的值
-        Map<String, List<Object>> finalSqlAndValues = ParseByOption.getSqlFromPSearchArgsModel(conn, pSearchArgsModel);
-
-        PreparedStatement pstm = null;
-        ResultSet resultSet = null;
-
->>>>>>> multi-picture-search
         // 取出封装的sql 以及需要设置的值，进行sql 查询
         if (finalSqlAndValues == null) {
             objectSearchResult.setSearchStatus(1);
@@ -296,11 +184,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 if (photos != null && photos.size() != 0
                         && faceAttributeMap != null && faceAttributeMap.size() != 0
                         && faceAttributeMap.size() == photos.size()) {
-<<<<<<< HEAD
                     if (!pSearchArgsModel.isTheSameMan()) {  // 不是同一个人
-=======
-                    if (pSearchArgsModel.isTheSameMan()) {  // 不是同一个人
->>>>>>> multi-picture-search
                         // 分类的人
                         Map<String, List<PersonObject>> personObjectsMap = new HashMap<>();
 
@@ -315,11 +199,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                 personObjects.clear();
                             }
                             personObject = new PersonObject();
-<<<<<<< HEAD
                             personObject.setId(resultSet.getString(ObjectInfoTable.ROWKEY));
-=======
-                            personObject.setId(resultSet.getString(ObjectInfoTable.ID));
->>>>>>> multi-picture-search
                             personObject.setPkey(resultSet.getString(ObjectInfoTable.PKEY));
                             personObject.setPlatformid(resultSet.getString(ObjectInfoTable.PLATFORMID));
                             personObject.setName(resultSet.getString(ObjectInfoTable.NAME));
@@ -362,19 +242,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         finalResults.add(personSingleResult);
                     }
                 } else { // 没有图片的情况下
-                   PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
-                   personSingleResult.setSearchRowkey(searchTotalId);
+                    PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
+                    personSingleResult.setSearchRowkey(searchTotalId);
                     //封装personSingleResult
-                   new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
-                   finalResults.add(personSingleResult);
+                    new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
+                    finalResults.add(personSingleResult);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-<<<<<<< HEAD
-=======
-            } finally {
-                PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
->>>>>>> multi-picture-search
             }
         }
 
@@ -383,37 +258,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
         LOG.info("总的搜索时间是: " + (System.currentTimeMillis() - start));
         new ObjectInfoHandlerTool().saveSearchRecord(conn, objectSearchResult);
-<<<<<<< HEAD
         Integer pageSize = pSearchArgsModel.getPageSize();
         Integer startCount = pSearchArgsModel.getStart();
         if (startCount != null && pageSize != null) {
             new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
-=======
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
->>>>>>> multi-picture-search
         }
         return objectSearchResult;
     }
 
-<<<<<<< HEAD
-=======
-    @Override
-    public String getFeature(String tag, byte[] photo) {
-        long start = System.currentTimeMillis();
-        float[] floatFeature = FaceFunction.featureExtract(photo).getFeature();
-        String feature = "";
-        if (floatFeature != null && floatFeature.length == 512) {
-            feature = FaceFunction.floatArray2string(floatFeature);
-        }
-        LOG.info("getFeature, time: " + (System.currentTimeMillis() - start));
-        return feature;
-    }
->>>>>>> multi-picture-search
 
     @Override
     public byte[] getPhotoByKey(String rowkey) {
@@ -434,7 +286,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         return photo;
     }
-<<<<<<< HEAD
 
 
     /**
@@ -550,6 +401,4 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public byte[] getSearchPhoto(String rowkey) {
         return  null;
     }
-=======
->>>>>>> multi-picture-search
 }
