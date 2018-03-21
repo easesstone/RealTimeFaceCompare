@@ -242,11 +242,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         finalResults.add(personSingleResult);
                     }
                 } else { // 没有图片的情况下
-                    PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
-                    personSingleResult.setSearchRowkey(searchTotalId);
+                   PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
+                   personSingleResult.setSearchRowkey(searchTotalId);
                     //封装personSingleResult
-                    new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
-                    finalResults.add(personSingleResult);
+                   new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
+                   finalResults.add(personSingleResult);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
