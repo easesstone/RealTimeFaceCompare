@@ -19,10 +19,6 @@ public interface CapturePictureSearchService {
     SearchResult search(SearchOption option);
 
     /**
-<<<<<<< HEAD
-=======
-     *
->>>>>>> multi-picture-search
      * @param resultOption 历史结果查询参数对象
      * @return SearchResult对象
      */
