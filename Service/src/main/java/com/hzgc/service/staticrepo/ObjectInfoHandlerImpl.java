@@ -231,7 +231,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                             List<byte[]> photosTmp = new ArrayList<>();
                             photosTmp.add(photos.get(key));
                             personSingleResult.setSearchPhotos(photosTmp);
-                            finalResults.add(personSingleResult);
+                            if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
+                                finalResults.add(personSingleResult);
+                            }
                         }
                     } else {  // 是同一个人
                         PersonSingleResult personSingleResult = new PersonSingleResult();
@@ -244,17 +246,23 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         personSingleResult.setSearchPhotos(searchPhotos);
                         // 封装personSingleResult
                         new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, true);
-                        finalResults.add(personSingleResult);
+                        if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
+                            finalResults.add(personSingleResult);
+                        }
                     }
                 } else { // 没有图片的情况下
                    PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
                    personSingleResult.setSearchRowkey(searchTotalId);
                     //封装personSingleResult
                    new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
-                   finalResults.add(personSingleResult);
+                    if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
+                        finalResults.add(personSingleResult);
+                    }
                 }
             } catch (SQLException e) {
+                objectSearchResult.setSearchStatus(1);
                 e.printStackTrace();
+                return objectSearchResult;
             }
         }
 
