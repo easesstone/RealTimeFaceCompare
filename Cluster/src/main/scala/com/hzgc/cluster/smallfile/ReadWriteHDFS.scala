@@ -95,7 +95,7 @@ object ReadWriteHDFS {
                     && finalPathString.contains(dateString) && !fileStatus.getPath.toString.contains("_temporary/")) {
                     val cos : ContentSummary = fs.getContentSummary(new Path(finalPathString))
                     val sizeM : Long = cos.getLength/1024/1024
-                    if (sizeM > 200 && sizeM < 300) {
+                    if (sizeM > 13 && sizeM < 16) {
 
                     } else {
                         files.add(finalPathString)

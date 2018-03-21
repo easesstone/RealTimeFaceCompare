@@ -7,9 +7,9 @@ object SmallFileUtils {
     def takePartition(src : String, fs : FileSystem) : Int = {
         val cos : ContentSummary = fs.getContentSummary(new Path(src))
         val sizeM : Long = cos.getLength/1024/1024
-        val parNum : Int = sizeM/256 match {
-            case 0 => 1
-            case _ => (sizeM/256).toInt
+        val parNum : Int = sizeM/14.5 match {
+            case 0 => (sizeM/14.5).toInt
+            case _ => ((sizeM/14.5).toInt + 1)
         }
         parNum
     }
