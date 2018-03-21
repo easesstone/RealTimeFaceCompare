@@ -44,9 +44,10 @@ public interface ClusteringSearchService {
 
     /**
      * delete a clustering
+     *
      * @param clusterIdList clusteringId include region information
-     * @param time clustering time
-     * @param flag yes: delete the ignored clustering, no :delete the not ignored clustering
+     * @param time          clustering time
+     * @param flag          yes: delete the ignored clustering, no :delete the not ignored clustering
      * @return true or false,indict whether delete successful
      */
     boolean deleteClustering(List<String> clusterIdList, String time, String flag);
@@ -59,5 +60,6 @@ public interface ClusteringSearchService {
      * @param flag          yes is ignore, no is not ignore
      * @return true or false indict whether ignore successful
      */
-    boolean igoreClustering(List<String> clusterIdList, String time, String flag);
+    boolean ignoreClustering(List<String> clusterIdList, String time, String flag);
+
 }
