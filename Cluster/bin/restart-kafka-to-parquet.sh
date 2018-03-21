@@ -3,7 +3,6 @@
 ##Copyright:       HZGOSUN Tech. Co. BigData
 ##Filename:        restart-kafka-to-parquet.sh
 ##Description:     to restart kafkaToParquet
-##Verson:          1.5.0
 ##Author:          chenke
 ##Created:         2017-11-16
 ###########################################################

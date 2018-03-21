@@ -5,7 +5,7 @@ import java.util.{Properties, UUID}
 
 import com.google.common.base.Stopwatch
 import com.hzgc.cluster.util.PropertiesUtils
-import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder}
+import com.hzgc.collect.expand.processer.{FaceObject, FaceObjectDecoder}
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
 import kafka.serializer.StringDecoder
@@ -78,7 +78,7 @@ object KafkaToParquet {
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
       rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append)
-               .parquet(storeAddress)
+               .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-",""))
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {

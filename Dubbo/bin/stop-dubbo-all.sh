@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    stop-dubbo-all
 ## Description: 在配置节点下停止dubbo
-## Version:     1.0
 ## Author:      caodabao
 ## Created:     2017-11-29 
 ################################################################################

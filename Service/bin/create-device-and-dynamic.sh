@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    create-device-and-dynamic.sh
 ## Description: 创建动态库中的'upFea'、'searchRes'表；创建'device'设备表
-## Version:     1.0
 ## Author:      mashencai
 ## Created:     2017-12-16
 ################################################################################

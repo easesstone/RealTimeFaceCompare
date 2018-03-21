@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    create_kafka_topic
 ## Description: 创建Kafka topic，相关参数从配置文件project-conf.properties中配置
-## Version:     1.0
 ## Author:      mashencai
 ## Created:     2017-12-01
 ################################################################################
