@@ -71,8 +71,6 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
             }
         } else {
             LOG.info("start or limit out of index ");
-            clusteringList = null;
-            clusteringInfo.setClusteringAttributeList(clusteringList);
         }
         return clusteringInfo;
     }
@@ -198,7 +196,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 e.printStackTrace();
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -263,7 +261,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 e.printStackTrace();
             }
         }
-        return true;
+        return false;
     }
 
     /**
