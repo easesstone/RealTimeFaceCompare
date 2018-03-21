@@ -2,34 +2,27 @@ package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.util.HBaseHelper;
-import com.hzgc.service.util.HBaseUtil;
-import com.hzgc.jni.FaceFunction;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Array;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
-
-public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Serializable {
+public class ObjectInfoInnerHandlerImpl implements Serializable {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoInnerHandlerImpl.class);
     private static ObjectInfoInnerHandlerImpl instance;
     private static long totalNums = getTotalNums();
     private static List<Object[]> totalList = null;
+    private static java.sql.Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+
 
     /**
      * 接口实现使用单例模式
@@ -120,143 +113,38 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      * @return 返回其中的rowkey, pkey, feature
      */
     private List<Object[]> searchByPkeys() {
+        String sql = "select " + ObjectInfoTable.ROWKEY + ", " + ObjectInfoTable.PKEY +
+                ", " + ObjectInfoTable.FEATURE + " from " + ObjectInfoTable.TABLE_NAME;
+        PreparedStatement pstm = null;
         List<Object[]> findResult = new ArrayList<>();
-        Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-        Scan scan = new Scan();
-        scan.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.FEATURE));
-        scan.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PKEY));
+
         try {
-            ResultScanner resultScanner = objectinfo.getScanner(scan);
-            for (Result result : resultScanner) {
-                String rowKey = Bytes.toString(result.getRow());
-                String pkey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.PKEY)));
-                byte[] feature = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.FEATURE));
-                if (null != feature) {
+            pstm = conn.prepareStatement(sql);
+            ResultSet resultSet = pstm.executeQuery();
+            while (resultSet.next()) {
+                String rowKey = resultSet.getString(ObjectInfoTable.ROWKEY);
+                String pkey = resultSet.getString(ObjectInfoTable.PKEY);
+                Array array = resultSet.getArray(ObjectInfoTable.FEATURE);
+                float[] feature = null;
+                if (array != null) {
+                     feature = (float[]) array.getArray();
+                }
+                if (feature != null && feature.length > 0) {
                     //将人员类型rowkey和特征值进行拼接
-                    String feature_str = new String(feature, "ISO8859-1");
                     Object[] result1 = new Object[3];
                     result1[0] = rowKey;
                     result1[1] = pkey;
-                    result1[2] = FaceFunction.string2floatArray(feature_str);
+                    result1[2] = feature;
                     //将结果添加到集合中
                     findResult.add(result1);
                 }
             }
-        } catch (IOException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            HBaseUtil.closTable(objectinfo);
+            PhoenixJDBCHelper.closeConnection(null, pstm);
         }
-        return findResult;
-    }
 
-    /**
-     * 根据pkey的List来进行返回符合条件的数据
-     *
-     * @param pkeys 人员类型keys列表
-     * @return 符合条件的List
-     */
-    @Override
-    public List<String[]> searchByPkeys(List<String> pkeys) {
-        if (pkeys == null) {
-            return null;
-        }
-        //遍历人员类型
-        Iterator it = pkeys.iterator();
-        //构造搜索对象
-        SearchResponse searchResponse;
-        //定义一个List用来存在查询得到的结果
-        List<String[]> findResult = new ArrayList<>();
-        //设置搜索条件
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
-                .prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF)
-                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
-                .setScroll(new TimeValue(6000))
-                .setSize(1000)
-                .setExplain(true);
-        while (it.hasNext()) {
-            //取出遍历的值
-            String pkey = (String) it.next();
-            //根据遍历得到的人员类型进行精确查询
-            requestBuilder.setQuery(QueryBuilders.termQuery(ObjectInfoTable.PKEY, pkey));
-            //通过requestBuilder的get方法执行查询任务
-            searchResponse = requestBuilder.get();
-            do {
-                //将结果进行封装
-                SearchHits hits = searchResponse.getHits();
-                //输出某个人员类型对应的记录条数
-                SearchHit[] searchHits = hits.getHits();
-                System.out.println("pkey为：" + pkey + "时，查询得到的记录数为：" + hits.getTotalHits());
-                if (searchHits.length > 0) {
-                    for (SearchHit hit : searchHits) {
-                        //得到每个人员类型对应的rowkey
-                        String id = hit.getId();
-                        //得到每个人员类型对应的特征值
-                        Map<String, Object> sourceList = hit.getSource();
-                        String feature = (String) sourceList.get("feature");
-                        //当有特征值时，才将结果返回
-                        if (null != feature) {
-                            //将人员类型、rowkey和特征值进行拼接
-                            String[] result = new String[3];
-                            result[0] = id;
-                            result[1] = pkey;
-                            result[2] = feature;
-                            //将结果添加到集合中
-                            findResult.add(result);
-                        }
-                    }
-                }
-                searchResponse = ElasticSearchHelper.getEsClient().prepareSearchScroll(searchResponse.getScrollId())
-                        .setScroll(new TimeValue(6000))
-                        .execute()
-                        .actionGet();
-            } while (searchResponse.getHits().getHits().length != 0);
-        }
-        return findResult;
-    }
-
-    /**
-     * 获取底库中所有信息的最近一次出现时间
-     *
-     * @return 返回符合条件的数据
-     */
-    public List<String> searchByPkeysUpdateTime() {
-        List<String> findResult = new ArrayList<>();
-        QueryBuilder qb = matchAllQuery();
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
-                .prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setQuery(qb)
-                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
-                .setScroll(new TimeValue(6000))
-                .setSize(1000)
-                .setExplain(true);
-        SearchResponse searchResponse = requestBuilder.get();
-        do {
-            SearchHits hits = searchResponse.getHits();
-            SearchHit[] searchHits = hits.getHits();
-            if (searchHits.length > 0) {
-                for (SearchHit hit : searchHits) {
-                    //得到每个人员类型对应的rowkey
-                    String id = hit.getId();
-                    //得到每个人员类型对应的特征值
-                    Map<String, Object> sourceList = hit.getSource();
-                    String updatetime = (String) sourceList.get("updatetime");
-                    String pkey = (String) sourceList.get("pkey");
-                    //将人员类型、rowkey和特征值进行拼接
-                    String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
-                    //将结果添加到集合中
-                    findResult.add(result);
-                }
-            }
-            searchResponse = ElasticSearchHelper.getEsClient().prepareSearchScroll(searchResponse.getScrollId())
-                    .setScroll(new TimeValue(6000))
-                    .execute()
-                    .actionGet();
-        } while (searchResponse.getHits().getHits().length != 0);
         return findResult;
     }
 
@@ -267,39 +155,61 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
      * @return 返回符合条件的数据
      */
     public List<String> searchByPkeysUpdateTime(List<String> pkeys) {
+        if (pkeys == null || pkeys.size() == 0) {
+            LOG.info("pkeys 为Null 或者pkeys 个数为0，请传入正确参数.");
+            return null;
+        }
+
         List<String> findResult = new ArrayList<>();
-        QueryBuilder qb = QueryBuilders.termsQuery(ObjectInfoTable.PKEY, pkeys);
-        SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
-                .prepareSearch(ObjectInfoTable.TABLE_NAME)
-                .setTypes(ObjectInfoTable.PERSON_COLF)
-                .setQuery(qb)
-                .addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
-                .setScroll(new TimeValue(6000))
-                .setSize(1000)
-                .setExplain(true);
-        SearchResponse searchResponse = requestBuilder.get();
-        do {
-            SearchHits hits = searchResponse.getHits();
-            SearchHit[] searchHits = hits.getHits();
-            if (searchHits.length > 0) {
-                for (SearchHit hit : searchHits) {
-                    //得到每个人员类型对应的rowkey
-                    String id = hit.getId();
-                    //得到每个人员类型对应的特征值
-                    Map<String, Object> sourceList = hit.getSource();
-                    String updatetime = (String) sourceList.get("updatetime");
-                    String pkey = (String) sourceList.get("pkey");
+
+        String sql = "select " + ObjectInfoTable.ROWKEY + ", " + ObjectInfoTable.PKEY +
+                ", " + ObjectInfoTable.UPDATETIME + " from " + ObjectInfoTable.TABLE_NAME;
+        String pkeysWhere = "";
+        if (pkeys.size() == 1) {
+            pkeysWhere = " where " + ObjectInfoTable.PKEY +" = ?";
+        } else {
+            pkeysWhere += " where (";
+            int i = 0;
+            for (String pkey : pkeys) {
+                if (i == 0){
+                    pkeysWhere += ObjectInfoTable.PKEY;
+                    pkeysWhere += " = ? ";
+                } else {
+                    pkeysWhere += " or ";
+                    pkeysWhere += ObjectInfoTable.PKEY;
+                    pkeysWhere += " = ?";
+                }
+                pkeysWhere += ")";
+            }
+        }
+        sql = sql + pkeysWhere;
+
+        PreparedStatement pstm = null;
+        try {
+            pstm = conn.prepareStatement(sql);
+            for(int i = 0; i< pkeys.size(); i++) {
+                pstm.setString(i + 1, pkeys.get(i));
+            }
+            ResultSet resultSet = pstm.executeQuery();
+            if (resultSet != null) {
+                while (resultSet.next()) {
+                    String rowKey = resultSet.getString(ObjectInfoTable.ROWKEY);
+                    String pkey = resultSet.getString(ObjectInfoTable.PKEY);
+                    java.sql.Timestamp updateTime = resultSet.getTimestamp(ObjectInfoTable.UPDATETIME);
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String finalTime = format.format(updateTime);
                     //将人员类型、rowkey和特征值进行拼接
-                    String result = id + "ZHONGXIAN" + pkey + "ZHONGXIAN" + updatetime;
+                    String result = rowKey + "ZHONGXIAN" + pkey + "ZHONGXIAN" + finalTime;
                     //将结果添加到集合中
                     findResult.add(result);
                 }
             }
-            searchResponse = ElasticSearchHelper.getEsClient().prepareSearchScroll(searchResponse.getScrollId())
-                    .setScroll(new TimeValue(6000))
-                    .execute()
-                    .actionGet();
-        } while (searchResponse.getHits().getHits().length != 0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            PhoenixJDBCHelper.closeConnection(null, pstm);
+        }
         return findResult;
     }
 
@@ -313,36 +223,27 @@ public class ObjectInfoInnerHandlerImpl implements ObjectInfoInnerHandler, Seria
         if (rowkeys == null || rowkeys.size() <= 0) {
             return 0;
         }
-        // 获取table 对象，通过封装HBaseHelper 来获取
-        Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-        List<Put> puts = new ArrayList<>();
+        String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "(" + ObjectInfoTable.ROWKEY + ", " + ObjectInfoTable.UPDATETIME +
+                 ") values(?,?)";
+
+        PreparedStatement pstm = null;
         try {
-            for (int i = 0; i < rowkeys.size(); i++) {
-                Put put = new Put(Bytes.toBytes(rowkeys.get(i)));
-                put.setDurability(Durability.ASYNC_WAL);
-                // 获取系统当前时间
-                Date date = new Date();
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String dateString = format.format(date);
-                // 构造一个更新对象信息中的更新时间段的put
-                put.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.UPDATETIME), Bytes.toBytes(dateString));
-                puts.add(put);
-                if (i % 10000 == 0) {
-                    table.put(puts);
-                    puts.clear();
+            pstm = conn.prepareStatement(sql);
+            java.sql.Timestamp timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
+            for (int i = 0;i < rowkeys.size(); i++) {
+                pstm.setString(1, rowkeys.get(i));
+                pstm.setTimestamp(2, timeStamp);
+                pstm.executeUpdate();
+                if (i % 200 == 0) {
+                    conn.commit();
                 }
             }
-            if (puts.size() > 0) {
-                table.put(puts);
-            }
-            return 0;
-        } catch (IOException e) {
+            conn.commit();
+        } catch (SQLException e) {
             e.printStackTrace();
-            return 1;
         } finally {
-            LOG.info("offline alarm time is updated successfully");
-            HBaseUtil.closTable(table);
+            PhoenixJDBCHelper.closeConnection(null, pstm);
         }
+        return 0;
     }
 }
