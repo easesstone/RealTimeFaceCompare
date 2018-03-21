@@ -20,6 +20,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -135,6 +136,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
                 .setFrom(start)
                 .setSize(limit)
+                .addSort(DynamicTable.ALARM_TIME, SortOrder.DESC)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
