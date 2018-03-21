@@ -2,6 +2,8 @@ package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.*;
+import com.hzgc.jni.FaceFunction;
+import com.hzgc.jni.NativeFunction;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
 import com.hzgc.util.common.ObjectUtil;
@@ -12,10 +14,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,12 +35,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         person.setPlatformid(platformId);
         LOG.info("the rowkey off this add person is: " + person.getId());
 
-        String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY + ", " + ObjectInfoTable.NAME + ", "
+        String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY+ ", " + ObjectInfoTable.NAME  + ", "
                 + ObjectInfoTable.PLATFORMID + ", " + ObjectInfoTable.TAG + ", " + ObjectInfoTable.PKEY + ", "
                 + ObjectInfoTable.IDCARD + ", " + ObjectInfoTable.SEX + ", " + ObjectInfoTable.PHOTO + ", "
                 + ObjectInfoTable.FEATURE + ", " + ObjectInfoTable.REASON + ", " + ObjectInfoTable.CREATOR + ", "
                 + ObjectInfoTable.CPHONE + ", " + ObjectInfoTable.CREATETIME + ", " + ObjectInfoTable.UPDATETIME + ", "
-                + ObjectInfoTable.IMPORTANT + ", " + ObjectInfoTable.STATUS
+                + ObjectInfoTable.IMPORTANT + ", "  + ObjectInfoTable.STATUS
                 + ") values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstm = null;
         try {
@@ -61,11 +60,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("rowKeys: " + rowkeys);
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
-        String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY + " = ?";
+        String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
             pstm = conn.prepareStatement(sql);
-            for (int i = 0; i < rowkeys.size(); i++) {
+            for (int i = 0; i< rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
                 pstm.executeUpdate();
                 if (i % 10 == 0) {
@@ -105,7 +104,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i < setValues.size(); i++) {
-                pstm.setObject(i + 1, setValues.get(i));
+                pstm.setObject(i+1, setValues.get(i));
             }
             pstm.executeUpdate();
             conn.commit();
@@ -113,7 +112,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         }
-        LOG.info("更新rowkey为: " + thePassId + "数据花费的时间是: " + (System.currentTimeMillis() - start));
+        LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
         return 0;
     }
 
@@ -175,7 +174,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             try {
                 // 实例化pstm 对象，并且设置值，
                 pstm = conn.prepareStatement(sql);
-                for (int i = 0; i < setValues.size(); i++) {
+                for (int i = 0; i< setValues.size(); i++) {
                     pstm.setObject(i + 1, setValues.get(i));
                 }
                 resultSet = pstm.executeQuery();
@@ -194,7 +193,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         Set<String> types = new HashSet<>();
                         while (resultSet.next()) {
                             String type = resultSet.getString("type");
-                            if (!types.contains(type)) {
+                            if (!types.contains(type)){
                                 types.add(type);
                                 personObjectsMap.put(type, personObjects);
                                 personObjects.clear();
@@ -291,8 +290,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     /**
      * 根据传进来的参数，进行及实际路查询
-     *
-     * @param searchRecordOpts 历史查询参数
+     * @param  searchRecordOpts 历史查询参数
      * @return ObjectSearchResult 返回结果，封装好的历史数据。
      */
     @Override
@@ -361,15 +359,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                 groupByPkey.setPersons(tmp);
                                 if (staticSortParams != null) {
                                     if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
-                                        tmp.sort((p1, p2) -> (int) ((p1.getSim() - p2.getSim()) * 100));
+                                        tmp.sort((p1, p2) -> (int)((p1.getSim() - p2.getSim()) * 100));
                                     }
                                     if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
-                                        tmp.sort((p1, p2) -> (int) ((p2.getSim() - p1.getSim()) * 100));
+                                        tmp.sort((p1, p2) -> (int)((p2.getSim() - p1.getSim()) * 100));
                                     }
                                     if (staticSortParams.contains(StaticSortParam.IMPORTANTASC)) {
                                         tmp.sort((p1, p2) -> p1.getImportant() - p2.getImportant());
                                     }
-                                    if (staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
+                                    if(staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
                                         tmp.sort((p1, p2) -> p2.getImportant() - p1.getImportant());
                                     }
                                     if (staticSortParams.contains(StaticSortParam.TIMEASC)) {
@@ -401,6 +399,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public byte[] getSearchPhoto(String rowkey) {
-        return null;
+        return  null;
     }
 }
