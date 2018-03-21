@@ -78,6 +78,7 @@ class RealTimeFaceCompareBySparkSQL {
                 } else {
                     searchResult = parseResultNotOnePerson(resultSet, option, searchId);
                 }
+                searchResult.setSearchType(DynamicTable.PERSON_TYPE);
                 long processDataEnd = System.currentTimeMillis();
                 LOG.info("Process query data time is:" + (processDataEnd - processDataStart));
                 searchResult = saveResults(searchResult,
@@ -106,14 +107,12 @@ class RealTimeFaceCompareBySparkSQL {
                 e.printStackTrace();
             }
         }
-        searchResult.setSearchType(DynamicTable.PERSON_TYPE);
         return searchResult;
     }
 
     private SearchResult parseResultOnePerson(ResultSet resultSet, SearchOption option, String searchId) {
         SingleResult singleResult = new SingleResult();
         SearchResult searchResult = new SearchResult();
-        searchResult.setSearchType(DynamicTable.PERSON_TYPE);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
         try {
@@ -156,7 +155,6 @@ class RealTimeFaceCompareBySparkSQL {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Map<String, List<CapturedPicture>> mapSet = new HashMap<>();
         SearchResult searchResult = new SearchResult();
-        searchResult.setSearchType(DynamicTable.PERSON_TYPE);
         List<SingleResult> singleResultList = new ArrayList<>();
         try {
             while (resultSet.next()) {
