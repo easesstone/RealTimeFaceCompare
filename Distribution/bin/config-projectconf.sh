@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    config-projectconf
 ## Description: 一键配置脚本：执行common、cluster、ftp、service的一键配置脚本
-## Version:     1.0
 ## Author:      mashencai
 ## Created:     2017-11-30
 ################################################################################
