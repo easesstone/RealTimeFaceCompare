@@ -62,14 +62,16 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         int total = clusteringList.size();
         ClusteringInfo clusteringInfo = new ClusteringInfo();
         clusteringInfo.setTotalClustering(total);
-        if (start > -1) {
-            if ((start + limit) > total - 1) {
+        if (start > -1 && start <= total) {
+            if ((start + limit) > total) {
                 clusteringInfo.setClusteringAttributeList(clusteringList.subList(start, total));
             } else {
                 clusteringInfo.setClusteringAttributeList(clusteringList.subList(start, start + limit));
             }
         } else {
-            LOG.info("start must bigger than -1");
+            LOG.info("start or limit out of index ");
+            clusteringList = null;
+            clusteringInfo.setClusteringAttributeList(clusteringList);
         }
         return clusteringInfo;
     }
@@ -99,14 +101,15 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (start > -1) {
-            if ((start + limit) > alarmInfoList.size() - 1) {
-                return alarmInfoList.subList(start, alarmInfoList.size());
+        int total = alarmInfoList.size();
+        if (start > -1 && start <= total) {
+            if ((start + limit) > total) {
+                return alarmInfoList.subList(start, total);
             } else {
                 return alarmInfoList.subList(start, start + limit);
             }
         } else {
-            LOG.info("start must bigger than -1");
+            LOG.info("start or limit out of index");
             return null;
         }
     }
@@ -130,6 +133,8 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                .setFrom(start)
+                .setSize(limit)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
