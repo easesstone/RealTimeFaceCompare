@@ -22,3 +22,4 @@ public interface SearchRecordHandler {
      */
     byte[] getSearchPhoto(String rowkey);
 }
+

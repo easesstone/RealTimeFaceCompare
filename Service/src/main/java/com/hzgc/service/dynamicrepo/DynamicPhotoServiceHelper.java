@@ -183,3 +183,4 @@ class DynamicPhotoServiceHelper {
         return subCapturePictureList;
     }
 }
+

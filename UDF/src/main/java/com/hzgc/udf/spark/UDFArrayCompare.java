@@ -84,3 +84,4 @@ public class UDFArrayCompare extends GenericUDF
         return 0.0D;
     }
 }
+
