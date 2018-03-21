@@ -1,10 +1,11 @@
 package com.hzgc.cluster.smallfile
 
+import java.io.File
 import java.util
 
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{ContentSummary, FileSystem, Path}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{SaveMode}
+import org.apache.spark.sql.SaveMode
 
 /**
   * 概述：
@@ -15,7 +16,7 @@ import org.apache.spark.sql.{SaveMode}
   *     一下子读取进来。
   */
 object MergeParquetFileV2 {
-    val LOG = Logger.getLogger(MergeParquetFileV2.getClass)
+    private val LOG = Logger.getLogger(MergeParquetFileV2.getClass)
 
     def main(args: Array[String]): Unit = {
         val start = System.currentTimeMillis
@@ -33,7 +34,6 @@ object MergeParquetFileV2 {
         }
         // 接收传进来的四个或者五个个参数
         val hdfsClusterName = args(0)
-        val tmpTableHdfsPath = args(1)
         val hisTableHdfsPath = args(2)
         val tableName = args(3)
         val dateString = args(4)
@@ -47,38 +47,39 @@ object MergeParquetFileV2 {
         sc.hadoopConfiguration.set("fs.defaultFS", hdfsClusterName)
         // 获取hsfs 文件系统的实例
         val fs = FileSystem.get(sc.hadoopConfiguration)
-        //获取person_table 每天产生的目录中的最后一级目录的绝对路径
-        val personTableFinalDirSet: util.Set[String] = new util.HashSet[String]()
-        ReadWriteHDFS.getPersonTableFinalDir(new Path(hisTableHdfsPath), fs, personTableFinalDirSet);
+        //获取person_table/date=2018-02-01 下的所有文件
+        val parquetFiles: util.ArrayList[String] = new util.ArrayList[String]()
+        ReadWriteHDFS.getParquetFilesV2(dateString, new Path(hisTableHdfsPath), fs, parquetFiles)
 
-        // 用于遍历每天每个摄像头的绝对路径
-        val personTableFinalDirSetIt = personTableFinalDirSet.iterator();
-        while(personTableFinalDirSetIt.hasNext) {
-            // 最终的parquest 存放的目录的绝对路径
-            // 例如/user/hive/warehouse/person_table/date=2018-01-12
-            var parquetFileDir = personTableFinalDirSetIt.next();
-            // 用于保存遍历出来的文件
-            var parquetFiles: util.ArrayList[String] = new util.ArrayList[String]()
-            // 获取/user/hive/warehouse/person_table/date=2018-01-12 下的parquest 文件
-            ReadWriteHDFS.getParquetFilesV2(dateString, new Path(parquetFileDir), fs, parquetFiles)
-            val numOfFiles = parquetFiles.size();
-            // 把parquet 文件的list 转换成数组
-            var pathArr : Array[String] = new Array[String](numOfFiles)
-            // 如果里面没有文件或者文件个数为1，直接跳过
-            if (numOfFiles != 0 && numOfFiles != 1) {
-                var count = 0
-                while (count < pathArr.length) {
-                    pathArr(count) = parquetFiles.get(count)
-                    count = count + 1
-                }
-                var personDF = sparkSession.read.parquet(pathArr : _*)
-                // 保存文件
-                personDF.coalesce(1).repartition(SmallFileUtils.takePartition(parquetFileDir, fs))
-                    .write.mode(SaveMode.Append).parquet(parquetFileDir)
-                // 删除已经被合并的文件
-                ReadWriteHDFS.del(pathArr, fs)
-            }
+        val numOfFiles = parquetFiles.size()
+        // 把parquet 文件的list 转换成数组
+        val pathArr : Array[String] = new Array[String](numOfFiles)
+        // 如果里面没有文件或者文件个数为1，直接跳过
+
+        val cos : ContentSummary = fs.getContentSummary(new Path(hisTableHdfsPath + File.separator + "date=" + dateString))
+        val sizeM : Long = cos.getLength/1024/1024
+
+        if (numOfFiles == 0 || (numOfFiles == 1 && sizeM < 16)) {
+            LOG.info("目录下没有文件，或者只有一个文件并且这个文件小于16M...")
+            System.exit(0)
         }
+        var count = 0
+        while (count < pathArr.length) {
+            pathArr(count) = parquetFiles.get(count)
+            count = count + 1
+        }
+        var personDF = sparkSession.read.parquet(pathArr : _*)
+        // 保存文件
+        personDF.coalesce(1).repartition(SmallFileUtils.takePartition(hisTableHdfsPath + File.separator + "date=" + dateString, fs))
+            .write.mode(SaveMode.Append).parquet(hisTableHdfsPath + File.separator + "date=" + dateString)
+        // 删除已经被合并的文件
+        ReadWriteHDFS.del(pathArr, fs)
+
+
+        sql("REFRESH TABLE " + tableName)
+
+        sparkSession.close()
+        LOG.info("总共花费的时间是: " + (System.currentTimeMillis() - start))
 
         sql("REFRESH TABLE " + tableName)
 

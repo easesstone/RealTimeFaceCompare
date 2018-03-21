@@ -4,7 +4,7 @@ import java.util
 
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{SaveMode}
+import org.apache.spark.sql.SaveMode
 
 /**
   * 用于合并KafkaToParquet产生mid_table中的的临时小文件
@@ -34,7 +34,7 @@ import org.apache.spark.sql.{SaveMode}
   * schema-merge-parquet-file.sh   (定时启动，合并临时文件，每2~5分钟启动一次)
   */
 object MergeParquetFileV1 {
-    val LOG = Logger.getLogger(MergeParquetFileV1.getClass)
+    private val LOG = Logger.getLogger(MergeParquetFileV1.getClass)
     def main(args: Array[String]): Unit = {
         val start = System.currentTimeMillis
         if (args.length != 4) {
@@ -68,7 +68,7 @@ object MergeParquetFileV1 {
         val parquetFiles : util.ArrayList[String] = new util.ArrayList[String]()
         ReadWriteHDFS.getParquetFiles(new Path(tmpTableHdfsPath),fs, parquetFiles)
 
-        val numOfParquetFiles = parquetFiles.size();
+        val numOfParquetFiles = parquetFiles.size
         if (numOfParquetFiles == 0) {
             LOG.info("there is no parquet files in mid_table, please check the streaming store application.")
             System.exit(1)
@@ -84,12 +84,12 @@ object MergeParquetFileV1 {
         }
 
         // 2，通过files，通过sparkSession 进行加载数据，得到df
-        var personDF = sparkSession.read.parquet(pathArr : _*)
+        val personDF = sparkSession.read.parquet(pathArr : _*)
         personDF.persist()
         if (personDF.count() == 0) {
             LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
             // 删除临时表格中的文件
-            ReadWriteHDFS.delV2(pathArr, fs);
+            ReadWriteHDFS.delV2(pathArr, fs)
             System.exit(2)
         }
         personDF.printSchema()
@@ -126,14 +126,14 @@ object MergeParquetFileV1 {
         }
 
         // 6, 根据加载的数据，进行分区，并且把数据存到Hive 的表格中,Hive 表格所处的根目录中
-        personDF.coalesce(1).repartition(SmallFileUtils.takePartition(tmpTableHdfsPath, fs))
+        personDF.coalesce(1)
             .write.mode(SaveMode.Append)
             .partitionBy("date")
             .parquet(hisTableHdfsPath)
 
         // 7,删除原来的文件
         // 删除临时表格上的文件
-        ReadWriteHDFS.delV2(pathArr, fs)
+        ReadWriteHDFS.del(pathArr, fs)
 
         // 8, Reflesh spark store crash table data
         sql("REFRESH TABLE " + tmpTableHdfsPath.substring(tmpTableHdfsPath.lastIndexOf("/") + 1))

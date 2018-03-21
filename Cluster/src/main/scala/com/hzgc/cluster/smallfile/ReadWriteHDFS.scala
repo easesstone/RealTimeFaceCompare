@@ -90,7 +90,7 @@ object ReadWriteHDFS {
             for (fileStatus <- fileStatusArr) {
                 val finalPathString = fileStatus.getPath.toString
                 if (fileStatus.isDirectory()) {
-                    getParquetFiles(dateString, fileStatus.getPath, fs, files)
+                    getParquetFilesV2(dateString, fileStatus.getPath, fs, files)
                 } else if (fileStatus.isFile && finalPathString.endsWith(".parquet")
                     && finalPathString.contains(dateString) && !fileStatus.getPath.toString.contains("_temporary/")) {
                     val cos : ContentSummary = fs.getContentSummary(new Path(finalPathString))
