@@ -1,10 +1,7 @@
 package com.hzgc.dubbo.dynamicrepo;
 
 import java.io.Serializable;
-<<<<<<< HEAD
 import java.util.Arrays;
-=======
->>>>>>> multi-picture-search
 import java.util.List;
 
 public class SingleResultOption implements Serializable {
@@ -27,7 +24,6 @@ public class SingleResultOption implements Serializable {
         this.ipcList = ipcList;
     }
 
-<<<<<<< HEAD
     @Override
     public String toString() {
         return "Single search id is "
@@ -36,6 +32,4 @@ public class SingleResultOption implements Serializable {
                 + (null == ipcList ? "null" :
                 Arrays.toString(ipcList.toArray()));
     }
-=======
->>>>>>> multi-picture-search
 }

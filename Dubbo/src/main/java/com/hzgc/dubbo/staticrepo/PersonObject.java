@@ -1,7 +1,6 @@
 package com.hzgc.dubbo.staticrepo;
 
 import java.io.Serializable;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Map;
@@ -198,11 +197,7 @@ public class PersonObject implements Serializable{
         personObject.setPlatformid((String) person.get(ObjectInfoTable.PLATFORMID));
         personObject.setName((String) person.get(ObjectInfoTable.NAME));
         if (person.get(ObjectInfoTable.SEX) != null) {
-<<<<<<< HEAD
             personObject.setSex(Integer.parseInt((String) person.get(ObjectInfoTable.SEX)));
-=======
-            personObject.setSex((Integer) person.get(ObjectInfoTable.SEX));
->>>>>>> multi-picture-search
         }
         personObject.setIdcard((String) person.get(ObjectInfoTable.IDCARD));
         personObject.setPhoto((byte[]) person.get(ObjectInfoTable.PHOTO));
@@ -212,17 +207,10 @@ public class PersonObject implements Serializable{
         personObject.setReason((String) person.get(ObjectInfoTable.REASON));
         personObject.setTag((String) person.get(ObjectInfoTable.TAG));
         if (person.get(ObjectInfoTable.IMPORTANT) != null) {
-<<<<<<< HEAD
             personObject.setImportant(Integer.parseInt((String) person.get(ObjectInfoTable.IMPORTANT)));
         }
         if (person.get(ObjectInfoTable.STATUS) != null) {
             personObject.setStatus(Integer.parseInt((String) person.get(ObjectInfoTable.STATUS)));
-=======
-            personObject.setImportant((Integer) person.get(ObjectInfoTable.IMPORTANT));
-        }
-        if (person.get(ObjectInfoTable.STATUS) != null) {
-            personObject.setStatus((Integer) person.get(ObjectInfoTable.STATUS));
->>>>>>> multi-picture-search
         }
         long dateNow = System.currentTimeMillis();
         personObject.setUpdatetime(new Timestamp(dateNow));

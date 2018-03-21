@@ -25,10 +25,6 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     static {
         ElasticSearchHelper.getEsClient();
         HBaseHelper.getHBaseConnection();
-<<<<<<< HEAD
-=======
-//        NativeFunction.init();
->>>>>>> multi-picture-search
     }
 
     /**
@@ -75,10 +71,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         SearchResult searchResult = null;
         if (resultOption.getSearchID() != null && !"".equals(resultOption.getSearchID())) {
             searchResult = DynamicPhotoServiceHelper.getSearchRes(resultOption.getSearchID());
-<<<<<<< HEAD
             LOG.info("Start query history failure, SearchResultOption is " + resultOption);
-=======
->>>>>>> multi-picture-search
             if (searchResult != null) {
                 switch (searchResult.getSearchType()) {
                     case DynamicTable.PERSON_TYPE:
@@ -99,11 +92,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                         }
                 }
             } else {
-<<<<<<< HEAD
                 LOG.error("Get query history failure, SearchResultOption is " + resultOption);
-=======
-                LOG.error("Get query history failure");
->>>>>>> multi-picture-search
             }
 
         } else {
@@ -322,12 +311,8 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CaptureHistory captureHistory = new CaptureHistory();
         List<String> ipcId = option.getDeviceIds();
         option.setSearchType(SearchType.PERSON);
-<<<<<<< HEAD
         List<SortParam> sortParams = option.getSortParams();
         return captureHistory.getRowKey_history(option, ipcId,sortParams);
-=======
-        return captureHistory.getRowKey_history(option, ipcId);
->>>>>>> multi-picture-search
     }
 
     /**

@@ -1,19 +1,12 @@
 package com.hzgc.dubbo.staticrepo;
 
-<<<<<<< HEAD
 import java.io.Serializable;
-=======
->>>>>>> multi-picture-search
 import java.util.List;
 
 /**
  * 按照对象类型分类，排序返回
  */
-<<<<<<< HEAD
 public class GroupByPkey implements Serializable{
-=======
-public class GroupByPkey {
->>>>>>> multi-picture-search
     private String pkey;    //对象类型Key
     private List<PersonObject> persons;  // 底库信心
     private int total;  // 当前pkey 下的人的总数

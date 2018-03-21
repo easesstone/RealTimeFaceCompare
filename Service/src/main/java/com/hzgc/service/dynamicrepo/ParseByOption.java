@@ -107,12 +107,6 @@ class ParseByOption {
                 if (printSql) {
                     feature = "";
                 } else {
-<<<<<<< HEAD
-=======
-                    System.out.println("***");
-                    System.out.println(option.getImages());
-                    System.out.println("***");
->>>>>>> multi-picture-search
                     feature = FaceFunction.floatArray2string(option.getImages().get(i).getFaceAttr().getFeature());
                 }
                 StringBuilder strBuilder = new StringBuilder();

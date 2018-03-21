@@ -3,10 +3,6 @@ package com.hzgc.service.dynamicrepo;
 import com.hzgc.collect.expand.util.FtpUtils;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
-<<<<<<< HEAD
-=======
-import com.hzgc.ftpserver.util.FtpUtils;
->>>>>>> multi-picture-search
 import com.hzgc.service.util.JDBCUtil;
 import org.apache.log4j.Logger;
 
@@ -51,11 +47,7 @@ class RealTimeFaceCompareBySparkSQL {
      *
      * @return 返回所有满足查询条件的图片
      */
-<<<<<<< HEAD
     private SearchResult compareByImageBySparkSQL(SearchOption option, String searchId) {
-=======
-    private SearchResult compareByImageBySparkSQL(SearchType type, SearchOption option, String searchId) {
->>>>>>> multi-picture-search
         Connection conn = null;
         Statement statement = null;
         ResultSet resultSet;
@@ -114,20 +106,14 @@ class RealTimeFaceCompareBySparkSQL {
                 e.printStackTrace();
             }
         }
-<<<<<<< HEAD
         searchResult.setSearchType(DynamicTable.PERSON_TYPE);
-=======
->>>>>>> multi-picture-search
         return searchResult;
     }
 
     private SearchResult parseResultOnePerson(ResultSet resultSet, SearchOption option, String searchId) {
         SingleResult singleResult = new SingleResult();
         SearchResult searchResult = new SearchResult();
-<<<<<<< HEAD
         searchResult.setSearchType(DynamicTable.PERSON_TYPE);
-=======
->>>>>>> multi-picture-search
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         List<CapturedPicture> capturedPictureList = new ArrayList<>();
         try {
@@ -170,10 +156,7 @@ class RealTimeFaceCompareBySparkSQL {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Map<String, List<CapturedPicture>> mapSet = new HashMap<>();
         SearchResult searchResult = new SearchResult();
-<<<<<<< HEAD
         searchResult.setSearchType(DynamicTable.PERSON_TYPE);
-=======
->>>>>>> multi-picture-search
         List<SingleResult> singleResultList = new ArrayList<>();
         try {
             while (resultSet.next()) {
