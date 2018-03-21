@@ -5,7 +5,6 @@
 ## Filename:    config-merge-parquet-file.sh
 ## Description: 1,配置合并小文件服务，并且启动服务
 ##              2,配置监听大数据ftp 和dubbo 服务 的定时任务
-## Version:     1.0
 ## Author:      lidiliang
 ## Created:     2017-11-17
 ################################################################################

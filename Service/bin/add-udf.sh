@@ -3,7 +3,6 @@
 ## Copyright:    HZGOSUN Tech. Co, BigData
 ## Filename:     add-udf.sh
 ## Description:  向hive中添加并注册udf函数
-## Version:      1.5.0
 ## Author:       qiaokaifeng
 ## Created:      2017-11-28
 ################################################################################
@@ -26,7 +25,7 @@ LOG_DIR=${DEPLOY_DIR}/logs
 ##  log 日记文件
 LOG_FILE=${LOG_DIR}/add-udf.log
 ## udf jar version
-UDF_VERSION=udf-1.5.0.jar
+UDF_VERSION=udf-2.1.0.jar
 ## bigdata cluster path
 BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 ## bigdata hadoop path
