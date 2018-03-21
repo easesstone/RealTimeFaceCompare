@@ -28,7 +28,7 @@ declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
 declare -r CLUSTER_DIR=${BIGDATA_SERVICE_DIR}/cluster
 
-RELEASE_VERSION=2.1.0
+CLUSTER_VERSION=`ls ${COMMON_LIB_DIR}| grep ^cluster-[0-9].[0-9].[0-9].jar$`
 
 hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/merget-parquet-files.properties)
 tmpTableHdfsPath=$(sed -n '2p' ${CONF_DIR}/merget-parquet-files.properties)
@@ -59,7 +59,7 @@ function merge_parquet()
     nohup spark-submit --class com.hzgc.cluster.smallfile.MergeParquetFileV1 \
     --master local[*] \
     --driver-memory 4g \
-${COMMMON_DIR}/lib/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
+${COMMMON_DIR}/lib/${CLUSTER_VERSION} ${hdfsClusterName} ${tmpTableHdfsPath} ${hisTableHdfsPath} ${tableName} >> ${LOG_FILE} 2>&1 &
 
 if [ $? -eq 0 ];then
     echo "Schema merge parquet file success!!!"

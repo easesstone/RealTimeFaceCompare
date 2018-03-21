@@ -43,12 +43,12 @@ BIGDATA_CLUSTER_PATH=/opt/hzgc/bigdata
 #                              jar版本控制                            #
 #---------------------------------------------------------------------#
 ## module version(模块)
-BIGDATA_API_VERSION=bigdata-api-2.1.0.jar
-CLUSTER_VERSION=cluster-2.1.0.jar
-FTP_VERSION=ftp-2.1.0.jar
-JNI_VERSION=jni-2.1.0.jar
-SERVICE_VERSION=service-2.1.0.jar
-UTIL_VERSION=util-2.1.0.jar
+BIGDATA_API_VERSION=`ls ${COMMON_LIB_DIR}| grep ^bigdata-api-[0-9].[0-9].[0-9].jar$`
+CLUSTER_VERSION=`ls ${COMMON_LIB_DIR}| grep ^cluster-[0-9].[0-9].[0-9].jar$`
+FTP_VERSION=`ls ${COMMON_LIB_DIR}| grep ^ftp-[0-9].[0-9].[0-9].jar$`
+JNI_VERSION=`ls ${COMMON_LIB_DIR}| grep ^jni-[0-9].[0-9].[0-9].jar$`
+SERVICE_VERSION=`ls ${COMMON_LIB_DIR}| grep ^service-[0-9].[0-9].[0-9].jar$`
+UTIL_VERSION=`ls ${COMMON_LIB_DIR}| grep ^util-[0-9].[0-9].[0-9].jar$`
 
 ## quote version(引用)
 GSON_VERSION=gson-2.8.0.jar
