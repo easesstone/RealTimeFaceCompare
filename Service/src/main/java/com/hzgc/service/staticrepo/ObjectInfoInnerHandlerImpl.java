@@ -28,7 +28,6 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
      * 接口实现使用单例模式
      */
     private ObjectInfoInnerHandlerImpl() {
-        ElasticSearchHelper.getEsClient();
     }
 
     /**
@@ -179,8 +178,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
                     pkeysWhere += ObjectInfoTable.PKEY;
                     pkeysWhere += " = ?";
                 }
-                pkeysWhere += ")";
+                i++;
             }
+            pkeysWhere += ")";
         }
         sql = sql + pkeysWhere;
 
