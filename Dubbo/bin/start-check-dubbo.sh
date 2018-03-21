@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-check-dubbo.sh
 ## Description: 大数据dubbo ftp 守护脚本
-## Version:     2.1.0
 ## Author:      liushanbin
 ## Created:     2018-01-08
 ################################################################################

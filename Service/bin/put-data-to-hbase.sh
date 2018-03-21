@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    put-data-to-hbase.sh
 ## Description: to put data to hbase
-## Version:     2.1.0
 ## Author:      chenke
 ## Created:     2017-11-28
 ################################################################################

@@ -3,7 +3,6 @@
 ## Copyright:      HZGOSUN Tech. Co, BigData
 ## Filename:       get-dynamicshow-table-run.sh
 ## Description:    将动态库的数据统计插入到dynamicshow表中
-## Version:        2.1.0
 ## Author:         chenke
 ## Created:        2018-02-01
 #############################################################################

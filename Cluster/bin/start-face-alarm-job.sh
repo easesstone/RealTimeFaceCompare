@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-alarm-job.sh
 ## Description: to start faceAlarmJob(启动组合告警任务)
-## Version:     master
 ## Author:      liushanbin
 ## Created:     2018-01-27
 ################################################################################

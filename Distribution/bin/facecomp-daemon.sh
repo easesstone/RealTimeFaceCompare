@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    facecomp-daemon.sh
 ## Description: 大数据dubbo ftp 守护脚本
-## Version:     2.1.0
 ## Author:      lidiliang
 ## Created:     2017-11-18
 ## Modified:    (ldl-2017-12-1)

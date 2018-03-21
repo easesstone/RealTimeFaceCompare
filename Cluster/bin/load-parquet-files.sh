@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    load-parquet-files.sh
 ## Description: 加载分区数据到peroson_table
-## Version:     2.1.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-18
 ################################################################################

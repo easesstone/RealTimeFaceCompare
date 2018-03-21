@@ -32,28 +32,28 @@
         </fileSet>
         <!--项目模块-->
         <fileSet>
-            <directory>../Cluster/target/cluster-2.1.0</directory>
+            <directory>../Cluster/target/cluster-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
             <outputDirectory>cluster</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../Dubbo/target/bigdata-api-2.1.0</directory>
+            <directory>../Dubbo/target/bigdata-api-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
             <outputDirectory>service</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../FtpServer/target/ftp-2.1.0</directory>
+            <directory>../FtpServer/target/ftp-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
             <outputDirectory>ftp</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../Service/target/service-2.1.0</directory>
+            <directory>../Service/target/service-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>

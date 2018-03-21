@@ -3,7 +3,6 @@
 ## Copyright:    HZGOSUN Tech. Co, BigData
 ## Filename:     add-udf.sh
 ## Description:  向hive中添加并注册udf函数
-## Version:      2.1.0
 ## Author:       qiaokaifeng
 ## Created:      2017-11-28
 ################################################################################

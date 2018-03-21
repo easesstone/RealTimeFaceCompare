@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-offline-alarm-job.sh
 ## Description: to start faceOffLineAlarmJob(启动离线告警任务)
-## Version:     2.1.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
 ################################################################################

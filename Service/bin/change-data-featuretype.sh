@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    change-data-featuretype.sh
 ## Description: 根据pkey改变特征值类型，并更新到HBase和ES中
-## Version:     2.1.0
 ## Author:      caodabao
 ## Created:     2017-1-3
 ################################################################################

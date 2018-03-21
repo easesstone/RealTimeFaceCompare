@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-add-alarm-job.sh
 ## Description: to start faceAddAlarmJob(启动新增告警任务)
-## Version:     2.1.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
 ################################################################################

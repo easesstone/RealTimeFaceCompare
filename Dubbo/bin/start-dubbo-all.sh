@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-dubbo-all
 ## Description: 在配置节点下启动dubbo
-## Version:     2.1.0
 ## Author:      caodabao
 ## Created:     2017-11-29 
 ################################################################################

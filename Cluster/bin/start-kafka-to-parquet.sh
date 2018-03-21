@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-kafka-to-parquet.sh
 ## Description: to start kafkaToParquet
-## Version:     2.1.0
 ## Author:      chenke
 ## Created:     2017-11-09
 ################################################################################

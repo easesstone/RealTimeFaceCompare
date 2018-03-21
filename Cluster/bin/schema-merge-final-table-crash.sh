@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    schema-merge-parquet-file.sh
 ## Description: 定时启动合并小文件的脚本
-## Version:     2.1.0
 ## Author:      lidiliang
 ## Created:     2017-11-06
 ################################################################################
