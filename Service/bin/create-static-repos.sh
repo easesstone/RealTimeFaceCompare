@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    create-static-repos.sh
 ## Description: 静态库建表：objectinfo、srecord
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      lidiliang
 ## Created:     2017-08-03
 ################################################################################

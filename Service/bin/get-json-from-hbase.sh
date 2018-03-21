@@ -3,7 +3,7 @@
 ## Copyright:            HZGOSUN Tech. Co. BigData
 ## Filename:             get-json-from-hbase.sh
 ## Description:          to get json from hbase
-## Version:              1.0
+## Version:              2.1.0
 ## Author:               chenke
 ## Created:              2017-11-18
 ######################################################################

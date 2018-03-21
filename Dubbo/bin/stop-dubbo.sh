@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    stop-dubbo.sh
 ## Description: stop dubbo
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      liushanbin
 ## Created:     2018-01-08
 ################################################################################

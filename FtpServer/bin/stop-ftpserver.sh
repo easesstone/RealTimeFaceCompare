@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    ftpoverkafka
 ## Description: stop  ftp
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      liushanbin
 ## Created:     2018-01-08
 ################################################################################

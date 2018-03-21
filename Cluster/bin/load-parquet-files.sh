@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    load-parquet-files.sh
 ## Description: 加载分区数据到peroson_table
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-18
 ################################################################################
@@ -31,7 +31,7 @@ fi
 
 
 SPARK_STREAMING_KAFKA=1.6.2
-RELEASE_VERSION=1.5.0
+RELEASE_VERSION=2.1.0
 KAFKA_VERSION=1.0.0
 SCALA_VERSION=2.11
 

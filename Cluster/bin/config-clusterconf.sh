@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    config-clusterconf
 ## Description: 一键配置脚本：配置项目cluster中的conf配置文件
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      mashencai
 ## Created:     2017-11-29
 ################################################################################

@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    config-ftpconf
 ## Description: 一键配置脚本：配置项目ftp/conf中的配置文件，并将ftp分发到各个服务节点，将common分发到所有节点
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      mashencai
 ## Created:     2017-11-29
 ################################################################################

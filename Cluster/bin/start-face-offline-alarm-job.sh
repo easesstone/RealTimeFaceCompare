@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-offline-alarm-job.sh
 ## Description: to start faceOffLineAlarmJob(启动离线告警任务)
-## Version:     1.5.0
+## Version:     2.1.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
 ################################################################################
@@ -43,12 +43,12 @@ SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceOffLineAlarmJob
 #                              jar版本控制                            #
 #---------------------------------------------------------------------#
 ## module version(模块)
-BIGDATA_API_VERSION=bigdata-api-1.5.0.jar
-CLUSTER_VERSION=cluster-1.5.0.jar
-FTP_VERSION=ftp-1.5.0.jar
-JNI_VERSION=jni-1.5.0.jar
-SERVICE_VERSION=service-1.5.0.jar
-UTIL_VERSION=util-1.5.0.jar
+BIGDATA_API_VERSION=bigdata-api-2.1.0.jar
+CLUSTER_VERSION=cluster-2.1.0.jar
+FTP_VERSION=ftp-2.1.0.jar
+JNI_VERSION=jni-2.1.0.jar
+SERVICE_VERSION=service-2.1.0.jar
+UTIL_VERSION=util-2.1.0.jar
 
 ## quote version(引用)
 GSON_VERSION=gson-2.8.0.jar

@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    schema-merge-parquet-file.sh
 ## Description: 定时启动合并小文件的脚本
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      lidiliang
 ## Created:     2017-11-06
 ################################################################################
@@ -28,7 +28,7 @@ declare -r FTP_DIR=${BIGDATA_SERVICE_DIR}/ftp
 declare -r SERVICE=${BIGDATA_SERVICE_DIR}/service
 declare -r CLUSTER_DIR=${BIGDATA_SERVICE_DIR}/cluster
 
-RELEASE_VERSION=1.5.0
+RELEASE_VERSION=2.1.0
 
 hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/merget-parquet-files.properties)
 tmpTableHdfsPath=$(sed -n '3p' ${CONF_DIR}/merget-parquet-files.properties)

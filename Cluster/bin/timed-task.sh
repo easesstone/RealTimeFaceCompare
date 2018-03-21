@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    timed-task.sh
 ## Description: 一键配置脚本：生成定时任务压缩包
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      caodabao
 ## Created:     2018-03-09
 ################################################################################

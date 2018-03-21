@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-consumer.sh
 ## Description: to start consumer
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      liushanbin
 ## Created:     2018-01-08
 ################################################################################

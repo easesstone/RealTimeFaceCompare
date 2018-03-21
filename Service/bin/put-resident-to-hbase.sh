@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    put-resident-to-hbase.sh
 ## Description: to put resident format to hbase
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      chenke
 ## Created:     2017-11-16
 ################################################################################

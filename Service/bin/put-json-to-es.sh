@@ -3,7 +3,7 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    put-json-to-es.sh
 ## Description: to spilt json to put data to es
-## Version:     1.0
+## Version:     2.1.0
 ## Author:      chenke
 ## Created:     2017-09-01
 ################################################################################
