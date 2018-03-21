@@ -16,11 +16,7 @@ public class PrepareDataInStatic {
         File[] files = getFileList(photosPath);
         for (int i = 0;i < files.length; i++) {
             String path = files[i].getAbsolutePath();
-<<<<<<< HEAD
             byte[] photo = FaceFunction.getPictureBytes(path);
-=======
-            byte[] photo = FaceFunction.inputPicture(path);
->>>>>>> multi-picture-search
             float[] feature = FaceFunction.featureExtract(path).getFeature();
 
             Map<String, Object> person  = new HashMap<>();
@@ -30,7 +26,6 @@ public class PrepareDataInStatic {
             if (i % 10 == 0) {
                 person.put(ObjectInfoTable.PLATFORMID, "0042");
                 person.put(ObjectInfoTable.PKEY, "0042002");
-<<<<<<< HEAD
                 person.put(ObjectInfoTable.ROWKEY, "0042002" + idCard);
             } else if (i %3 == 0) {
                 person.put(ObjectInfoTable.PLATFORMID, "0041");
@@ -40,17 +35,6 @@ public class PrepareDataInStatic {
                 person.put(ObjectInfoTable.PLATFORMID, "0040");
                 person.put(ObjectInfoTable.PKEY, "0040002");
                 person.put(ObjectInfoTable.ROWKEY, "0040002" + idCard);
-=======
-                person.put(ObjectInfoTable.ID, "0042002" + idCard);
-            } else if (i %3 == 0) {
-                person.put(ObjectInfoTable.PLATFORMID, "0041");
-                person.put(ObjectInfoTable.PKEY, "0041001");
-                person.put(ObjectInfoTable.ID, "0041001" + idCard);
-            } else {
-                person.put(ObjectInfoTable.PLATFORMID, "0040");
-                person.put(ObjectInfoTable.PKEY, "0040002");
-                person.put(ObjectInfoTable.ID, "0040002" + idCard);
->>>>>>> multi-picture-search
             }
             person.put(ObjectInfoTable.NAME, "nameValue" + i);
             person.put(ObjectInfoTable.SEX, 1);

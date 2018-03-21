@@ -34,10 +34,7 @@
 
     <bean id="CaptureNumberService" class="com.hzgc.service.dynamicrepo.CaptureNumberImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.dynamicrepo.CaptureNumberService" ref="CaptureNumberService"/>
-<<<<<<< HEAD
-=======
 
->>>>>>> multi-picture-search
     <bean id="ClusteringSearchService" class="com.hzgc.service.clustering.ClusteringSearchServiceImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.clustering.ClusteringSearchService" ref="ClusteringSearchService"/>
 </beans>
