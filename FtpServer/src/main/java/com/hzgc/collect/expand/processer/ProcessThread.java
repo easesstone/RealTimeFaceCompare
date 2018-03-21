@@ -3,7 +3,6 @@ package com.hzgc.collect.expand.processer;
 
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.DataProcessLogWriter;
-import com.hzgc.collect.expand.log.LogWriter;
 import com.hzgc.collect.expand.log.LogEvent;
 import com.hzgc.collect.expand.util.FtpUtils;
 import com.hzgc.collect.expand.util.ProducerKafka;
@@ -11,12 +10,10 @@ import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
-import org.apache.log4j.Logger;
 
 import java.util.concurrent.BlockingQueue;
 
 public class ProcessThread implements Runnable {
-    private static Logger LOG = Logger.getLogger(ProcessThread.class);
     private BlockingQueue<LogEvent> queue;
     private DataProcessLogWriter writer;
 
