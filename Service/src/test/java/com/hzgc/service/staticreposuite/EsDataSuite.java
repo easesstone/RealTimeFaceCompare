@@ -118,6 +118,7 @@ public class EsDataSuite {
         for (String aImageIdFilterList : ImageIdFilterList) {
             bulkRequest.add(ElasticSearchHelper.getEsClient().prepareDelete(DynamicTable.DYNAMIC_INDEX, DynamicTable.PERSON_INDEX_TYPE, aImageIdFilterList).request());
         }
+
         BulkResponse bulkResponse = bulkRequest.get();
         if (bulkResponse.hasFailures()) {
             for (BulkItemResponse item : bulkResponse.getItems()) {
