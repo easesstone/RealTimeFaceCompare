@@ -7,14 +7,13 @@ import com.hzgc.jni.NativeFunction;
 import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.service.util.HBaseUtil;
 import com.hzgc.util.common.ObjectUtil;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +51,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             return 1;
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
+        //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
+        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
         return 0;
     }
 
@@ -77,6 +78,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             return 1;
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
+        //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
+        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
         return 0;
     }
 
@@ -113,6 +116,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             return 1;
         }
         LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
+        //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
+        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
         return 0;
     }
 
@@ -226,7 +231,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                             List<byte[]> photosTmp = new ArrayList<>();
                             photosTmp.add(photos.get(key));
                             personSingleResult.setSearchPhotos(photosTmp);
-                            finalResults.add(personSingleResult);
+                            if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
+                                finalResults.add(personSingleResult);
+                            }
                         }
                     } else {  // 是同一个人
                         PersonSingleResult personSingleResult = new PersonSingleResult();
@@ -239,17 +246,23 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         personSingleResult.setSearchPhotos(searchPhotos);
                         // 封装personSingleResult
                         new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, true);
-                        finalResults.add(personSingleResult);
+                        if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
+                            finalResults.add(personSingleResult);
+                        }
                     }
                 } else { // 没有图片的情况下
                    PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
                    personSingleResult.setSearchRowkey(searchTotalId);
                     //封装personSingleResult
                    new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
-                   finalResults.add(personSingleResult);
+                    if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
+                        finalResults.add(personSingleResult);
+                    }
                 }
             } catch (SQLException e) {
+                objectSearchResult.setSearchStatus(1);
                 e.printStackTrace();
+                return objectSearchResult;
             }
         }
 
@@ -269,20 +282,19 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public byte[] getPhotoByKey(String rowkey) {
-        Table table = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-        Get get = new Get(Bytes.toBytes(rowkey));
-        get.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF), Bytes.toBytes(ObjectInfoTable.PHOTO));
-        Result result;
-        byte[] photo;
+        String sql = "select photo from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
+        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        PreparedStatement pstm;
+        byte[] photo = null;
         try {
-            result = table.get(get);
-            photo = result.getValue(Bytes.toBytes("person"), Bytes.toBytes("photo"));
-        } catch (IOException e) {
-            LOG.error("get data from table failed!");
+            pstm = conn.prepareStatement(sql);
+            pstm.setString(1, rowkey);
+            ResultSet resultSet = pstm.executeQuery();
+            resultSet.next();
+            photo = resultSet.getBytes(ObjectInfoTable.PHOTO);
+        } catch (SQLException e) {
             e.printStackTrace();
             return null;
-        } finally {
-            HBaseUtil.closTable(table);
         }
         return photo;
     }

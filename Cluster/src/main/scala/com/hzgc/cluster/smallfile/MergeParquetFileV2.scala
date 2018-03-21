@@ -18,6 +18,7 @@ object MergeParquetFileV2 {
     val LOG = Logger.getLogger(MergeParquetFileV2.getClass)
 
     def main(args: Array[String]): Unit = {
+        val start = System.currentTimeMillis
         if (args.length != 5) {
             System.out.print(
                 s"""
@@ -54,11 +55,11 @@ object MergeParquetFileV2 {
         val personTableFinalDirSetIt = personTableFinalDirSet.iterator();
         while(personTableFinalDirSetIt.hasNext) {
             // 最终的parquest 存放的目录的绝对路径
-            // 例如/user/hive/warehouse/person_table/date=2018-01-12/ipcid=3K01E84PAU00083
+            // 例如/user/hive/warehouse/person_table/date=2018-01-12
             var parquetFileDir = personTableFinalDirSetIt.next();
             // 用于保存遍历出来的文件
             var parquetFiles: util.ArrayList[String] = new util.ArrayList[String]()
-            // 获取/user/hive/warehouse/person_table/date=2018-01-12/ipcid=3K01E84PAU00083 下的parquest 文件
+            // 获取/user/hive/warehouse/person_table/date=2018-01-12 下的parquest 文件
             ReadWriteHDFS.getParquetFilesV2(dateString, new Path(parquetFileDir), fs, parquetFiles)
             val numOfFiles = parquetFiles.size();
             // 把parquet 文件的list 转换成数组
@@ -82,6 +83,7 @@ object MergeParquetFileV2 {
         sql("REFRESH TABLE " + tableName)
 
         sparkSession.close()
+        LOG.info("总共花费的时间是: " + (System.currentTimeMillis() - start))
     }
 }
 

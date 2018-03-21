@@ -96,8 +96,8 @@ object MergeParquetFileV1 {
 
         // 3，查询加载数据中的时间和设备的对应关系，得到一个set01 对象
         personDF.createOrReplaceTempView("bigtmptable")
-        val partitionsTmp = sql("select count(*),date,ipcid from bigtmptable group by date,ipcid")
-        val partitionsTmpArray = partitionsTmp.select("date","ipcid").collect()
+        val partitionsTmp = sql("select count(*),date from bigtmptable group by date")
+        val partitionsTmpArray = partitionsTmp.select("date").collect()
 
         // 4, 遍历hisTableHdfsPath目录，最终表格的根目录，得到时间和设备对应关系set02
         val personPartionsTmp = sql("show partitions " + tableName)
@@ -106,10 +106,9 @@ object MergeParquetFileV1 {
         // 5，对比set01 和set02,根据set01 中存在，set02 中不存在的数据，在最终的hive 表格中创建元数据
         var i = 0
         while (i < partitionsTmpArray.length) {
-            //date=2018-01-12/ipcid=DS-2CD2T20FD-I320160122AACH571485690
+            //date=2018-01-12
             val date = partitionsTmpArray(i).get(0)
-            val ipcId = partitionsTmpArray(i).get(1)
-            val partition = "date=" + date + "/ipcid=" + ipcId
+            val partition = "date=" + date
             var j = 0
             var flag = 1
             while (j < personPartionsArray.length) {
@@ -121,15 +120,15 @@ object MergeParquetFileV1 {
             if (flag == 1) {
                 sql("set hive.exec.dynamic.partition=true;")
                 sql("set hive.exec.dynamic.partition.mode=nonstrict;")
-                sql("alter table " + tableName + " add partition(date='" + date + "',ipcid='" + ipcId + "')")
+                sql("alter table " + tableName + " add partition(date='" + date +"')")
             }
             i = i + 1
         }
 
         // 6, 根据加载的数据，进行分区，并且把数据存到Hive 的表格中,Hive 表格所处的根目录中
-        personDF.coalesce(1)
+        personDF.coalesce(1).repartition(SmallFileUtils.takePartition(tmpTableHdfsPath, fs))
             .write.mode(SaveMode.Append)
-            .partitionBy("date", "ipcid")
+            .partitionBy("date")
             .parquet(hisTableHdfsPath)
 
         // 7,删除原来的文件

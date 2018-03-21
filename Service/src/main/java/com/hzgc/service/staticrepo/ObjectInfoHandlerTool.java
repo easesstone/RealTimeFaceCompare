@@ -1,9 +1,14 @@
 package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.*;
+import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
 
+import java.io.IOException;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -195,6 +200,29 @@ class ObjectInfoHandlerTool {
         }
         objectSearchResult.setFinalResults(finalPersonSingleResults);
 
+    }
+
+    /**
+     *  更新hbase 表格中的一行，用来表示静态库中的数据有变动
+     */
+    public void updateTotalNumOfHbase() {
+        Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
+        //总记录数加1，用于标志HBase 数据库中的数据有变动
+        Put putOfTNums = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+        putOfTNums.setDurability(Durability.ASYNC_WAL);
+        Get getOfTNums = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
+        Result resultTNums = null;
+        try {
+            resultTNums = objectinfo.get(getOfTNums);
+            long tatalNums = Bytes.toLong(resultTNums.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS)));
+            putOfTNums.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
+                    Bytes.toBytes(tatalNums + 1));
+            objectinfo.put(putOfTNums);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
