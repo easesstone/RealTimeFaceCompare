@@ -156,7 +156,6 @@ class CaptureHistory {
                 SearchHits searchHits = searchResponse.getHits();
                 SearchHit[] hits = searchHits.getHits();
                 int totolCount = (int) searchHits.getTotalHits();
-                System.out.println(searchHits.getTotalHits());
                 List<CapturedPicture> persons = new ArrayList<>();
                 CapturedPicture capturePicture;
                 if (hits.length > 0) {
