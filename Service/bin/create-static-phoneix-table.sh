@@ -41,7 +41,7 @@ ZOOKEEPER_IP=$(grep zookeeper_installnode $COMMON_CONF/project-conf.properties |
 
 ## 创建person_table
 source /opt/hzgc/env_bigdata.sh
-${SPARK_PATH}/bin/psql.py  ${CONF_DIR}/staticrepo.sql
+${SPARK_PATH}/bin/psql.py  ${DEPLOY_DIR}/sql/staticrepo.sql
 
 if [ $? == 0 ];then
 		echo "===================================="
