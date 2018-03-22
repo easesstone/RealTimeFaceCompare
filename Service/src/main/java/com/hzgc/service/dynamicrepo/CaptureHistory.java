@@ -47,21 +47,18 @@ class CaptureHistory {
         // 最终封装成的boolQueryBuilder 对象。
         BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
 
-        int offset = option.getOffset();
-        LOG.info("offset is:" + offset);
-        int count = option.getCount();
-        LOG.info("count is:" + count);
         //排序条件
         List<SortParam> sortParams = option.getSortParams();
         String px = "desc";
-        for (SortParam s : sortParams) {
-            if (s.name().equals("TIMEDESC")) {
-                px = "desc";
-            } else if (s.name().equals("TIMEASC")) {
-                px = "asc";
+        if (searchType != null) {
+            for (SortParam s : sortParams) {
+                if (s.name().equals("TIMEDESC")) {
+                    px = "desc";
+                } else if (s.name().equals("TIMEASC")) {
+                    px = "asc";
+                }
             }
         }
-
         // 搜索类型为人的情况下
         if (SearchType.PERSON.equals(searchType)) {
             // 获取设备ID
@@ -158,6 +155,8 @@ class CaptureHistory {
                 SearchResponse searchResponse = searchRequestBuilder.get();
                 SearchHits searchHits = searchResponse.getHits();
                 SearchHit[] hits = searchHits.getHits();
+                int totolCount = (int) searchHits.getTotalHits();
+                System.out.println(searchHits.getTotalHits());
                 List<CapturedPicture> persons = new ArrayList<>();
                 CapturedPicture capturePicture;
                 if (hits.length > 0) {
@@ -177,7 +176,7 @@ class CaptureHistory {
                             persons.add(capturePicture);
                         }
                     }
-                    singleResult.setTotal(persons.size());
+                    singleResult.setTotal(totolCount);
                     singleResult.setPicturesByIpc(picturesByIpc);
                     singleResult.setPictures(persons);
                     results.add(singleResult);
@@ -198,10 +197,12 @@ class CaptureHistory {
             int count = option.getCount();
             LOG.info("count is:" + count);
             searchRequestBuilder.setFrom(offset).setSize(count);
+            int totolCount = 0;
             for (String ipcid : ipcId) {
                 SearchResponse searchResponse = searchRequestBuilder.get();
                 SearchHits searchHits = searchResponse.getHits();
                 SearchHit[] hits = searchHits.getHits();
+                totolCount = (int) searchHits.getTotalHits();
                 CapturedPicture capturePicture;
                 if (hits.length > 0) {
                     for (SearchHit hit : hits) {
@@ -220,7 +221,8 @@ class CaptureHistory {
                     }
                 }
             }
-            singleResult.setTotal(persons.size());
+            System.out.println("++++++"+totolCount);
+            singleResult.setTotal(totolCount);
             singleResult.setPictures(persons);
             results.add(singleResult);
             result.setResults(results);
@@ -242,7 +244,7 @@ class CaptureHistory {
             // 滚动查询
             SearchHits searchHits = searchResponse.getHits();
             SearchHit[] hits = searchHits.getHits();
-            System.out.println(hits.length);
+            int totolCount = (int) searchHits.getTotalHits();
             List<CapturedPicture> persons = new ArrayList<>();
             CapturedPicture capturePicture;
             if (hits.length > 0) {
@@ -259,7 +261,7 @@ class CaptureHistory {
                     persons.add(capturePicture);
                 }
             }
-            singleResult.setTotal(persons.size());
+            singleResult.setTotal(totolCount);
             singleResult.setPictures(persons);
             results.add(singleResult);
             result.setResults(results);
