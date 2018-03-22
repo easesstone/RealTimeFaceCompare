@@ -26,6 +26,9 @@ object SmallFileUtils {
         } else {
             parNum = devInt
         }
+        if(parNum == 0) {
+            parNum =1
+        }
         parNum
     }
 }
