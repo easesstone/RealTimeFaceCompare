@@ -49,7 +49,8 @@ object MergeParquetFileV2 {
         val fs = FileSystem.get(sc.hadoopConfiguration)
         //获取person_table/date=2018-02-01 下的所有文件
         val parquetFiles: util.ArrayList[String] = new util.ArrayList[String]()
-        ReadWriteHDFS.getParquetFilesV2(128, 100, dateString, new Path(hisTableHdfsPath), fs, parquetFiles)
+        ReadWriteHDFS.getParquetFilesV2(128, 100, new Path(hisTableHdfsPath + File.separator
+            + "date=" + dateString), fs, parquetFiles)
 
         val numOfFiles = parquetFiles.size()
         // 把parquet 文件的list 转换成数组
@@ -57,7 +58,7 @@ object MergeParquetFileV2 {
         // 如果里面没有文件或者文件个数为1，直接跳过
 
         val cos : ContentSummary = fs.getContentSummary(new Path(hisTableHdfsPath + File.separator + "date=" + dateString))
-        val sizeM : Long = cos.getLength/1024/1024
+        val sizeM : Double = cos.getLength/1024.0/1024.0
 
         if (numOfFiles == 0 || (numOfFiles == 1 && sizeM < 128)) {
             LOG.info("目录下没有文件，或者所有的文件的大小都处在了100M到128 M 之间...")
