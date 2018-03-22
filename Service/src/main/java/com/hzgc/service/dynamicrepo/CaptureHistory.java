@@ -221,7 +221,6 @@ class CaptureHistory {
                     }
                 }
             }
-            System.out.println("++++++"+totolCount);
             singleResult.setTotal(totolCount);
             singleResult.setPictures(persons);
             results.add(singleResult);
