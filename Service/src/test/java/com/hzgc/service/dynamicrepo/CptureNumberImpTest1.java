@@ -9,9 +9,9 @@ public class CptureNumberImpTest1 {
     public static void main(String[] args) {
         SearchOption searchOption = new SearchOption();
         List<String> deviceIds = new ArrayList<>();
-        //deviceIds.add("3B0383FPAG00883");
-        //deviceIds.add("3K01E84PAU00150");
-        //deviceIds.add("2L04129PAU01933");
+//        deviceIds.add("3B0383FPAG00883");
+//        deviceIds.add("3K01E84PAU00150");
+//        deviceIds.add("2L04129PAU01933");
         //deviceIds.add("DS-2CD2T20FD-I320160122AACH571485690");
         searchOption.setDeviceIds(deviceIds);
         List<SortParam> sortParams = new ArrayList<>();
@@ -26,13 +26,15 @@ public class CptureNumberImpTest1 {
         List<SearchResult> list = capturePictureSearchService.getCaptureHistory(searchOption);
         for (SearchResult s : list) {
             List<SingleResult> singlelist = s.getResults();
-            for (SingleResult ss : singlelist) {
-                List<CapturedPicture> capturedPictures = ss.getPictures();
-                for (CapturedPicture c : capturedPictures) {
-                    String a = c.getSurl();
-                    System.out.println(a);
-                }
-            }
+            System.out.println(singlelist.get(0).getTotal()+"============");
+//            for (SingleResult ss : singlelist) {
+//                System.out.println(ss.getTotal()+"============");
+//                List<CapturedPicture> capturedPictures = ss.getPictures();
+//                for (CapturedPicture c : capturedPictures) {
+//                    String a = c.getSurl();
+//                    System.out.println(a);
+//                }
+//            }
         }
     }
 }
