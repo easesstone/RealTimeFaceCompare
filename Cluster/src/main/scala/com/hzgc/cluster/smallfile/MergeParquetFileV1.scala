@@ -89,7 +89,7 @@ object MergeParquetFileV1 {
         if (personDF.count() == 0) {
             LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
             // 删除临时表格中的文件
-            ReadWriteHDFS.delV2(pathArr, fs)
+            ReadWriteHDFS.del(pathArr, fs)
             System.exit(2)
         }
         personDF.printSchema()
