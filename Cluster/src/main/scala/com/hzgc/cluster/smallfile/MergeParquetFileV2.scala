@@ -49,7 +49,7 @@ object MergeParquetFileV2 {
         val fs = FileSystem.get(sc.hadoopConfiguration)
         //获取person_table/date=2018-02-01 下的所有文件
         val parquetFiles: util.ArrayList[String] = new util.ArrayList[String]()
-        ReadWriteHDFS.getParquetFilesV2(dateString, new Path(hisTableHdfsPath), fs, parquetFiles)
+        ReadWriteHDFS.getParquetFilesV2(124, 110, dateString, new Path(hisTableHdfsPath), fs, parquetFiles)
 
         val numOfFiles = parquetFiles.size()
         // 把parquet 文件的list 转换成数组
@@ -70,7 +70,7 @@ object MergeParquetFileV2 {
         }
         var personDF = sparkSession.read.parquet(pathArr : _*)
         // 保存文件
-        personDF.coalesce(1).repartition(SmallFileUtils.takePartition(hisTableHdfsPath + File.separator + "date=" + dateString, fs))
+        personDF.coalesce(1).repartition(SmallFileUtils.takePartition(124, 110, pathArr, fs))
             .write.mode(SaveMode.Append).parquet(hisTableHdfsPath + File.separator + "date=" + dateString)
         // 删除已经被合并的文件
         ReadWriteHDFS.del(pathArr, fs)
