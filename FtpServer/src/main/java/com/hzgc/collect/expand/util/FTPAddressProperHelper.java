@@ -58,6 +58,14 @@ public class FTPAddressProperHelper extends ProperHelper{
         }
     }
 
+    static String getIpByHostName(String hostname) {
+        String ip = getProps().getProperty(hostname);
+        if (null == ip) {
+            throw new NullPointerException("HostName in ftpAddress.properties not found");
+        }
+        return ip;
+    }
+
     /**
      * set方法。验证配置文件中的值是否为符合条件的格式。
      */

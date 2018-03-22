@@ -20,6 +20,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,14 +63,14 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         int total = clusteringList.size();
         ClusteringInfo clusteringInfo = new ClusteringInfo();
         clusteringInfo.setTotalClustering(total);
-        if (start > -1) {
-            if ((start + limit) > total - 1) {
+        if (start > -1 && start <= total) {
+            if ((start + limit) > total) {
                 clusteringInfo.setClusteringAttributeList(clusteringList.subList(start, total));
             } else {
                 clusteringInfo.setClusteringAttributeList(clusteringList.subList(start, start + limit));
             }
         } else {
-            LOG.info("start must bigger than -1");
+            LOG.info("start or limit out of index ");
         }
         return clusteringInfo;
     }
@@ -99,14 +100,15 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (start > -1) {
-            if ((start + limit) > alarmInfoList.size() - 1) {
-                return alarmInfoList.subList(start, alarmInfoList.size());
+        int total = alarmInfoList.size();
+        if (start > -1 && start <= total) {
+            if ((start + limit) > total) {
+                return alarmInfoList.subList(start, total);
             } else {
                 return alarmInfoList.subList(start, start + limit);
             }
         } else {
-            LOG.info("start must bigger than -1");
+            LOG.info("start or limit out of index");
             return null;
         }
     }
@@ -130,6 +132,9 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                .setFrom(start)
+                .setSize(limit)
+                .addSort(DynamicTable.ALARM_TIME, SortOrder.DESC)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
@@ -191,7 +196,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 e.printStackTrace();
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -256,7 +261,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 e.printStackTrace();
             }
         }
-        return true;
+        return false;
     }
 
     /**
