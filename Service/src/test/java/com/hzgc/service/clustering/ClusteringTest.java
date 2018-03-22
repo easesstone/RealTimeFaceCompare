@@ -12,9 +12,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -70,15 +68,16 @@ public class ClusteringTest {
         clusteringAttributeList2.addAll(clusteringAttributeList1);
         putDataToHBase("2018-02-bak", clusteringAttributeList2);*/
         ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
-        List<Integer> list = new ArrayList<>();
-        list = clusteringSearchService.detailClusteringSearch_v1("49", "2018-02", 0, 50, "");
-        for (Integer alarmId : list) {
-            System.out.println(alarmId);
-        }
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.MONTH, -1);
-        SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM");
-        String time = format.format(c.getTime());
+        ClusteringInfo clusteringInfo;
+        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 50, 50, "");
+        //System.out.println(clusteringInfo.getTotalClustering());
+        System.out.println(clusteringInfo.getClusteringAttributeList().size());
+        /*List<String> idList = new ArrayList<>();
+        idList.add("1-14cdc24f8-c1d3-4741-a96e-8da20998ab06");
+        clusteringSearchService.deleteClustering(idList, "2018-02", "no");
+        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 30, 50, "");
+        System.out.println(clusteringInfo.getTotalClustering());
+        System.out.println(clusteringInfo.getClusteringAttributeList().get(1).getClusteringId());*/
     }
 
     private static void putDataToHBase(String rowKey, List<ClusteringAttribute> clusteringAttributeList) {
