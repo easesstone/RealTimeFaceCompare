@@ -13,6 +13,7 @@ object SparkSessionSingleton {
             instance = SparkSession.builder()
                 .appName("combine-parquest-demo")
                 .config("spark.sql.parquet.compression.codec", "snappy")
+                .config("parquet.block.size", "16777216")
                 .config("spark.sql.warehouse.dir", warehouseLocation)
                 .enableHiveSupport()
                 .getOrCreate()
