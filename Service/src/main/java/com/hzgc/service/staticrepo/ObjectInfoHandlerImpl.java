@@ -276,6 +276,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (startCount != null && pageSize != null) {
             new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         }
+        LOG.info("***********************");
+        LOG.info(objectSearchResult);
+        LOG.info("***********************");
         return objectSearchResult;
     }
 
@@ -406,6 +409,9 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         int pageSize = searchRecordOpts.getSize();
         int start = searchRecordOpts.getStart();
         new ObjectInfoHandlerTool().formatTheObjectSearchResult(finnalObjectSearchResult, start, pageSize);
+        LOG.info("***********************");
+        LOG.info(finnalObjectSearchResult);
+        LOG.info("***********************");
         return finnalObjectSearchResult;
     }
 

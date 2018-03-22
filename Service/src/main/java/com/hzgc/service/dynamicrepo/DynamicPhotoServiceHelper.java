@@ -117,6 +117,7 @@ class DynamicPhotoServiceHelper {
                     ListUtils.sort(groupByIpc.getPictures(), sortNameArr, isAscArr);
                     groupByIpc.setPictures(pageSplit(groupByIpc.getPictures(), option));
                 }
+                singleResult.setPictures(null);
             }
         } else {
             for (SingleResult singleResult : result.getResults()) {
@@ -160,7 +161,6 @@ class DynamicPhotoServiceHelper {
         List<CapturedPicture> subCapturePictureList;
         int totalPicture = capturedPictures.size();
         if (offset > -1 && totalPicture > (offset + count - 1)) {
-
             //结束行小于总数，取起始行开始后续count条数据
             subCapturePictureList = capturedPictures.subList(offset, offset + count);
         } else {
