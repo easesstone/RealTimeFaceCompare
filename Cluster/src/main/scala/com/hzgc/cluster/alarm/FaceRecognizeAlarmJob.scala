@@ -10,8 +10,8 @@ import com.hzgc.service.staticrepo.ObjectInfoInnerHandlerImpl
 import com.hzgc.jni.FaceFunction
 import com.hzgc.cluster.message.{Item, RecognizeAlarmMessage}
 import com.hzgc.cluster.util.PropertiesUtils
-import com.hzgc.ftpserver.producer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
-import com.hzgc.ftpserver.util.FtpUtils
+import com.hzgc.collect.expand.processer.{FaceObject, FaceObjectDecoder, RocketMQProducer}
+import com.hzgc.collect.expand.util.FtpUtils
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -109,10 +109,10 @@ object FaceRecognizeAlarmJob {
           val ftpMess = FtpUtils.getFtpUrlMessage(result._1)
           recognizeAlarmMessage.setAlarmType(DeviceTable.IDENTIFY.toString)
           recognizeAlarmMessage.setDynamicDeviceID(result._2)
-          recognizeAlarmMessage.setSmallPictureURL(ftpMess.get("filepath"))
+          recognizeAlarmMessage.setSmallPictureURL(ftpMess.getFilePath)
           recognizeAlarmMessage.setAlarmTime(dateStr)
-          recognizeAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).get("filepath"))
-          recognizeAlarmMessage.setHostName(ftpMess.get("ip"))
+          recognizeAlarmMessage.setBigPictureURL(FtpUtils.getFtpUrlMessage(FtpUtils.surlToBurl(result._1)).getFilePath)
+          recognizeAlarmMessage.setHostName(ftpMess.getIp)
           result._4.foreach(record => {
             val item = new Item()
             item.setSimilarity(record.sim.toString)

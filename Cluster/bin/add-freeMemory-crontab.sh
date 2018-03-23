@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    add-freeMemory-crontab.sh
 ## Description: free memory each host(将清理集群内存添加到定时器)
-## Version:     1.5
 ## Author:      liushanbin
 ## Created:     2017-11-30
 ################################################################################

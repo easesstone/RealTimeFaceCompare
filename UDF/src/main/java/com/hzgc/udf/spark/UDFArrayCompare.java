@@ -1,62 +1,42 @@
 package com.hzgc.udf.spark;
 
+import java.math.BigDecimal;
+import java.util.List;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.DoubleWritable;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-public class UDFArrayCompare extends GenericUDF {
+public class UDFArrayCompare extends GenericUDF
+{
     private DoubleWritable result;
+    private float[] floatFeature = null;
 
     public ObjectInspector initialize(ObjectInspector[] arguments)
-            throws UDFArgumentException {
-        if (arguments.length != 2) {
-            throw new UDFArgumentLengthException("The function array_compare(array, array) takes exactly 2 arguments.");
-        }
-
-        if (!arguments[1].getCategory().equals(ObjectInspector.Category.LIST)) {
-            throw new UDFArgumentTypeException(1, "\"array\" expected at function array_compare, but \"" + arguments[1]
-                    .getTypeName() + "\" is found");
-        }
-
-        ListObjectInspector rightArrayOI = (ListObjectInspector) arguments[1];
-        ObjectInspector rightArrayElementOI = rightArrayOI.getListElementObjectInspector();
-
-        if (!ObjectInspectorUtils.compareSupported(rightArrayElementOI)) {
-            throw new UDFArgumentException("The function array_compare does not support comparison for \"" + rightArrayElementOI
-                    .getTypeName() + "\" types");
-        }
-
-        ObjectInspector rightArrayElementValue = ObjectInspectorFactory.getStandardListObjectInspector
-                (PrimitiveObjectInspectorFactory.javaFloatObjectInspector);
-        if (rightArrayElementValue != arguments[1]) {
-            this.result.set(0);
-        }
-        this.result = new DoubleWritable(0);
+            throws UDFArgumentException
+    {
+        this.floatFeature = null;
+        this.result = new DoubleWritable(0.0D);
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     }
 
-    public Object evaluate(DeferredObject[] arguments) throws HiveException {
+    public Object evaluate(GenericUDF.DeferredObject[] arguments) throws HiveException {
         Object leftArray = arguments[0].get();
         Object rightArray = arguments[1].get();
-        float[] currentFeature = string2floatArray(leftArray.toString());
-        try {
-            List<Float> historyFeature = (List<Float>) rightArray;
-            double ret = featureCompare(currentFeature, historyFeature);
-            this.result.set(ret);
-        } catch (Exception e) {
-            this.result.set(0);
+        if (null == this.floatFeature)
+            this.floatFeature = string2floatArray(leftArray.toString());
+        else {
+            try {
+                List<Float> historyFeature = (List<Float>)rightArray;
+                double ret = featureCompare(this.floatFeature, historyFeature);
+                this.result.set(ret);
+            } catch (Exception e) {
+                this.result.set(0.0D);
+            }
         }
+
         return this.result;
     }
 
@@ -82,25 +62,25 @@ public class UDFArrayCompare extends GenericUDF {
     }
 
     private double featureCompare(float[] currentFeature, List<Float> historyFeature) {
-        double similarityDegree = 0;
-        double currentFeatureMultiple = 0;
-        double historyFeatureMultiple = 0;
+        double similarityDegree = 0.0D;
+        double currentFeatureMultiple = 0.0D;
+        double historyFeatureMultiple = 0.0D;
         if ((currentFeature.length == 512) && (historyFeature.size() == 512)) {
             for (int i = 0; i < currentFeature.length; i++) {
                 similarityDegree += currentFeature[i] * historyFeature.get(i);
-                currentFeatureMultiple += Math.pow(currentFeature[i], 2.0);
-                historyFeatureMultiple += Math.pow((historyFeature.get(i)), 2.0);
+                currentFeatureMultiple += Math.pow(currentFeature[i], 2.0D);
+                historyFeatureMultiple += Math.pow(historyFeature.get(i), 2.0D);
             }
             double tempSim = similarityDegree / Math.sqrt(currentFeatureMultiple) / Math.sqrt(historyFeatureMultiple);
 
-            double actualValue = new BigDecimal((0.5 + tempSim / 2.0) * 100)
+            double actualValue = new BigDecimal((0.5D + tempSim / 2.0D) * 100.0D)
                     .setScale(2, 4)
                     .doubleValue();
-            if (actualValue >= 100) {
-                return 100.0;
+            if (actualValue >= 100.0D) {
+                return 100.0D;
             }
             return actualValue;
         }
-        return 0;
+        return 0.0D;
     }
 }

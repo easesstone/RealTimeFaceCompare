@@ -10,7 +10,6 @@
 ##              ④add-udf（add-udf.sh）
 ##              ⑤动态库中的'upFea'、'searchRes'表;'device'设备表（create-device-and-dynamic.sh）
 ##              相关参数（例如kafka分区数）在配置文件project-conf.properties中配置
-## Version:     1.0
 ## Author:      mashencai
 ## Created:     2017-11-30 
 ################################################################################

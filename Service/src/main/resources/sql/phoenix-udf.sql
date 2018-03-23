@@ -1,0 +1,1 @@
+create function FACECOMP(float[], varchar) returns FLOAT  as 'com.hzgc.service.staticrepo.FaceCompFunc' using jar 'hdfs://hzgc/user/phoenix/udf/facecomp/service-2.1.0.jar';

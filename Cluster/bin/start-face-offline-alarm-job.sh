@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-offline-alarm-job.sh
 ## Description: to start faceOffLineAlarmJob(启动离线告警任务)
-## Version:     1.5.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-09
 ################################################################################
@@ -43,12 +42,12 @@ SPARK_CLASS_PARAM=com.hzgc.cluster.alarm.FaceOffLineAlarmJob
 #                              jar版本控制                            #
 #---------------------------------------------------------------------#
 ## module version(模块)
-BIGDATA_API_VERSION=bigdata-api-1.5.0.jar
-CLUSTER_VERSION=cluster-1.5.0.jar
-FTP_VERSION=ftp-1.5.0.jar
-JNI_VERSION=jni-1.5.0.jar
-SERVICE_VERSION=service-1.5.0.jar
-UTIL_VERSION=util-1.5.0.jar
+BIGDATA_API_VERSION=`ls ${COMMON_LIB_DIR}| grep ^bigdata-api-[0-9].[0-9].[0-9].jar$`
+CLUSTER_VERSION=`ls ${COMMON_LIB_DIR}| grep ^cluster-[0-9].[0-9].[0-9].jar$`
+FTP_VERSION=`ls ${COMMON_LIB_DIR}| grep ^ftp-[0-9].[0-9].[0-9].jar$`
+JNI_VERSION=`ls ${COMMON_LIB_DIR}| grep ^jni-[0-9].[0-9].[0-9].jar$`
+SERVICE_VERSION=`ls ${COMMON_LIB_DIR}| grep ^service-[0-9].[0-9].[0-9].jar$`
+UTIL_VERSION=`ls ${COMMON_LIB_DIR}| grep ^util-[0-9].[0-9].[0-9].jar$`
 
 ## quote version(引用)
 GSON_VERSION=gson-2.8.0.jar
@@ -77,116 +76,116 @@ fi
 ############### 判断是否存在大数据集群 ################
 if [ ! -d ${BIGDATA_CLUSTER_PATH} ];then
    echo "${BIGDATA_CLUSTER_PATH} does not exit,please go to the node of the existing bigdata cluster !"
-   exit 0
+   exit 1
 fi
 
 ############### 判断是否存在配置文件 ################
 if [ ! -e ${SERVICE_CONF_DIR}/es-config.properties ];then
     echo "${SERVICE_CONF_DIR}/es-config.properties does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${FTP_CONF_DIR}/rocketmq.properties ];then
     echo "${FTP_CONF_DIR}/rocketmq.properties does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
     echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${SERVICE_CONF_DIR}/hbase-site.xml ];then
     echo "${SERVICE_CONF_DIR}/hbase-site.xml does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${FTP_CONF_DIR}/ftpAddress.properties ];then
     echo "${FTP_CONF_DIR}/ftpAddress.properties does not exit!"
-    exit 0
+    exit 1
 fi
 
 
 #################### 判断是否存在jar #####################
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_COMMON_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${HBASE_COMMON_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${GSON_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${GSON_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${JACKSON_CORE_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${JACKSON_CORE_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${SPARK_STREAMING_KAFKA_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${SPARK_STREAMING_KAFKA_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${SERVICE_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${SERVICE_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_SERVER_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${HBASE_SERVER_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${JNI_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${JNI_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${KAFKA_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${KAFKA_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION} ];then
     echo "${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${FTP_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${FTP_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${BIGDATA_API_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${BIGDATA_API_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${FTP_LIB_DIR}/${ROCKETMQ_CLIENT_VERSION} ];then
     echo "${FTP_LIB_DIR}/${ROCKETMQ_CLIENT_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${FTP_LIB_DIR}/${ROCKETMQ_COMMON_VERSION} ];then
     echo "${FTP_LIB_DIR}/${ROCKETMQ_COMMON_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${FTP_LIB_DIR}/${ROCKETMQ_REMOTING_VERSION} ];then
     echo "${FTP_LIB_DIR}/${ROCKETMQ_REMOTING_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${FTP_LIB_DIR}/${FASTJSON_VERSION} ];then
     echo "${FTP_LIB_DIR}/${FASTJSON_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${UTIL_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${UTIL_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${COMMON_LIB_DIR}/${CLUSTER_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${CLUSTER_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} does not exit!"
-    exit 0
+    exit 1
 fi
 
 ################## 离线告警任务 ###################
@@ -225,3 +224,14 @@ ${FTP_CONF_DIR}/ftpAddress.properties,\
 ${CLUSTER_CONF_DIR}/sparkJob.properties,\
 ${FTP_CONF_DIR}/rocketmq.properties \
 ${COMMON_LIB_DIR}/${CLUSTER_VERSION} > ${LOG_FILE} 2>&1 &
+
+
+if [ $? -eq 0 ];then
+    echo "Start faceOffLineAlarmJob success!!!"
+    echo "==================================================="  | tee -a ${LOG_FILE}
+    echo "$(date "+%Y-%m-%d  %H:%M:%S")  start faceOffLineAlarmJob Success!"  | tee  -a  ${LOG_FILE}
+else
+     echo "==================================================="  | tee -a ${LOG_FILE}
+     echo "$(date "+%Y-%m-%d  %H:%M:%S")  start faceOffLineAlarmJob Failure!"     | tee  -a  ${LOG_FILE}
+     exit 1
+fi

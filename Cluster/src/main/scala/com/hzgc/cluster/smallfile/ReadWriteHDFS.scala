@@ -78,24 +78,24 @@ object ReadWriteHDFS {
 
     /**
       * 根据时间循环遍历根目录path下的parquet 文件,
-      *
-      * @param dateString 时间
+      * maxSingleSize 到 minSingleSize 之间的文件，过滤掉
       * @param path       根目录path
       * @param fs         hdfs 文件系统对象
       * @param files      最终保存的文件
       */
-    def getParquetFilesV2(dateString: String, path: Path, fs: FileSystem, files: java.util.ArrayList[String]) {
+    def getParquetFilesV2(maxSingleSize : Double, minSingleSize : Double,path: Path,
+                          fs: FileSystem, files: java.util.ArrayList[String]) {
         if (fs != null && path != null) {
             val fileStatusArr = fs.listStatus(path)
             for (fileStatus <- fileStatusArr) {
                 val finalPathString = fileStatus.getPath.toString
                 if (fileStatus.isDirectory()) {
-                    getParquetFiles(dateString, fileStatus.getPath, fs, files)
+                    getParquetFilesV2(maxSingleSize, minSingleSize, fileStatus.getPath, fs, files)
                 } else if (fileStatus.isFile && finalPathString.endsWith(".parquet")
-                    && finalPathString.contains(dateString) && !fileStatus.getPath.toString.contains("_temporary/")) {
+                    && !fileStatus.getPath.toString.contains("_temporary/")) {
                     val cos : ContentSummary = fs.getContentSummary(new Path(finalPathString))
                     val sizeM : Long = cos.getLength/1024/1024
-                    if (sizeM > 200 && sizeM < 300) {
+                    if (sizeM >= minSingleSize && sizeM <= maxSingleSize) {
 
                     } else {
                         files.add(finalPathString)

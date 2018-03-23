@@ -3,7 +3,6 @@
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    load-parquet-files.sh
 ## Description: 加载分区数据到peroson_table
-## Version:     1.0
 ## Author:      qiaokaifeng
 ## Created:     2017-11-18
 ################################################################################
@@ -31,9 +30,11 @@ fi
 
 
 SPARK_STREAMING_KAFKA=1.6.2
-RELEASE_VERSION=1.5.0
 KAFKA_VERSION=1.0.0
 SCALA_VERSION=2.11
+
+SERVICE_VERSION=`ls ${COMMON_LIB_DIR}| grep ^service-[0-9].[0-9].[0-9].jar$`
+CLUSTER_VERSION=`ls ${COMMON_LIB_DIR}| grep ^cluster-[0-9].[0-9].[0-9].jar$`
 
 hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/load-parquet-files.properties)
 hdfsPath=$(sed -n '2p' ${CONF_DIR}/load-parquet-files.properties)
@@ -51,8 +52,8 @@ function load_parquet()
     spark-submit --class com.hzgc.cluster.loaddata.LoadParquetFile \
     --master local[*] \
     --driver-memory 4g \
-    --jars ${COMMON_LIB}/service-${RELEASE_VERSION}.jar, \
-    ${COMMON_LIB}/cluster-${RELEASE_VERSION}.jar ${hdfsClusterName} ${hdfsPath} ${tableName}
+    --jars ${COMMON_LIB}/${SERVICE_VERSION}, \
+    ${COMMON_LIB}/${CLUSTER_VERSION} ${hdfsClusterName} ${hdfsPath} ${tableName}
     if [ "$?" -eq "0" ] ; then
         echo "******************** 更新元数据完成 ***************** "
     else

@@ -1,10 +1,12 @@
 package com.hzgc.cluster.consumer;
 
-import com.hzgc.ftpserver.producer.FaceObject;
+import com.hzgc.collect.expand.processer.FaceObject;
+import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.service.dynamicrepo.DynamicTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
-import com.hzgc.dubbo.feature.FaceAttribute;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.rest.RestStatus;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -46,6 +48,8 @@ public class PutDataToEs implements Serializable {
         int huzi = faceAttr.getHuzi();
         map.put(DynamicTable.HUZI, huzi);
         int tie = faceAttr.getTie();
+        int sharpness = faceAttr.getSharpness();
+        map.put(DynamicTable.SHARPNESS, sharpness);
         map.put(DynamicTable.TIE, tie);
         map.put(DynamicTable.DATE, date);
         map.put(DynamicTable.SEARCHTYPE, searchtype);
@@ -62,4 +66,23 @@ public class PutDataToEs implements Serializable {
             return 0;
         }
     }
+
+    public int upDateDataToEs(String ftpurl, String cluserId, String alarmTime, int alarmId) {
+        UpdateResponse updateResponse = new UpdateResponse();
+        Map<String, Object> map = new HashMap<>();
+        map.put(DynamicTable.ALARM_ID, alarmId);
+        map.put(DynamicTable.ALARM_TIME, alarmTime);
+        map.put(DynamicTable.CLUSTERING_ID, cluserId);
+        if (ftpurl != null) {
+            updateResponse = ElasticSearchHelper.getEsClient().prepareUpdate(DynamicTable.DYNAMIC_INDEX,
+                    DynamicTable.PERSON_INDEX_TYPE, ftpurl).setDoc(map).get();
+        }
+        if (updateResponse.status().getStatus() == 200) {
+            return RestStatus.OK.getStatus();
+        } else {
+            return RestStatus.CREATED.getStatus();
+        }
+
+    }
+
 }
