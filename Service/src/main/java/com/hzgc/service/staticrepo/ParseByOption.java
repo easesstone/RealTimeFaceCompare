@@ -454,7 +454,7 @@ public class ParseByOption {
             setValues.add(idcard);
         }
         if(person.get(ObjectInfoTable.SEX) != null) {
-            int sex = (int) person.get(ObjectInfoTable.SEX);
+            int sex = Integer.parseInt((String) person.get(ObjectInfoTable.SEX));
             sql.append(", ");
             sql.append(ObjectInfoTable.SEX);
             setValues.add(sex);
@@ -480,14 +480,14 @@ public class ParseByOption {
         }
 
         if(person.get(ObjectInfoTable.IMPORTANT) != null) {
-            int important = (int) person.get(ObjectInfoTable.IMPORTANT);
+            int important = Integer.parseInt(String.valueOf(person.get(ObjectInfoTable.IMPORTANT)));
             sql.append(", ");
             sql.append(ObjectInfoTable.IMPORTANT);
             setValues.add(important);
         }
 
         if(person.get(ObjectInfoTable.STATUS) != null) {
-            int status = (int) person.get(ObjectInfoTable.STATUS);
+            int status = Integer.parseInt((String) person.get(ObjectInfoTable.STATUS));
             sql.append(", ");
             sql.append(ObjectInfoTable.STATUS);
             setValues.add(status);
