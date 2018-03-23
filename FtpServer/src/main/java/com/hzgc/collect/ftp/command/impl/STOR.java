@@ -152,6 +152,7 @@ public class STOR extends AbstractCommand {
                         event.setAbsolutePath(file.getFileAbsolutePa());
                         event.setFtpPath(ftpHostNameUrl);
                         event.setStatus("0");
+                        event.setRelativePath(fileName);
                         FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
                         //发送到rocketMQ
                         RocketMQProducer

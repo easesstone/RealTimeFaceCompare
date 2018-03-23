@@ -24,11 +24,24 @@ public class LogEvent {
     private long timeStamp;
 
     /**
+     * 相对路径
+     */
+    private String relativePath;
+
+    /**
      * 处理是否成功的标志
      * 0:在接收日志中为缺省值，在处理日志中为处理成功的标志
      * 1:只存在处理日志中，处理失败的标志
      */
     private String status;
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
 
     public String getFtpPath() {
         return ftpPath;
