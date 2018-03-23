@@ -1,7 +1,7 @@
 #!/bin/bash
 ################################################################################
 ## Copyright:    HZGOSUN Tech. Co, BigData
-## Filename:     add-udf.sh
+## Filename:     add-spark-udf.sh
 ## Description:  向hive中添加并注册udf函数
 ## Author:       qiaokaifeng
 ## Created:      2017-11-28
