@@ -29,6 +29,7 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     private static String port;
     private static String dataPorts;
     private static String implicitSsl;
+    private static Sharpness sharpness;
 
     static {
         String properName = "cluster-over-ftp.properties";
@@ -73,7 +74,20 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     /**
      * set方法。验证配置文件中的值是否为符合条件的格式。
      */
+    private static void setSharpness() {
+        String str = props.getProperty("sharpness");
+        String[] strArr = str.split(":");
+        sharpness = new Sharpness();
+        try {
+            sharpness.setWeight(Integer.parseInt(strArr[0]));
+            sharpness.setWeight(Integer.parseInt(strArr[1]));
+        } catch (Exception e) {
+            LOG.error("Sharpness value is error, please check");
+            e.printStackTrace();
+            System.exit(1);
+        }
 
+    }
     private static void setPort() {
         port = verifyPort("listener-port", "2121", props, LOG);
     }
@@ -175,6 +189,9 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         return Integer.valueOf(faceDetectorNumber);
     }
 
+    public static Sharpness getSharpness() {
+        return sharpness;
+    }
 
     /**
      * 获取Properties属性的资源文件变量

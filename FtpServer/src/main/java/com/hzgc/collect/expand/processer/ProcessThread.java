@@ -4,9 +4,7 @@ package com.hzgc.collect.expand.processer;
 import com.hzgc.collect.expand.conf.CommonConf;
 import com.hzgc.collect.expand.log.DataProcessLogWriter;
 import com.hzgc.collect.expand.log.LogEvent;
-import com.hzgc.collect.expand.util.FtpUtils;
-import com.hzgc.collect.expand.util.ProducerKafka;
-import com.hzgc.collect.expand.util.ProducerOverFtpProperHelper;
+import com.hzgc.collect.expand.util.*;
 import com.hzgc.dubbo.dynamicrepo.SearchType;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.jni.FaceFunction;
@@ -27,8 +25,10 @@ public class ProcessThread implements Runnable {
         LogEvent event;
         try {
             while ((event = queue.take()) != null) {
-                FaceAttribute attribute = FaceFunction.featureExtract(event.getAbsolutePath());
-                FtpPathMessage message = FtpUtils.getFtpPathMessage(event.getFtpPath());
+                Sharpness sharpness = ClusterOverFtpProperHelper.getSharpness();
+                FaceAttribute attribute =
+                        FaceFunction.featureExtract(event.getAbsolutePath(), sharpness.getWeight(), sharpness.getHeight());
+                FtpPathMessage message = FtpUtils.getFtpPathMessage(event.getRelativePath());
                 if (attribute.getFeature() != null) {
                     FaceObject faceObject = new FaceObject(message.getIpcid()
                             , message.getTimeStamp()

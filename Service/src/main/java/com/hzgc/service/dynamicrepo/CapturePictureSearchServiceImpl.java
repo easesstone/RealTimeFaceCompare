@@ -4,7 +4,6 @@ import com.hzgc.dubbo.attribute.*;
 import com.hzgc.dubbo.dynamicrepo.*;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
 import com.hzgc.service.util.HBaseHelper;
-import com.hzgc.jni.NativeFunction;
 import com.hzgc.util.common.UuidUtil;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
@@ -81,6 +80,23 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                             for (SingleResult singleResult : searchResult.getResults()) {
                                 DynamicPhotoServiceHelper.pageSplit(singleResult.getPictures(), resultOption);
                             }
+                        }
+                        if (resultOption.getSingleResultOptions() != null
+                                && resultOption.getSingleResultOptions().size() > 0) {
+                            List<SingleResult> singleList = searchResult.getResults();
+                            List<SingleResult> tempList = new ArrayList<>();
+                            for (SingleResult singleResult: singleList) {
+                                boolean isContanis = false;
+                                for (SingleResultOption singleResultOption: resultOption.getSingleResultOptions()) {
+                                    if (Objects.equals(singleResult.getId(), singleResultOption.getId())) {
+                                        isContanis = true;
+                                    }
+                                }
+                                if (!isContanis) {
+                                    tempList.add(singleResult);
+                                }
+                            }
+                            singleList.removeAll(tempList);
                         }
                         break;
                     case DynamicTable.CAR_TYPE:
