@@ -79,13 +79,10 @@ public class DynamicTable implements Serializable {
     static final String SIMILARITY = "similarity";
     //hive中特征值比对udf函数
     static final String FUNCTION_NAME = "compare";
-
+    //人脸属性-图片是否清晰,0清晰1不清晰
+    public static final String SHARPNESS = "sharpness";
     static final String GROUP_FIELD = "id";
-
-    //
     public static final String ALARM_ID = "alarmid";
-    //
     public static final String ALARM_TIME = "alarm_time";
-    //
     public static final String CLUSTERING_ID = "clusterid";
 }

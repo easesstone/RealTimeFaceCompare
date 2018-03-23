@@ -48,6 +48,8 @@ public class PutDataToEs implements Serializable {
         int huzi = faceAttr.getHuzi();
         map.put(DynamicTable.HUZI, huzi);
         int tie = faceAttr.getTie();
+        int sharpness = faceAttr.getSharpness();
+        map.put(DynamicTable.SHARPNESS, sharpness);
         map.put(DynamicTable.TIE, tie);
         map.put(DynamicTable.DATE, date);
         map.put(DynamicTable.SEARCHTYPE, searchtype);

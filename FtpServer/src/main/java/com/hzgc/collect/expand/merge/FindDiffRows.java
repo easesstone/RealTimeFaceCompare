@@ -60,7 +60,6 @@ class FindDiffRows {
             if (lastEventCount.getCount() != eventCount.getCount()) {
                 notProList.add(allRows.get(allRows.size() - 1));
             }
-            LOG.info("Testing unionAllRows success..");
         }
         notProList.sort(new ListComparator());
         return notProList;

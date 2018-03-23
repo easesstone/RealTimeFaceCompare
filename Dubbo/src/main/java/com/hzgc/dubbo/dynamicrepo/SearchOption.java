@@ -30,6 +30,8 @@ public class SearchOption implements Serializable {
 
     private List<TimeInterval> intervals;    //搜索的时间区间，为空或者没有传入这个参数时候搜索整天
 
+    private boolean isClean;    //是否开启清晰度评价，true为开启，false为不开启
+
     private List<Attribute> attributes;    //参数筛选选项
 
     private List<SortParam> sortParams;    //排序参数
@@ -148,6 +150,14 @@ public class SearchOption implements Serializable {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public boolean isClean() {
+        return isClean;
+    }
+
+    public void setClean(boolean clean) {
+        isClean = clean;
     }
 
     @Override

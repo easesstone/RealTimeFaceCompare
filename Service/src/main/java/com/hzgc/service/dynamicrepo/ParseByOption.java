@@ -419,10 +419,18 @@ class ParseByOption {
             getDeviceId(finalSql, option);
         }
 
+        if (option.isClean()) {
+            getClean(finalSql);
+        }
+
         if (option.getSortParams() != null && option.getSortParams().size() > 0) {
             getSortParams(finalSql, option);
         }
         finalSql.append(" limit 1000");
         return finalSql.toString();
+    }
+
+    private static void getClean(StringBuilder finalSql) {
+        finalSql.append(" and ").append(DynamicTable.SHARPNESS).append( " = 0 ");
     }
 }

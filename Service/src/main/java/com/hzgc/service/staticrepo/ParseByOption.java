@@ -139,6 +139,7 @@ public class ParseByOption {
     private static StringBuffer sameSortSql(List<StaticSortParam> params, boolean serarchByPics) {
         StringBuffer sameSortSql = new StringBuffer("");
         if (params != null) {
+            int count = 0;
             if (serarchByPics) {
                 if (params.contains(StaticSortParam.RELATEDASC)) {
                     sameSortSql.append("sim asc");
@@ -152,24 +153,37 @@ public class ParseByOption {
                         sameSortSql.append(", ");
                     }
                 }
+
             }
             if (params.contains(StaticSortParam.IMPORTANTASC)) {
                 sameSortSql.append(ObjectInfoTable.IMPORTANT);
                 sameSortSql.append(" asc");
+                count ++;
             }
             if (params.contains(StaticSortParam.IMPORTANTDESC)) {
                 sameSortSql.append(ObjectInfoTable.IMPORTANT);
                 sameSortSql.append(" desc");
+                count ++;
             }
             if (params.contains(StaticSortParam.TIMEASC)) {
-                sameSortSql.append(", ");
-                sameSortSql.append(ObjectInfoTable.CREATETIME);
-                sameSortSql.append(" asc");
+                if (count  > 0) {
+                    sameSortSql.append(", ");
+                    sameSortSql.append(ObjectInfoTable.CREATETIME);
+                    sameSortSql.append(" asc");
+                } else {
+                    sameSortSql.append(ObjectInfoTable.CREATETIME);
+                    sameSortSql.append(" asc");
+                }
             }
             if (params.contains(StaticSortParam.TIMEDESC)) {
-                sameSortSql.append(", ");
-                sameSortSql.append(ObjectInfoTable.CREATETIME);
-                sameSortSql.append(" desc");
+                if (count > 0) {
+                    sameSortSql.append(", ");
+                    sameSortSql.append(ObjectInfoTable.CREATETIME);
+                    sameSortSql.append(" desc");
+                } else {
+                    sameSortSql.append(ObjectInfoTable.CREATETIME);
+                    sameSortSql.append(" desc");
+                }
             }
         }
         return sameSortSql;
@@ -454,7 +468,7 @@ public class ParseByOption {
             setValues.add(idcard);
         }
         if(person.get(ObjectInfoTable.SEX) != null) {
-            int sex = (int) person.get(ObjectInfoTable.SEX);
+            int sex = Integer.parseInt((String) person.get(ObjectInfoTable.SEX));
             sql.append(", ");
             sql.append(ObjectInfoTable.SEX);
             setValues.add(sex);
@@ -480,14 +494,14 @@ public class ParseByOption {
         }
 
         if(person.get(ObjectInfoTable.IMPORTANT) != null) {
-            int important = (int) person.get(ObjectInfoTable.IMPORTANT);
+            int important = Integer.parseInt(String.valueOf(person.get(ObjectInfoTable.IMPORTANT)));
             sql.append(", ");
             sql.append(ObjectInfoTable.IMPORTANT);
             setValues.add(important);
         }
 
         if(person.get(ObjectInfoTable.STATUS) != null) {
-            int status = (int) person.get(ObjectInfoTable.STATUS);
+            int status = Integer.parseInt((String) person.get(ObjectInfoTable.STATUS));
             sql.append(", ");
             sql.append(ObjectInfoTable.STATUS);
             setValues.add(status);
