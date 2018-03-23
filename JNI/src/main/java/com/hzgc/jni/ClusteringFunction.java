@@ -5,12 +5,12 @@ import java.io.Serializable;
 
 public class ClusteringFunction implements Serializable {
     /**
-     * ¾ÛÀà¼ÆËã
+     * èšç±»è®¡ç®—
      *
      * @param features features array
      * @param fileName file name year-month.txt(2018-02.txt)
      * @param filePath absolute path of the results file
-     * @return 0 or 1£¬1 success£¬0 fail
+     * @return 0 or 1ï¼Œ1 successï¼Œ0 fail
      */
     public static native int clusteringComputer(float[] features, String fileName, String filePath);
 
