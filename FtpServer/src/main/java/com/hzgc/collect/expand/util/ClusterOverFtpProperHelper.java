@@ -30,6 +30,8 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
     private static String dataPorts;
     private static String implicitSsl;
     private static Sharpness sharpness;
+    private static String zookeeperAddress;
+    private static String ftpSwitch;
 
     static {
         String properName = "cluster-over-ftp.properties";
@@ -53,6 +55,8 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
                 setPort();
                 setDataPorts();
                 setImplicitSsl();
+                setZookeeperAddress();
+                setFtpSwitch();
             } else {
                 LOG.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
@@ -136,6 +140,13 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
         faceDetectorNumber = verifyPositiveIntegerValue("face.detector.number","", props, LOG);
     }
 
+    private static void setZookeeperAddress() {
+        zookeeperAddress = verifyIpPlusPortList("zookeeperAddress", props, LOG);
+    }
+
+    public static void setFtpSwitch() {
+        ftpSwitch = verifyBooleanValue("ftp-switch", "true", props, LOG);
+    }
 
     /**
      * get方法。提供获取配置文件中的值的方法。
@@ -191,6 +202,14 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
 
     public static Sharpness getSharpness() {
         return sharpness;
+    }
+
+    public static String getZookeeperAddress() {
+        return zookeeperAddress;
+    }
+
+    public static String getFtpSwitch() {
+        return ftpSwitch;
     }
 
     /**
