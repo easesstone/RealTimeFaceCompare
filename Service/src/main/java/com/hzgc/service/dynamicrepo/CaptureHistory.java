@@ -23,9 +23,9 @@ class CaptureHistory {
         ElasticSearchHelper.getEsClient();
     }
 
-    List<SearchResult> getRowKey_history(SearchOption option, List<String> ipcId, List<SortParam> sortParams) {
+    List<SearchResult> getRowKey_history(SearchOption option, List<SortParam> sortParams) {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder_history(option);
-        return dealWithSearchRequestBuilder_history(searchRequestBuilder, ipcId, sortParams, option);
+        return dealWithSearchRequestBuilder_history(searchRequestBuilder, sortParams, option);
     }
 
     private SearchRequestBuilder getSearchRequestBuilder_history(SearchOption option) {
@@ -50,7 +50,7 @@ class CaptureHistory {
         //排序条件
         List<SortParam> sortParams = option.getSortParams();
         String px = "desc";
-        if (searchType != null) {
+        if (sortParams != null) {
             for (SortParam s : sortParams) {
                 if (s.name().equals("TIMEDESC")) {
                     px = "desc";
@@ -131,31 +131,92 @@ class CaptureHistory {
 
 
     private List<SearchResult> dealWithSearchRequestBuilder_history
-            (SearchRequestBuilder searchRequestBuilder, List<String> ipcId, List<SortParam> sortParams, SearchOption option) {
+            (SearchRequestBuilder searchRequestBuilder, List<SortParam> sortParams, SearchOption option) {
         // 最终要返回的值
         List<SearchResult> resultList = new ArrayList<>();
         // requestBuilder 为空，则返回空
+        List<String> ipcId = option.getDeviceIds();
         if (ipcId != null && ipcId.size() > 0 && sortParams.get(0).name().equals("IPC")) {
             if (searchRequestBuilder == null) {
                 return resultList;
             }
             for (String ipcid : ipcId) {
+                List<SortParam> sortParamsCount = option.getSortParams();
+                String px = "desc";
+                if (sortParamsCount != null) {
+                    for (SortParam s : sortParams) {
+                        if (s.name().equals("TIMEDESC")) {
+                            px = "desc";
+                        } else if (s.name().equals("TIMEASC")) {
+                            px = "asc";
+                        }
+                    }
+                }
                 int offset = option.getOffset();
                 LOG.info("offset is:" + offset);
                 int count = option.getCount();
                 LOG.info("count is:" + count);
                 BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
                 totalBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcid).analyzer("standard"));
-                searchRequestBuilder.setQuery(totalBQ).setFrom(offset).setSize(count);
+                // 时间段
+                List<TimeInterval> timeIntervals = option.getIntervals();
+                //TimeIntervals 时间段的封装类
+                TimeInterval timeInterval;
+                // 时间段的BoolQueryBuilder
+                BoolQueryBuilder timeInQB = QueryBuilders.boolQuery();
+                if (timeIntervals != null) {
+                    for (TimeInterval timeInterval1 : timeIntervals) {
+                        timeInterval = timeInterval1;
+                        int start_sj = timeInterval.getStart();
+                        String start_ts = String.valueOf(start_sj * 100 / 60 + start_sj % 60);
+                        int end_sj = timeInterval.getEnd();
+                        String end_ts = String.valueOf(end_sj * 100 / 60 + end_sj % 60);
+                        timeInQB.should(QueryBuilders.rangeQuery(DynamicTable.TIMESLOT).gte(start_ts).lte(end_ts));
+                        totalBQ.must(timeInQB);
+                    }
+                }
+                List<Attribute> attributes = option.getAttributes();
+                //筛选人脸属性
+                if (attributes != null) {
+                    for (Attribute attribute : attributes) {
+                        String identify = attribute.getIdentify().toLowerCase();
+                        String logic = String.valueOf(attribute.getLogistic());
+                        List<AttributeValue> attributeValues = attribute.getValues();
+                        for (AttributeValue attributeValue : attributeValues) {
+                            int attr = attributeValue.getValue();
+                            if (logic.equals("OR")) {
+                                totalBQ.should(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                            } else {
+                                totalBQ.must(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                            }
+                        }
+                    }
+                }
+                String startime = option.getStartDate();
+                String endtime = option.getEndDate();
+                BoolQueryBuilder timeBQ = QueryBuilders.boolQuery();
+                if (startime != null && endtime != null && !startime.equals("") && !endtime.equals("")) {
+                    timeBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startime).lte(endtime));
+                }
+                totalBQ.must(timeBQ);
+                SearchRequestBuilder requestBuilder = ElasticSearchHelper.getEsClient()
+                        .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                        .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                        .setQuery(totalBQ)
+                        .setFrom(offset)
+                        .setSize(count)
+                        .addSort("exacttime", SortOrder.fromString(px));
+                SearchResponse searchResponseCount =  requestBuilder.get();
+                SearchHits searchHitsCount = searchResponseCount.getHits();
+                int totolCount = (int) searchHitsCount.getTotalHits();
                 SearchResult result = new SearchResult();
                 List<SingleResult> results = new ArrayList<>();
                 SingleResult singleResult = new SingleResult();
                 List<GroupByIpc> picturesByIpc = new ArrayList<>();
                 GroupByIpc groupByIpc = new GroupByIpc();
-                SearchResponse searchResponse = searchRequestBuilder.get();
+                SearchResponse searchResponse = requestBuilder.get();
                 SearchHits searchHits = searchResponse.getHits();
                 SearchHit[] hits = searchHits.getHits();
-                int totolCount = (int) searchHits.getTotalHits();
                 List<CapturedPicture> persons = new ArrayList<>();
                 CapturedPicture capturePicture;
                 if (hits.length > 0) {
@@ -175,12 +236,12 @@ class CaptureHistory {
                             persons.add(capturePicture);
                         }
                     }
-                    singleResult.setTotal(totolCount);
-                    singleResult.setPicturesByIpc(picturesByIpc);
-                    singleResult.setPictures(persons);
-                    results.add(singleResult);
-                    result.setResults(results);
                 }
+                singleResult.setTotal(totolCount);
+                singleResult.setPicturesByIpc(picturesByIpc);
+                singleResult.setPictures(persons);
+                results.add(singleResult);
+                result.setResults(results);
                 resultList.add(result);
             }
         } else if (ipcId != null && ipcId.size() > 0 && !sortParams.get(0).name().equals("IPC")) {

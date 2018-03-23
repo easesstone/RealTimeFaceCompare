@@ -309,10 +309,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     @Override
     public List<SearchResult> getCaptureHistory(SearchOption option) {
         CaptureHistory captureHistory = new CaptureHistory();
-        List<String> ipcId = option.getDeviceIds();
         option.setSearchType(SearchType.PERSON);
         List<SortParam> sortParams = option.getSortParams();
-        return captureHistory.getRowKey_history(option, ipcId,sortParams);
+        return captureHistory.getRowKey_history(option,sortParams);
     }
 
     /**
