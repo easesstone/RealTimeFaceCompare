@@ -5,19 +5,19 @@ import java.util.List;
 /**
  * 人脸抓拍订阅功能（过滤前端设备）
  */
-public interface MQSubscription {
+public interface FtpSubscription {
     /**
      * 打开人脸抓拍订阅功能
      *
      * @param userId    用户ID
      * @param ipcIdList 设备ID列表
      */
-    void openMQReception(String userId, List<String> ipcIdList);
+    void openFtpReception(String userId, List<String> ipcIdList);
 
     /**
      * 关闭人脸抓拍订阅功能
      *
      * @param userId 用户ID
      */
-    void closeMQReception(String userId);
+    void closeFtpReception(String userId);
 }
