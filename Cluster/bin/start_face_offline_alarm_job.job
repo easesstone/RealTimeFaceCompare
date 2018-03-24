@@ -1,4 +1,0 @@
-type=command
-
-CLUSTER_BIN_DIR=/opt/RealTimeCompare/cluster/bin
-command=sh ${CLUSTER_BIN_DIR}/start-face-offline-alarm-job.sh

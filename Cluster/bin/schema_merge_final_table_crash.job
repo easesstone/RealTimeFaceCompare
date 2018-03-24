@@ -1,3 +1,0 @@
-type=command
-CLUSTER_BIN_DIR=/opt/RealTimeCompare/cluster/bin
-command=sh ${CLUSTER_BIN_DIR}/schema-merge-final-table-crash.sh
