@@ -6,6 +6,13 @@
 	http://code.alibabatech.com/schema/dubbo
 	http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
+    <!--ftp 模块接口以及实现-->
+    <bean id="FtpSubscription" class="com.hzgc.service.address.FtpSubscriptionImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.address.FtpSubscription" ref="FtpSubscription" />
+
+    <bean id="FtpShow" class="com.hzgc.service.address.FtpShowImpl"/>
+    <dubbo:service interface="com.hzgc.dubbo.address.FtpShow" ref="FtpShow" />
+
     <!--device 模块的接口和实现-->
     <bean id="DeviceService" class="com.hzgc.service.device.DeviceServiceImpl"/>
     <dubbo:service interface="com.hzgc.dubbo.device.DeviceService" ref="DeviceService" />
