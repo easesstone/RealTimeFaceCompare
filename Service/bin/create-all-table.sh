@@ -19,7 +19,7 @@ CONF_SERVICE_DIR=$SERVICE_DIR/conf                     ### 配置文件目录
 LOG_DIR=$SERVICE_DIR/logs                              ### log日志目录
 LOG_FILE=$LOG_DIR/create-all.log                       ### log日志文件
 
-sh create-dynamic-table.sh
-sh create-static-repos.sh
+sh ${BIN_DIR}/create-dynamic-table.sh
+sh ${BIN_DIR}/create-static-repos.sh
 
 set +x
