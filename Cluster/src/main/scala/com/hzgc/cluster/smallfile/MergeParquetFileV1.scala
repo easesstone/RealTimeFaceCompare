@@ -70,8 +70,10 @@ object MergeParquetFileV1 {
 
         val numOfParquetFiles = parquetFiles.size
         if (numOfParquetFiles == 0) {
+            LOG.info("*************************************************************************************")
             LOG.info("there is no parquet files in mid_table, please check the streaming store application.")
-            System.exit(1)
+            LOG.info("*************************************************************************************")
+            System.exit(0)
         }
         var pathArr : Array[String] = new Array[String](numOfParquetFiles)
         if (numOfParquetFiles >= 10000) {
@@ -87,10 +89,12 @@ object MergeParquetFileV1 {
         val personDF = sparkSession.read.parquet(pathArr : _*)
         personDF.persist()
         if (personDF.count() == 0) {
+            LOG.info("*************************************************************************************")
             LOG.info("there are parquet files, but no data in parquet files, just to delete the files.")
+            LOG.info("*************************************************************************************")
             // 删除临时表格中的文件
             ReadWriteHDFS.del(pathArr, fs)
-            System.exit(2)
+            System.exit(0)
         }
         personDF.printSchema()
 
@@ -135,13 +139,10 @@ object MergeParquetFileV1 {
         // 删除临时表格上的文件
         ReadWriteHDFS.del(pathArr, fs)
 
-        // 8, Reflesh spark store crash table data
-        sql("REFRESH TABLE " + tmpTableHdfsPath.substring(tmpTableHdfsPath.lastIndexOf("/") + 1))
-        sql("REFRESH TABLE " + tableName)
-
         sparkSession.close()
-
+        LOG.info("*************************************************************************************")
         LOG.info("总共花费的时间是： " + (System.currentTimeMillis() - start))
+        LOG.info("*************************************************************************************")
     }
 }
 
