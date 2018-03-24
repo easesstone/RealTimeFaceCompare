@@ -3,7 +3,6 @@
     <id>FtpServer</id>
     <includeBaseDirectory>false</includeBaseDirectory>
     <formats>
-        <format>tar.gz</format>
         <format>dir</format>
     </formats>
     <fileSets>
@@ -17,7 +16,7 @@
         <fileSet>
             <directory>${project.basedir}/src/main/resources</directory>
             <includes>
-               <include>**</include>
+               <include>*.properties</include>
            </includes>
             <excludes>
                 <exclude>spring-context.xml</exclude>

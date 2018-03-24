@@ -7,7 +7,7 @@
 	http://code.alibabatech.com/schema/dubbo/dubbo.xsd"
 >
 
-    <bean id="FtpAddresService" class="com.hzgc.ftpserver.address.FtpAddressServiceImpl"/>
+    <bean id="FtpAddresService" class="com.hzgc.collect.ftp.address.FtpAddressServiceImpl"/>
 
     <dubbo:service interface="com.hzgc.dubbo.address.FtpAddressService" ref="FtpAddresService" />
 </beans>

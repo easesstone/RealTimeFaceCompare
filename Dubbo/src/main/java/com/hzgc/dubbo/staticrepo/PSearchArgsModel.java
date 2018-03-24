@@ -1,54 +1,39 @@
 package com.hzgc.dubbo.staticrepo;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
+import com.hzgc.dubbo.feature.FaceAttribute;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 即时查询的时候传过来的参数
+ */
 public class PSearchArgsModel implements Serializable {
     private String rowkey;  // 即id
     private String paltaformId; // 平台Id
     private String name;  // 姓名
     private String idCard;  // 身份证号
-    private int sex; // 性别
-    private byte[] image; // 图片
-    private String feature; // 特征值
+    private Integer sex; // 性别
+
+    private Map<String,byte[]> images;  //图片列表
+    private Map<String,FaceAttribute> faceAttributeMap; //特征值列表
+    private boolean theSameMan; //是否是同一个人
+    private List<StaticSortParam> staticSortParams; //排序参数
+
     private float thredshold; // 阈值
     private List<String> pkeys; // 人员类型列表
     private String creator; // 布控人
     private String cphone; // 布控人手机号
-    private int start;  // 开始的行数
-    private int pageSize;  // 需要返回多少行
+    private Integer start;  // 开始的行数
+    private Integer pageSize;  // 需要返回多少行
     private String searchId;  // 搜索Id
     private String searchType; // 搜索类型，对应的是调用的函数的名字
     private boolean moHuSearch; // 是否模糊查询， true ,是，false 不是
+    private Integer important; //0,重点关注，1非重点关注
+    private Integer status;  // 0 ,常住人口，1 建议迁出
 
     public PSearchArgsModel() {
-    }
-
-    public PSearchArgsModel(String rowkey, String paltaformId,
-                            String name, String idCard, int sex,
-                            byte[] image, String feature,
-                            int thredshold, List<String> pkeys,
-                            String creator, String cphone,
-                            int start, int pageSize,
-                            String searchId, String searchType,
-                            boolean moHuSearch) {
-        this.rowkey = rowkey;
-        this.paltaformId = paltaformId;
-        this.name = name;
-        this.idCard = idCard;
-        this.sex = sex;
-        this.image = image;
-        this.feature = feature;
-        this.thredshold = thredshold;
-        this.pkeys = pkeys;
-        this.creator = creator;
-        this.cphone = cphone;
-        this.start = start;
-        this.pageSize = pageSize;
-        this.searchId = searchId;
-        this.searchType = searchType;
-        this.moHuSearch = moHuSearch;
     }
 
     public String getRowkey() {
@@ -83,28 +68,44 @@ public class PSearchArgsModel implements Serializable {
         this.idCard = idCard;
     }
 
-    public int getSex() {
+    public Integer getSex() {
         return sex;
     }
 
-    public void setSex(int sex) {
+    public void setSex(Integer sex) {
         this.sex = sex;
     }
 
-    public byte[] getImage() {
-        return image;
+    public Map<String, byte[]> getImages() {
+        return images;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setImages(Map<String, byte[]> images) {
+        this.images = images;
     }
 
-    public String getFeature() {
-        return feature;
+    public Map<String, FaceAttribute> getFaceAttributeMap() {
+        return faceAttributeMap;
     }
 
-    public void setFeature(String feature) {
-        this.feature = feature;
+    public void setFaceAttributeMap(Map<String, FaceAttribute> faceAttributeMap) {
+        this.faceAttributeMap = faceAttributeMap;
+    }
+
+    public boolean isTheSameMan() {
+        return theSameMan;
+    }
+
+    public void setTheSameMan(boolean theSameMan) {
+        this.theSameMan = theSameMan;
+    }
+
+    public List<StaticSortParam> getStaticSortParams() {
+        return staticSortParams;
+    }
+
+    public void setStaticSortParams(List<StaticSortParam> staticSortParams) {
+        this.staticSortParams = staticSortParams;
     }
 
     public float getThredshold() {
@@ -139,19 +140,19 @@ public class PSearchArgsModel implements Serializable {
         this.cphone = cphone;
     }
 
-    public int getStart() {
+    public Integer getStart() {
         return start;
     }
 
-    public void setStart(int start) {
+    public void setStart(Integer start) {
         this.start = start;
     }
 
-    public int getPageSize() {
+    public Integer getPageSize() {
         return pageSize;
     }
 
-    public void setPageSize(int pageSize) {
+    public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
 
@@ -179,6 +180,22 @@ public class PSearchArgsModel implements Serializable {
         this.moHuSearch = moHuSearch;
     }
 
+    public Integer getImportant() {
+        return important;
+    }
+
+    public void setImportant(Integer important) {
+        this.important = important;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "PSearchArgsModel{" +
@@ -187,8 +204,10 @@ public class PSearchArgsModel implements Serializable {
                 ", name='" + name + '\'' +
                 ", idCard='" + idCard + '\'' +
                 ", sex=" + sex +
-                ", image=" + Arrays.toString(image) +
-                ", feature='" + feature + '\'' +
+                ", images=" + images +
+                ", faceAttributeMap=" + faceAttributeMap +
+                ", theSameMan=" + theSameMan +
+                ", staticSortParams=" + staticSortParams +
                 ", thredshold=" + thredshold +
                 ", pkeys=" + pkeys +
                 ", creator='" + creator + '\'' +
@@ -198,6 +217,8 @@ public class PSearchArgsModel implements Serializable {
                 ", searchId='" + searchId + '\'' +
                 ", searchType='" + searchType + '\'' +
                 ", moHuSearch=" + moHuSearch +
+                ", important=" + important +
+                ", status=" + status +
                 '}';
     }
 }

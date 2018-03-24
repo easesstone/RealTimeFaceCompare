@@ -14,6 +14,14 @@
                 <include>README.md</include>
             </includes>
         </fileSet>
+        <!--项目部署文档 -->
+        <fileSet>
+            <directory>../Distribution/src/resources</directory>
+            <includes>
+                <include>Product-Deployment-Documentation.docx</include>
+            </includes>
+            <outputDirectory>\</outputDirectory>
+        </fileSet>
         <!--项目source文件-->
         <fileSet>
             <directory>../Distribution/bin</directory>
@@ -24,28 +32,28 @@
         </fileSet>
         <!--项目模块-->
         <fileSet>
-            <directory>../Cluster/target/cluster-1.5.0</directory>
+            <directory>../Cluster/target/cluster-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
             <outputDirectory>cluster</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../Dubbo/target/bigdata-api-1.5.0</directory>
+            <directory>../Dubbo/target/bigdata-api-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
             <outputDirectory>service</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../FtpServer/target/ftp-1.5.0</directory>
+            <directory>../FtpServer/target/ftp-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
             <outputDirectory>ftp</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../Service/target/service-1.5.0</directory>
+            <directory>../Service/target/service-${project.parent.version}</directory>
             <includes>
                 <include>**</include>
             </includes>
@@ -117,7 +125,7 @@
         <fileSet>
             <directory>../Distribution/src/resources</directory>
             <includes>
-                <include>**</include>
+                <include>*.properties</include>
             </includes>
             <outputDirectory>common/conf</outputDirectory>
         </fileSet>
