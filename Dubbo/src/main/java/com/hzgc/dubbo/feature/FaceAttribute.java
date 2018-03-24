@@ -38,6 +38,19 @@ public class FaceAttribute implements Serializable{
      */
     private int eyeglasses;
 
+    /**
+     * 清晰度评价,清晰为0，不清晰为1
+     */
+    private int sharpness;
+
+    public int getSharpness() {
+        return sharpness;
+    }
+
+    public void setSharpness(int sharpness) {
+        this.sharpness = sharpness;
+    }
+
     public float[] getFeature() {
         return feature;
     }

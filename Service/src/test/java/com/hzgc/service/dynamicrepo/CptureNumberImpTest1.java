@@ -1,33 +1,39 @@
 package com.hzgc.service.dynamicrepo;
 
-import com.hzgc.service.staticrepo.ElasticSearchHelper;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHits;
+import com.hzgc.dubbo.dynamicrepo.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 
 public class CptureNumberImpTest1 {
     public static void main(String[] args) {
-        List<String> lists = new ArrayList<>();
-        lists.add("3K01E84PAU00083");
-        lists.add("3K01E84PAU00498");
-        lists.add("2L04129PAU01933");
-        String startTime = "2018-02-01 10:00:00";
-        String endTime = "2018-03-02 11:00:00";
-       CptureNumberImpl cptureNumber = new CptureNumberImpl();
-       Map<String,Integer> map = cptureNumber.timeSoltNumber(lists,startTime,endTime);
-        System.out.println(map);
-//        System.out.println(Integer.MAX_VALUE);
-//        CptureNumberImpl cptureNumber = new CptureNumberImpl();
-//        Map<String,Integer> map = cptureNumber.dynaicNumberService(lists);
-//        Map<String,Integer> map1 = cptureNumber.staticNumberService("0001");
-//        System.out.println(map1);
+        SearchOption searchOption = new SearchOption();
+        List<String> deviceIds = new ArrayList<>();
+        //deviceIds.add("3B0383FPAG00883");
+        //deviceIds.add("3K01E84PAU00150");
+        deviceIds.add("2L04129PAU01933");
+        //deviceIds.add("DS-2CD2T20FD-I320160122AACH571485690");
+        searchOption.setDeviceIds(deviceIds);
+        List<SortParam> sortParams = new ArrayList<>();
+         //sortParams.add(SortParam.IPC);
+        sortParams.add(SortParam.TIMEDESC);
+        searchOption.setSortParams(sortParams);
+        searchOption.setStartDate("2018-03-12 00:00:00");
+        searchOption.setEndDate("2018-03-23 18:00:00");
+        searchOption.setOffset(0);
+        searchOption.setCount(30);
+        CapturePictureSearchServiceImpl capturePictureSearchService = new CapturePictureSearchServiceImpl();
+        List<SearchResult> list = capturePictureSearchService.getCaptureHistory(searchOption);
+        for (SearchResult s : list) {
+            List<SingleResult> singlelist = s.getResults();
+            for (SingleResult ss : singlelist) {
+                System.out.println(ss.getTotal()+"============");
+                List<CapturedPicture> capturedPictures = ss.getPictures();
+                for (CapturedPicture c : capturedPictures) {
+                    String a = c.getSurl();
+                    System.out.println(a);
+                }
+            }
+        }
     }
 }
