@@ -3,7 +3,7 @@ package com.hzgc.cluster.smallfile
 import java.io.File
 import java.util
 
-import org.apache.hadoop.fs.{ContentSummary, FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SaveMode
 
@@ -35,12 +35,10 @@ object MergeParquetFileV2 {
         // 接收传进来的四个或者五个个参数
         val hdfsClusterName = args(0)
         val hisTableHdfsPath = args(2)
-        val tableName = args(3)
         val dateString = args(4)
 
         // 初始化SparkSession，SparkSession 是单例模式的
         val sparkSession = SparkSessionSingleton.getInstance
-        import sparkSession.sql
         // 根据sparkSession 得到SparkContext
         val sc = sparkSession.sparkContext
         // 设置hdfs 集群名字
@@ -49,19 +47,20 @@ object MergeParquetFileV2 {
         val fs = FileSystem.get(sc.hadoopConfiguration)
         //获取person_table/date=2018-02-01 下的所有文件
         val parquetFiles: util.ArrayList[String] = new util.ArrayList[String]()
-        ReadWriteHDFS.getParquetFilesV2(128, 100, new Path(hisTableHdfsPath + File.separator
-            + "date=" + dateString), fs, parquetFiles)
+        // 最终需要遍历的目录例如：/user/hive/warehouse/person_table/date=2018-02-01
+        val finalPath = hisTableHdfsPath + File.separator + "date=" + dateString
+        ReadWriteHDFS.getParquetFilesV2(128, 100, new Path(finalPath), fs, parquetFiles)
 
         val numOfFiles = parquetFiles.size()
         // 把parquet 文件的list 转换成数组
         val pathArr : Array[String] = new Array[String](numOfFiles)
         // 如果里面没有文件或者文件个数为1，直接跳过
 
-        val cos : ContentSummary = fs.getContentSummary(new Path(hisTableHdfsPath + File.separator + "date=" + dateString))
-        val sizeM : Double = cos.getLength/1024.0/1024.0
-
-        if (numOfFiles == 0 || (numOfFiles == 1 && sizeM < 128)) {
-            LOG.info("目录下没有文件，或者所有的文件的大小都处在了100M到128 M 之间...")
+        val sizeM : Double = ReadWriteHDFS.getAllFilesTotalSize(parquetFiles, fs)
+        if (numOfFiles == 0 || (numOfFiles == 1 && sizeM < 100)) {
+            LOG.info("*************************************************************************************")
+            LOG.info("目录下没有文件，或者所有的文件的大小都处在了100M到128 M 之间,或者只有一个文件，但是文件的大小小于100M")
+            LOG.info("*************************************************************************************")
             System.exit(0)
         }
         var count = 0
@@ -69,23 +68,18 @@ object MergeParquetFileV2 {
             pathArr(count) = parquetFiles.get(count)
             count = count + 1
         }
-        var personDF = sparkSession.read.parquet(pathArr : _*)
+        val personDF = sparkSession.read.parquet(pathArr : _*)
         // 保存文件
         personDF.coalesce(1).repartition(SmallFileUtils.takePartition(110, 100, pathArr, fs))
-            .write.mode(SaveMode.Append).parquet(hisTableHdfsPath + File.separator + "date=" + dateString)
+            .write.mode(SaveMode.Append).parquet(finalPath)
         // 删除已经被合并的文件
         ReadWriteHDFS.del(pathArr, fs)
 
 
-        sql("REFRESH TABLE " + tableName)
-
         sparkSession.close()
+        LOG.info("*************************************************************************************")
         LOG.info("总共花费的时间是: " + (System.currentTimeMillis() - start))
-
-        sql("REFRESH TABLE " + tableName)
-
-        sparkSession.close()
-        LOG.info("总共花费的时间是: " + (System.currentTimeMillis() - start))
+        LOG.info("*************************************************************************************")
     }
 }
 

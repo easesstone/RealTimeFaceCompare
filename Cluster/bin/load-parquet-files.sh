@@ -23,6 +23,8 @@ sleep 2s
 COM_LIB_JARS=`ls $COMMON_LIB|grep .jar|awk '{print "'${COMMON_LIB}'/"$0}'|tr "\n" ":"`
 LOG_DIR=${DEPLOY_DIR}/logs                                                   ## log 日记目录
 LOG_FILE=${LOG_DIR}/load-parquet-files.log                                   ## log 日记文件
+SPARKJOB_PROPERTIES=${DEPLOY_DIR}/conf/sparkJob.properties
+
 
 if [ ! -d $LOG_DIR ]; then
     mkdir -p $LOG_DIR;
@@ -36,9 +38,9 @@ SCALA_VERSION=2.11
 SERVICE_VERSION=`ls ${COMMON_LIB_DIR}| grep ^service-[0-9].[0-9].[0-9].jar$`
 CLUSTER_VERSION=`ls ${COMMON_LIB_DIR}| grep ^cluster-[0-9].[0-9].[0-9].jar$`
 
-hdfsClusterName=$(sed -n '1p' ${CONF_DIR}/load-parquet-files.properties)
-hdfsPath=$(sed -n '2p' ${CONF_DIR}/load-parquet-files.properties)
-tableName=$(sed -n '3p' ${CONF_DIR}/load-parquet-files.properties)
+hdfsClusterName=$(grep job.smallfile.merge.hdfs.name  ${SPARKJOB_PROPERTIES} | awk -F "=" '{print $2}')
+hdfsPath=$(grep job.smallfile.merge.person_table.hdfs_path  ${SPARKJOB_PROPERTIES} | awk -F "=" '{print $2}')
+tableName=$(grep job.smallfile.merge.person_table.hdfs_path   ${SPARKJOB_PROPERTIES}| awk -F "=" '{print $2}')
 #####################################################################
 # 函数名: start_load_data
 # 描述: 加载数据
