@@ -21,7 +21,9 @@ LOG_DIR=$DEPLOY_DIR/logs                              ### log日志目录
 LOG_FILE=$LOG_DIR/config-service.log                  ### log日志目录
 cd ..
 OBJECT_DIR=`pwd`                                      ### 项目根目录 
-CONF_DIR=$OBJECT_DIR/project-conf.properties          ### 项目配置文件
+COMMON_DIR=$OBJECT_DIR/common                         ### common模块目录
+CONF_COMMON_DIR=$COMMON_DIR/conf                      ### 配置文件目录
+CONF_FILE=$CONF_COMMON_DIR/project-conf.properties    ### 项目配置文件
 cd ../hzgc/conf
 CONF_HZGC_DIR=`pwd`                                   ### 集群配置文件目录
 
@@ -38,8 +40,7 @@ function start_all_dubbo()
     echo "**********************************************" | tee -a $LOG_FILE
     echo "" | tee -a $LOG_FILE
     ## 获取dubbo节点IP
-    cd ${OBJECT_DIR}
-    DUBBO_HOSTS=$(grep dubbo_servicenode project-conf.properties|cut -d '=' -f2)
+    DUBBO_HOSTS=$(grep dubbo_servicenode ${CONF_FILE}|cut -d '=' -f2)
     dubbo_arr=(${DUBBO_HOSTS//;/ }) 
     for dubbo_host in ${dubbo_arr[@]}
     do
