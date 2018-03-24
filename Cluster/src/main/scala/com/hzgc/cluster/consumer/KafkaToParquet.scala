@@ -18,18 +18,21 @@ import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
 
-/**
-  * Created by Administrator on 2017-12-14.
-  */
 object KafkaToParquet {
   val LOG: Logger = Logger.getLogger(KafkaToParquet.getClass)
   val properties: Properties = PropertiesUtils.getProperties
 
   case class Picture(ftpurl: String, //图片搜索地址
-                     feature: Array[Float], ipcid: String, timeslot: Int, //feature：图片特征值 ipcid：设备id  timeslot：时间段
-                     exacttime: Timestamp, searchtype: String, date: String, //timestamp:时间戳 pictype：图片类型 date：时间
-                     eyeglasses: Int, gender: Int, haircolor: Int, //人脸属性：眼镜、性别、头发颜色
-                     hairstyle: Int, hat: Int, huzi: Int, tie: Int //人脸属性：发型、帽子、胡子、领带
+                     //feature：图片特征值 ipcid：设备id  timeslot：时间段
+                     feature: Array[Float], ipcid: String, timeslot: Int,
+                     //timestamp:时间戳 pictype：图片类型 date：时间
+                     exacttime: Timestamp, searchtype: String, date: String,
+                     //人脸属性：眼镜、性别、头发颜色
+                     eyeglasses: Int, gender: Int, haircolor: Int,
+                     //人脸属性：发型、帽子、胡子、领带
+                     hairstyle: Int, hat: Int, huzi: Int, tie: Int,
+                    //清晰度评价
+                     sharpness: Int
                     )
 
   def getItem(parameter: String, properties: Properties): String = {
@@ -73,12 +76,12 @@ object KafkaToParquet {
         faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
         faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
         faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
-        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie), faceobject._1, faceobject._2)
+        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie, faceobject._2.getAttribute.getSharpness), faceobject._1, faceobject._2)
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
       rdd.map(rdd => rdd._1).repartition(1).toDF().write.mode(SaveMode.Append)
-               .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-",""))
+        .parquet(storeAddress + "/" + UUID.randomUUID().toString.replace("-", ""))
       rdd.foreachPartition(parData => {
         val putDataToEs = PutDataToEs.getInstance()
         parData.foreach(data => {
@@ -89,7 +92,7 @@ object KafkaToParquet {
         })
       })
     })
-    messages.foreachRDD(rdd => saveOffsets(zKClient,zkHosts,zKPaths,rdd))
+    messages.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zKPaths, rdd))
     ssc
   }
 

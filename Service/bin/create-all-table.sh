@@ -85,7 +85,7 @@ function add_udf()
 
 	# 判断脚本是否存在，存在才执行
     if [ -f "${BIN_DIR}/add-udf.sh" ]; then 
-        sh ${BIN_DIR}/add-udf.sh
+        sh ${BIN_DIR}/add-spark-udf.sh
     else
         echo "add-udf.sh脚本不存在...." 
     fi

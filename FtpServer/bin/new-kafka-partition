@@ -1,4 +1,0 @@
-创建feature topic:
-kafka-topics.sh --create --zookeeper Master:2181 --replication-factor 3 --partitions 12 --topic feature
-创建faceobject topic:
-kafka-topics.sh --create --zookeeper Master:2181 --replication-factor 3 --partitions 12 --topic faceobject
