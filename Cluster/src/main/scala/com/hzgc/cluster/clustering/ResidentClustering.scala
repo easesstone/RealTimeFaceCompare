@@ -42,9 +42,7 @@ object ResidentClustering {
     val spicField = properties.getProperty("job.clustering.mysql.field.spic")
     val bpicField = properties.getProperty("job.clustering.mysql.field.bpic")
     val resultPath = properties.getProperty("job.clustering.result.path")
-    println(properties.getProperty("job.clustering.similarity.Threshold"))
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
-    println(similarityThreshold)
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
     val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
