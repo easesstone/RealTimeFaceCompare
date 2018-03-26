@@ -2,8 +2,8 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-resident-clustering-job.sh
-## Description: to start resident clustering job(启动人口管理任务)
-## Author:      Peng Cong
+## Description: to start resident clustering job(启动任务)
+## Author:      pengcong
 ## Created:     2018-03-26
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
@@ -180,15 +180,12 @@ if [ ! -e ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} ];then
     exit 0
 fi
 
-################## 常驻人口管理任务 ###################
+################## 新增告警任务 ###################
 source /etc/profile
 source ${BIGDATA_ENV}
 nohup spark-submit \
---master yarn \
---deploy-mode cluster \
---executor-memory 4g \
---executor-cores 2 \
---num-executors 4 \
+--master local[*] \
+--driver-memory 4g \
 --class ${SPARK_CLASS_PARAM} \
 --jars ${CLUSTER_LIB_DIR}/${GSON_VERSION},\
 ${CLUSTER_LIB_DIR}/${JACKSON_CORE_VERSION},\
@@ -203,7 +200,6 @@ ${CLUSTER_LIB_DIR}/${KAFKA_VERSION},\
 ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION},\
 ${COMMON_LIB_DIR}/${FTP_VERSION},\
 ${COMMON_LIB_DIR}/${BIGDATA_API_VERSION},\
-${FTP_LIB_DIR}/${FASTJSON_VERSION},\
 ${COMMON_LIB_DIR}/${UTIL_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION},\
 ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} \

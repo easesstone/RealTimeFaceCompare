@@ -1,5 +1,6 @@
 package com.hzgc.cluster.clustering
 
+import java.io.File
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util
@@ -41,7 +42,9 @@ object ResidentClustering {
     val spicField = properties.getProperty("job.clustering.mysql.field.spic")
     val bpicField = properties.getProperty("job.clustering.mysql.field.bpic")
     val resultPath = properties.getProperty("job.clustering.result.path")
+    println(properties.getProperty("job.clustering.similarity.Threshold"))
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
+    println(similarityThreshold)
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
     val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
@@ -50,7 +53,7 @@ object ResidentClustering {
     val calendar = Calendar.getInstance()
     val mon = calendar.get(Calendar.MONTH)
     val year = calendar.get(Calendar.YEAR)
-    val resultFileName = year + "-" + mon + "-" + uuidString
+    val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
     val currentYearMon = "'" + year + "-%" + mon + "%'"
 
     spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).createOrReplaceTempView("parquetTable")
@@ -109,7 +112,7 @@ object ResidentClustering {
       val rowKey = yearMon + "-" + region
 
       if (status == 1) {
-        val resident_raw = spark.read.textFile("file:///opt/test.txt").map(data => data.split(" ")).collect()
+        val resident_raw = spark.read.textFile("file://" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect()
         for (i <- resident_raw.indices) {
           val dataArr = resident_raw(i)
           val clusterId = dataArr(1)
