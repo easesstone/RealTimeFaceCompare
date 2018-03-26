@@ -59,6 +59,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                     ListUtils.sort(clusteringList, sortParams.getSortNameArr(), sortParams.getIsAscArr());
                 }
             } else {
+                LOG.info("no data get from HBase");
                 return null;
             }
         } catch (IOException e) {
