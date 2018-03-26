@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_hzgc_jni_ClusteringFunction
  * Method:    clusteringComputer
- * Signature: ([FLjava/lang/String;Ljava/lang/String;)I
+ * Signature: ([FIDILjava/lang/String;Ljava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_com_hzgc_jni_ClusteringFunction_clusteringComputer
-  (JNIEnv *, jclass, jfloatArray, jstring, jstring);
+  (JNIEnv *, jclass, jfloatArray, jint, jdouble, jint, jstring, jstring);
 
 #ifdef __cplusplus
 }

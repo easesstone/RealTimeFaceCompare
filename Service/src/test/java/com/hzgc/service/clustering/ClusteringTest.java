@@ -12,7 +12,6 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,10 +68,17 @@ public class ClusteringTest {
         putDataToHBase("2018-02-bak", clusteringAttributeList2);*/
         ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
         ClusteringInfo clusteringInfo;
-        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 5, 50, "");
-        System.out.println(clusteringInfo.getClusteringAttributeList().get(1).getClusteringId());
-        System.out.println(clusteringInfo.getClusteringAttributeList().size());
-        List<String> idList = new ArrayList<>();
+        clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-03", 0, 50, "");
+        List<ClusteringAttribute> clusteringAttributeList;
+        clusteringAttributeList = clusteringInfo.getClusteringAttributeList();
+        for (ClusteringAttribute clusteringAttributeList1 : clusteringAttributeList) {
+            String clusterId = clusteringAttributeList1.getClusteringId();
+            System.out.println(clusterId);
+            String ipcID = clusteringAttributeList1.getFirstIpcId();
+            System.out.println(ipcID);
+            System.out.println(clusteringAttributeList1.getCount());
+        }
+
         /*idList.add("1-19");
         clusteringSearchService.ignoreClustering(idList, "2018-02", "no");*/
 
