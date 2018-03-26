@@ -43,10 +43,10 @@ UDF_FUNCTION_NAME=compare
 UDF_CLASS_PATH=com.hzgc.udf.spark.UDFArrayCompare
 ## hdfs udf  path
 HDFS_UDF_PATH=/user/hive/udf
-## hdfs udf Absolute path
-HDFS_UDF_ABSOLUTE_PATH=hdfs://hzgc/${HDFS_UDF_PATH}/${UDF_VERSION}
 ## udf jar version
 UDF_VERSION=udf-2.1.0.jar
+## hdfs udf Absolute path
+HDFS_UDF_ABSOLUTE_PATH=hdfs://hzgc/${HDFS_UDF_PATH}/${UDF_VERSION}
 cd ..
 ## 大数据项目根目录
 BIGDATA_HOME=`pwd`
@@ -308,6 +308,8 @@ function index_es_dynamic_show()
 }
 
 function main() {
+    ## create kafka topic
+    sh   ${BIN_DIR}/create-kafka-topic.sh 
     add_hive_UDF
     create_person_table_mid_table
     create_searchRes_device_clusteringInfo_table
