@@ -42,13 +42,14 @@ object ResidentClustering {
     val resultPath = properties.getProperty("job.clustering.result.path")
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
-    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
     val mon = calendar.get(Calendar.MONTH)
     val year = calendar.get(Calendar.YEAR)
+    val resultFileName = year + "-" + mon + "-" + uuidString
     val currentYearMon = "'" + year + "-%" + mon + "%'"
 
     spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).createOrReplaceTempView("parquetTable")
@@ -92,7 +93,7 @@ object ResidentClustering {
       val dataSize = idPointRDD.count().toInt
       val points = idPointRDD.collect()
       val features = points.flatMap(data => data.feature)
-      val status = ClusteringFunction.clusteringComputer(features, dataSize, similarityThreshold, appearCount, "test.txt", resultPath)
+      val status = ClusteringFunction.clusteringComputer(features, dataSize, similarityThreshold, appearCount, resultFileName, resultPath)
 
       val putDataToEs = PutDataToEs.getInstance()
       val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
