@@ -1,6 +1,6 @@
 #!/bin/bash
 ##  动态抓拍总数映射
-curl -XDELETE 's103:9200/dynamicshow?pretty'  -H 'Content-Type: application/json'
+##curl -XDELETE 's103:9200/dynamicshow?pretty'  -H 'Content-Type: application/json'
 curl -XPUT 's103:9200/dynamicshow?pretty' -H 'Content-Type: application/json' -d'
 {
     "settings": {
