@@ -24,6 +24,18 @@ object ReadWriteHDFS {
         }
     }
 
+    /**
+      * 删除文件，ture 表示迭代删除目录或者文件
+      *
+      * @param paths 文件列表
+      * @param fs    hdfs文件系统实例
+      */
+    def delV2(paths: Array[String], fs: FileSystem): Unit = {
+        for (f <- paths) {
+            fs.delete(new Path(f.substring(0, f.lastIndexOf("/"))), true)
+        }
+    }
+
     def getAllFilesTotalSize(parquetFiles: util.ArrayList[String], fs : FileSystem): Double = {
         var sizeM : Double = 0.0
         var i : Int = 0
