@@ -76,17 +76,37 @@ fi
 if [ ! -e ${SERVICE_CONF_DIR}/es-config.properties ];then
     echo "${SERVICE_CONF_DIR}/es-config.properties does not exit!"
     exit 0
+else
+    echo "copy 文件 es-config.properties 到 spark/conf......"  | tee  -a  $LOG_FILE
+    cp ${SERVICE_CONF_DIR}/es-config.properties ${SPARK_CONF_PATH}
+    echo "copy完毕......"  | tee  -a  $LOG_FILE
+    exit 0
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/hive-site.xml ];then
     echo "${CLUSTER_CONF_DIR}/hive-site.xml does not exit!"
+    exit 0
+else
+    echo "copy 文件 hive-site.xml 到 spark/conf......"  | tee  -a  $LOG_FILE
+    cp ${CLUSTER_CONF_DIR}/hive-site.xml ${SPARK_CONF_PATH}
+    echo "copy完毕......"  | tee  -a  $LOG_FILE
     exit 0
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
     echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
     exit 0
+else
+    echo "copy 文件 sparkJob.properties 到 spark/conf......"  | tee  -a  $LOG_FILE
+    cp ${CLUSTER_CONF_DIR}/sparkJob.properties ${SPARK_CONF_PATH}
+    echo "copy完毕......"  | tee  -a  $LOG_FILE
+    exit 0
 fi
 if [ ! -e ${SERVICE_CONF_DIR}/hbase-site.xml ];then
     echo "${SERVICE_CONF_DIR}/hbase-site.xml does not exit!"
+    exit 0
+else
+    echo "copy 文件 hbase-site.xml 到 spark/conf......"  | tee  -a  $LOG_FILE
+    cp ${SERVICE_CONF_DIR}/hbase-site.xml ${SPARK_CONF_PATH}
+    echo "copy完毕......"  | tee  -a  $LOG_FILE
     exit 0
 fi
 
@@ -131,10 +151,6 @@ if [ ! -e ${COMMON_LIB_DIR}/${BIGDATA_API_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${BIGDATA_API_VERSION} does not exit!"
     exit 0
 fi
-if [ ! -e ${FTP_LIB_DIR}/${FASTJSON_VERSION} ];then
-    echo "${FTP_LIB_DIR}/${FASTJSON_VERSION} does not exit!"
-    exit 0
-fi
 if [ ! -e ${COMMON_LIB_DIR}/${UTIL_VERSION} ];then
     echo "${COMMON_LIB_DIR}/${UTIL_VERSION} does not exit!"
     exit 0
@@ -157,7 +173,6 @@ nohup spark-submit \
 --class ${SPARK_CLASS_PARAM} \
 --jars ${CLUSTER_LIB_DIR}/${GSON_VERSION},\
 ${CLUSTER_LIB_DIR}/${JACKSON_CORE_VERSION},\
-${CLUSTER_LIB_DIR}/${SPARK_STREAMING_KAFKA_VERSION},\
 ${COMMON_LIB_DIR}/${SERVICE_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_SERVER_VERSION},\
 ${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION},\

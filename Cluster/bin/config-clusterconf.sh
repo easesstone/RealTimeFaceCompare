@@ -107,6 +107,9 @@ function config_sparkJob()
     zkpro=${zkpro%?}
     # 替换sparkJob.properties中：key=value（替换key字段的值value）
     sed -i "s#^job.zkDirAndPort=.*#job.zkDirAndPort=${zkpro}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
+    # 根据job_clustering_mysql_url字段设置常驻人口管理告警信息MYSQL数据库地址
+    clustering_mysql_url=$(grep job_clustering_mysql_url ${CONF_FILE}|cut -d '=' -f2)
+    sed -i "s#^job.clustering.mysql.url=.*#job.clustering.mysql.url=${clustering_mysql_url}#g" ${CONF_CLUSTER_DIR}/sparkJob.properties
 
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 
