@@ -89,6 +89,7 @@ timeslot      int,
 exacttime     Timestamp,
 searchtype    string,
 date          string,
-ipcid         string)
+ipcid         string,
+sharpness int)
 STORED AS PARQUET
 LOCATION '/user/hive/warehouse/mid_table';

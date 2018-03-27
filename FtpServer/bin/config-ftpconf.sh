@@ -51,10 +51,14 @@ function config_ftpAddress()
     FTP_PROXYNODE=$(grep ftp_proxynode ${CONF_FILE}|cut -d '=' -f2)
     # 替换ftpAddress.properties中FTP安装节点IP值：key=value（替换key字段的值value）
     sed -i "s#^ip=.*#ip=${FTP_PROXYNODE}#g" ${CONF_FTP_DIR}/ftpAddress.properties
-    
+    # 替换ftpAddress.properties中FTP安装节点HostName值：key=value（替换key字段的值value）
+    # 根据IP找出对应主机名
+    HostName=$(cat /etc/hosts|grep "${FTP_PROXYNODE}" | awk '{print $2}')
+    sed -i "s#^hostname=.*#hostname=${HostName}#g" ${CONF_FTP_DIR}/ftpAddress.properties
+
     ### 配置服务节点
     # 删除ftpAddress.properties中与服务节点相关的内容(从第7行开始的行)：
-    sed -i '7,$d' ${CONF_FTP_DIR}/ftpAddress.properties
+    sed -i '8,$d' ${CONF_FTP_DIR}/ftpAddress.properties
     # 根据ftp_serviceip字段，查找配置文件中，FTP服务节点主机名和IP
     FTP_SERVICEIPS=`sed '/ftp_serviceip/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
     # 将查找到的FTP服务节点主机名和IP切分，放入数组中
@@ -89,19 +93,25 @@ function config_cluster_over_ftp()
     sed -i "s#^thread.number=.*#thread.number=${THREAD_NUMBER}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
 
     ### 从project-conf.properties读取配置zk所需配置IP
-        # 根据字段zookeeper_installnode，查找配置文件中，zk的安装节点所在IP端口号的值，这些值以分号分割
-        ZK_HOSTS=`sed '/zookeeper_installnode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
-        # 将这些分号分割的ip用放入数组
-        zk_arr=(${ZK_HOSTS//;/ })
-        zkpro=''
-        for zk_host in ${zk_arr[@]}
-        do
-            zkpro="$zkpro$zk_host:2181,"
-        done
-        zkpro=${zkpro%?}
+    # 根据字段zookeeper_installnode，查找配置文件中，zk的安装节点所在IP端口号的值，这些值以分号分割
+    ZK_HOSTS=`sed '/zookeeper_installnode/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    # 将这些分号分割的ip用放入数组
+    zk_arr=(${ZK_HOSTS//;/ })
+    zkpro=''
+    for zk_host in ${zk_arr[@]}
+    do
+         zkpro="$zkpro$zk_host:2181,"
+    done
+    zkpro=${zkpro%?}
 
-        # 替换producer-over-ftp.properties中：key=value（替换key字段的值value）
-        sed -i "s#^zookeeperAddress=.*#zookeeperAddress=${zkpro}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
+    # 替换producer-over-ftp.properties中：key=value（替换key字段的值value）
+    sed -i "s#^zookeeperAddress=.*#zookeeperAddress=${zkpro}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
+
+    SHARPNESS=`sed '/SharpNess/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    sed -i "s#^sharpness=.*#sharpness=${SHARPNESS}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
+
+    FTP_SWITCH=`sed '/Ftp_switch/!d;s/.*=//' ${CONF_FILE} | tr -d '\r'`
+    sed -i "s#^ftp-switch=.*#ftp-switch=${FTP_SWITCH}#g" ${CONF_FTP_DIR}/cluster-over-ftp.properties
 
     echo "配置完毕......"  | tee  -a  $LOG_FILE
 }

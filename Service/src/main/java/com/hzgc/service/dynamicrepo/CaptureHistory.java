@@ -79,10 +79,12 @@ class CaptureHistory {
                     List<AttributeValue> attributeValues = attribute.getValues();
                     for (AttributeValue attributeValue : attributeValues) {
                         int attr = attributeValue.getValue();
-                        if (logic.equals("OR")) {
-                            totalBQ.should(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
-                        } else {
-                            totalBQ.must(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                        if (attr != 0){
+                            if (logic.equals("OR")) {
+                                totalBQ.should(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                            } else {
+                                totalBQ.must(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                            }
                         }
                     }
                 }

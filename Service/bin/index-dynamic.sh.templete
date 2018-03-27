@@ -1,6 +1,6 @@
 #!/bin/bash
 ## 动态信息库person 表的映射
-curl -XDELETE 's109:9200/dynamic?pretty'  -H 'Content-Type: application/json'
+##curl -XDELETE 's109:9200/dynamic?pretty'  -H 'Content-Type: application/json'
 curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
 {
     "settings": {
@@ -71,13 +71,13 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                               },
                               "searchtype" : {
                                   "type" : "text"
-                              }
+                              },
                               "clusterid" : {
                                   "type" : "text"
-                              }
+                              },
                               "alarmid" : {
                                   "type" : "long"
-                              }
+                              },
                               "alarmtime" : {
                                   "type" : "text"
                               }
