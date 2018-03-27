@@ -52,8 +52,8 @@ public class CptureNumberImpTest1 {
         attribute2.setValues(list2);
 
         List<Attribute> attributes = new ArrayList<>();
-//        attributes.add(attribute1);
-//        attributes.add(attribute2);
+        attributes.add(attribute1);
+        attributes.add(attribute2);
         searchOption.setAttributes(attributes);
 
         CapturePictureSearchServiceImpl capturePictureSearchService = new CapturePictureSearchServiceImpl();
