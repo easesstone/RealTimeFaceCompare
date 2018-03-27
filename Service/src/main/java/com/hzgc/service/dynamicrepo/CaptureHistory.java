@@ -179,7 +179,7 @@ class CaptureHistory {
                 }
                 List<Attribute> attributes = option.getAttributes();
                 //筛选人脸属性
-                if (attributes != null) {
+                if (attributes != null && attributes.size() > 0) {
                     for (Attribute attribute : attributes) {
                         String identify = attribute.getIdentify().toLowerCase();
                         String logic = String.valueOf(attribute.getLogistic());
