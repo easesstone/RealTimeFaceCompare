@@ -133,16 +133,16 @@
             <artifactId>kafka_2.11</artifactId>
             <version>0.8.2.1</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.38</version>
-        </dependency>
-        <dependency>
+        </dependency>-->
+       <!-- <dependency>
             <groupId>amplab</groupId>
             <artifactId>spark-indexedrdd</artifactId>
             <version>0.4.0</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
     <repositories>
         <repository>
@@ -159,10 +159,10 @@
             <resource>
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <directory>src/main/resources</directory>
-                <excludes>
+               <!-- <excludes>
                     <exclude>*.properties</exclude>
                     <exclude>*.xml</exclude>
-                </excludes>
+                </excludes>-->
             </resource>
         </resources>
         <plugins>

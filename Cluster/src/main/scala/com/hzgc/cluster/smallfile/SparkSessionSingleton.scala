@@ -12,6 +12,7 @@ object SparkSessionSingleton {
         if (instance == null) {
             instance = SparkSession.builder()
                 .appName("combine-parquest-demo")
+                .master("local[*]")
                 .config("spark.sql.parquet.compression.codec", "snappy")
                 .config("parquet.block.size", "16777216")
                 .config("spark.sql.warehouse.dir", warehouseLocation)
