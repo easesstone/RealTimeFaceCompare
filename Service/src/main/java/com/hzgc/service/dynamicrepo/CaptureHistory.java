@@ -72,14 +72,14 @@ class CaptureHistory {
             //人脸属性
             List<Attribute> attributes = option.getAttributes();
             //筛选人脸属性
-            if (attributes != null) {
+            if (attributes != null && attributes.size() > 0) {
                 for (Attribute attribute : attributes) {
                     String identify = attribute.getIdentify().toLowerCase();
                     String logic = String.valueOf(attribute.getLogistic());
                     List<AttributeValue> attributeValues = attribute.getValues();
                     for (AttributeValue attributeValue : attributeValues) {
                         int attr = attributeValue.getValue();
-                        if (attr != 0){
+                        if (attr != 0) {
                             if (logic.equals("OR")) {
                                 totalBQ.should(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
                             } else {
@@ -186,10 +186,12 @@ class CaptureHistory {
                         List<AttributeValue> attributeValues = attribute.getValues();
                         for (AttributeValue attributeValue : attributeValues) {
                             int attr = attributeValue.getValue();
-                            if (logic.equals("OR")) {
-                                totalBQ.should(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
-                            } else {
-                                totalBQ.must(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                            if (attr != 0) {
+                                if (logic.equals("OR")) {
+                                    totalBQ.should(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                                } else {
+                                    totalBQ.must(QueryBuilders.matchQuery(identify, attr).analyzer("standard"));
+                                }
                             }
                         }
                     }
@@ -208,7 +210,7 @@ class CaptureHistory {
                         .setFrom(offset)
                         .setSize(count)
                         .addSort("exacttime", SortOrder.fromString(px));
-                SearchResponse searchResponseCount =  requestBuilder.get();
+                SearchResponse searchResponseCount = requestBuilder.get();
                 SearchHits searchHitsCount = searchResponseCount.getHits();
                 int totolCount = (int) searchHitsCount.getTotalHits();
                 SearchResult result = new SearchResult();
