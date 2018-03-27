@@ -71,13 +71,13 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
                               },
                               "searchtype" : {
                                   "type" : "text"
-                              }
+                              },
                               "clusterid" : {
                                   "type" : "text"
-                              }
+                              },
                               "alarmid" : {
                                   "type" : "long"
-                              }
+                              },
                               "alarmtime" : {
                                   "type" : "text"
                               }
