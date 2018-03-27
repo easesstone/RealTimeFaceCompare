@@ -87,6 +87,7 @@ object ResidentClustering {
       }
       var finalStr = ""
       finalStr += "(" + ipcStr + ")"
+      LOG.info("start clustering region" + finalStr)
 
       val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
       //prepare data
@@ -110,24 +111,30 @@ object ResidentClustering {
       val rowKey = yearMon + "-" + region
 
       if (status == 1) {
-        val resident_raw = spark.read.textFile("file://" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect()
+        LOG.info("clustering result saved")
+        val resident_raw = spark.read.textFile("file://" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect().toList
         for (i <- resident_raw.indices) {
-          val dataArr = resident_raw(i)
+          val dataArr = resident_raw(i).distinct
+          println(dataArr)
           val clusterId = dataArr(1)
+          LOG.info("clusterId:" + clusterId)
           val dataList = new util.ArrayList[DataWithFeature]()
-          for (j <- 0 until dataArr.length) {
+          LOG.info("dataArr length:" + dataArr.length)
+          for (j <- dataArr.indices) {
             val fullData = points(dataArr(j).toInt)
             dataList.add(fullData)
             val date = new Date(fullData.time.getTime)
             val dateNew = sdf.format(date)
             val status = putDataToEs.upDateDataToEs(fullData.spic, yearMon + "-" + region + "-" + clusterId + "-" + uuidString, dateNew, fullData.id.toInt)
             if (status != 200) {
-              LOG.info("Put data to es failed! And the failed ftpurl is " + fullData.spic)
+              LOG.info("Put data to es failed! And the failed ftpUrl is " + fullData.spic)
+            } else {
+              LOG.info("Put data to es successful! the ftpUrl is " + fullData.spic)
             }
           }
           val attribute = new ClusteringAttribute()
           attribute.setClusteringId(region + "-" + clusterId + "-" + uuidString) //region + "-" + uuidString + "-" + data._1.toString
-          attribute.setCount(dataList.size())
+          attribute.setCount(dataArr.length)
           attribute.setFirstAppearTime(dataList.get(0).time.toString)
           attribute.setFirstIpcId(dataList.get(0).ipc)
           attribute.setLastAppearTime(dataList.get(dataList.size() - 1).time.toString)
@@ -135,8 +142,13 @@ object ResidentClustering {
           attribute.setFtpUrl(dataList.get(0).spic)
           clusterList.add(attribute)
         }
+        LOG.info("put clustering data to HBase...")
         PutDataToHBase.putClusteringInfo(rowKey, clusterList)
+        LOG.info("put clustering data to HBase successful")
+      } else {
+        LOG.info("clustering failed, please check the parameter of function clusteringComputer")
       }
+      LOG.info("end clustering region" + finalStr)
     }
     spark.stop()
   }
