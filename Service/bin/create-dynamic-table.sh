@@ -142,8 +142,9 @@ function create_person_table_mid_table() {
                                     tie           int, \
                                     timeslot      int, \
                                     exacttime     Timestamp, \
-                                    searchtype    string) \
-                                    partitioned by (date string,ipcid string) \
+                                    searchtype    string, \
+                                    sharpness     int) \
+                                    partitioned by (date string) \
                                     STORED AS PARQUET \
                                     LOCATION '/user/hive/warehouse/person_table';
                                     CREATE EXTERNAL TABLE IF NOT EXISTS default.mid_table( \
@@ -160,7 +161,8 @@ function create_person_table_mid_table() {
                                     exacttime     Timestamp, \
                                     searchtype    string, \
                                     date          string, \
-                                    ipcid         string) \
+                                    ipcid         string, \
+                                    sharpness     int) \
                                     STORED AS PARQUET \
                                     LOCATION '/user/hive/warehouse/mid_table';
                                     show tables"
