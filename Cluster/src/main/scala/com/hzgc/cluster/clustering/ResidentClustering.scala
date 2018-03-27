@@ -65,6 +65,7 @@ object ResidentClustering {
     dataSource.map(data => {
       Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
     }).createOrReplaceTempView("mysqlTable")
+    dataSource.show(100)
 
 
     //get the region and ipcidlist
@@ -89,7 +90,7 @@ object ResidentClustering {
       finalStr += "(" + ipcStr + ")"
       LOG.info("start clustering region" + finalStr)
 
-      val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
+      val joinData = spark.sql("select distinct T2.*, T1.feature from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
       //prepare data
       val idPointRDD = joinData.rdd.map(data => DataWithFeature(data.getAs[Long]("id"), data.getAs[Timestamp]("time"), data.getAs[String]("spic").split("/")(3), data.getAs[String]("host"), data.getAs[String]("spic"), data.getAs[String]("bpic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray)).persist(StorageLevel.MEMORY_AND_DISK_SER)
       val dataSize = idPointRDD.count().toInt
