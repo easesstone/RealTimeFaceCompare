@@ -280,7 +280,7 @@ abstract class ProperHelper {
                     //检查key=returnValue的value值类型是否为布尔值，比较时忽略大小写；若符合条件，则加载。
                     else if (valueFromKey.equalsIgnoreCase("true") || valueFromKey.equalsIgnoreCase("false")) {
                         log.info("The configuration " + key + " is right, the value is \"" + valueFromKey + "\"");
-                        returnValue = defaultValue;
+                        returnValue = valueFromKey;
                     } else {
                         log.error("The value \"" + valueFromKey + "\"  of " + key + " is illegal, it must be Boolean.");
                         System.exit(1);

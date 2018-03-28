@@ -65,6 +65,12 @@ ROCKETMQ_REMOTING_VERSION=`ls ${FTP_LIB_DIR}| grep ^rocketmq-remoting-[0-9].[0-9
 FASTJSON_VERSION=fastjson-1.2.29.jar
 KAFKA_CLIENTS_VERSION=kafka-clients-1.0.0.jar
 METRICS_CORE_VERSION=metrics-core-2.2.0.jar
+PHOENIX_CORE_VERSION=phoenix-core-4.13.1-HBase-1.2.jar
+TWILL_ZOOKEEPER=twill-zookeeper-0.8.0.jar
+TEPHRA_API=tephra-api-0.13.0-incubating.jar
+TEPHRA_HBASE=tephra-hbase-compat-1.1-0.13.0-incubating.jar
+TWILL_DISCOVERY=twill-discovery-api-0.8.0.jar
+TEPHRA_CORE=tephra-core-0.13.0-incubating.jar
 
 
 ############ 创建log目录 ###############
@@ -103,6 +109,30 @@ fi
 
 
 #################### 判断是否存在jar #####################
+if [ ! -e ${SERVICE_LIB_DIR}/${TEPHRA_CORE} ];then
+    echo "${SERVICE_LIB_DIR}/${TEPHRA_CORE} does not exit!"
+    exit 0
+fi
+if [ ! -e ${SERVICE_LIB_DIR}/${TEPHRA_HBASE} ];then
+    echo "${SERVICE_LIB_DIR}/${TEPHRA_HBASE} does not exit!"
+    exit 0
+fi
+if [ ! -e ${SERVICE_LIB_DIR}/${TEPHRA_API} ];then
+    echo "${SERVICE_LIB_DIR}/${TEPHRA_API} does not exit!"
+    exit 0
+fi
+if [ ! -e ${SERVICE_LIB_DIR}/${TWILL_ZOOKEEPER} ];then
+    echo "${SERVICE_LIB_DIR}/${TWILL_ZOOKEEPER} does not exit!"
+    exit 0
+fi
+if [ ! -e ${SERVICE_LIB_DIR}/${PHOENIX_CORE_VERSION} ];then
+    echo "${SERVICE_LIB_DIR}/${PHOENIX_CORE_VERSION} does not exit!"
+    exit 0
+fi
+if [ ! -e ${SERVICE_LIB_DIR}/${TWILL_DISCOVERY} ];then
+    echo "${SERVICE_LIB_DIR}/${TWILL_DISCOVERY} does not exit!"
+    exit 0
+fi
 if [ ! -e ${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION} ];then
     echo "${CLUSTER_LIB_DIR}/${HBASE_CLIENT_VERSION} does not exit!"
     exit 1
@@ -209,6 +239,12 @@ ${CLUSTER_LIB_DIR}/${HBASE_PROTOCOL_VERSION},\
 ${COMMON_LIB_DIR}/${JNI_VERSION},\
 ${CLUSTER_LIB_DIR}/${KAFKA_VERSION},\
 ${SERVICE_LIB_DIR}/${ELASTICSEARCH_VERSION},\
+${SERVICE_LIB_DIR}/${PHOENIX_CORE_VERSION},\
+${SERVICE_LIB_DIR}/${TWILL_ZOOKEEPER},\
+${SERVICE_LIB_DIR}/${TEPHRA_API},\
+${SERVICE_LIB_DIR}/${TEPHRA_HBASE},\
+${SERVICE_LIB_DIR}/${TWILL_DISCOVERY},\
+${SERVICE_LIB_DIR}/${TEPHRA_CORE},\
 ${COMMON_LIB_DIR}/${FTP_VERSION},\
 ${COMMON_LIB_DIR}/${BIGDATA_API_VERSION},\
 ${FTP_LIB_DIR}/${ROCKETMQ_CLIENT_VERSION},\
@@ -220,6 +256,7 @@ ${CLUSTER_LIB_DIR}/${KAFKA_CLIENTS_VERSION},\
 ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} \
 --files ${SERVICE_CONF_DIR}/es-config.properties,\
 ${SERVICE_CONF_DIR}/hbase-site.xml,\
+${SERVICE_CONF_DIR}/jdbc.properties,\
 ${FTP_CONF_DIR}/ftpAddress.properties,\
 ${CLUSTER_CONF_DIR}/sparkJob.properties,\
 ${FTP_CONF_DIR}/rocketmq.properties \

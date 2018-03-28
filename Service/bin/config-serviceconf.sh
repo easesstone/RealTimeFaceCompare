@@ -174,7 +174,15 @@ function config_jdbc()
     done
     JDBC="jdbc:hive2://${jdbc_ips%?}/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=thriftserver"
     sed -i "s#^url=.*#url=${JDBC}#g"  ${CONF_SERVICE_DIR}/jdbc.properties
-    
+
+    jdbc_ips=''
+    for jdbc_ip in ${jdbc_arr[@]}
+    do
+        jdbc_ips="$jdbc_ips$jdbc_ip,"
+    done
+    JDBC=${jdbc_ips%?}
+    sed -i "s#^phoenixJDBCURL.*#phoenixJDBCURL=jdbc:phoenix:${JDBC}:2181#g"  ${CONF_SERVICE_DIR}/jdbc.properties
+
     echo "配置jdbc.properties完毕......"  | tee  -a  $LOG_FILE
 }
 

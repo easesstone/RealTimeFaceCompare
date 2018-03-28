@@ -57,6 +57,7 @@ public class ClusterOverFtpProperHelper extends ProperHelper {
                 setImplicitSsl();
                 setZookeeperAddress();
                 setFtpSwitch();
+                setSharpness();
             } else {
                 LOG.error("The property file " + properName + "doesn't exist!");
                 System.exit(1);
