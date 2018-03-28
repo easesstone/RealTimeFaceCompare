@@ -115,8 +115,7 @@ object ResidentClustering {
         LOG.info("clustering result saved")
         val resident_raw = spark.read.textFile("file://" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect().toList
         for (i <- resident_raw.indices) {
-          val dataArr = resident_raw(i).distinct
-          println(dataArr)
+          val dataArr = resident_raw(i)
           val clusterId = dataArr(1)
           LOG.info("clusterId:" + clusterId)
           val dataList = new util.ArrayList[DataWithFeature]()
