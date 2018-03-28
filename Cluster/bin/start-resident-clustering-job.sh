@@ -80,7 +80,6 @@ else
     echo "copy 文件 es-config.properties 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${SERVICE_CONF_DIR}/es-config.properties ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/hive-site.xml ];then
     echo "${CLUSTER_CONF_DIR}/hive-site.xml does not exit!"
@@ -89,7 +88,6 @@ else
     echo "copy 文件 hive-site.xml 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${CLUSTER_CONF_DIR}/hive-site.xml ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
     echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
@@ -98,7 +96,6 @@ else
     echo "copy 文件 sparkJob.properties 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${CLUSTER_CONF_DIR}/sparkJob.properties ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 if [ ! -e ${SERVICE_CONF_DIR}/hbase-site.xml ];then
     echo "${SERVICE_CONF_DIR}/hbase-site.xml does not exit!"
@@ -107,7 +104,6 @@ else
     echo "copy 文件 hbase-site.xml 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${SERVICE_CONF_DIR}/hbase-site.xml ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 
 ################# 判断是否存在jar ###################
