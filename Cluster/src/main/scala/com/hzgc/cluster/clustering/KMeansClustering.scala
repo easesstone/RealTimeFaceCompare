@@ -28,14 +28,15 @@ object KMeansClustering {
   System.setProperty("es.set.netty.runtime.available.processors", "false")
 
   val LOG: Logger = Logger.getLogger(KMeansClustering.getClass)
+
   def main(args: Array[String]) {
 
     val driverClass = "com.mysql.jdbc.Driver"
     val sqlProper = new Properties()
     val properties = PropertiesUtils.getProperties
     val clusterNum = properties.getProperty("job.clustering.cluster.number")
-    val similarityThreshold=properties.getProperty("job.clustering.similarity.Threshold").toDouble
-    val center_similarityThreshold=properties.getProperty("job.clustering.similarity.center.Threshold").toDouble
+    val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
+    val center_similarityThreshold = properties.getProperty("job.clustering.similarity.center.Threshold").toDouble
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
     val iteraterNum = properties.getProperty("job.clustering.iterater.number").toInt
     val appName = properties.getProperty("job.clustering.appName")
@@ -55,7 +56,7 @@ object KMeansClustering {
 
     val calendar = Calendar.getInstance()
 
-    val currentYearMon = "'" + calendar.get(Calendar.YEAR) + "-%" + (calendar.get(Calendar.MONTH) + 1) + "%'"
+    val currentYearMon = "'" + calendar.get(Calendar.YEAR) + "-%" + calendar.get(Calendar.MONTH) + "%'"
 
     spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).createOrReplaceTempView("parquetTable")
 

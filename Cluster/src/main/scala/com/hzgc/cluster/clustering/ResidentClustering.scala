@@ -49,7 +49,7 @@ object ResidentClustering {
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
-    val mon = calendar.get(Calendar.MONTH) + 1
+    val mon = calendar.get(Calendar.MONTH)
     val year = calendar.get(Calendar.YEAR)
     val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
     val currentYearMon = "'" + year + "-%" + mon + "%'"
