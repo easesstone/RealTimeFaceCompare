@@ -47,7 +47,11 @@ class ParseByOption {
      */
     private static String getOnePersonSQL(SearchOption option, boolean printSql) {
         StringBuilder finalSql = new StringBuilder();
-        finalSql.append("select * from (select ").append(MID_FIELD).append(", greatest(");
+        finalSql.append("select * from (select ")
+                .append(MID_FIELD)
+                .append(", ")
+                .append(getAttributes(option))
+                .append("greatest(");
         String[] simFieldConatiner = new String[option.getImages().size()];
         for (int i = 0; i < option.getImages().size(); i++) {
             String simField = DynamicTable.SIMILARITY + i;
