@@ -59,7 +59,7 @@ public class ElasticSearchDataExport {
                 .setTypes(index_type)
                 .setScroll(new TimeValue(60000))
                 .setQuery(QueryBuilders.matchAllQuery())
-                .setSize(5000).get();
+                .setSize(25000).get();
 
         ThreadPoolExecutor pool = new ThreadPoolExecutor(10, 10,
                 0L, TimeUnit.MILLISECONDS,
@@ -96,6 +96,8 @@ public class ElasticSearchDataExport {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } finally {
+            pool.shutdown();
         }
 
         System.out.println("time: " + (System.currentTimeMillis() - start));
@@ -148,8 +150,8 @@ class ElasticDataGetter implements Callable<String> {
         Map<String, String> indexAndType = new HashMap<>();
         try {
             for (SearchHit hit : searchHits.getHits()) {
-                indexAndType.put("_index", index_export);
-                indexAndType.put("_type", index_type);
+                indexAndType.put("_index", index_export + "v1");
+                indexAndType.put("_type", index_type + "v1");
                 indexAndType.put("_id", hit.getId());
                 theHead.put("index", indexAndType);
                 writer.write(JSONObject.fromObject(theHead).toString() + "\r\n");
