@@ -26,6 +26,8 @@ public class ProcessThread implements Runnable {
         try {
             while ((event = queue.take()) != null) {
                 Sharpness sharpness = ClusterOverFtpProperHelper.getSharpness();
+                System.out.println(sharpness.getWeight());
+                System.out.println(sharpness.getHeight());
                 FaceAttribute attribute =
                         FaceFunction.featureExtract(event.getAbsolutePath(), sharpness.getWeight(), sharpness.getHeight());
                 FtpPathMessage message = FtpUtils.getFtpPathMessage(event.getRelativePath());

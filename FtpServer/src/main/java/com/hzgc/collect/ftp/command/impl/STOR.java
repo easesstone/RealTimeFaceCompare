@@ -107,7 +107,7 @@ public class STOR extends AbstractCommand {
 
                 // attempt to close the output stream so that errors in
                 // closing it will return an error to the client (FTPSERVER-119)
-                if(outStream != null) {
+                if (outStream != null) {
                     outStream.close();
                 }
 
@@ -149,13 +149,13 @@ public class STOR extends AbstractCommand {
                         FtpPathMessage message = FtpUtils.getFtpPathMessage(fileName);
                         if (FtpSwitch.isFtpSwitch()) {
                             List<String> showList = ReceiveIpcIds.getInstance().getIpcIdList_show();
-                            if (!showList.isEmpty()) {
+                            if (null != showList && !showList.isEmpty()) {
                                 if (showList.contains(message.getIpcid())) {
                                     sendMQAndWriteLogEvent(fileName, file, message, context);
                                 }
                             } else {
                                 List<String> subscriptionList = ReceiveIpcIds.getInstance().getIpcIdList_subscription();
-                                if (!subscriptionList.isEmpty()) {
+                                if (null != subscriptionList && !subscriptionList.isEmpty()) {
                                     if (subscriptionList.contains(message.getIpcid())) {
                                         sendMQAndWriteLogEvent(fileName, file, message, context);
                                     }
@@ -192,6 +192,7 @@ public class STOR extends AbstractCommand {
         event.setTimeStamp(System.currentTimeMillis());
         event.setAbsolutePath(file.getFileAbsolutePa());
         event.setFtpPath(ftpHostNameUrl);
+        event.setRelativePath(fileName);
         event.setStatus("0");
         //发送到rocketMQ
         RocketMQProducer.getInstance().send(message.getIpcid(), message.getTimeStamp(), ftpIpUrl.getBytes());
@@ -206,6 +207,7 @@ public class STOR extends AbstractCommand {
         event.setAbsolutePath(file.getFileAbsolutePa());
         event.setFtpPath(ftpHostNameUrl);
         event.setStatus("0");
+        event.setRelativePath(fileName);
         context.getScheduler().putData(event);
     }
 }

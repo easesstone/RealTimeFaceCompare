@@ -44,7 +44,7 @@ object ResidentClustering {
     val resultPath = properties.getProperty("job.clustering.result.path")
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
-    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
     import spark.implicits._
 
@@ -65,7 +65,6 @@ object ResidentClustering {
     dataSource.map(data => {
       Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
     }).createOrReplaceTempView("mysqlTable")
-
 
     //get the region and ipcidlist
     val region_ipc_sql = "(select T1.region_id,GROUP_CONCAT(T2.serial_number) " + "as serial_numbers from t_region_department as T1 inner join " + "(select concat(dep.parent_ids,',',dep.id) as path ,T3.serial_number from " + "t_device as dev left join t_department as dep on dev.department_id = dep.id inner join " + "t_device_extra as T3 on dev.id = T3.device_id ) as T2 on T2.path " + "like concat('%',T1.department_id,'%') group by T1.region_id " + "order by T1.region_id,T2.serial_number ) as test"
@@ -89,7 +88,8 @@ object ResidentClustering {
       finalStr += "(" + ipcStr + ")"
       LOG.info("start clustering region" + finalStr)
 
-      val joinData = spark.sql("select T1.feature, T2.* from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
+      val joinData = spark.sql("select distinct T2.*, T1.feature from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
+
       //prepare data
       val idPointRDD = joinData.rdd.map(data => DataWithFeature(data.getAs[Long]("id"), data.getAs[Timestamp]("time"), data.getAs[String]("spic").split("/")(3), data.getAs[String]("host"), data.getAs[String]("spic"), data.getAs[String]("bpic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray)).persist(StorageLevel.MEMORY_AND_DISK_SER)
       val dataSize = idPointRDD.count().toInt
@@ -109,38 +109,67 @@ object ResidentClustering {
       }
       val yearMon = year + "-" + monStr
       val rowKey = yearMon + "-" + region
+      //get the days of this month
+      calendar.set(Calendar.MONTH, mon - 1)
+      val totalDay = calendar.getActualMaximum(Calendar.DATE)
+      val dateOfMonth = new Array[Int](totalDay)
 
       if (status == 1) {
         LOG.info("clustering result saved")
-        val resident_raw = spark.read.textFile("file://" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect().toList
+        val resident_raw = spark.read.textFile("file:///" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect().toList
         for (i <- resident_raw.indices) {
-          val dataArr = resident_raw(i).distinct
-          println(dataArr)
+          val dataArr = resident_raw(i)
+          val dateArr = new Array[Int](dataArr.length)
           val clusterId = dataArr(1)
           LOG.info("clusterId:" + clusterId)
           val dataList = new util.ArrayList[DataWithFeature]()
           LOG.info("dataArr length:" + dataArr.length)
-          for (j <- dataArr.indices) {
-            val fullData = points(dataArr(j).toInt)
-            dataList.add(fullData)
-            val date = new Date(fullData.time.getTime)
-            val dateNew = sdf.format(date)
-            val status = putDataToEs.upDateDataToEs(fullData.spic, yearMon + "-" + region + "-" + clusterId + "-" + uuidString, dateNew, fullData.id.toInt)
-            if (status != 200) {
-              LOG.info("Put data to es failed! And the failed ftpUrl is " + fullData.spic)
-            } else {
-              LOG.info("Put data to es successful! the ftpUrl is " + fullData.spic)
+          for (k <- dataArr.indices) {
+            val data = points(dataArr(k).toInt)
+            dateArr(k) = data.time.toLocalDateTime.getDayOfMonth
+          }
+          val distinctDate = dateArr.distinct.sortWith((a, b) => a < b)
+          //set 1 if the day number appeared
+          for (l <- distinctDate) {
+            dateOfMonth(l) = 1
+          }
+
+          //get the max consitent time
+          var count = 0
+          var temp = 0
+          for (n <- dateOfMonth) {
+            if (n == 1) {
+              temp += 1
+            }
+            else {
+              count = if (count > temp) count else temp
+              temp = 0
             }
           }
-          val attribute = new ClusteringAttribute()
-          attribute.setClusteringId(region + "-" + clusterId + "-" + uuidString) //region + "-" + uuidString + "-" + data._1.toString
-          attribute.setCount(dataArr.length)
-          attribute.setFirstAppearTime(dataList.get(0).time.toString)
-          attribute.setFirstIpcId(dataList.get(0).ipc)
-          attribute.setLastAppearTime(dataList.get(dataList.size() - 1).time.toString)
-          attribute.setLastIpcId(dataList.get(dataList.size() - 1).ipc)
-          attribute.setFtpUrl(dataList.get(0).spic)
-          clusterList.add(attribute)
+          if (count >= appearCount) {
+            for (j <- dataArr.indices) {
+              val fullData = points(dataArr(j).toInt)
+              dataList.add(fullData)
+              val clusteringId = yearMon + "-" + region + "-" + clusterId + "-" + uuidString
+              val date = new Date(fullData.time.getTime)
+              val dateNew = sdf.format(date)
+              val status = putDataToEs.upDateDataToEs(fullData.spic, clusteringId, dateNew, fullData.id.toInt)
+              if (status != 200) {
+                LOG.info("Put data to es failed! And the failed ftpUrl is " + fullData.spic)
+              } else {
+                LOG.info("Put data to es successful! the ftpUrl is " + fullData.spic)
+              }
+            }
+            val attribute = new ClusteringAttribute()
+            attribute.setClusteringId(region + "-" + clusterId + "-" + uuidString) //region + "-" + uuidString + "-" + data._1.toString
+            attribute.setCount(dataArr.length)
+            attribute.setLastAppearTime(dataList.get(0).time.toString)
+            attribute.setLastIpcId(dataList.get(0).ipc)
+            attribute.setFirstAppearTime(dataList.get(dataList.size() - 1).time.toString)
+            attribute.setFirstIpcId(dataList.get(dataList.size() - 1).ipc)
+            attribute.setFtpUrl(dataList.get(0).spic)
+            clusterList.add(attribute)
+          }
         }
         LOG.info("put clustering data to HBase...")
         PutDataToHBase.putClusteringInfo(rowKey, clusterList)

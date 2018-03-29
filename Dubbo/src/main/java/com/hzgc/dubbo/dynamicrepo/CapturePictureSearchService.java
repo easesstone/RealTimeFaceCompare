@@ -43,6 +43,17 @@ public interface CapturePictureSearchService {
      */
     CaptureCount captureCountQuery(String startTime, String endTime, String ipcId);
 
+
+    /**
+     * 抓拍统计多设备查询接口（陈柯）
+     * 查询指定时间段内，指定的多个设备抓拍的图片数量
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param ipcId 多个设备id
+     * @return 图片数量以long值表示
+     */
+    Long getCaptureNumber(String startTime,String endTime,List<String> ipcId);
+
     /**
      * 查询抓拍历史记录（陈柯）
      * 根据条件筛选抓拍图片，并返回图片对象
