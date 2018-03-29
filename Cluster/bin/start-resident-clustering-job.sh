@@ -22,6 +22,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
+CLUSTER_RESIDENT_DATA_DIR=${CLUSTER_DIR}/data
 LOG_FILE=${CLUSTER_LOG_DIR}/sparkResidentClusteringJob.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
@@ -65,7 +66,9 @@ METRICS_CORE_VERSION=metrics-core-2.2.0.jar
 if [ ! -d ${CLUSTER_LOG_DIR} ];then
    mkdir ${CLUSTER_LOG_DIR}
 fi
-
+if [ ! -d ${CLUSTER_RESIDENT_DATA_DIR} ];then
+    mkdir ${CLUSTER_RESIDENT_DATA_DIR}
+fi
 ############ 判断是否存在大数据集群 ###################
 if [ ! -d ${BIGDATA_CLUSTER_PATH} ];then
    echo "${BIGDATA_CLUSTER_PATH} does not exit,please go to the node of the existing bigdata cluster !"

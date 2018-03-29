@@ -43,13 +43,13 @@ object ResidentClustering {
     val bpicField = properties.getProperty("job.clustering.mysql.field.bpic")
     val resultPath = properties.getProperty("job.clustering.result.path")
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
-    val appearCount = properties.getProperty("job.clustering.appear.count").toInt
+    val appearCount = properties.getProperty("job.clustering.appear.count").toInt * 2
     val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
-    val mon = calendar.get(Calendar.MONTH)
+    val mon = calendar.get(Calendar.MONTH) + 1
     val year = calendar.get(Calendar.YEAR)
     val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
     val currentYearMon = "'" + year + "-%" + mon + "%'"
@@ -65,8 +65,6 @@ object ResidentClustering {
     dataSource.map(data => {
       Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
     }).createOrReplaceTempView("mysqlTable")
-    dataSource.show(100)
-
 
     //get the region and ipcidlist
     val region_ipc_sql = "(select T1.region_id,GROUP_CONCAT(T2.serial_number) " + "as serial_numbers from t_region_department as T1 inner join " + "(select concat(dep.parent_ids,',',dep.id) as path ,T3.serial_number from " + "t_device as dev left join t_department as dep on dev.department_id = dep.id inner join " + "t_device_extra as T3 on dev.id = T3.device_id ) as T2 on T2.path " + "like concat('%',T1.department_id,'%') group by T1.region_id " + "order by T1.region_id,T2.serial_number ) as test"
