@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Es导出工具
+ * Es导出工具 curl -XPOST 172.18.18.100:9200/_bulk --data-binary @f5e259ba-ae99-460f-ac2c-27e855afc3d5
  */
 public class ElasticSearchDataExport {
     public static void main(String[] args) {
