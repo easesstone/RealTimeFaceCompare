@@ -22,6 +22,7 @@ DEPLOY_DIR=`pwd`
 CLUSTER_CONF_DIR=${CLUSTER_DIR}/conf
 CLUSTER_LIB_DIR=${CLUSTER_DIR}/lib
 CLUSTER_LOG_DIR=${CLUSTER_DIR}/logs
+CLUSTER_RESIDENT_DATA_DIR=${CLUSTER_DIR}/data
 LOG_FILE=${CLUSTER_LOG_DIR}/sparkResidentClusteringJob.log
 ######## common目录 ########
 COMMON_CONF_DIR=${DEPLOY_DIR}/common/conf
@@ -65,7 +66,9 @@ METRICS_CORE_VERSION=metrics-core-2.2.0.jar
 if [ ! -d ${CLUSTER_LOG_DIR} ];then
    mkdir ${CLUSTER_LOG_DIR}
 fi
-
+if [ ! -d ${CLUSTER_RESIDENT_DATA_DIR} ];then
+    mkdir ${CLUSTER_RESIDENT_DATA_DIR}
+fi
 ############ 判断是否存在大数据集群 ###################
 if [ ! -d ${BIGDATA_CLUSTER_PATH} ];then
    echo "${BIGDATA_CLUSTER_PATH} does not exit,please go to the node of the existing bigdata cluster !"
@@ -80,7 +83,6 @@ else
     echo "copy 文件 es-config.properties 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${SERVICE_CONF_DIR}/es-config.properties ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/hive-site.xml ];then
     echo "${CLUSTER_CONF_DIR}/hive-site.xml does not exit!"
@@ -89,7 +91,6 @@ else
     echo "copy 文件 hive-site.xml 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${CLUSTER_CONF_DIR}/hive-site.xml ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 if [ ! -e ${CLUSTER_CONF_DIR}/sparkJob.properties ];then
     echo "${CLUSTER_CONF_DIR}/sparkJob.properties does not exit!"
@@ -98,7 +99,6 @@ else
     echo "copy 文件 sparkJob.properties 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${CLUSTER_CONF_DIR}/sparkJob.properties ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 if [ ! -e ${SERVICE_CONF_DIR}/hbase-site.xml ];then
     echo "${SERVICE_CONF_DIR}/hbase-site.xml does not exit!"
@@ -107,7 +107,6 @@ else
     echo "copy 文件 hbase-site.xml 到 spark/conf......"  | tee  -a  $LOG_FILE
     cp ${SERVICE_CONF_DIR}/hbase-site.xml ${SPARK_CONF_PATH}
     echo "copy完毕......"  | tee  -a  $LOG_FILE
-    exit 0
 fi
 
 ################# 判断是否存在jar ###################
