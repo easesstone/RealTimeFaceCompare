@@ -54,7 +54,8 @@ object ResidentClustering {
     val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
     val currentYearMon = "'" + year + "-%" + mon + "%'"
 
-    spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).createOrReplaceTempView("parquetTable")
+    spark.udf.register("feature_len", (x: mutable.WrappedArray[Float]) => x.length)
+    spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon + "and feature_len(feature)>0").distinct().createOrReplaceTempView("parquetTable")
 
     val preSql = "(select T1.id, T2.host_name, " + "T2.big_picture_url, T2.small_picture_url, " + "T1.alarm_time " + "from t_alarm_record as T1 inner join t_alarm_record_extra as T2 on T1.id=T2.record_id " + "where T2.static_id IS NULL " + "and DATE_FORMAT(T1.alarm_time,'%Y-%m') like " + currentYearMon + ") as temp"
 
@@ -88,7 +89,7 @@ object ResidentClustering {
       finalStr += "(" + ipcStr + ")"
       LOG.info("start clustering region" + finalStr)
 
-      val joinData = spark.sql("select distinct T2.*, T1.feature from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
+      val joinData = spark.sql("select T2.*, T1.feature from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
 
       //prepare data
       val idPointRDD = joinData.rdd.map(data => DataWithFeature(data.getAs[Long]("id"), data.getAs[Timestamp]("time"), data.getAs[String]("spic").split("/")(3), data.getAs[String]("host"), data.getAs[String]("spic"), data.getAs[String]("bpic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray)).persist(StorageLevel.MEMORY_AND_DISK_SER)
@@ -140,8 +141,7 @@ object ResidentClustering {
           for (n <- dateOfMonth) {
             if (n == 1) {
               temp += 1
-            }
-            else {
+            } else {
               count = if (count > temp) count else temp
               temp = 0
             }
