@@ -168,6 +168,8 @@ object ResidentClustering {
               attribute.setFirstIpcId(dataList.get(dataList.size() - 1).ipc)
               attribute.setFtpUrl(dataList.get(0).spic)
               clusterList.add(attribute)
+            } else {
+              LOG.info("appear times less than " + appearCount)
             }
           }
           LOG.info("put clustering data to HBase...")
