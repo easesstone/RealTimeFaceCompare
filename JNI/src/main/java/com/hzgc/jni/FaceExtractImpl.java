@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 public class FaceExtractImpl implements FaceExtract {
     private static Logger LOG = Logger.getLogger(FaceExtractImpl.class);
+
     private FaceExtractImpl() {
         try {
             LOG.info("Start NativeFunction init....");
