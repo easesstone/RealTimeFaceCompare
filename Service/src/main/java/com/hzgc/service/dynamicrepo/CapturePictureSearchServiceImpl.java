@@ -212,14 +212,14 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
             attributeList.add(huzi);
 
             Attribute eyeglasses = new Attribute();
-            eyeglasses.setIdentify(Eleglasses.class.getSimpleName());
+            eyeglasses.setIdentify(Eyeglasses.class.getSimpleName());
             eyeglasses.setDesc("眼镜");
             eyeglasses.setLogistic(Logistic.OR);
             List<AttributeValue> eyeglassesValueList = new ArrayList<>();
-            for (Eleglasses eye : Eleglasses.values()) {
+            for (Eyeglasses eye : Eyeglasses.values()) {
                 AttributeValue eyeglassesValue = new AttributeValue();
                 eyeglassesValue.setValue(eye.ordinal());
-                eyeglassesValue.setDesc(Eleglasses.getDesc(eye));
+                eyeglassesValue.setDesc(Eyeglasses.getDesc(eye));
                 eyeglassesValueList.add(eyeglassesValue);
             }
             eyeglasses.setValues(eyeglassesValueList);

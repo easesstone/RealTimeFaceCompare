@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 是否戴眼镜：0->无；1->戴眼镜；2->没有戴眼镜；
  */
-public enum Eleglasses implements Serializable {
+public enum Eyeglasses implements Serializable {
     None(0), Eyeglasses_y(1), Eyeglasses_n(2);
 
     private int value;
@@ -15,7 +15,7 @@ public enum Eleglasses implements Serializable {
      */
     private Logistic logistic = Logistic.OR;
 
-    private Eleglasses(int value) {
+    private Eyeglasses(int value) {
         this.value = value;
     }
 
@@ -35,13 +35,13 @@ public enum Eleglasses implements Serializable {
         this.logistic = logistic;
     }
 
-    public static Eleglasses get(int value) {
-        for (Eleglasses eyeglasses : Eleglasses.values()) {
+    public static Eyeglasses get(int value) {
+        for (Eyeglasses eyeglasses : Eyeglasses.values()) {
             if (value == eyeglasses.getValue()) {
                 return eyeglasses;
             }
         }
-        return Eleglasses.None;
+        return Eyeglasses.None;
     }
 
     /**
@@ -50,12 +50,12 @@ public enum Eleglasses implements Serializable {
      * @param eyeglasses 属性对象
      * @return 属性描述信息
      */
-    public static String getDesc(Eleglasses eyeglasses) {
-        if (eyeglasses == Eleglasses.None) {
+    public static String getDesc(Eyeglasses eyeglasses) {
+        if (eyeglasses == Eyeglasses.None) {
             return "无";
-        } else if (eyeglasses == Eleglasses.Eyeglasses_y) {
+        } else if (eyeglasses == Eyeglasses.Eyeglasses_y) {
             return "戴眼镜";
-        } else if (eyeglasses == Eleglasses.Eyeglasses_n) {
+        } else if (eyeglasses == Eyeglasses.Eyeglasses_n) {
             return "没有戴眼镜";
         }
         return null;
