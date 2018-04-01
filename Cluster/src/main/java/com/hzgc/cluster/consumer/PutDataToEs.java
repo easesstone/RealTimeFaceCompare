@@ -37,8 +37,8 @@ public class PutDataToEs implements Serializable {
         FaceAttribute faceAttr = faceObject.getAttribute();
         int haircolor = faceAttr.getHairColor();
         map.put(DynamicTable.HAIRCOLOR, haircolor);
-        int eleglasses = faceAttr.getEyeglasses();
-        map.put(DynamicTable.ELEGLASSES, eleglasses);
+        int eyeglasses = faceAttr.getEyeglasses();
+        map.put(DynamicTable.EYEGLASSES, eyeglasses);
         int gender = faceAttr.getGender();
         map.put(DynamicTable.GENDER, gender);
         int hairstyle = faceAttr.getHairStyle();
