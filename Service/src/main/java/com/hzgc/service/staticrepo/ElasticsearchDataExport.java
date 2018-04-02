@@ -1,6 +1,7 @@
-package com.hzgc.service.staticrepo.elasticsearchdataexportv1;
+package com.hzgc.service.staticrepo;
 
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -20,23 +21,24 @@ import java.util.concurrent.*;
 /**
  * Es导出工具 curl -XPOST 172.18.18.100:9200/_bulk --data-binary @f5e259ba-ae99-460f-ac2c-27e855afc3d5
  */
-public class ElasticSearchDataExport {
+public class ElasticsearchDataExport {
+    private static Logger LOG = Logger.getLogger(ElasticsearchDataExport.class);
     public static void main(String[] args) {
-//        // 参数验证
-//        if (args.length != 4) {
-//            System.exit(0);
-//        }
-//        String es_ip = args[0];
-//        String es_cluster_name = args [1];
-//        String index_export = args[2];
-//        String index_type = args[3];
-//        String export_data_dir  = args[4];
+        // 参数验证
+        if (args.length != 5) {
+            LOG.info("参数1：es 其中一个ip 地址。");
+            LOG.info("参数2: 集群名字。");
+            LOG.info("参数3: 索引名字。");
+            LOG.info("参数4: 索引类型名。");
+            LOG.info("参数5：es 数据导出的位置。");
+            System.exit(0);
+        }
+        String es_ip = args[0];
+        String es_cluster_name = args [1];
+        String index_export = args[2];
+        String index_type = args[3];
+        String export_data_dir  = args[4];
         long start = System.currentTimeMillis();
-        String es_ip = "172.18.18.103";
-        String es_cluster_name = "hbase2es-cluster";
-        String index_export = "dynamic";
-        String index_type = "person";
-        String export_data_dir  = "E:\\Json";
         delteFileOrDir(export_data_dir);
         new File(export_data_dir).mkdirs();
 
@@ -44,9 +46,9 @@ public class ElasticSearchDataExport {
                 .put("client.transport.sniff", true).build();
         TransportClient client = null;
         try {
-             client = new PreBuiltTransportClient(settings)
-                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(es_ip),
-                             9300));
+            client = new PreBuiltTransportClient(settings)
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(es_ip),
+                            9300));
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
