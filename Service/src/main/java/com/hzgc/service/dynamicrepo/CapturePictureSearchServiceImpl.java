@@ -85,9 +85,9 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
                                 && resultOption.getSingleResultOptions().size() > 0) {
                             List<SingleResult> singleList = searchResult.getResults();
                             List<SingleResult> tempList = new ArrayList<>();
-                            for (SingleResult singleResult: singleList) {
+                            for (SingleResult singleResult : singleList) {
                                 boolean isContanis = false;
-                                for (SingleResultOption singleResultOption: resultOption.getSingleResultOptions()) {
+                                for (SingleResultOption singleResultOption : resultOption.getSingleResultOptions()) {
                                     if (Objects.equals(singleResult.getId(), singleResultOption.getId())) {
                                         isContanis = true;
                                     }
@@ -315,6 +315,38 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
     }
 
     /**
+     * 抓拍统计多设备查询接口（陈柯）
+     * 查询指定时间段内，指定的多个设备抓拍的图片数量
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param ipcId     多个设备id
+     * @return 图片数量以long值表示
+     */
+    @Override
+    public Long getCaptureNumber(String startTime, String endTime, List<String> ipcId) {
+        BoolQueryBuilder totolBQ = QueryBuilders.boolQuery();
+        // 开始时间和结束时间存在的时候的处理
+        if (startTime != null && endTime != null && !startTime.equals("") && !endTime.equals("")) {
+            totolBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
+        }
+        BoolQueryBuilder ipcIdBQ = QueryBuilders.boolQuery();
+        if (ipcId != null && ipcId.size() > 0) {
+            for (String ipcid : ipcId){
+                ipcIdBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID,ipcid).analyzer("standard"));
+            }
+        }
+        totolBQ.must(ipcIdBQ);
+        SearchResponse searchResponse = ElasticSearchHelper.getEsClient()
+                .prepareSearch(DynamicTable.DYNAMIC_INDEX)
+                .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                .setQuery(totolBQ)
+                .get();
+        SearchHits searchHits = searchResponse.getHits();
+        return searchHits.getTotalHits();
+    }
+
+    /**
      * 查询抓拍历史记录（陈柯）
      * 根据条件筛选抓拍图片，并返回图片对象
      *
@@ -327,7 +359,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         CaptureHistory captureHistory = new CaptureHistory();
         option.setSearchType(SearchType.PERSON);
         List<SortParam> sortParams = option.getSortParams();
-        return captureHistory.getRowKey_history(option,sortParams);
+        return captureHistory.getRowKey_history(option, sortParams);
     }
 
     /**

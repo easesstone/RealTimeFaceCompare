@@ -56,7 +56,7 @@ public class DynamicTable implements Serializable {
     //日期 分区字段 数据格式 xxxx-xx-xx(年-月-日)
     public static final String DATE = "date";
     //人脸属性-是否戴眼镜
-    public static final String ELEGLASSES = "eleglasses";
+    public static final String EYEGLASSES = "eyeglasses";
     //人脸属性-性别 男或女
     public static final String GENDER = "gender";
     //人脸属性-头发颜色

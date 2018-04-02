@@ -223,6 +223,8 @@ class CaptureHistory {
                 SearchHit[] hits = searchHits.getHits();
                 List<CapturedPicture> persons = new ArrayList<>();
                 CapturedPicture capturePicture;
+                groupByIpc.setIpc(ipcid);
+                picturesByIpc.add(groupByIpc);
                 if (hits.length > 0) {
                     for (SearchHit hit : hits) {
                         capturePicture = new CapturedPicture();
@@ -235,11 +237,12 @@ class CaptureHistory {
                         capturePicture.setIpcId(ipc);
                         capturePicture.setTimeStamp(timestamp);
                         if (ipcid.equals(ipc)) {
-                            groupByIpc.setIpc(ipc);
-                            picturesByIpc.add(groupByIpc);
                             persons.add(capturePicture);
                         }
                     }
+                }else {
+                    capturePicture = new CapturedPicture();
+                    persons.add(capturePicture);
                 }
                 singleResult.setTotal(totolCount);
                 singleResult.setPicturesByIpc(picturesByIpc);
