@@ -162,9 +162,9 @@ object ResidentClustering {
               val attribute = new ClusteringAttribute()
               attribute.setClusteringId(region + "-" + clusterId + "-" + uuidString) //region + "-" + uuidString + "-" + data._1.toString
               attribute.setCount(dataArr.length)
-              attribute.setLastAppearTime(dataList.get(0).time.toString)
+              attribute.setLastAppearTime(sdf.format(dataList.get(0).time))
               attribute.setLastIpcId(dataList.get(0).ipc)
-              attribute.setFirstAppearTime(dataList.get(dataList.size() - 1).time.toString)
+              attribute.setFirstAppearTime(sdf.format(dataList.get(dataList.size() - 1).time))
               attribute.setFirstIpcId(dataList.get(dataList.size() - 1).ipc)
               attribute.setFtpUrl(dataList.get(0).spic)
               clusterList.add(attribute)

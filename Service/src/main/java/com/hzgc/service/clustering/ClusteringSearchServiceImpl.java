@@ -139,7 +139,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
                 .setFrom(start)
                 .setSize(limit)
-                .addSort(DynamicTable.ALARM_TIME, SortOrder.DESC)
+                .addSort(DynamicTable.ALARM_TIME, SortOrder.ASC)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
