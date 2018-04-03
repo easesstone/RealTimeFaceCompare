@@ -55,8 +55,18 @@ public class HBaseDataExport {
                         Bytes.toBytes(ObjectInfoTable.NAME)));
                 String idCard = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.IDCARD)));
-                int sex = Bytes.toInt(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                        Bytes.toBytes(ObjectInfoTable.SEX)));
+                int sex = 0;
+                if (result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.SEX)) != null) {
+                    String sexStr = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                            Bytes.toBytes(ObjectInfoTable.SEX)));
+                    if (!"".equals(sexStr.trim()) && !"\"\"".equals(sexStr)) {
+                        sex = Integer.parseInt(sexStr);
+                    }
+                }
+                String pkey = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
+                        Bytes.toBytes(ObjectInfoTable.PKEY)));
+
                 byte[] photo = result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
                         Bytes.toBytes(ObjectInfoTable.PHOTO));
                 String feature = Bytes.toString(result.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
@@ -82,8 +92,17 @@ public class HBaseDataExport {
                 map.put(ObjectInfoTable.CREATOR, creator);
                 map.put(ObjectInfoTable.CPHONE, cphone);
                 map.put(ObjectInfoTable.REASON, reason);
-                map.put(ObjectInfoTable.UPDATETIME, new java.sql.Timestamp(format.parse(updateTime).getTime()));
-                map.put(ObjectInfoTable.CREATETIME, new java.sql.Timestamp(format.parse(createTime).getTime()));
+                map.put(ObjectInfoTable.PKEY, pkey);
+                if (createTime != null && !"".equals(createTime)) {
+                    map.put(ObjectInfoTable.CREATETIME, new java.sql.Timestamp(format.parse(createTime).getTime()));
+                } else {
+                    map.put(ObjectInfoTable.CREATETIME, new java.sql.Timestamp(System.currentTimeMillis()));
+                }
+                if (updateTime != null && !"".equals(updateTime))  {
+                    map.put(ObjectInfoTable.UPDATETIME, new java.sql.Timestamp(format.parse(updateTime).getTime()));
+                } else {
+                    map.put(ObjectInfoTable.UPDATETIME, new java.sql.Timestamp(System.currentTimeMillis()));
+                }
                 map.put(ObjectInfoTable.IMPORTANT, 0);
                 map.put(ObjectInfoTable.STATUS, 0);
                 writer.write(JSONObject.fromObject(map).toString() + "\r\n");

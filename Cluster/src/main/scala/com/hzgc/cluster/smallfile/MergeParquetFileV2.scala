@@ -107,10 +107,13 @@ object MergeParquetFileV2 {
             pathArr(count) = parquetFiles.get(count)
             count = count + 1
         }
+
         val personDF = sparkSession.sql("select * from person_table where date='" + dateString + "'")
 
         import sparkSession.implicits._
         val personDs = personDF.as[PictureV1]
+
+        val resultFilePath = hisTableHdfsPath + "vv" + File.separator + "date=" + dateString
 
         // 保存文件
         val finalPersonDf = personDs.mapPartitions(persons => {
@@ -123,11 +126,13 @@ object MergeParquetFileV2 {
                     person.hairstyle, person.hat, person.huzi, person.tie, 0)
             }
             results.iterator
-        }).toDF().coalesce(1).repartition(SmallFileUtils.takePartition(110, 100, pathArr, fs))
-            .write.mode(SaveMode.Append).parquet(finalPath)
+        }).toDF()
+        finalPersonDf.coalesce(1).repartition(SmallFileUtils.takePartition(110, 100, pathArr, fs))
+            .write.mode(SaveMode.Append).parquet(resultFilePath)
 
+        LOG.info("===========================" + finalPersonDf.count())
         // 删除已经被合并的文件
-        ReadWriteHDFS.delV2(pathArr, fs)
+//        ReadWriteHDFS.delV2(pathArr, fs)
 
         sparkSession.close()
         LOG.info("*************************************************************************************")
