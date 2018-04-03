@@ -45,7 +45,7 @@ object ResidentClustering {
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
     val month_temp = properties.getProperty("job.clustering.month")
-    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
     import spark.implicits._
 
