@@ -44,19 +44,26 @@ object ResidentClustering {
     val resultPath = properties.getProperty("job.clustering.result.path")
     val similarityThreshold = properties.getProperty("job.clustering.similarity.Threshold").toDouble
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
-    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
+    val month_temp = properties.getProperty("job.clustering.month")
+    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
     val uuidString = UUID.randomUUID().toString
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
-    val mon = calendar.get(Calendar.MONTH) + 1
+    val mon = if (month_temp != null) month_temp.toInt else calendar.get(Calendar.MONTH)
     val year = calendar.get(Calendar.YEAR)
     val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
-    val currentYearMon = "'" + year + "-%" + mon + "%'"
+    var monStr = ""
+    if (mon < 10) {
+      monStr = "0" + mon
+    } else {
+      monStr = String.valueOf(mon)
+    }
+    val currentYearMon = "'" + year + "-" + monStr + "%'"
 
     spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).distinct().createOrReplaceTempView("parquetTable")
     val parquetDataCount = spark.sql("select ftpurl from parquetTable").count()
-
+    LOG.info("data count :" + parquetDataCount)
     val preSql = "(select T1.id, T2.host_name, " + "T2.big_picture_url, T2.small_picture_url, " + "T1.alarm_time " + "from t_alarm_record as T1 inner join t_alarm_record_extra as T2 on T1.id=T2.record_id " + "where T2.static_id IS NULL " + "and DATE_FORMAT(T1.alarm_time,'%Y-%m') like " + currentYearMon + ") as temp"
     sqlProper.setProperty("driver", driverClass)
 
@@ -71,11 +78,10 @@ object ResidentClustering {
       val region_ipc_data = spark.read.jdbc(url, region_ipc_sql, sqlProper).collect()
       val region_ipcMap = mutable.HashMap[Int, String]()
       region_ipc_data.foreach(data => region_ipcMap.put(data.getAs[Int](0), data.getAs[String](1)))
-      region_ipcMap.foreach(println(_))
-
-      for (i <- region_ipcMap) {
-        val region = i._1
-        val ipcList = i._2.split(",")
+      //clustering for each region
+      region_ipcMap.foreach(data => {
+        val region = data._1
+        val ipcList = data._2.split(",")
         var ipcStr = ""
         for (j <- 0 until ipcList.length) {
           if (j != ipcList.length - 1) {
@@ -89,7 +95,6 @@ object ResidentClustering {
         LOG.info("start clustering region" + finalStr)
 
         val joinData = spark.sql("select T2.*, T1.feature from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
-
         //prepare data
         val idPointRDD = joinData.rdd.map(data => DataWithFeature(data.getAs[Long]("id"), data.getAs[Timestamp]("time"), data.getAs[String]("spic").split("/")(3), data.getAs[String]("host"), data.getAs[String]("spic"), data.getAs[String]("bpic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray)).persist(StorageLevel.MEMORY_AND_DISK_SER)
         val dataSize = idPointRDD.count().toInt
@@ -101,12 +106,6 @@ object ResidentClustering {
         val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         val clusterList = new util.ArrayList[ClusteringAttribute]()
 
-        var monStr = ""
-        if (mon < 10) {
-          monStr = "0" + mon
-        } else {
-          monStr = String.valueOf(mon)
-        }
         val yearMon = year + "-" + monStr
         val rowKey = yearMon + "-" + region
         //get the days of this month
@@ -117,8 +116,8 @@ object ResidentClustering {
         if (status == 1) {
           LOG.info("clustering result saved")
           val resident_raw = spark.read.textFile("file:///" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect().toList
-          for (i <- resident_raw.indices) {
-            val dataArr = resident_raw(i)
+          resident_raw.foreach(data => {
+            val dataArr = data
             val dateArr = new Array[Int](dataArr.length)
             val clusterId = dataArr(1)
             LOG.info("clusterId:" + clusterId)
@@ -133,7 +132,6 @@ object ResidentClustering {
             for (l <- distinctDate) {
               dateOfMonth(l) = 1
             }
-
             //max Continuous number of appear days
             var count = 0
             var temp = 0
@@ -146,8 +144,8 @@ object ResidentClustering {
               }
             }
             if (count >= appearCount) {
-              for (j <- dataArr.indices) {
-                val fullData = points(dataArr(j).toInt)
+              dataArr.foreach(data => {
+                val fullData = points(data.toInt)
                 dataList.add(fullData)
                 val clusteringId = yearMon + "-" + region + "-" + clusterId + "-" + uuidString
                 val date = new Date(fullData.time.getTime)
@@ -158,7 +156,7 @@ object ResidentClustering {
                 } else {
                   LOG.info("Put data to es successful! the ftpUrl is " + fullData.spic)
                 }
-              }
+              })
               val attribute = new ClusteringAttribute()
               attribute.setClusteringId(region + "-" + clusterId + "-" + uuidString) //region + "-" + uuidString + "-" + data._1.toString
               attribute.setCount(dataArr.length)
@@ -171,7 +169,7 @@ object ResidentClustering {
             } else {
               LOG.info("appear times less than " + appearCount)
             }
-          }
+          })
           LOG.info("put clustering data to HBase...")
           PutDataToHBase.putClusteringInfo(rowKey, clusterList)
           LOG.info("put clustering data to HBase successful")
@@ -179,7 +177,10 @@ object ResidentClustering {
           LOG.info("clustering failed, please check the parameter of function clusteringComputer")
         }
         LOG.info("end clustering region" + finalStr)
-      }
+      })
+
+    } else {
+      LOG.info("no data read from parquet with the date")
     }
     spark.stop()
   }

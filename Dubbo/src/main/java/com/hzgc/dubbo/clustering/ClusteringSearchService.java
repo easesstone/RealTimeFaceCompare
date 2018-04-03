@@ -40,7 +40,7 @@ public interface ClusteringSearchService {
      * @param sortParam 排序参数（默认时间先后排序）
      * @return 返回该类下面所以告警信息
      */
-    List<String> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam);
+    List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam);
 
     /**
      * delete a clustering

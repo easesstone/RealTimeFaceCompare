@@ -20,7 +20,6 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
@@ -130,7 +129,7 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
      * @return 返回该类下面所以告警信息
      */
     @Override
-    public List<String> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
+    public List<Integer> detailClusteringSearch_v1(String clusterId, String time, int start, int limit, String sortParam) {
         BoolQueryBuilder totalBQ = QueryBuilders.boolQuery();
         if (clusterId != null && time != null) {
             totalBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.CLUSTERING_ID, time + "-" + clusterId));
@@ -140,30 +139,20 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
                 .addSort("exacttime", SortOrder.DESC)
-                .setSize(100000)
+                .setFrom(start)
+                .setSize(limit)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
-        List<String> alarmIdList = new ArrayList<>();
+        List<Integer> alarmIdList = new ArrayList<>();
         if (results != null && results.length > 0) {
             for (SearchHit result : results) {
-                String alarmTime=result.getSource().get(DynamicTable.ALARM_TIME).toString();
+                int alarmTime = (int) result.getSource().get(DynamicTable.ALARM_ID);
                 alarmIdList.add(alarmTime);
-                System.out.println(alarmTime);
             }
         } else {
             LOG.info("no data get from es");
         }
-        int total = alarmIdList.size();
-        if (start > -1 && start <= total) {
-            if ((start + limit) > total) {
-                return alarmIdList.subList(start, total);
-            } else {
-                return alarmIdList.subList(start, start + limit);
-            }
-        } else {
-            LOG.info("start or limit out of index");
-            return null;
-        }
+        return alarmIdList;
     }
 
     /**

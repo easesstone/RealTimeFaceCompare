@@ -78,9 +78,9 @@ public class ClusteringTest {
             System.out.println(ipcID);
             System.out.println(clusteringAttributeList1.getCount());
         }*/
-        List<String> alarmInfos = clusteringSearchService.detailClusteringSearch_v1("1-5-caf540a7-e9fd-4905-aa12-afde2e4a0295", "2018-02", 0, 1000, "");
+        List<Integer> alarmInfos = clusteringSearchService.detailClusteringSearch_v1("1-3-81840d1f-705c-4586-8c10-12b8a89a9668", "2018-02", 0, 1000, "");
         System.out.println(alarmInfos.size());
-        for (String alarmInfos1 : alarmInfos) {
+        for (Integer alarmInfos1 : alarmInfos) {
             System.out.println(alarmInfos1);
         }
 
