@@ -67,7 +67,7 @@ public class ClusteringTest {
         clusteringAttributeList2.addAll(clusteringAttributeList1);
         putDataToHBase("2018-02-bak", clusteringAttributeList2);*/
         ClusteringSearchServiceImpl clusteringSearchService = new ClusteringSearchServiceImpl();
-        ClusteringInfo clusteringInfo;
+       /* ClusteringInfo clusteringInfo;
         clusteringInfo = clusteringSearchService.clusteringSearch("1", "2018-02", 0, 50, "");
         List<ClusteringAttribute> clusteringAttributeList;
         clusteringAttributeList = clusteringInfo.getClusteringAttributeList();
@@ -77,12 +77,12 @@ public class ClusteringTest {
             String ipcID = clusteringAttributeList1.getFirstIpcId();
             System.out.println(ipcID);
             System.out.println(clusteringAttributeList1.getCount());
-        }
-       /* List<Integer> alarmInfos = clusteringSearchService.detailClusteringSearch_v1("1-434-4eb48f65-9e29-478c-88ee-fbd31b3e0764", "2018-02", 0, 100, "");
-        System.out.println(alarmInfos.size());
-        for (Integer alarmInfos1 : alarmInfos) {
-            System.out.println(alarmInfos1.toString());
         }*/
+        List<String> alarmInfos = clusteringSearchService.detailClusteringSearch_v1("1-5-caf540a7-e9fd-4905-aa12-afde2e4a0295", "2018-02", 0, 1000, "");
+        System.out.println(alarmInfos.size());
+        for (String alarmInfos1 : alarmInfos) {
+            System.out.println(alarmInfos1);
+        }
 
         /*idList.add("1-19");
         clusteringSearchService.ignoreClustering(idList, "2018-02", "no");*/
