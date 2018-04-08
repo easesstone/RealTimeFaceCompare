@@ -134,22 +134,23 @@ public class ClusteringSearchServiceImpl implements ClusteringSearchService {
         if (clusterId != null && time != null) {
             totalBQ.must(QueryBuilders.matchPhraseQuery(DynamicTable.CLUSTERING_ID, time + "-" + clusterId));
         }
+
         SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
                 .prepareSearch(DynamicTable.DYNAMIC_INDEX)
                 .setTypes(DynamicTable.PERSON_INDEX_TYPE)
+                .addSort("exacttime", SortOrder.DESC)
                 .setFrom(start)
                 .setSize(limit)
-                .addSort(DynamicTable.ALARM_TIME, SortOrder.DESC)
                 .setQuery(totalBQ);
         SearchHit[] results = searchRequestBuilder.get().getHits().getHits();
         List<Integer> alarmIdList = new ArrayList<>();
         if (results != null && results.length > 0) {
             for (SearchHit result : results) {
-                alarmIdList.add((int) result.getSource().get(DynamicTable.ALARM_ID));
+                int alarmTime = (int) result.getSource().get(DynamicTable.ALARM_ID);
+                alarmIdList.add(alarmTime);
             }
         } else {
             LOG.info("no data get from es");
-            return null;
         }
         return alarmIdList;
     }
