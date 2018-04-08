@@ -86,6 +86,14 @@ curl -XPUT 's109:9200/dynamic?pretty' -H 'Content-Type: application/json' -d'
         }
     }
 '
+curl -XPUT 's109:9200/dynamic/_mapping/person?pretty' -H 'Content-Type: application/json' -d'
+{
+  "alarmtime": {
+      "type":     "text",
+      "fielddata": true
+    }
+}
+'
 
 curl -XPUT 's109:9200/dynamic/_settings' -d '{
     "index": {
