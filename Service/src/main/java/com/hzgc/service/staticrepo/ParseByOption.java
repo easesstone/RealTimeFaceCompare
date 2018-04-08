@@ -420,6 +420,21 @@ public class ParseByOption {
             whereQuery.append(" = ?");
             setArgsList.add(status);
         }
+
+        // 人员位置搜索，location
+        String location = pSearchArgsModel.getLocation();
+        if (location != null && !"".equals(location)) {
+            if (count > 0) {
+                whereQuery.append(" and ");
+            } else {
+                whereQuery.append(" where ");
+            }
+            count++;
+            whereQuery.append(ObjectInfoTable.LOCATION);
+            whereQuery.append(" = ?");
+            setArgsList.add(location);
+        }
+
         return whereQuery;
     }
 

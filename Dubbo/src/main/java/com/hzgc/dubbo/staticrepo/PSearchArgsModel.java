@@ -32,6 +32,7 @@ public class PSearchArgsModel implements Serializable {
     private boolean moHuSearch; // 是否模糊查询， true ,是，false 不是
     private Integer important; //0,重点关注，1非重点关注
     private Integer status;  // 0 ,常住人口，1 建议迁出
+    private String location; // 人员所在位置查询。
 
     public PSearchArgsModel() {
     }
@@ -196,6 +197,14 @@ public class PSearchArgsModel implements Serializable {
         this.status = status;
     }
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     @Override
     public String toString() {
         return "PSearchArgsModel{" +
@@ -219,6 +228,7 @@ public class PSearchArgsModel implements Serializable {
                 ", moHuSearch=" + moHuSearch +
                 ", important=" + important +
                 ", status=" + status +
+                ", location='" + location + '\'' +
                 '}';
     }
 }
