@@ -21,10 +21,14 @@ public class PrisonServiceImpl implements PrisonService {
     @Override
     public int updateLocation(PrisonSearchOpts prisonSearchOpts){
         if (prisonSearchOpts == null) {
-            LOG.info("PrsionSearchOpts 为空，传过来的参数不能为空......");
+            LOG.info("PrsionSearchOpts 为空，传过来的参数不能为空。");
             return 1;
         }
         Map<String, List<String>> pkeysUpdate = prisonSearchOpts.getPkeysUpate();
+        if (pkeysUpdate == null) {
+            LOG.info("更新参数为空.");
+            return 1;
+        }
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "("
@@ -83,6 +87,10 @@ public class PrisonServiceImpl implements PrisonService {
             return 1;
         }
         List<String> pkeysReset = prisonSearchOpts.getPkeysReset();
+        if (pkeysReset == null) {
+            LOG.info("重置参数为空.");
+            return 1;
+        }
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "(" + ObjectInfoTable.ROWKEY + ", " +
@@ -119,10 +127,18 @@ public class PrisonServiceImpl implements PrisonService {
      */
     @Override
     public PrisonCountResults countByLocation(PrisonSearchOpts prisonSearchOpts) {
+        if (prisonSearchOpts == null) {
+            LOG.info("传进来的参数为空.");
+            return new PrisonCountResults();
+        }
         List<String> pkeysCount = prisonSearchOpts.getPkeysCount();
+        if (pkeysCount == null) {
+            LOG.info("参数列表为空.");
+            return new PrisonCountResults();
+        }
         // sql 封装
         String sql =  "select " + ObjectInfoTable.PKEY + ", " + ObjectInfoTable.LOCATION +
-                "count(" + ObjectInfoTable.LOCATION +") as count from " + ObjectInfoTable.TABLE_NAME;
+                ", count(" + ObjectInfoTable.LOCATION +") as count from " + ObjectInfoTable.TABLE_NAME;
         for (int i = 0; i < pkeysCount.size(); i++) {
             if (i == 0 && pkeysCount.size() > 1) {
                 sql += " where (" + ObjectInfoTable.PKEY + " = ? ";
@@ -136,6 +152,9 @@ public class PrisonServiceImpl implements PrisonService {
                 sql += " or " + ObjectInfoTable.PKEY + " = ? ";
             }
         }
+        sql += " group by " + ObjectInfoTable.PKEY + ", " + ObjectInfoTable.LOCATION;
+
+        LOG.info(sql);
 
         //获取连接，执行查询
         Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
@@ -175,6 +194,7 @@ public class PrisonServiceImpl implements PrisonService {
             prisonCountResult = new PrisonCountResult();
             prisonCountResult.setPkey(pkeysTmp.get(lable));
             prisonCountResult.setLocationCounts(locationCounts);
+            prisonCountResultsList.add(prisonCountResult);
 
             prisonCountResults.setResults(prisonCountResultsList);
         } catch (SQLException e) {
