@@ -66,6 +66,7 @@ METRICS_CORE_VERSION=metrics-core-2.2.0.jar
 if [ ! -d ${CLUSTER_LOG_DIR} ];then
    mkdir ${CLUSTER_LOG_DIR}
 fi
+############ 创建聚类结果保存 ###############
 if [ ! -d ${CLUSTER_RESIDENT_DATA_DIR} ];then
     mkdir ${CLUSTER_RESIDENT_DATA_DIR}
 fi

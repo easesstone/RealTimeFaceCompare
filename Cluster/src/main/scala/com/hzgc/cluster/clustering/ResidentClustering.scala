@@ -46,13 +46,11 @@ object ResidentClustering {
     val appearCount = properties.getProperty("job.clustering.appear.count").toInt
     val month_temp = properties.getProperty("job.clustering.month")
     val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
-    val uuidString = UUID.randomUUID().toString
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
     val mon = if (month_temp != null) month_temp.toInt else calendar.get(Calendar.MONTH)
     val year = calendar.get(Calendar.YEAR)
-    val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
     var monStr = ""
     if (mon < 10) {
       monStr = "0" + mon
@@ -60,15 +58,19 @@ object ResidentClustering {
       monStr = String.valueOf(mon)
     }
     val currentYearMon = "'" + year + "-" + monStr + "%'"
-
+    //get parquet data
     spark.sql("select ftpurl,feature from person_table where date like " + currentYearMon).distinct().createOrReplaceTempView("parquetTable")
     val parquetDataCount = spark.sql("select ftpurl from parquetTable").count()
-    LOG.info("data count :" + parquetDataCount)
+    LOG.info("parquet data count :" + parquetDataCount)
+
+    //get alarm data from mysql database
     val preSql = "(select T1.id, T2.host_name, " + "T2.big_picture_url, T2.small_picture_url, " + "T1.alarm_time " + "from t_alarm_record as T1 inner join t_alarm_record_extra as T2 on T1.id=T2.record_id " + "where T2.static_id IS NULL " + "and DATE_FORMAT(T1.alarm_time,'%Y-%m') like " + currentYearMon + ") as temp"
     sqlProper.setProperty("driver", driverClass)
-
     val dataSource = spark.read.jdbc(url, preSql, sqlProper)
-    if (parquetDataCount > 0 && dataSource.count() > 0) {
+    val mysqlDataCount = dataSource.count()
+    LOG.info("mysql data count :" + mysqlDataCount)
+
+    if (parquetDataCount > 0 && mysqlDataCount > 0) {
       dataSource.map(data => {
         Data(data.getAs[Long](idField), data.getAs[Timestamp](timeField), data.getAs[String](spicField).substring(1, data.getAs[String](spicField).indexOf("/", 1)), data.getAs[String](hostField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](spicField), "ftp://" + data.getAs[String](hostField) + ":2121" + data.getAs[String](bpicField))
       }).createOrReplaceTempView("mysqlTable")
@@ -78,8 +80,11 @@ object ResidentClustering {
       val region_ipc_data = spark.read.jdbc(url, region_ipc_sql, sqlProper).collect()
       val region_ipcMap = mutable.HashMap[Int, String]()
       region_ipc_data.foreach(data => region_ipcMap.put(data.getAs[Int](0), data.getAs[String](1)))
+
       //clustering for each region
       region_ipcMap.foreach(data => {
+        val uuidString = UUID.randomUUID().toString
+        val resultFileName = year + "-" + mon + "-" + uuidString + ".txt"
         val region = data._1
         val ipcList = data._2.split(",")
         var ipcStr = ""
@@ -111,12 +116,12 @@ object ResidentClustering {
         //get the days of this month
         calendar.set(Calendar.MONTH, mon - 1)
         val totalDay = calendar.getActualMaximum(Calendar.DATE)
-        val dateOfMonth = new Array[Int](totalDay)
 
         if (status == 1) {
           LOG.info("clustering result saved")
           val resident_raw = spark.read.textFile("file:///" + resultPath + File.separator + resultFileName).map(data => data.split(" ")).collect().toList
           resident_raw.foreach(data => {
+            val dateOfMonth = new Array[Int](totalDay)
             val dataArr = data
             val dateArr = new Array[Int](dataArr.length)
             val clusterId = dataArr(1)
@@ -180,7 +185,7 @@ object ResidentClustering {
       })
 
     } else {
-      LOG.info("no data read from parquet with the date")
+      LOG.info("no data read from parquet or mysql database with the date")
     }
     spark.stop()
   }
