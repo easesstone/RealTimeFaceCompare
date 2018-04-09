@@ -222,6 +222,8 @@ public class ParseByOption {
         sameFieldReturn.append(ObjectInfoTable.IMPORTANT);
         sameFieldReturn.append(", ");
         sameFieldReturn.append(ObjectInfoTable.STATUS);
+        sameFieldReturn.append(", ");
+        sameFieldReturn.append(ObjectInfoTable.LOCATION);
         return sameFieldReturn;
     }
 

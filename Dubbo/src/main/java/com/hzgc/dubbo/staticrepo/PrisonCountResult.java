@@ -1,11 +1,12 @@
 package com.hzgc.dubbo.staticrepo;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  *
  */
-public class PrisonCountResult {
+public class PrisonCountResult implements Serializable{
     private String pkey;
     private Map<String, Integer> locationCounts;
 
