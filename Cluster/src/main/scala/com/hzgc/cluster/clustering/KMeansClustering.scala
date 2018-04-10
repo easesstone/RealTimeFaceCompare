@@ -54,13 +54,10 @@ object KMeansClustering {
     val capture_url = properties.getProperty("job.clustering.capture.database.url")
     val capture_data_table = properties.getProperty("job.clustering.capture.data")
     val capture_trach_table = properties.getProperty("job.clustering.capture.track")
-    val capture_data_table_user = properties.getProperty("job.clustering.capture.database.user")
-    val capture_data_table_password = properties.getProperty("job.clustering.capture.database.password")
-    val prop = new Properties()
-    prop.setProperty("user", capture_data_table_user)
-    prop.setProperty("password", capture_data_table_password)
+    val capture_data_table_user = "root"
+    val capture_data_table_password = "Hzgc@123"
 
-    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder().appName(appName).master("local[*]").getOrCreate()
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
@@ -261,7 +258,7 @@ object KMeansClustering {
             if (status != 200) {
               LOG.info("Put data to es failed! The ftpUrl is " + p._2.getAs("spic"))
             }
-            val insertSql = "insert into t_capture_data(id,upate_time) values (?,?)"
+            val insertSql = "insert into t_capture_track(id,upate_time) values (?,?)"
             val pst = conn.prepareStatement(insertSql)
             pst.setString(1, clusterId)
             pst.setTimestamp(2, p._2.getAs[Timestamp]("time"))
