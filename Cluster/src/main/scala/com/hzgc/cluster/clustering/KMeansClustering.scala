@@ -110,7 +110,7 @@ object KMeansClustering {
         LOG.info("join data count :" + idPointRDD.count())
 
         //train the model
-        val numClusters = Math.sqrt(idPointRDD.count().toDouble).toInt * 2
+        val numClusters = Math.sqrt(idPointRDD.count().toDouble).toInt
         val kMeansModel = KMeans.train(idPointRDD.map(data => data._2), numClusters, iteraterNum)
 
         //predict each point belong to which clustering center and filter by similarityThreshold
