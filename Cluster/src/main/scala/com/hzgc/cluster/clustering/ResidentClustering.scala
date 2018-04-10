@@ -101,7 +101,7 @@ object ResidentClustering {
 
         val joinData = spark.sql("select T2.*, T1.feature from parquetTable as T1 inner join mysqlTable as T2 on T1.ftpurl=T2.spic where T2.ipc in " + finalStr)
         //prepare data
-        val idPointRDD = joinData.rdd.map(data => DataWithFeature(data.getAs[Long]("id"), data.getAs[Timestamp]("time"), data.getAs[String]("spic").split("/")(3), data.getAs[String]("host"), data.getAs[String]("spic"), data.getAs[String]("bpic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray)).persist(StorageLevel.MEMORY_AND_DISK_SER)
+        val idPointRDD = joinData.limit(10000).rdd.map(data => DataWithFeature(data.getAs[Long]("id"), data.getAs[Timestamp]("time"), data.getAs[String]("spic").split("/")(3), data.getAs[String]("host"), data.getAs[String]("spic"), data.getAs[String]("bpic"), data.getAs[mutable.WrappedArray[Float]]("feature").toArray)).persist(StorageLevel.MEMORY_AND_DISK_SER)
         val dataSize = idPointRDD.count().toInt
         val points = idPointRDD.collect()
         val features = points.flatMap(data => data.feature)
