@@ -327,7 +327,7 @@ abstract class ProperHelper {
                         System.exit(1);
                     }
                     //判断是否大于0
-                    else if (Integer.parseInt(valueFromKey) <= 0) {
+                    else if (Integer.parseInt(valueFromKey) < 0) {
                         log.error("The value \"" + valueFromKey + "\" of " + key + " is illegal, it must be Integer and larger than 0.");
                         System.exit(1);
                     }
