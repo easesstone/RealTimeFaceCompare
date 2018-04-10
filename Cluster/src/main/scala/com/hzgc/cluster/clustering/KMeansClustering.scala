@@ -1,6 +1,6 @@
 package com.hzgc.cluster.clustering
 
-import java.sql.Timestamp
+import java.sql.{DriverManager, Timestamp}
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Calendar, Date, Properties, UUID}
@@ -51,6 +51,14 @@ object KMeansClustering {
     val bpicField = properties.getProperty("job.clustering.mysql.field.bpic")
     val partitionNum = properties.getProperty("job.clustering.partiton.number").toInt
     val month_temp = properties.getProperty("job.clustering.month")
+    val capture_url = properties.getProperty("job.clustering.capture.database.url")
+    val capture_data_table = properties.getProperty("job.clustering.capture.data")
+    val capture_trach_table = properties.getProperty("job.clustering.capture.track")
+    val capture_data_table_user = properties.getProperty("job.clustering.capture.database.user")
+    val capture_data_table_password = properties.getProperty("job.clustering.capture.database.password")
+    val prop = new Properties()
+    prop.setProperty("user", capture_data_table_user)
+    prop.setProperty("password", capture_data_table_password)
 
     val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     import spark.implicits._
@@ -241,9 +249,11 @@ object KMeansClustering {
         //update each clustering data to es
         val putDataToEs = PutDataToEs.getInstance()
         finalData.foreach(data => {
+          val conn = DriverManager.getConnection(capture_url, capture_data_table_user, capture_data_table_password)
           val rowKey = yearMon + "-" + region + "-" + data._1 + "-" + uuidString
           val clusterId = rowKey + "-" + data._1 + "-" + uuidString
           LOG.info("the current clusterId is:" + clusterId)
+          //data._2.toList.toDS().toDF().write.mode(SaveMode.Append).jdbc(capture_url, capture_trach_table, prop)
           data._2.foreach(p => {
             val date = new Date(p._2.getAs[Timestamp]("time").getTime)
             val dateNew = sdf.format(date)
@@ -251,6 +261,11 @@ object KMeansClustering {
             if (status != 200) {
               LOG.info("Put data to es failed! The ftpUrl is " + p._2.getAs("spic"))
             }
+            val insertSql = "insert into t_capture_data(id,upate_time) values (?,?)"
+            val pst = conn.prepareStatement(insertSql)
+            pst.setString(1, clusterId)
+            pst.setTimestamp(2, p._2.getAs[Timestamp]("time"))
+            pst.executeUpdate()
           })
         })
       }
