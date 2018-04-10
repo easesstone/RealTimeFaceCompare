@@ -83,6 +83,6 @@ public class DynamicTable implements Serializable {
     public static final String SHARPNESS = "sharpness";
     static final String GROUP_FIELD = "id";
     public static final String ALARM_ID = "alarmid";
-    public static final String ALARM_TIME = "alarm_time";
+    public static final String ALARM_TIME = "alarmtime";
     public static final String CLUSTERING_ID = "clusterid";
 }
