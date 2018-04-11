@@ -28,10 +28,9 @@ public class CaptureNumberImplTimer {
     }
 
     /**
-     * 将查出来的数据插入到一个新建的dynamic表中
+     * 将查出来的数据插入到一个新建的dynamicshow表中
      */
     private static void indexTable() {
-        Runnable runnable = () -> {
             List<String> lists = findIpcId();
             long nowTime = System.currentTimeMillis();
             long lessOneHour = nowTime - 1000 * 60 * 60;
@@ -67,9 +66,6 @@ public class CaptureNumberImplTimer {
                     System.out.println(indexResponse.getVersion());
                 }
             }
-        };
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(runnable,0, 60 * 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -92,29 +88,5 @@ public class CaptureNumberImplTimer {
             e.printStackTrace();
         }
         return list;
-    }
-
-    /**
-     * 获取离整点的差距，判断第一次起线程的延时时间
-     */
-    private static long judgementTime() {
-        long nowTime = System.currentTimeMillis();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        long addOneHourTime = nowTime + 1000 * 60 * 60;
-        String addTime = simpleDateFormat.format(addOneHourTime);
-        String startTime = addTime.split(":")[0] + ":02:00";
-        Date changeTime = null;
-        try {
-            changeTime = simpleDateFormat.parse(startTime);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        long changeLongTime = 0;
-        if (changeTime != null) {
-            changeLongTime = changeTime.getTime();
-        }
-        long disTime = (changeLongTime - nowTime) / 1000;
-        System.out.println(disTime);
-        return disTime;
     }
 }
