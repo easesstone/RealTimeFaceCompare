@@ -208,7 +208,7 @@ object KMeansClustering {
           val dateList = new util.ArrayList[Int](data._2.length)
           data._2.foreach(data => dateList.add(data._2.getAs[Timestamp]("time").toLocalDateTime.getDayOfMonth))
           dateList.toArray().distinct.foreach(data => {
-            dateArr(data.asInstanceOf[Int]) = 1
+            dateArr(data.asInstanceOf[Int]-1) = 1
           })
           var count = 0
           var temp = 0
@@ -216,9 +216,9 @@ object KMeansClustering {
             if (n == 1) {
               temp += 1
             } else {
-              count = if (count > temp) count else temp
               temp = 0
             }
+            count = if (count > temp) count else temp
           }
           (data, count)
         })

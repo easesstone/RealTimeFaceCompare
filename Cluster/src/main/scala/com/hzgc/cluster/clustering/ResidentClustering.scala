@@ -134,8 +134,8 @@ object ResidentClustering {
             }
             val distinctDate = dateArr.distinct.sortWith((a, b) => a < b)
             //set 1 if the day number appeared
-            for (l <- distinctDate) {
-              dateOfMonth(l) = 1
+            for (n <- distinctDate) {
+              dateOfMonth(n - 1) = 1
             }
             //max Continuous number of appear days
             var count = 0
@@ -144,9 +144,9 @@ object ResidentClustering {
               if (n == 1) {
                 temp += 1
               } else {
-                count = if (count > temp) count else temp
                 temp = 0
               }
+              count = if (count > temp) count else temp
             }
             if (count >= appearCount) {
               dataArr.foreach(data => {
