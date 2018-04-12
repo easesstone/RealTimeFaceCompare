@@ -1,12 +1,13 @@
 package com.hzgc.cluster.clustering
 
-import java.sql.{DriverManager, Timestamp}
+import java.sql.{Blob, Connection, DriverManager, PreparedStatement, Timestamp}
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Calendar, Date, Properties, UUID}
 
 import com.hzgc.cluster.consumer.PutDataToEs
 import com.hzgc.cluster.util.PropertiesUtils
+import com.hzgc.collect.expand.util.FTPDownloadUtils
 import com.hzgc.dubbo.clustering.ClusteringAttribute
 import edu.berkeley.cs.amplab.spark.indexedrdd.IndexedRDD
 import edu.berkeley.cs.amplab.spark.indexedrdd.IndexedRDD._
@@ -57,7 +58,7 @@ object KMeansClustering {
     val capture_data_table_user = "root"
     val capture_data_table_password = "Hzgc@123"
 
-    val spark = SparkSession.builder().appName(appName).master("local[*]").getOrCreate()
+    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
@@ -197,18 +198,21 @@ object KMeansClustering {
             }
           }
         }
-        LOG.info("cluster num before filter by appear times is :" + indexed1.count())
-        //put all the clustering data to HBase
-        val table1List = new util.ArrayList[ClusteringAttribute]()
+        println("cluster num before filter by appear times is :" + indexed1.count())
+
         //filter clustering by appear times
         calendar.set(Calendar.MONTH, mon - 1)
         val totalDay = calendar.getActualMaximum(Calendar.DATE)
         val lastResult = indexed1.map(data => {
           val dateArr = new Array[Int](totalDay)
           val dateList = new util.ArrayList[Int](data._2.length)
-          data._2.foreach(data => dateList.add(data._2.getAs[Timestamp]("time").toLocalDateTime.getDayOfMonth))
+          data._2.foreach(data => {
+            val date = data._2.getAs[Timestamp]("time").toLocalDateTime.getDayOfMonth
+            println("date" + date)
+            dateList.add(date)
+          })
           dateList.toArray().distinct.foreach(data => {
-            dateArr(data.asInstanceOf[Int]-1) = 1
+            dateArr(data.asInstanceOf[Int] - 1) = 1
           })
           var count = 0
           var temp = 0
@@ -217,54 +221,91 @@ object KMeansClustering {
               temp += 1
             } else {
               temp = 0
+              println("count:" + count)
             }
             count = if (count > temp) count else temp
           }
           (data, count)
         })
 
-        //set each clustering info
+        //put all the clustering data to HBase
+        val table1List = new util.ArrayList[ClusteringAttribute]()
         val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         val finalData = lastResult.filter(data => data._2 >= appearCount).map(data => data._1).map(data => (data._1, data._2.toArray.sortWith((a, b) => a._2.getAs[Timestamp]("time").toLocalDateTime.toString > b._2.getAs[Timestamp]("time").toLocalDateTime.toString)))
-
-        finalData.map(data => {
-          val attribute = new ClusteringAttribute()
-          attribute.setClusteringId(region + "-" + data._1.toString + "-" + uuidString)
-          attribute.setCount(data._2.length)
-          attribute.setLastAppearTime(sdf.format(data._2.head._2.getTimestamp(1)))
-          attribute.setLastIpcId(data._2.head._2.getAs[String]("ipc"))
-          attribute.setFirstAppearTime(sdf.format(data._2.last._2.getTimestamp(1)))
-          attribute.setFirstIpcId(data._2.last._2.getAs[String]("ipc"))
-          attribute.setFtpUrl(data._2.head._2.getAs[String]("spic"))
-          attribute
-        }).collect().foreach(data => table1List.add(data))
-
+        var conn: Connection = null
+        var pst: PreparedStatement = null
+        var blobSmall: Blob = null
+        var blobBig: Blob = null
+        finalData.foreach(data => {
+          try {
+            conn = DriverManager.getConnection(capture_url, capture_data_table_user, capture_data_table_password)
+            val attribute = new ClusteringAttribute()
+            val clusterId = region + "-" + data._1.toString + "-" + uuidString
+            val smallPic = FTPDownloadUtils.downloadftpFile2Bytes(data._2.head._2.getAs[String]("spic"))
+            val bigPic = FTPDownloadUtils.downloadftpFile2Bytes(data._2.head._2.getAs[String]("bpic"))
+            val insertDataSql = "insert into t_capture_data(id,upate_time,small_picture,big_picture) values (?,?,?,?)"
+            pst = conn.prepareStatement(insertDataSql)
+            pst.setString(1, clusterId)
+            pst.setTimestamp(2, data._2.head._2.getTimestamp(1))
+            blobSmall = conn.createBlob()
+            blobSmall.setBytes(1, smallPic)
+            pst.setBlob(3, blobSmall)
+            blobBig = conn.createBlob()
+            blobBig.setBytes(1, bigPic)
+            pst.setBlob(4, blobBig)
+            pst.executeUpdate()
+            LOG.info("put data to t_capture_data successful")
+            attribute.setClusteringId(clusterId)
+            attribute.setCount(data._2.length)
+            attribute.setLastAppearTime(sdf.format(data._2.head._2.getTimestamp(1)))
+            attribute.setLastIpcId(data._2.head._2.getAs[String]("ipc"))
+            attribute.setFirstAppearTime(sdf.format(data._2.last._2.getTimestamp(1)))
+            attribute.setFirstIpcId(data._2.last._2.getAs[String]("ipc"))
+            attribute.setFtpUrl(data._2.head._2.getAs[String]("spic"))
+            table1List.add(attribute)
+          } catch {
+            case _: Exception => LOG.info("put data to t_capture_data failed")
+          }
+        })
+        ///put data to HBase
         val rowKey = yearMon + "-" + region
         LOG.info("write clustering info to HBase...")
         PutDataToHBase.putClusteringInfo(rowKey, table1List)
 
         //update each clustering data to es
         val putDataToEs = PutDataToEs.getInstance()
-        finalData.foreach(data => {
-          val conn = DriverManager.getConnection(capture_url, capture_data_table_user, capture_data_table_password)
-          val rowKey = yearMon + "-" + region + "-" + data._1 + "-" + uuidString
-          val clusterId = rowKey + "-" + data._1 + "-" + uuidString
-          LOG.info("the current clusterId is:" + clusterId)
-          //data._2.toList.toDS().toDF().write.mode(SaveMode.Append).jdbc(capture_url, capture_trach_table, prop)
-          data._2.foreach(p => {
-            val date = new Date(p._2.getAs[Timestamp]("time").getTime)
-            val dateNew = sdf.format(date)
-            val status = putDataToEs.upDateDataToEs(p._2.getAs[String]("spic"), clusterId, dateNew, p._2.getAs[Long]("id").toInt)
-            if (status != 200) {
-              LOG.info("Put data to es failed! The ftpUrl is " + p._2.getAs("spic"))
-            }
+        finalData.foreachPartition(part => {
+          conn = DriverManager.getConnection(capture_url, capture_data_table_user, capture_data_table_password)
+          part.foreach(data => {
+            val rowKey = yearMon + "-" + region + "-" + data._1 + "-" + uuidString
+            val clusterId = rowKey + "-" + data._1 + "-" + uuidString
+            LOG.info("the current clusterId is:" + clusterId)
             val insertSql = "insert into t_capture_track(id,upate_time) values (?,?)"
-            val pst = conn.prepareStatement(insertSql)
-            pst.setString(1, clusterId)
-            pst.setTimestamp(2, p._2.getAs[Timestamp]("time"))
-            pst.executeUpdate()
+            try {
+              pst = conn.prepareStatement(insertSql)
+              data._2.foreach(p => {
+                val date = new Date(p._2.getAs[Timestamp]("time").getTime)
+                val dateNew = sdf.format(date)
+                val status = putDataToEs.upDateDataToEs(p._2.getAs[String]("spic"), rowKey, dateNew, p._2.getAs[Long]("id").toInt)
+                if (status != 200) {
+                  println("Put data to es failed! The ftpUrl is " + p._2.getAs("spic"))
+                }
+                pst.setString(1, p._2.getAs[String]("spic").substring(30))
+                pst.setTimestamp(2, p._2.getAs[Timestamp]("time"))
+                pst.executeUpdate()
+                LOG.info("put data to t_capture_track successful")
+              })
+            } catch {
+              case _: Exception => LOG.info("put data to t_capture_track failed")
+            }
           })
         })
+        if (pst != null) {
+          pst.close()
+        }
+        if (conn != null) {
+          conn.close()
+        }
       }
     }
     spark.stop()
