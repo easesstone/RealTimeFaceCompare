@@ -59,7 +59,7 @@ object KMeansClustering {
     val capture_data_table_user = properties.getProperty("job.clustering.capture.database.user");
     val capture_data_table_password = properties.getProperty("job.clustering.capture.database.password")
 
-    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
@@ -267,6 +267,14 @@ object KMeansClustering {
           } catch {
             case _: Exception => LOG.info("put data to t_capture_data failed")
           }
+          finally {
+            if (pst != null) {
+              pst.close()
+            }
+            if (conn != null) {
+              conn.close()
+            }
+          }
         })
         ///put data to HBase
         val rowKey = yearMon + "-" + region
@@ -299,14 +307,16 @@ object KMeansClustering {
             } catch {
               case _: Exception => LOG.info("put data to t_capture_track failed")
             }
+            finally {
+              if (pst != null) {
+                pst.close()
+              }
+              if (conn != null) {
+                conn.close()
+              }
+            }
           })
         })
-        if (pst != null) {
-          pst.close()
-        }
-        if (conn != null) {
-          conn.close()
-        }
       }
     }
     spark.stop()
