@@ -42,7 +42,8 @@ object KMeansClustering {
     val iteraterNum = properties.getProperty("job.clustering.iterater.number").toInt
     val appName = properties.getProperty("job.clustering.appName")
     val url = properties.getProperty("job.clustering.mysql.url")
-    val tableName = properties.getProperty("job.clustering.mysql.table")
+    val alarmTableName = properties.getProperty("job.clustering.mysql.alarm.record.table")
+    val alarmExtraTableName = properties.getProperty("job.clustering.mysql.alarm.record.extra.table")
     val timeField = properties.getProperty("job.clustering.mysql.field.time")
     val ipcField = properties.getProperty("job.clustering.mysql.field.ipc")
     val dataField = properties.getProperty("job.clustering.mysql.field.data")
@@ -54,11 +55,11 @@ object KMeansClustering {
     val month_temp = properties.getProperty("job.clustering.month")
     val capture_url = properties.getProperty("job.clustering.capture.database.url")
     val capture_data_table = properties.getProperty("job.clustering.capture.data")
-    val capture_trach_table = properties.getProperty("job.clustering.capture.track")
-    val capture_data_table_user = "root"
-    val capture_data_table_password = "Hzgc@123"
+    val capture_track_table = properties.getProperty("job.clustering.capture.track")
+    val capture_data_table_user = properties.getProperty("job.clustering.capture.database.user");
+    val capture_data_table_password = properties.getProperty("job.clustering.capture.database.password")
 
-    val spark = SparkSession.builder().appName(appName).enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder().appName(appName).master("local[*]").enableHiveSupport().getOrCreate()
     import spark.implicits._
 
     val calendar = Calendar.getInstance()
@@ -77,7 +78,7 @@ object KMeansClustering {
     LOG.info("parquet data count :" + parquetDataCount)
 
     //get alarm data from mysql
-    val preSql = "(select T1.id, T2.host_name, " + "T2.big_picture_url, T2.small_picture_url, " + "T1.alarm_time " + "from t_alarm_record as T1 inner join t_alarm_record_extra as T2 on T1.id=T2.record_id " + "where T2.static_id IS NULL " + "and DATE_FORMAT(T1.alarm_time,'%Y-%m') like " + currentYearMon + ") as temp"
+    val preSql = "(select T1.id, T2.host_name, T2.big_picture_url, T2.small_picture_url, T1.alarm_time from  " + alarmTableName + "  as T1 inner join " + alarmExtraTableName + "  as T2 on T1.id=T2.record_id " + "where T2.static_id IS NULL " + "and DATE_FORMAT(T1.alarm_time,'%Y-%m') like " + currentYearMon + ") as alarm_record"
     sqlProper.setProperty("driver", driverClass)
     val dataSource = spark.read.jdbc(url, preSql, sqlProper)
     val mysqlDataCount = dataSource.count()
@@ -243,7 +244,7 @@ object KMeansClustering {
             val clusterId = region + "-" + data._1.toString + "-" + uuidString
             val smallPic = FTPDownloadUtils.downloadftpFile2Bytes(data._2.head._2.getAs[String]("spic"))
             val bigPic = FTPDownloadUtils.downloadftpFile2Bytes(data._2.head._2.getAs[String]("bpic"))
-            val insertDataSql = "insert into t_capture_data(id,upate_time,small_picture,big_picture) values (?,?,?,?)"
+            val insertDataSql = "insert into " + capture_data_table + "(id,upate_time,small_picture,big_picture) values (?,?,?,?)"
             pst = conn.prepareStatement(insertDataSql)
             pst.setString(1, clusterId)
             pst.setTimestamp(2, data._2.head._2.getTimestamp(1))
@@ -280,7 +281,7 @@ object KMeansClustering {
             val rowKey = yearMon + "-" + region + "-" + data._1 + "-" + uuidString
             val clusterId = rowKey + "-" + data._1 + "-" + uuidString
             LOG.info("the current clusterId is:" + clusterId)
-            val insertSql = "insert into t_capture_track(id,upate_time) values (?,?)"
+            val insertSql = "insert into " + capture_track_table + "(id,upate_time) values (?,?)"
             try {
               pst = conn.prepareStatement(insertSql)
               data._2.foreach(p => {
@@ -290,7 +291,7 @@ object KMeansClustering {
                 if (status != 200) {
                   println("Put data to es failed! The ftpUrl is " + p._2.getAs("spic"))
                 }
-                pst.setString(1, p._2.getAs[String]("spic").substring(30))
+                pst.setString(1, rowKey)
                 pst.setTimestamp(2, p._2.getAs[Timestamp]("time"))
                 pst.executeUpdate()
                 LOG.info("put data to t_capture_track successful")
