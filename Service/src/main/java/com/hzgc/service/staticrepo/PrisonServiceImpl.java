@@ -1,6 +1,7 @@
 package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.*;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -29,12 +30,14 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("更新参数为空.");
             return 1;
         }
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "("
                 + ObjectInfoTable.ROWKEY + ", "
                 +  ObjectInfoTable.LOCATION + ")" + "values(?, ?)";
         try {
+            conn = comboPooledDataSource.getConnection();
             conn.setAutoCommit(false);
             for (Map.Entry<String, List<String>> entry : pkeysUpdate.entrySet()) {
                 String location = entry.getKey();
@@ -63,13 +66,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return 1;
         } finally {
-            if (pstm != null) {
-                try {
-                    pstm.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+           PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         LOG.info(sql);
         return 0;
@@ -91,12 +88,14 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("重置参数为空.");
             return 1;
         }
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "(" + ObjectInfoTable.ROWKEY + ", " +
                 ObjectInfoTable.LOCATION + ") select id, ? from " +  ObjectInfoTable.TABLE_NAME + " where " +
                 ObjectInfoTable.PKEY + " = ?";
         try {
+            conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
             for (String pkey : pkeysReset) {
                 pstm.setString(1, null);
@@ -108,13 +107,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return 1;
         } finally {
-            if (pstm != null) {
-                try {
-                    pstm.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         LOG.info(sql);
         return 0;
@@ -136,6 +129,7 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("参数列表为空.");
             return new PrisonCountResults();
         }
+
         // sql 封装
         String sql =  "select " + ObjectInfoTable.PKEY + ", " + ObjectInfoTable.LOCATION +
                 ", count(" + ObjectInfoTable.LOCATION +") as count from " + ObjectInfoTable.TABLE_NAME;
@@ -157,19 +151,22 @@ public class PrisonServiceImpl implements PrisonService {
         LOG.info(sql);
 
         //获取连接，执行查询
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
+        ResultSet resultSet = null;
         PrisonCountResult prisonCountResult;
         PrisonCountResults prisonCountResults = new PrisonCountResults();
         List<PrisonCountResult> prisonCountResultsList = new ArrayList<>();
         Map<String, Integer> locationCounts = new HashMap<>();
         List<String> pkeysTmp = new ArrayList<>();
         try {
+            conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i < pkeysCount.size(); i++) {
                 pstm.setString(i+1, pkeysCount.get(i));
             }
-            ResultSet resultSet = pstm.executeQuery();
+            resultSet = pstm.executeQuery();
             resultSet.setFetchSize(100);
 
             int lable = 0;
@@ -195,20 +192,12 @@ public class PrisonServiceImpl implements PrisonService {
             prisonCountResult.setPkey(pkeysTmp.get(lable));
             prisonCountResult.setLocationCounts(locationCounts);
             prisonCountResultsList.add(prisonCountResult);
-
             prisonCountResults.setResults(prisonCountResultsList);
         } catch (SQLException e) {
             e.printStackTrace();
             return prisonCountResults;
         } finally {
-            if (pstm != null) {
-                try {
-                    pstm.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
+            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
         }
         LOG.info(prisonSearchOpts);
         LOG.info(sql);

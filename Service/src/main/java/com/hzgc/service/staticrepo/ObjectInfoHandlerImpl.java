@@ -294,8 +294,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 objectSearchResult.setSearchStatus(1);
                 e.printStackTrace();
                 return objectSearchResult;
-            } finally {
-                PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
             }
         }
 
@@ -309,6 +307,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (startCount != null && pageSize != null) {
             new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         }
+        PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
         LOG.info("***********************");
         LOG.info(objectSearchResult);
         LOG.info("***********************");
@@ -323,7 +322,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
-        byte[] photo = null;
+        byte[] photo;
         try {
             conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
@@ -335,7 +334,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return null;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         return photo;
     }
@@ -360,7 +359,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
            return getObjectSearchResultError("SearchRecordOpts 为空，请确认参数是否正确.");
         }
         // 总的searchId
-        String totalSearchId = searchRecordOpts.getTotalSearchId();
         List<SubQueryOpts> subQueryOptsList = searchRecordOpts.getSubQueryOptsList();
         if (subQueryOptsList == null || subQueryOptsList.size() == 0) {
             return getObjectSearchResultError("子查询列表为空，请确认参数是否正确.");
@@ -397,12 +395,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         try {
             conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
-            if (totalSearchId != null && subQueryId == null) {
-                pstm.setString(1, totalSearchId);
-
-            } else if (totalSearchId != null) {
-                pstm.setString(1, subQueryId);
-            }
+            pstm.setString(1, subQueryId);
             resultSet = pstm.executeQuery();
             resultSet.next();
             PersonSingleResult personSingleResult = (PersonSingleResult) ObjectUtil
