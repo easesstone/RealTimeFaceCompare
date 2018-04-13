@@ -2,9 +2,9 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-face-add-alarm-job.sh
-## Description: to start faceAddAlarmJob(启动新增告警任务)
-## Author:      qiaokaifeng
-## Created:     2017-11-09
+## Description: to start kmeansclustering(启动人口聚类任务)
+## Author:      peng cong
+## Created:     2018-03-29
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
 

@@ -2,8 +2,8 @@
 ################################################################################
 ## Copyright:   HZGOSUN Tech. Co, BigData
 ## Filename:    start-resident-clustering-job.sh
-## Description: to start resident clustering job(启动任务)
-## Author:      pengcong
+## Description: to start resident clustering job(启动人口聚类任务-采用算法)
+## Author:      peng cong
 ## Created:     2018-03-26
 ################################################################################
 #set -x  ## 用于调试用，不用的时候可以注释掉
