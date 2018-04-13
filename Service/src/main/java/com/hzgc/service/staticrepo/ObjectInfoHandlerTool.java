@@ -143,6 +143,7 @@ class ObjectInfoHandlerTool {
                 personObject.setTag(resultSet.getString(ObjectInfoTable.TAG));
                 personObject.setImportant(resultSet.getInt(ObjectInfoTable.IMPORTANT));
                 personObject.setStatus(resultSet.getInt(ObjectInfoTable.STATUS));
+                personObject.setLocation(resultSet.getString(ObjectInfoTable.LOCATION));
                 if (searchByPics) {
                     personObject.setSim(resultSet.getFloat(ObjectInfoTable.RELATED));
                 }

@@ -220,13 +220,17 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
                         List<PersonObject> personObjects = new ArrayList<>();
                         PersonObject personObject;
-                        Set<String> types = new HashSet<>();
+                        List<String> types = new ArrayList<>();
+                        int lable = 0;
                         while (resultSet.next()) {
                             String type = resultSet.getString("type");
                             if (!types.contains(type)){
                                 types.add(type);
-                                personObjectsMap.put(type, personObjects);
-                                personObjects.clear();
+                                if (types.size() > 1) {
+                                    personObjectsMap.put(types.get(lable), personObjects);
+                                    personObjects = new ArrayList<>();
+                                    lable++;
+                                }
                             }
                             personObject = new PersonObject();
                             personObject.setId(resultSet.getString(ObjectInfoTable.ROWKEY));
@@ -244,8 +248,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                             personObject.setImportant(resultSet.getInt(ObjectInfoTable.IMPORTANT));
                             personObject.setStatus(resultSet.getInt(ObjectInfoTable.STATUS));
                             personObject.setSim(resultSet.getFloat(ObjectInfoTable.RELATED));
+                            personObject.setLocation(resultSet.getString(ObjectInfoTable.LOCATION));
                             personObjects.add(personObject);
                         }
+                        // 封装最后需要返回的结果
                         for (Map.Entry<String, List<PersonObject>> entryVV : personObjectsMap.entrySet()) {
                             String key = entryVV.getKey();
                             List<PersonObject> persons = entryVV.getValue();
@@ -334,6 +340,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         return photo;
     }
 
+    private static ObjectSearchResult getObjectSearchResultError(String errorMsg) {
+        ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
+        objectSearchResultError.setSearchStatus(1);
+        LOG.info(errorMsg);
+        return objectSearchResultError;
+    }
 
     /**
      * 根据传进来的参数，进行及实际路查询
@@ -345,25 +357,29 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("searchRecordOpts: " + searchRecordOpts);
         // 传过来的参数中为空，或者子查询为空，或者子查询大小为0，都返回查询错误。
         if (searchRecordOpts == null) {
-            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
-            objectSearchResultError.setSearchStatus(1);
-            LOG.info("传入的参数不对，请确认。");
-            return objectSearchResultError;
+           return getObjectSearchResultError("SearchRecordOpts 为空，请确认参数是否正确.");
         }
         // 总的searchId
         String totalSearchId = searchRecordOpts.getTotalSearchId();
-        List<SubQueryOpts> subQueryOpts = searchRecordOpts.getSubQueryOptsList();
-        if (subQueryOpts == null || subQueryOpts.size() != 0) {
-            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
-            objectSearchResultError.setSearchStatus(1);
-            LOG.info("传入的参数不对，请确认。");
-            return objectSearchResultError;
+        List<SubQueryOpts> subQueryOptsList = searchRecordOpts.getSubQueryOptsList();
+        if (subQueryOptsList == null || subQueryOptsList.size() == 0) {
+            return getObjectSearchResultError("子查询列表为空，请确认参数是否正确.");
+        }
+
+        SubQueryOpts subQueryOpts = subQueryOptsList.get(0);
+        if (subQueryOpts == null) {
+            return getObjectSearchResultError("子查询对象SubQueryOpts 对象为空，请确认参数是否正确.");
         }
 
         // 子查询Id
-        String subQueryId = subQueryOpts.get(0).getQueryId();
+        String subQueryId = subQueryOpts.getQueryId();
+        if (subQueryId == null) {
+            LOG.info("子查询Id 为空");
+            return getObjectSearchResultError("子查询Id 为空，请确认参数是否正确.");
+        }
+
         // 需要分组的pkeys
-        List<String> pkeys = subQueryOpts.get(0).getPkeys();
+        List<String> pkeys = subQueryOptsList.get(0).getPkeys();
         // 排序参数
         List<StaticSortParam> staticSortParams = searchRecordOpts.getStaticSortParams();
 
