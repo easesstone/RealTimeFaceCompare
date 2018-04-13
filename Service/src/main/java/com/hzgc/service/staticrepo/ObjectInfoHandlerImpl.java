@@ -2,18 +2,11 @@ package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.*;
-import com.hzgc.jni.FaceFunction;
-import com.hzgc.jni.NativeFunction;
-import com.hzgc.service.util.HBaseHelper;
-import com.hzgc.service.util.HBaseUtil;
 import com.hzgc.util.common.ObjectUtil;
-import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.util.Bytes;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.sql.*;
-import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,14 +14,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
 
-    private static Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-
     public ObjectInfoHandlerImpl() {
     }
 
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         person.setPlatformid(platformId);
@@ -43,12 +36,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 + ") values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstm = null;
         try {
+            conn = comboPooledDataSource.getConnection();
             pstm = new ObjectInfoHandlerTool().getStaticPrepareStatementV1(conn, person, sql);
             pstm.executeUpdate();
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
+        } finally {
+            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -61,9 +57,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("rowKeys: " + rowkeys);
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
+            conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i< rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
@@ -76,6 +75,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
+        } finally {
+            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -92,12 +93,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
             return 1;
         }
         PreparedStatement pstm = null;
         try {
+            conn = comboPooledDataSource.getConnection();
             Map<String, List<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
             String sql = null;
             List<Object> setValues = new ArrayList<>();
@@ -114,6 +118,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
             return 1;
+        } finally {
+            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
         }
         LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -124,12 +130,15 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByRowkey(String id) {
         long start = System.currentTimeMillis();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         ObjectSearchResult result = new ObjectSearchResult();
         PersonObject person;
         ResultSet resultSet = null;
         try {
             String sql = "select * from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
+            conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, id);
             resultSet = pstm.executeQuery();
@@ -146,6 +155,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             result.setSearchStatus(1);
             e.printStackTrace();
+        } finally {
+            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
         }
         LOG.info("获取一条数据的时间是：" + (System.currentTimeMillis() - start));
         return result;
@@ -155,11 +166,25 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
         LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         // 总的结果
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
         objectSearchResult.setSearchTotalId(searchTotalId);
         List<PersonSingleResult> finalResults = new ArrayList<>();
+        try {
+            conn = comboPooledDataSource.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (conn == null) {
+            ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
+            objectSearchResult.setSearchStatus(1);
+            objectSearchResult.setSearchTotalId(UUID.randomUUID().toString().replace("-", ""));
+            objectSearchResult.setFinalResults(finalResults);
+            return objectSearchResultError;
+        }
 
         //封装的sql 以及需要设置的值
         Map<String, List<Object>> finalSqlAndValues = ParseByOption.getSqlFromPSearchArgsModel(conn, pSearchArgsModel);
@@ -263,6 +288,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 objectSearchResult.setSearchStatus(1);
                 e.printStackTrace();
                 return objectSearchResult;
+            } finally {
+                PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
             }
         }
 
@@ -286,18 +313,23 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte[] getPhotoByKey(String rowkey) {
         String sql = "select photo from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        PreparedStatement pstm;
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
+        PreparedStatement pstm = null;
+        ResultSet resultSet = null;
         byte[] photo = null;
         try {
+            conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, rowkey);
-            ResultSet resultSet = pstm.executeQuery();
+            resultSet = pstm.executeQuery();
             resultSet.next();
             photo = resultSet.getBytes(ObjectInfoTable.PHOTO);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        } finally {
+            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
         }
         return photo;
     }
@@ -335,8 +367,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 排序参数
         List<StaticSortParam> staticSortParams = searchRecordOpts.getStaticSortParams();
 
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
-        PreparedStatement pstm;
         // sql 查询语句
         String sql = "select " + SearchRecordTable.ID + ", " + SearchRecordTable.RESULT + " from "
                 + SearchRecordTable.TABLE_NAME + " where " + SearchRecordTable.ID + " = ?";
@@ -344,7 +374,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
         List<PersonSingleResult> personSingleResults = new ArrayList<>();
 
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
+        PreparedStatement pstm = null;
+        ResultSet resultSet = null;
         try {
+            conn = comboPooledDataSource.getConnection();
             pstm = conn.prepareStatement(sql);
             if (totalSearchId != null && subQueryId == null) {
                 pstm.setString(1, totalSearchId);
@@ -352,7 +387,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             } else if (totalSearchId != null) {
                 pstm.setString(1, subQueryId);
             }
-            ResultSet resultSet = pstm.executeQuery();
+            resultSet = pstm.executeQuery();
             resultSet.next();
             PersonSingleResult personSingleResult = (PersonSingleResult) ObjectUtil
                     .byteToObject(resultSet.getBytes(SearchRecordTable.RESULT));
@@ -374,22 +409,64 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                                 groupByPkey.setPersons(tmp);
                                 if (staticSortParams != null) {
                                     if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
-                                        tmp.sort((p1, p2) -> (int)((p1.getSim() - p2.getSim()) * 100));
+                                        Collections.sort(tmp, new Comparator<PersonObject>() {
+                                            @Override
+                                            public int compare(PersonObject o1, PersonObject o2) {
+                                                float sim1 = o1.getSim();
+                                                float sim2 = o2.getSim();
+                                                return  Float.compare(sim2, sim1);
+                                            }
+                                        });
                                     }
                                     if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
-                                        tmp.sort((p1, p2) -> (int)((p2.getSim() - p1.getSim()) * 100));
+                                        Collections.sort(tmp, new Comparator<PersonObject>() {
+                                            @Override
+                                            public int compare(PersonObject o1, PersonObject o2) {
+                                                float sim1 = o1.getSim();
+                                                float sim2 = o2.getSim();
+                                                return  Float.compare(sim1, sim2);
+                                            }
+                                        });
                                     }
                                     if (staticSortParams.contains(StaticSortParam.IMPORTANTASC)) {
-                                        tmp.sort((p1, p2) -> p1.getImportant() - p2.getImportant());
+                                        Collections.sort(tmp, new Comparator<PersonObject>() {
+                                            @Override
+                                            public int compare(PersonObject o1, PersonObject o2) {
+                                                int important1 = o1.getImportant();
+                                                int important2 = o2.getImportant();
+                                                return Integer.compare(important1, important2);
+                                            }
+                                        });
                                     }
                                     if(staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
-                                        tmp.sort((p1, p2) -> p2.getImportant() - p1.getImportant());
+                                        Collections.sort(tmp, new Comparator<PersonObject>() {
+                                            @Override
+                                            public int compare(PersonObject o1, PersonObject o2) {
+                                                int important1 = o1.getImportant();
+                                                int important2 = o2.getImportant();
+                                                return Integer.compare(important2, important1);
+                                            }
+                                        });
                                     }
                                     if (staticSortParams.contains(StaticSortParam.TIMEASC)) {
-                                        tmp.sort((p1, p2) -> p1.getCreatetime().compareTo(p2.getCreatetime()));
+                                        Collections.sort(tmp, new Comparator<PersonObject>() {
+                                            @Override
+                                            public int compare(PersonObject o1, PersonObject o2) {
+                                                java.sql.Timestamp timestamp1 = o1.getCreatetime();
+                                                java.sql.Timestamp timestamp2 = o2.getCreatetime();
+                                                return Long.compare(timestamp1.getTime(), timestamp2.getTime());
+                                            }
+                                        });
                                     }
                                     if (staticSortParams.contains(StaticSortParam.TIMEDESC)) {
-                                        tmp.sort((p1, p2) -> p2.getCreatetime().compareTo(p1.getCreatetime()));
+                                        Collections.sort(tmp, new Comparator<PersonObject>() {
+                                            @Override
+                                            public int compare(PersonObject o1, PersonObject o2) {
+                                                java.sql.Timestamp timestamp1 = o1.getCreatetime();
+                                                java.sql.Timestamp timestamp2 = o2.getCreatetime();
+                                                return Long.compare(timestamp2.getTime(), timestamp1.getTime());
+                                            }
+                                        });
                                     }
                                 }
                             }
@@ -403,6 +480,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             personSingleResults.add(personSingleResult);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
         }
         finnalObjectSearchResult.setSearchStatus(0);
         finnalObjectSearchResult.setFinalResults(personSingleResults);
