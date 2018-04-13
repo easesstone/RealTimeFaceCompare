@@ -135,7 +135,7 @@ object ResidentClustering {
             val distinctDate = dateArr.distinct.sortWith((a, b) => a < b)
             //set 1 if the day number appeared
             for (m <- distinctDate) {
-              dateOfMonth(m-1) = 1
+              dateOfMonth(m - 1) = 1
             }
             //max Continuous number of appear days
             var count = 0
