@@ -112,10 +112,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
                 ", " + ObjectInfoTable.FEATURE + " from " + ObjectInfoTable.TABLE_NAME;
         PreparedStatement pstm = null;
         List<Object[]> findResult = new ArrayList<>();
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             ResultSet resultSet = pstm.executeQuery();
             while (resultSet.next()) {
@@ -183,10 +182,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         sql = sql + pkeysWhere;
 
         PreparedStatement pstm = null;
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
         java.sql.Connection conn;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             for(int i = 0; i< pkeys.size(); i++) {
                 pstm.setString(i + 1, pkeys.get(i));
@@ -228,10 +226,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
                  ") values(?,?)";
 
         PreparedStatement pstm = null;
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
         java.sql.Connection conn;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             java.sql.Timestamp timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
             for (int i = 0;i < rowkeys.size(); i++) {

@@ -17,6 +17,9 @@ public class PhoenixJDBCHelper {
     // 数据库连接池
     private volatile static ComboPooledDataSource comboPooledDataSource;
 
+    // 数据库连接对象
+    private volatile static Connection conn;
+
     private PhoenixJDBCHelper() {}
 
     public static ComboPooledDataSource getComboPooledDataSource() {
@@ -30,6 +33,40 @@ public class PhoenixJDBCHelper {
         return comboPooledDataSource;
     }
 
+    public static Connection getConnection() {
+        if (conn == null) {
+            synchronized (PhoenixJDBCHelper.class) {
+                if (conn == null) {
+                    initConnection();
+                }
+            }
+        }
+        return  conn;
+    }
+
+    private static void initConnection() {
+        File file = FileUtil.loadResourceFile("jdbc.properties");
+        Properties jdbcProp = new Properties();
+        try {
+            jdbcProp.load(new FileInputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // phoenix url
+        String phoenixJDBCURL = jdbcProp.getProperty("phoenix.jdbc.url");
+        // phoenix driver 名字
+        String phoenixJDBCDriver = jdbcProp.getProperty("phoenix.jdbc.driver.name");
+        try {
+            Class.forName(phoenixJDBCDriver);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            conn = DriverManager.getConnection(phoenixJDBCURL);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static void initDBSource() {
         File file = FileUtil.loadResourceFile("jdbc.properties");

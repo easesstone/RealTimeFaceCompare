@@ -30,14 +30,13 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("更新参数为空.");
             return 1;
         }
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "("
                 + ObjectInfoTable.ROWKEY + ", "
                 +  ObjectInfoTable.LOCATION + ")" + "values(?, ?)";
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             conn.setAutoCommit(false);
             for (Map.Entry<String, List<String>> entry : pkeysUpdate.entrySet()) {
                 String location = entry.getKey();
@@ -66,7 +65,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return 1;
         } finally {
-           PhoenixJDBCHelper.closeConnection(conn, pstm);
+           PhoenixJDBCHelper.closeConnection(null, pstm);
         }
         LOG.info(sql);
         return 0;
@@ -88,14 +87,13 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("重置参数为空.");
             return 1;
         }
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "(" + ObjectInfoTable.ROWKEY + ", " +
                 ObjectInfoTable.LOCATION + ") select id, ? from " +  ObjectInfoTable.TABLE_NAME + " where " +
                 ObjectInfoTable.PKEY + " = ?";
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             for (String pkey : pkeysReset) {
                 pstm.setString(1, null);
@@ -107,7 +105,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm);
+            PhoenixJDBCHelper.closeConnection(null, pstm);
         }
         LOG.info(sql);
         return 0;
@@ -151,8 +149,7 @@ public class PrisonServiceImpl implements PrisonService {
         LOG.info(sql);
 
         //获取连接，执行查询
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         PrisonCountResult prisonCountResult;
@@ -161,7 +158,7 @@ public class PrisonServiceImpl implements PrisonService {
         Map<String, Integer> locationCounts = new HashMap<>();
         List<String> pkeysTmp = new ArrayList<>();
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i < pkeysCount.size(); i++) {
                 pstm.setString(i+1, pkeysCount.get(i));
@@ -197,7 +194,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return prisonCountResults;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         LOG.info(prisonSearchOpts);
         LOG.info(sql);

@@ -20,8 +20,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         person.setPlatformid(platformId);
@@ -36,7 +35,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 + ") values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstm = null;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = new ObjectInfoHandlerTool().getStaticPrepareStatementV1(conn, person, sql);
             pstm.executeUpdate();
             conn.commit();
@@ -44,7 +43,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -57,12 +56,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("rowKeys: " + rowkeys);
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i< rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
@@ -76,7 +74,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -93,15 +91,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
             return 1;
         }
         PreparedStatement pstm = null;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             Map<String, List<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
             String sql = null;
             List<Object> setValues = new ArrayList<>();
@@ -119,7 +116,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -130,15 +127,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByRowkey(String id) {
         long start = System.currentTimeMillis();
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ObjectSearchResult result = new ObjectSearchResult();
         PersonObject person;
         ResultSet resultSet = null;
         try {
             String sql = "select * from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, id);
             resultSet = pstm.executeQuery();
@@ -156,7 +152,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             result.setSearchStatus(1);
             e.printStackTrace();
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         LOG.info("获取一条数据的时间是：" + (System.currentTimeMillis() - start));
         return result;
@@ -166,18 +162,13 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
         LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         // 总的结果
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
         objectSearchResult.setSearchTotalId(searchTotalId);
         List<PersonSingleResult> finalResults = new ArrayList<>();
-        try {
-            conn = comboPooledDataSource.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        conn = PhoenixJDBCHelper.getConnection();
         if (conn == null) {
             ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
             objectSearchResult.setSearchStatus(1);
@@ -307,7 +298,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (startCount != null && pageSize != null) {
             new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         }
-        PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+        PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         LOG.info("***********************");
         LOG.info(objectSearchResult);
         LOG.info("***********************");
@@ -318,13 +309,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte[] getPhotoByKey(String rowkey) {
         String sql = "select photo from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         byte[] photo;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, rowkey);
             resultSet = pstm.executeQuery();
@@ -388,12 +378,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
         List<PersonSingleResult> personSingleResults = new ArrayList<>();
 
-        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         try {
-            conn = comboPooledDataSource.getConnection();
+            conn = PhoenixJDBCHelper.getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, subQueryId);
             resultSet = pstm.executeQuery();
@@ -490,7 +479,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         finnalObjectSearchResult.setSearchStatus(0);
         finnalObjectSearchResult.setFinalResults(personSingleResults);
