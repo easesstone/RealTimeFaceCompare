@@ -389,12 +389,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             resultSet.next();
             PersonSingleResult personSingleResult = (PersonSingleResult) ObjectUtil
                     .byteToObject(resultSet.getBytes(SearchRecordTable.RESULT));
-            LOG.info(personSingleResult);
             if (personSingleResult != null) {
                 List<PersonObject> personObjects = personSingleResult.getPersons();
                 List<GroupByPkey> groupByPkeys = new ArrayList<>();
                 GroupByPkey groupByPkey;
-                if (personObjects != null) {
+                if (personObjects != null && staticSortParams != null && staticSortParams.contains(StaticSortParam.PEKEY)) {
                     Map<String, List<PersonObject>> groupingByPkeys = personObjects.stream()
                             .collect(Collectors.groupingBy(PersonObject::getPkey));
                     for (Map.Entry<String, List<PersonObject>> entry : groupingByPkeys.entrySet()) {
@@ -402,68 +401,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         String pkey = entry.getKey();
                         groupByPkey.setPkey(pkey);
                         List<PersonObject> personObjectList = entry.getValue();
-                        if (staticSortParams != null) {
-                            if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
-                                Collections.sort(personObjectList, new Comparator<PersonObject>() {
-                                    @Override
-                                    public int compare(PersonObject o1, PersonObject o2) {
-                                        float sim1 = o1.getSim();
-                                        float sim2 = o2.getSim();
-                                        return Float.compare(sim1, sim2);
-                                    }
-                                });
-                            }
-                            if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
-                                Collections.sort(personObjectList, new Comparator<PersonObject>() {
-                                    @Override
-                                    public int compare(PersonObject o1, PersonObject o2) {
-                                        float sim1 = o1.getSim();
-                                        float sim2 = o2.getSim();
-                                        return Float.compare(sim2, sim1);
-                                    }
-                                });
-                            }
-                            if (staticSortParams.contains(StaticSortParam.IMPORTANTASC)) {
-                                Collections.sort(personObjectList, new Comparator<PersonObject>() {
-                                    @Override
-                                    public int compare(PersonObject o1, PersonObject o2) {
-                                        int important1 = o1.getImportant();
-                                        int important2 = o2.getImportant();
-                                        return Integer.compare(important1, important2);
-                                    }
-                                });
-                            }
-                            if (staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
-                                Collections.sort(personObjectList, new Comparator<PersonObject>() {
-                                    @Override
-                                    public int compare(PersonObject o1, PersonObject o2) {
-                                        int important1 = o1.getImportant();
-                                        int important2 = o2.getImportant();
-                                        return Integer.compare(important2, important1);
-                                    }
-                                });
-                            }
-                            if (staticSortParams.contains(StaticSortParam.TIMEASC)) {
-                                Collections.sort(personObjectList, new Comparator<PersonObject>() {
-                                    @Override
-                                    public int compare(PersonObject o1, PersonObject o2) {
-                                        java.sql.Timestamp timestamp1 = o1.getCreatetime();
-                                        java.sql.Timestamp timestamp2 = o2.getCreatetime();
-                                        return Long.compare(timestamp1.getTime(), timestamp2.getTime());
-                                    }
-                                });
-                            }
-                            if (staticSortParams.contains(StaticSortParam.TIMEDESC)) {
-                                Collections.sort(personObjectList, new Comparator<PersonObject>() {
-                                    @Override
-                                    public int compare(PersonObject o1, PersonObject o2) {
-                                        java.sql.Timestamp timestamp1 = o1.getCreatetime();
-                                        java.sql.Timestamp timestamp2 = o2.getCreatetime();
-                                        return Long.compare(timestamp2.getTime(), timestamp1.getTime());
-                                    }
-                                });
-                            }
-                        }
+                        // 对结果进行排序
+                        new ObjectInfoHandlerTool().sortPersonObject(personObjectList, staticSortParams);
 
                         // 如果指定了需要返回的Pkey
                         if (pkeys != null && pkeys.size() > 0 && pkeys.contains(pkey)) {
@@ -477,8 +416,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         }
                     }
                     personSingleResult.setGroupByPkeys(groupByPkeys);
+                    personSingleResult.setPersons(null);
+                } else if (personObjects != null && staticSortParams != null && !staticSortParams.contains(StaticSortParam.PEKEY)){
+                    personSingleResult.setGroupByPkeys(null);
+                    new ObjectInfoHandlerTool().sortPersonObject(personObjects, staticSortParams);
+                    personSingleResult.setPersons(personObjects);
                 }
-                personSingleResult.setPersons(null);
             }
             personSingleResults.add(personSingleResult);
         } catch (SQLException e) {
