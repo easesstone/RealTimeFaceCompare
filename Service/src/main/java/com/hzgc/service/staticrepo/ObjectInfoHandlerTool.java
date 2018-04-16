@@ -235,16 +235,6 @@ class ObjectInfoHandlerTool {
      */
     public void sortPersonObject(List<PersonObject> personObjects, List<StaticSortParam> staticSortParams) {
         if (staticSortParams != null) {
-            if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        float sim1 = o1.getSim();
-                        float sim2 = o2.getSim();
-                        return Float.compare(sim1, sim2);
-                    }
-                });
-            }
             if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
                 Collections.sort(personObjects, new Comparator<PersonObject>() {
                     @Override
@@ -252,6 +242,16 @@ class ObjectInfoHandlerTool {
                         float sim1 = o1.getSim();
                         float sim2 = o2.getSim();
                         return Float.compare(sim2, sim1);
+                    }
+                });
+            }
+            if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
+                Collections.sort(personObjects, new Comparator<PersonObject>() {
+                    @Override
+                    public int compare(PersonObject o1, PersonObject o2) {
+                        float sim1 = o1.getSim();
+                        float sim2 = o2.getSim();
+                        return Float.compare(sim1, sim2);
                     }
                 });
             }
