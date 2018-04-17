@@ -2,7 +2,6 @@ package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.util.HBaseHelper;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
@@ -114,7 +113,7 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         List<Object[]> findResult = new ArrayList<>();
         java.sql.Connection conn = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             ResultSet resultSet = pstm.executeQuery();
             while (resultSet.next()) {
@@ -182,9 +181,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         sql = sql + pkeysWhere;
 
         PreparedStatement pstm = null;
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for(int i = 0; i< pkeys.size(); i++) {
                 pstm.setString(i + 1, pkeys.get(i));
@@ -226,9 +225,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
                  ") values(?,?)";
 
         PreparedStatement pstm = null;
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             java.sql.Timestamp timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
             for (int i = 0;i < rowkeys.size(); i++) {

@@ -1,10 +1,8 @@
 package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.*;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,13 +28,13 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("更新参数为空.");
             return 1;
         }
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "("
                 + ObjectInfoTable.ROWKEY + ", "
                 +  ObjectInfoTable.LOCATION + ")" + "values(?, ?)";
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             conn.setAutoCommit(false);
             for (Map.Entry<String, List<String>> entry : pkeysUpdate.entrySet()) {
                 String location = entry.getKey();
@@ -87,13 +85,13 @@ public class PrisonServiceImpl implements PrisonService {
             LOG.info("重置参数为空.");
             return 1;
         }
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         String sql = "upsert into " + ObjectInfoTable.TABLE_NAME + "(" + ObjectInfoTable.ROWKEY + ", " +
                 ObjectInfoTable.LOCATION + ") select id, ? from " +  ObjectInfoTable.TABLE_NAME + " where " +
                 ObjectInfoTable.PKEY + " = ?";
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for (String pkey : pkeysReset) {
                 pstm.setString(1, null);
@@ -149,7 +147,7 @@ public class PrisonServiceImpl implements PrisonService {
         LOG.info(sql);
 
         //获取连接，执行查询
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         PrisonCountResult prisonCountResult;
@@ -158,7 +156,7 @@ public class PrisonServiceImpl implements PrisonService {
         Map<String, Integer> locationCounts = new HashMap<>();
         List<String> pkeysTmp = new ArrayList<>();
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i < pkeysCount.size(); i++) {
                 pstm.setString(i+1, pkeysCount.get(i));

@@ -3,7 +3,6 @@ package com.hzgc.service.staticrepo;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.*;
 import com.hzgc.util.common.ObjectUtil;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
@@ -20,7 +19,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         person.setPlatformid(platformId);
@@ -35,7 +34,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 + ") values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstm = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = new ObjectInfoHandlerTool().getStaticPrepareStatementV1(conn, person, sql);
             pstm.executeUpdate();
             conn.commit();
@@ -43,7 +42,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(null, pstm, null);
+            PhoenixJDBCHelper.closeConnection(null , pstm, null);
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -56,11 +55,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("rowKeys: " + rowkeys);
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i< rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
@@ -91,14 +90,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
             return 1;
         }
         PreparedStatement pstm = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             Map<String, List<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
             String sql = null;
             List<Object> setValues = new ArrayList<>();
@@ -127,14 +126,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public ObjectSearchResult searchByRowkey(String id) {
         long start = System.currentTimeMillis();
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         ObjectSearchResult result = new ObjectSearchResult();
         PersonObject person;
         ResultSet resultSet = null;
         try {
             String sql = "select * from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, id);
             resultSet = pstm.executeQuery();
@@ -162,13 +161,14 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
         LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         // 总的结果
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
         objectSearchResult.setSearchTotalId(searchTotalId);
         List<PersonSingleResult> finalResults = new ArrayList<>();
-        conn = PhoenixJDBCHelper.getConnection();
+        conn = PhoenixJDBCHelper.getInstance().getConnection();
+
         if (conn == null) {
             ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
             objectSearchResult.setSearchStatus(1);
@@ -309,12 +309,12 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte[] getPhotoByKey(String rowkey) {
         String sql = "select photo from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         byte[] photo;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, rowkey);
             resultSet = pstm.executeQuery();
@@ -378,11 +378,11 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
         List<PersonSingleResult> personSingleResults = new ArrayList<>();
 
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, subQueryId);
             resultSet = pstm.executeQuery();

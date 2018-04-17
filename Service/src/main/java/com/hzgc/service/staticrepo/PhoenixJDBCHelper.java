@@ -1,10 +1,8 @@
 package com.hzgc.service.staticrepo;
 
 import com.hzgc.util.common.FileUtil;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,37 +12,38 @@ import java.util.Properties;
 public class PhoenixJDBCHelper {
     private Logger LOG = Logger.getLogger(PhoenixJDBCHelper.class);
 
-    // 数据库连接池
-    private volatile static ComboPooledDataSource comboPooledDataSource;
+    private static volatile PhoenixJDBCHelper instance;
 
-    // 数据库连接对象
-    private volatile static Connection conn;
+//    // druid 数据库连接池
+//    private volatile static DruidDataSource druidDataSource;
+//
 
-    private PhoenixJDBCHelper() {}
+    private static volatile Connection connection;
 
-    public static ComboPooledDataSource getComboPooledDataSource() {
-        if (comboPooledDataSource == null) {
+    private PhoenixJDBCHelper() {
+//        if (druidDataSource == null) {
+//            initDruidDataSource();
+//        }
+        if (connection == null) {
+            initConnection();
+        }
+    }
+
+    public Connection getConnection() {
+        return PhoenixJDBCHelper.connection;
+    }
+    public static PhoenixJDBCHelper getInstance() {
+        if (instance == null) {
             synchronized (PhoenixJDBCHelper.class) {
-                if (comboPooledDataSource == null) {
-                    initDBSource();
+                if (instance == null) {
+                    instance = new PhoenixJDBCHelper();
                 }
             }
         }
-        return comboPooledDataSource;
+        return instance;
     }
 
-    public static Connection getConnection() {
-        if (conn == null) {
-            synchronized (PhoenixJDBCHelper.class) {
-                if (conn == null) {
-                    initConnection();
-                }
-            }
-        }
-        return  conn;
-    }
-
-    private static void initConnection() {
+    private void initConnection() {
         File file = FileUtil.loadResourceFile("jdbc.properties");
         Properties jdbcProp = new Properties();
         try {
@@ -53,73 +52,78 @@ public class PhoenixJDBCHelper {
             e.printStackTrace();
         }
         // phoenix url
-        String phoenixJDBCURL = jdbcProp.getProperty("phoenix.jdbc.url");
+        String jdbcUrl = jdbcProp.getProperty("phoenix.jdbcUrl");
         // phoenix driver 名字
-        String phoenixJDBCDriver = jdbcProp.getProperty("phoenix.jdbc.driver.name");
+        String driverClassName = jdbcProp.getProperty("phoenix.driverClassName");
         try {
-            Class.forName(phoenixJDBCDriver);
+            Class.forName(driverClassName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         try {
-            conn = DriverManager.getConnection(phoenixJDBCURL);
+            connection = DriverManager.getConnection(jdbcUrl);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void initDBSource() {
-        File file = FileUtil.loadResourceFile("jdbc.properties");
-        Properties jdbcProp = new Properties();
-        try {
-            jdbcProp.load(new FileInputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // phoenix url
-        String phoenixJDBCURL = jdbcProp.getProperty("phoenix.jdbc.url");
-        // phoenix driver 名字
-        String phoenixJDBCDriver = jdbcProp.getProperty("phoenix.jdbc.driver.name");
-        // 声明当连接池中连接耗尽时再一次新生成多少个连接，默认为3个
-        String phoenixJDBCAcquireIncrement = jdbcProp.getProperty("phoenix.jdbc.acquireIncrement");
-        // 当连接池启动时，初始化连接的个数，必须在minPoolSize~maxPoolSize之间，默认为3
-        String phoenixJDBCInitialPoolSize = jdbcProp.getProperty("phoenix.jdbc.initialPoolSize");
-        // 任何时间连接池中保存的最小连接数，默认3
-        String phoenixJDBCMinPoolSize = jdbcProp.getProperty("phoenix.jdbc.minPoolSize");
-        // 在任何时间连接池中所能拥有的最大连接数，默认15
-        String phoenixJDBCMaxPoolSize = jdbcProp.getProperty("phoenix.jdbc.maxPoolSize");
-        // 超过多长时间连接自动销毁，默认为0，即永远不会自动销毁
-        String phoenixMaxIdleTime = jdbcProp.getProperty("phoenix.jdbc.maxIdleTime");
 
-        if (phoenixJDBCURL ==null || phoenixJDBCDriver == null) {
-            return;
-        }
+//    public DruidDataSource getDruidDataSource() {
+//        return PhoenixJDBCHelper.druidDataSource;
+//    }
+//
+//
+//    private static void initDruidDataSource() {
+//        File file = FileUtil.loadResourceFile("jdbc.properties");
+//        Properties jdbcProp = new Properties();
+//        try {
+//            jdbcProp.load(new FileInputStream(file));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        // phoenix url
+//        String jdbcUrl = jdbcProp.getProperty("phoenix.jdbcUrl");
+//        // phoenix driver 名字
+//        String driverClassName = jdbcProp.getProperty("phoenix.driverClassName");
+//        // 当连接池启动时，初始化连接的个数，minIdle~maxActive，默认为3
+//        String initialSize = jdbcProp.getProperty("phoenix.initialSize");
+//        // 任何时间连接池中保存的最小连接数，默认3
+//        String minIdle = jdbcProp.getProperty("phoenix.minIdle");
+//        // 在任何时间连接池中所能拥有的最大连接数，默认15
+//        String maxActive = jdbcProp.getProperty("phoenix.maxActive");
+//        // 超过多长时间连接自动销毁，默认为0，即永远不会自动销毁
+//        String timeBetweenEvictionRunsMillis = jdbcProp.getProperty("phoenix.timeBetweenEvictionRunsMillis");
+//        // 获取连接等待超时的时间
+//        String maxWait = jdbcProp.getProperty("phoenix.maxWait");
+//        // 配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁
+//        String useUnfairLock = jdbcProp.getProperty("phoenix.useUnfairLock");
+//
+//        druidDataSource = new DruidDataSource();
+//        if (jdbcUrl == null || driverClassName == null) {
+//            return;
+//        }
+//        druidDataSource.setUrl(jdbcUrl);
+//        druidDataSource.setDriverClassName(driverClassName);
+//        if (minIdle != null) {
+//            druidDataSource.setMinIdle(Integer.parseInt(minIdle));
+//        }
+//        if (initialSize != null) {
+//            druidDataSource.setInitialSize(Integer.parseInt(initialSize));
+//        }
+//        if (maxActive != null) {
+//            druidDataSource.setMaxActive(Integer.parseInt(maxActive));
+//        }
+//        if (maxWait != null) {
+//            druidDataSource.setMaxWait(Long.parseLong(maxWait));
+//        }
+//        if (timeBetweenEvictionRunsMillis != null) {
+//            druidDataSource.setTimeBetweenConnectErrorMillis(Long.parseLong(timeBetweenEvictionRunsMillis));
+//        }
+//        if (useUnfairLock != null) {
+//            druidDataSource.setUseUnfairLock(Boolean.parseBoolean(useUnfairLock));
+//        }
+//    }
 
-
-        comboPooledDataSource = new ComboPooledDataSource();
-        try {
-            comboPooledDataSource.setDriverClass(phoenixJDBCDriver);
-            comboPooledDataSource.setJdbcUrl(phoenixJDBCURL);
-            if (phoenixJDBCMaxPoolSize != null) {
-                comboPooledDataSource.setMaxPoolSize(Integer.parseInt(phoenixJDBCMaxPoolSize));
-            }
-            if (phoenixJDBCAcquireIncrement != null) {
-                comboPooledDataSource.setAcquireIncrement(Integer.parseInt(phoenixJDBCAcquireIncrement));
-            }
-            if (phoenixJDBCInitialPoolSize != null) {
-                comboPooledDataSource.setInitialPoolSize(Integer.parseInt(phoenixJDBCInitialPoolSize));
-            }
-            if (phoenixJDBCMinPoolSize != null) {
-                comboPooledDataSource.setMinPoolSize(Integer.parseInt(phoenixJDBCMinPoolSize));
-            }
-            if (phoenixMaxIdleTime != null) {
-                comboPooledDataSource.setMaxIdleTime(Integer.parseInt(phoenixMaxIdleTime));
-            }
-
-        } catch (PropertyVetoException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void closeConnection(Connection conn, Statement pstm) {
        closeConnection(conn, pstm, null);
