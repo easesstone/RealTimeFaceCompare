@@ -35,7 +35,9 @@ public class PhoenixJDBCHelper {
     public static PhoenixJDBCHelper getInstance() {
         if (instance == null) {
             synchronized (PhoenixJDBCHelper.class) {
-                instance = new PhoenixJDBCHelper();
+                if (instance == null) {
+                    instance = new PhoenixJDBCHelper();
+                }
             }
         }
         return instance;
