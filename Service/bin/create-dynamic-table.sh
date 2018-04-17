@@ -132,6 +132,7 @@ function add_hive_UDF(){
 function create_person_table_mid_table() {
     ${SPARK_PATH}/bin/spark-sql -e "CREATE EXTERNAL TABLE IF NOT EXISTS default.person_table( \
                                     ftpurl        string, \
+                                    ipcid         string, \
                                     feature       array<float>, \
                                     eyeglasses    int, \
                                     gender        int, \

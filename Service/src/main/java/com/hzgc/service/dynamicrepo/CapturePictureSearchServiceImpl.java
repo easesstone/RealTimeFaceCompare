@@ -70,7 +70,7 @@ public class CapturePictureSearchServiceImpl implements CapturePictureSearchServ
         SearchResult searchResult = null;
         if (resultOption.getSearchID() != null && !"".equals(resultOption.getSearchID())) {
             searchResult = DynamicPhotoServiceHelper.getSearchRes(resultOption.getSearchID());
-            LOG.info("Start query history failure, SearchResultOption is " + resultOption);
+            LOG.info("Start query history, SearchResultOption is " + resultOption);
             if (searchResult != null) {
                 switch (searchResult.getSearchType()) {
                     case DynamicTable.PERSON_TYPE:
