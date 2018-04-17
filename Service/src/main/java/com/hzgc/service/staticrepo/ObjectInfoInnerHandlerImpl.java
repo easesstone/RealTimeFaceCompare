@@ -114,7 +114,7 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         List<Object[]> findResult = new ArrayList<>();
         java.sql.Connection conn = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
             pstm = conn.prepareStatement(sql);
             ResultSet resultSet = pstm.executeQuery();
             while (resultSet.next()) {
@@ -138,7 +138,7 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            PhoenixJDBCHelper.closeConnection(null, pstm);
+            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
 
         return findResult;
@@ -182,9 +182,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         sql = sql + pkeysWhere;
 
         PreparedStatement pstm = null;
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
             pstm = conn.prepareStatement(sql);
             for(int i = 0; i< pkeys.size(); i++) {
                 pstm.setString(i + 1, pkeys.get(i));
@@ -207,7 +207,7 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
             e.printStackTrace();
             return null;
         } finally {
-            PhoenixJDBCHelper.closeConnection(null, pstm);
+            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         return findResult;
     }
@@ -226,9 +226,9 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
                  ") values(?,?)";
 
         PreparedStatement pstm = null;
-        java.sql.Connection conn;
+        java.sql.Connection conn = null;
         try {
-            conn = PhoenixJDBCHelper.getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
             pstm = conn.prepareStatement(sql);
             java.sql.Timestamp timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
             for (int i = 0;i < rowkeys.size(); i++) {
@@ -245,7 +245,7 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            PhoenixJDBCHelper.closeConnection(null, pstm);
+            PhoenixJDBCHelper.closeConnection(conn, pstm);
         }
         return 0;
     }

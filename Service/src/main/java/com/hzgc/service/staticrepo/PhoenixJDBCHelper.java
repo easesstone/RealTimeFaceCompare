@@ -1,8 +1,10 @@
 package com.hzgc.service.staticrepo;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.hzgc.util.common.FileUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
+import org.datanucleus.store.rdbms.identifier.IdentifierFactory;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -14,37 +16,32 @@ import java.util.Properties;
 public class PhoenixJDBCHelper {
     private Logger LOG = Logger.getLogger(PhoenixJDBCHelper.class);
 
-    // 数据库连接池
-    private volatile static ComboPooledDataSource comboPooledDataSource;
+    private static volatile PhoenixJDBCHelper instance;
 
-    // 数据库连接对象
-    private volatile static Connection conn;
+    // druid 数据库连接池
+    private volatile static DruidDataSource druidDataSource;
 
-    private PhoenixJDBCHelper() {}
 
-    public static ComboPooledDataSource getComboPooledDataSource() {
-        if (comboPooledDataSource == null) {
-            synchronized (PhoenixJDBCHelper.class) {
-                if (comboPooledDataSource == null) {
-                    initDBSource();
-                }
-            }
+    private PhoenixJDBCHelper() {
+        if (druidDataSource == null) {
+            initDruidDataSource();
         }
-        return comboPooledDataSource;
     }
 
-    public static Connection getConnection() {
-        if (conn == null) {
-            synchronized (PhoenixJDBCHelper.class) {
-                if (conn == null) {
-                    initConnection();
-                }
-            }
-        }
-        return  conn;
+    public DruidDataSource getDruidDataSource() {
+        return PhoenixJDBCHelper.druidDataSource;
     }
 
-    private static void initConnection() {
+    public static PhoenixJDBCHelper getInstance() {
+        if (instance == null) {
+            synchronized (PhoenixJDBCHelper.class) {
+                instance = new PhoenixJDBCHelper();
+            }
+        }
+        return instance;
+    }
+
+    private static void initDruidDataSource() {
         File file = FileUtil.loadResourceFile("jdbc.properties");
         Properties jdbcProp = new Properties();
         try {
@@ -56,32 +53,6 @@ public class PhoenixJDBCHelper {
         String phoenixJDBCURL = jdbcProp.getProperty("phoenix.jdbc.url");
         // phoenix driver 名字
         String phoenixJDBCDriver = jdbcProp.getProperty("phoenix.jdbc.driver.name");
-        try {
-            Class.forName(phoenixJDBCDriver);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            conn = DriverManager.getConnection(phoenixJDBCURL);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void initDBSource() {
-        File file = FileUtil.loadResourceFile("jdbc.properties");
-        Properties jdbcProp = new Properties();
-        try {
-            jdbcProp.load(new FileInputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // phoenix url
-        String phoenixJDBCURL = jdbcProp.getProperty("phoenix.jdbc.url");
-        // phoenix driver 名字
-        String phoenixJDBCDriver = jdbcProp.getProperty("phoenix.jdbc.driver.name");
-        // 声明当连接池中连接耗尽时再一次新生成多少个连接，默认为3个
-        String phoenixJDBCAcquireIncrement = jdbcProp.getProperty("phoenix.jdbc.acquireIncrement");
         // 当连接池启动时，初始化连接的个数，必须在minPoolSize~maxPoolSize之间，默认为3
         String phoenixJDBCInitialPoolSize = jdbcProp.getProperty("phoenix.jdbc.initialPoolSize");
         // 任何时间连接池中保存的最小连接数，默认3
@@ -90,36 +61,32 @@ public class PhoenixJDBCHelper {
         String phoenixJDBCMaxPoolSize = jdbcProp.getProperty("phoenix.jdbc.maxPoolSize");
         // 超过多长时间连接自动销毁，默认为0，即永远不会自动销毁
         String phoenixMaxIdleTime = jdbcProp.getProperty("phoenix.jdbc.maxIdleTime");
-
-        if (phoenixJDBCURL ==null || phoenixJDBCDriver == null) {
+        // 获取连接等待超时的时间
+        String phoenixMaxWait = jdbcProp.getProperty("phoenix.jdbc.maxWait");
+        druidDataSource = new DruidDataSource();
+        if (phoenixJDBCURL == null || phoenixJDBCDriver == null) {
             return;
         }
-
-
-        comboPooledDataSource = new ComboPooledDataSource();
-        try {
-            comboPooledDataSource.setDriverClass(phoenixJDBCDriver);
-            comboPooledDataSource.setJdbcUrl(phoenixJDBCURL);
-            if (phoenixJDBCMaxPoolSize != null) {
-                comboPooledDataSource.setMaxPoolSize(Integer.parseInt(phoenixJDBCMaxPoolSize));
-            }
-            if (phoenixJDBCAcquireIncrement != null) {
-                comboPooledDataSource.setAcquireIncrement(Integer.parseInt(phoenixJDBCAcquireIncrement));
-            }
-            if (phoenixJDBCInitialPoolSize != null) {
-                comboPooledDataSource.setInitialPoolSize(Integer.parseInt(phoenixJDBCInitialPoolSize));
-            }
-            if (phoenixJDBCMinPoolSize != null) {
-                comboPooledDataSource.setMinPoolSize(Integer.parseInt(phoenixJDBCMinPoolSize));
-            }
-            if (phoenixMaxIdleTime != null) {
-                comboPooledDataSource.setMaxIdleTime(Integer.parseInt(phoenixMaxIdleTime));
-            }
-
-        } catch (PropertyVetoException e) {
-            e.printStackTrace();
+        druidDataSource.setUrl(phoenixJDBCURL);
+        druidDataSource.setUrl(phoenixJDBCDriver);
+        if (phoenixJDBCMinPoolSize != null) {
+            druidDataSource.setMinIdle(Integer.parseInt(phoenixJDBCMinPoolSize));
         }
+        if (phoenixJDBCInitialPoolSize != null) {
+            druidDataSource.setInitialSize(Integer.parseInt(phoenixJDBCInitialPoolSize));
+        }
+        if (phoenixJDBCMaxPoolSize != null) {
+            druidDataSource.setMaxActive(Integer.parseInt(phoenixJDBCMaxPoolSize));
+        }
+        if (phoenixMaxWait != null) {
+            druidDataSource.setMaxWait(Long.parseLong(phoenixMaxWait));
+        }
+        if (phoenixMaxIdleTime != null) {
+            druidDataSource.setTimeBetweenConnectErrorMillis(Long.parseLong(phoenixMaxIdleTime));
+        }
+
     }
+
 
     public static void closeConnection(Connection conn, Statement pstm) {
        closeConnection(conn, pstm, null);
