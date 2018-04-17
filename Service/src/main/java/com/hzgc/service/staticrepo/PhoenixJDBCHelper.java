@@ -50,41 +50,46 @@ public class PhoenixJDBCHelper {
             e.printStackTrace();
         }
         // phoenix url
-        String phoenixJDBCURL = jdbcProp.getProperty("phoenix.jdbc.url");
+        String jdbcUrl = jdbcProp.getProperty("phoenix.jdbcUrl");
         // phoenix driver 名字
-        String phoenixJDBCDriver = jdbcProp.getProperty("phoenix.jdbc.driver.name");
-        // 当连接池启动时，初始化连接的个数，必须在minPoolSize~maxPoolSize之间，默认为3
-        String phoenixJDBCInitialPoolSize = jdbcProp.getProperty("phoenix.jdbc.initialPoolSize");
+        String driverClassName = jdbcProp.getProperty("phoenix.driverClassName");
+        // 当连接池启动时，初始化连接的个数，minIdle~maxActive，默认为3
+        String initialSize = jdbcProp.getProperty("phoenix.initialSize");
         // 任何时间连接池中保存的最小连接数，默认3
-        String phoenixJDBCMinPoolSize = jdbcProp.getProperty("phoenix.jdbc.minPoolSize");
+        String minIdle = jdbcProp.getProperty("phoenix.minIdle");
         // 在任何时间连接池中所能拥有的最大连接数，默认15
-        String phoenixJDBCMaxPoolSize = jdbcProp.getProperty("phoenix.jdbc.maxPoolSize");
+        String maxActive = jdbcProp.getProperty("phoenix.maxActive");
         // 超过多长时间连接自动销毁，默认为0，即永远不会自动销毁
-        String phoenixMaxIdleTime = jdbcProp.getProperty("phoenix.jdbc.maxIdleTime");
+        String timeBetweenEvictionRunsMillis = jdbcProp.getProperty("phoenix.timeBetweenEvictionRunsMillis");
         // 获取连接等待超时的时间
-        String phoenixMaxWait = jdbcProp.getProperty("phoenix.jdbc.maxWait");
+        String maxWait = jdbcProp.getProperty("phoenix.maxWait");
+        // 配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁
+        String useUnfairLock = jdbcProp.getProperty("phoenix.useUnfairLock");
+
         druidDataSource = new DruidDataSource();
-        if (phoenixJDBCURL == null || phoenixJDBCDriver == null) {
+        if (jdbcUrl == null || driverClassName == null) {
             return;
         }
-        druidDataSource.setUrl(phoenixJDBCURL);
-        druidDataSource.setUrl(phoenixJDBCDriver);
-        if (phoenixJDBCMinPoolSize != null) {
-            druidDataSource.setMinIdle(Integer.parseInt(phoenixJDBCMinPoolSize));
+        druidDataSource.setUrl(jdbcUrl);
+        druidDataSource.setDriverClassName(driverClassName);
+        if (minIdle != null) {
+            druidDataSource.setMinIdle(Integer.parseInt(minIdle));
         }
-        if (phoenixJDBCInitialPoolSize != null) {
-            druidDataSource.setInitialSize(Integer.parseInt(phoenixJDBCInitialPoolSize));
+        if (initialSize != null) {
+            druidDataSource.setInitialSize(Integer.parseInt(initialSize));
         }
-        if (phoenixJDBCMaxPoolSize != null) {
-            druidDataSource.setMaxActive(Integer.parseInt(phoenixJDBCMaxPoolSize));
+        if (maxActive != null) {
+            druidDataSource.setMaxActive(Integer.parseInt(maxActive));
         }
-        if (phoenixMaxWait != null) {
-            druidDataSource.setMaxWait(Long.parseLong(phoenixMaxWait));
+        if (maxWait != null) {
+            druidDataSource.setMaxWait(Long.parseLong(maxWait));
         }
-        if (phoenixMaxIdleTime != null) {
-            druidDataSource.setTimeBetweenConnectErrorMillis(Long.parseLong(phoenixMaxIdleTime));
+        if (timeBetweenEvictionRunsMillis != null) {
+            druidDataSource.setTimeBetweenConnectErrorMillis(Long.parseLong(timeBetweenEvictionRunsMillis));
         }
-
+        if (useUnfairLock != null) {
+            druidDataSource.setUseUnfairLock(Boolean.parseBoolean(useUnfairLock));
+        }
     }
 
 
