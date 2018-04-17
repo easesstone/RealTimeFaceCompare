@@ -34,7 +34,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                 + ") values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstm = null;
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = new ObjectInfoHandlerTool().getStaticPrepareStatementV1(conn, person, sql);
             pstm.executeUpdate();
             conn.commit();
@@ -42,7 +42,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn , pstm, null);
+            PhoenixJDBCHelper.closeConnection(null , pstm, null);
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -59,7 +59,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
         PreparedStatement pstm = null;
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i< rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
@@ -73,7 +73,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -97,7 +97,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         }
         PreparedStatement pstm = null;
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             Map<String, List<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
             String sql = null;
             List<Object> setValues = new ArrayList<>();
@@ -115,7 +115,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, null);
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
@@ -133,7 +133,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ResultSet resultSet = null;
         try {
             String sql = "select * from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, id);
             resultSet = pstm.executeQuery();
@@ -151,7 +151,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             result.setSearchStatus(1);
             e.printStackTrace();
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         LOG.info("获取一条数据的时间是：" + (System.currentTimeMillis() - start));
         return result;
@@ -167,11 +167,8 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
         objectSearchResult.setSearchTotalId(searchTotalId);
         List<PersonSingleResult> finalResults = new ArrayList<>();
-        try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        conn = PhoenixJDBCHelper.getInstance().getConnection();
+
         if (conn == null) {
             ObjectSearchResult objectSearchResultError = new ObjectSearchResult();
             objectSearchResult.setSearchStatus(1);
@@ -301,7 +298,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         if (startCount != null && pageSize != null) {
             new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         }
-        PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+        PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         LOG.info("***********************");
         LOG.info(objectSearchResult);
         LOG.info("***********************");
@@ -317,7 +314,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ResultSet resultSet = null;
         byte[] photo;
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, rowkey);
             resultSet = pstm.executeQuery();
@@ -327,7 +324,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return null;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         return photo;
     }
@@ -385,7 +382,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             pstm.setString(1, subQueryId);
             resultSet = pstm.executeQuery();
@@ -430,7 +427,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         finnalObjectSearchResult.setSearchStatus(0);
         finnalObjectSearchResult.setFinalResults(personSingleResults);

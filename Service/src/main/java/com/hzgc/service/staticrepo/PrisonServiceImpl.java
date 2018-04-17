@@ -34,7 +34,7 @@ public class PrisonServiceImpl implements PrisonService {
                 + ObjectInfoTable.ROWKEY + ", "
                 +  ObjectInfoTable.LOCATION + ")" + "values(?, ?)";
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             conn.setAutoCommit(false);
             for (Map.Entry<String, List<String>> entry : pkeysUpdate.entrySet()) {
                 String location = entry.getKey();
@@ -63,7 +63,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return 1;
         } finally {
-           PhoenixJDBCHelper.closeConnection(conn, pstm);
+           PhoenixJDBCHelper.closeConnection(null, pstm);
         }
         LOG.info(sql);
         return 0;
@@ -91,7 +91,7 @@ public class PrisonServiceImpl implements PrisonService {
                 ObjectInfoTable.LOCATION + ") select id, ? from " +  ObjectInfoTable.TABLE_NAME + " where " +
                 ObjectInfoTable.PKEY + " = ?";
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for (String pkey : pkeysReset) {
                 pstm.setString(1, null);
@@ -103,7 +103,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm);
+            PhoenixJDBCHelper.closeConnection(null, pstm);
         }
         LOG.info(sql);
         return 0;
@@ -156,7 +156,7 @@ public class PrisonServiceImpl implements PrisonService {
         Map<String, Integer> locationCounts = new HashMap<>();
         List<String> pkeysTmp = new ArrayList<>();
         try {
-            conn = PhoenixJDBCHelper.getInstance().getDruidDataSource().getConnection();
+            conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i < pkeysCount.size(); i++) {
                 pstm.setString(i+1, pkeysCount.get(i));
@@ -192,7 +192,7 @@ public class PrisonServiceImpl implements PrisonService {
             e.printStackTrace();
             return prisonCountResults;
         } finally {
-            PhoenixJDBCHelper.closeConnection(conn, pstm, resultSet);
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         LOG.info(prisonSearchOpts);
         LOG.info(sql);
