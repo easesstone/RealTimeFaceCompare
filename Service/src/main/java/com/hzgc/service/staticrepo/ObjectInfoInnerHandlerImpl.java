@@ -234,11 +234,13 @@ public class ObjectInfoInnerHandlerImpl implements Serializable {
             for (int i = 0;i < rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
                 pstm.setTimestamp(2, timeStamp);
-                pstm.executeUpdate();
-                if (i % 200 == 0) {
+                pstm.addBatch();
+                if (i % 500 == 0) {
+                    pstm.executeBatch();
                     conn.commit();
                 }
             }
+            pstm.executeBatch();
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
