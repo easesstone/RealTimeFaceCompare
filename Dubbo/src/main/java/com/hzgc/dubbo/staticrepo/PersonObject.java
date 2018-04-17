@@ -29,6 +29,7 @@ public class PersonObject implements Serializable{
     private int important; // 0,重点关注，1，非重点关注
     private int status; // 0,常住人口，1，建议迁出
     private float sim; // 相似度
+    private String location; // 地址
 
     public float getSim() {
         return sim;
@@ -166,6 +167,14 @@ public class PersonObject implements Serializable{
         this.status = status;
     }
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     @Override
     public String toString() {
         return "PersonObject{" +
@@ -186,6 +195,7 @@ public class PersonObject implements Serializable{
                 ", important=" + important +
                 ", status=" + status +
                 ", sim=" + sim +
+                ", location" + location +
                 '}';
     }
 

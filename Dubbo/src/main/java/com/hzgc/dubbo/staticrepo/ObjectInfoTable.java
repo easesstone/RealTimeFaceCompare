@@ -28,4 +28,5 @@ public class ObjectInfoTable implements Serializable {
     public static final String RELATED = "sim";        // 相关度
     public static final String IMPORTANT = "important";  // 是否重点关注人员，0，是，1，不是
     public static final String STATUS = "status";  // 人员状态，0，常住人口，1，建议迁出
+    public static final String LOCATION = "location"; // 人员所在位置
 }

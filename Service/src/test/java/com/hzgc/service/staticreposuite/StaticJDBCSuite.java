@@ -7,6 +7,7 @@ import com.hzgc.dubbo.staticrepo.StaticSortParam;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
 import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,9 +20,11 @@ public class StaticJDBCSuite {
 
     @Test
     public void testGetPhoenixConnection() {
-        Connection conn = PhoenixJDBCHelper.getPhoenixJdbcConn();
+        ComboPooledDataSource comboPooledDataSource = PhoenixJDBCHelper.getComboPooledDataSource();
+        java.sql.Connection conn = null;
         System.out.printf("connection testing right : " + conn);
         try {
+            conn = comboPooledDataSource.getConnection();
             if (conn != null) {
                 conn.close();
             }
