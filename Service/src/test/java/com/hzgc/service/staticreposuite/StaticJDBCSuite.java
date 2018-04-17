@@ -6,8 +6,6 @@ import com.hzgc.dubbo.staticrepo.PSearchArgsModel;
 import com.hzgc.dubbo.staticrepo.StaticSortParam;
 import com.hzgc.jni.FaceFunction;
 import com.hzgc.service.staticrepo.ObjectInfoHandlerImpl;
-import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.Test;
 
 import java.io.IOException;

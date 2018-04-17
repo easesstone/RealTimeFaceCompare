@@ -3,7 +3,6 @@ package com.hzgc.service.staticrepo;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.*;
 import com.hzgc.util.common.ObjectUtil;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 
 import java.sql.*;

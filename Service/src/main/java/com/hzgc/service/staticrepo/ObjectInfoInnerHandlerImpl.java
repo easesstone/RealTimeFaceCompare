@@ -2,7 +2,6 @@ package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.util.HBaseHelper;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;

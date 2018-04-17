@@ -2,7 +2,6 @@ package com.hzgc.service.staticrepo;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.hzgc.util.common.FileUtil;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.log4j.Logger;
 import org.datanucleus.store.rdbms.identifier.IdentifierFactory;
 
