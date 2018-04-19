@@ -1,7 +1,7 @@
 package com.hzgc.cluster.consumer
 
 import java.sql.Timestamp
-import java.util.{Properties, UUID}
+import java.util.Properties
 
 import com.google.common.base.Stopwatch
 import com.hzgc.cluster.util.PropertiesUtils
@@ -18,6 +18,29 @@ import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
 
+/**
+  * job.faceObjectConsumer.appName=FaceObjectConsumer
+  * job.faceObjectConsumer.broker.list=172.18.18.100:9092,172.18.18.101:9092,172.18.18.102:9092
+  * job.faceObjectConsumer.group.id=FaceObjectConsumerGroup
+  * job.faceObjectConsumer.topic.name=feature
+  * job.zkDirAndPort=172.18.18.100:2181,172.18.18.101:2181,172.18.18.102:2181
+  * job.kafkaToParquet.zkPaths=/parquet
+  * job.storeAddress=hdfs://hzgc/user/hive/warehouse/mid_table/
+  * scala s 函数的作用
+  * //s函数的应用
+  * val name="Tom"
+  * s"Hello,$name"//Hello,Tom
+  * s"1+1=${1+1}"//1+1=2
+  *
+  * val a = Array(10, 20, 30, 40)
+  * val b = a.lastOption
+  * println(b)        //Some(40)
+  * b match {
+  *     case Some(value) => print(value)    // 40
+  *     case None => println(None)
+  * }
+  *
+  */
 object KafkaToParquet {
   val LOG: Logger = Logger.getLogger(KafkaToParquet.getClass)
   val properties: Properties = PropertiesUtils.getProperties
@@ -47,36 +70,39 @@ object KafkaToParquet {
   }
 
   def main(args: Array[String]): Unit = {
-    val appname: String = getItem("job.faceObjectConsumer.appName", properties)
-    val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties)
-    val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)
-    val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))
-    val spark = SparkSession.builder().appName(appname).getOrCreate()
-    val kafkaParams = Map(
+    val appname: String = getItem("job.faceObjectConsumer.appName", properties)  // app 名字
+    val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties) // kafka broker lists
+    val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)  // kafka group
+    val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))   // 需要读取的topic
+    val spark = SparkSession.builder().appName(appname).getOrCreate()    // 构造sparkSession 对象
+    val kafkaParams = Map(                                         // 封装KafkaParams
       "metadata.broker.list" -> brokers,
       "group.id" -> kafkaGroupId
     )
-    val ssc = setupSsc(topics, kafkaParams, spark)
-    ssc.start()
+    val ssc = setupSsc(topics, kafkaParams, spark)   // 构造StreamingContext
+    ssc.start()                                  // 启动StreamingContext
     ssc.awaitTermination()
   }
 
   private def setupSsc(topics: Set[String], kafkaParams: Map[String, String]
                        , spark: SparkSession)(): StreamingContext = {
-    val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval", properties).toLong)
-    val storeAddress: String = getItem("job.storeAddress", properties)
-    val zkHosts: String = getItem("job.zkDirAndPort", properties)
-    val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)
-    val zKClient = new ZkClient(zkHosts)
-    val sc = spark.sparkContext
-    val ssc = new StreamingContext(sc, timeInterval)
-    val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics)
+    val timeInterval: Duration = Durations.seconds(getItem("job.faceObjectConsumer.timeInterval",
+      properties).toLong)                             // 时间间隔
+    val storeAddress: String = getItem("job.storeAddress", properties)  // 最终从kafaka 中读取的数据，存储的地址。
+    val zkHosts: String = getItem("job.zkDirAndPort", properties)                  //ZK 地址。
+    val zKPaths: String = getItem("job.kafkaToParquet.zkPaths", properties)      // offset在ZK 存储的路径。
+    val zKClient = new ZkClient(zkHosts)                          // 初始化ZK Client.
+    val sc = spark.sparkContext                                // sparkContext
+    val ssc = new StreamingContext(sc, timeInterval)              // SparkStreming
+    val messages = createCustomDirectKafkaStream(ssc, kafkaParams, zkHosts, zKPaths, topics) // ?????????????
     val kafkaDF = messages.map(faceobject => {
       (Picture(faceobject._1, faceobject._2.getAttribute.getFeature, faceobject._2.getIpcId,
-        faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp), faceobject._2.getType.name(),
-        faceobject._2.getDate, faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
-        faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle, faceobject._2.getAttribute.getHat,
-        faceobject._2.getAttribute.getHuzi, faceobject._2.getAttribute.getTie, faceobject._2.getAttribute.getSharpness), faceobject._1, faceobject._2)
+        faceobject._2.getTimeSlot.toInt, Timestamp.valueOf(faceobject._2.getTimeStamp),
+        faceobject._2.getType.name(), faceobject._2.getDate,
+        faceobject._2.getAttribute.getEyeglasses, faceobject._2.getAttribute.getGender,
+        faceobject._2.getAttribute.getHairColor, faceobject._2.getAttribute.getHairStyle,
+        faceobject._2.getAttribute.getHat, faceobject._2.getAttribute.getHuzi,
+        faceobject._2.getAttribute.getTie, faceobject._2.getAttribute.getSharpness), faceobject._1, faceobject._2)
     })
     kafkaDF.foreachRDD(rdd => {
       import spark.implicits._
@@ -92,15 +118,17 @@ object KafkaToParquet {
         })
       })
     })
+    LOG.info("Put something to the backup...")
     messages.foreachRDD(rdd => saveOffsets(zKClient, zkHosts, zKPaths, rdd))
     ssc
   }
 
   private def createCustomDirectKafkaStream(ssc: StreamingContext, kafkaParams: Map[String, String], zkHosts: String
                                             , zkPath: String, topics: Set[String]): InputDStream[(String, FaceObject)] = {
-    val topic = topics.last
-    val zKClient = new ZkClient(zkHosts)
-    val storedOffsets = readOffsets(zKClient, zkHosts, zkPath, topic)
+    val topic = topics.last             // 取得Topic 的名字。
+    val zKClient = new ZkClient(zkHosts)   // 初始化zkClient 。
+    val storedOffsets = readOffsets(zKClient, zkHosts, zkPath, topic) // 从zkClient 中获取offset.???????????????????
+    LOG.info("storeOffsets" + storedOffsets)
     val kafkaStream = storedOffsets match {
       case None =>
         KafkaUtils.createDirectStream[String, FaceObject, StringDecoder, FaceObjectDecoder](ssc, kafkaParams, topics)
@@ -112,15 +140,17 @@ object KafkaToParquet {
     kafkaStream
   }
 
-  private def readOffsets(zkClient: ZkClient, zkHosts: String, zkPath: String, topic: String): Option[Map[TopicAndPartition, Long]] = {
+  private def readOffsets(zkClient: ZkClient, zkHosts: String,
+                          zkPath: String, topic: String): Option[Map[TopicAndPartition, Long]] = {
     LOG.info("Reading offsets from Zookeeper")
     val stopwatch = new Stopwatch()
-    val (offsetsRangesStrOpt, _) = ZkUtils.readDataMaybeNull(zkClient, zkPath)
+    val (offsetsRangesStrOpt, stat) = ZkUtils.readDataMaybeNull(zkClient, zkPath)
     offsetsRangesStrOpt match {
       case Some(offsetsRangesStr) =>
         LOG.info(s"Read offset ranges: $offsetsRangesStr")
+        LOG.info(s"Stat: $stat" )
         val offsets = offsetsRangesStr.split(",")
-          .map(x => x.split(":"))
+          .map(x => x.split(":") )
           .map {
             case Array(partitionStr, offsetStr) => TopicAndPartition(topic, partitionStr.toInt) -> offsetStr.toLong
           }.toMap
@@ -139,7 +169,8 @@ object KafkaToParquet {
     offsetsRanges.foreach(offsetRange => LOG.debug(s"Using $offsetRange"))
     val offsetsRangesStr = offsetsRanges.map(offsetRange => s"${offsetRange.partition}:${offsetRange.fromOffset}")
       .mkString(",")
-    LOG.info("chandan Writing offsets to Zookeeper zkClient=" + zkClient + "  zkHosts=" + zkHosts + "zkPath=" + zkPath + "  offsetsRangesStr:" + offsetsRangesStr)
+    LOG.info("chandan Writing offsets to Zookeeper zkClient=" + zkClient + "  " +
+        "zkHosts=" + zkHosts + "zkPath=" + zkPath + "  offsetsRangesStr:" + offsetsRangesStr)
     ZkUtils.updatePersistentPath(zkClient, zkPath, offsetsRangesStr)
     LOG.info("Done updating offsets in Zookeeper. Took " + stopwatch)
   }
