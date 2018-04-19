@@ -16,7 +16,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.{Duration, Durations, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
-import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
 
 /**
   * job.faceObjectConsumer.appName=FaceObjectConsumer

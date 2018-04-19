@@ -4,14 +4,15 @@ import java.sql.Timestamp
 import java.util.Properties
 
 import com.hzgc.cluster.util.PropertiesUtils
-import kafka.utils.ZkUtils
-import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
-import org.apache.hadoop.hbase.client.{ConnectionFactory, Put}
-import org.apache.hadoop.hbase.util.Bytes
+import com.hzgc.dubbo.feature.FaceAttribute
+import kafka.utils.{ZKGroupTopicDirs, ZkUtils}
 import org.apache.kafka.common.TopicPartition
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.kafka.OffsetRange
+import org.apache.spark.streaming.StreamingContext
+import org.apache.spark.streaming.kafka010.{ConsumerStrategies, KafkaUtils}
+
+import scala.xml.dtd.PEReference
 
 object KafkaToParquetV1 {
     val LOG : Logger = Logger.getLogger(KafkaToParquetV1.getClass)
@@ -39,16 +40,43 @@ object KafkaToParquetV1 {
     }
 
     def main(args: Array[String]): Unit = {
-        val appname: String = getItem("job.faceObjectConsumer.appName", properties)  // app 名字
-        val brokers: String = getItem("job.faceObjectConsumer.broker.list", properties) // kafka broker lists
-        val kafkaGroupId: String = getItem("job.faceObjectConsumer.group.id", properties)  // kafka group
-        val topics = Set(getItem("job.faceObjectConsumer.topic.name", properties))   // 需要读取的topic
-        val spark = SparkSession.builder().appName(appname).getOrCreate()    // 构造sparkSession 对象
-        val kafkaParams = Map(                                         // 封装KafkaParams
-            "metadata.broker.list" -> brokers,
-            "group.id" -> kafkaGroupId
-        )
-
+        val zkUrl = "172.18.18.100:2181"
+        val sessionTimeOut = 60000  //会话超时时间，单位为毫秒。默认是30 000ms
+        val connetionTimeOut = 120000 //连接创建超时时间，单位为毫秒。此参数表明如果在这个时间段内还是无法和ZooKeeper建立链接，那么就放弃连接，直接抛出异常。
+        val zkClientAndConnection = ZkUtils.createZkClientAndConnection(zkUrl, sessionTimeOut, connetionTimeOut) //
+        val zkUtils = new ZkUtils(zkClientAndConnection._1, zkClientAndConnection._2, false)
+        def readOffSets(topics : Seq[String], groupId : String) : Map[TopicPartition, Long] = {
+            val topicPartOffsetMap = collection.mutable.HashMap.empty[TopicPartition, Long]
+            val partitonMap = zkUtils.getPartitionsForTopics(topics)
+            partitonMap.foreach(topicPartitions => {
+                val zkGroupTopicDirs = new ZKGroupTopicDirs(groupId, topicPartitions._1)
+                topicPartitions._2.foreach(partition => {
+                    val offsetPath = zkGroupTopicDirs.consumerOffsetDir + "/" + partition
+                    try {
+                        val offsetStatTuple = zkUtils.readData(offsetPath)
+                        if (offsetStatTuple != null) {
+                            LOG.info("retrieving offset details - topic: {}, partition: {}, offset: {}, node path: {}",
+                                Seq[AnyRef](topicPartitions._1, partition.toString, offsetStatTuple._1, offsetPath): _*)
+                            topicPartOffsetMap.put(new TopicPartition(topicPartitions._1, Integer.valueOf(partition)),offsetStatTuple._1.toLong)
+                        }
+                    } catch {
+                        case e : Exception => {
+                            LOG.warn("retrieving offset details - no previous node exists:" + " {}, topic: {}, partition: {}, node path: {}",
+                                Seq[AnyRef](e.getMessage, topicPartitions._1, partition.toString, offsetPath): _*)
+                            topicPartOffsetMap.put(new TopicPartition(topicPartitions._1, Integer.valueOf(partition)), 0L)
+                        }
+                    }
+                })
+            })
+            topicPartOffsetMap.toMap
+        }
+        val topicsSeq : Seq[String] = Seq[String]("feature")
+        val groupId = "FaceObjectConsumerGroup"
+        val fromOffsets = readOffSets(topicsSeq, groupId)
+        val spark = SparkSession.builder().appName("demo Streming").getOrCreate()
+        val sc = spark.sparkContext
+        val ssc = new StreamingContext(sc, 15)
+        val inputDStream = KafkaUtils.createDirectStream(ssc, PEReference, ConsumerStrategies.Subscribe[String,FaceAttribute](topics, kafkaParams, fromOffsets))
     }
 
 
