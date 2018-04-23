@@ -7,6 +7,8 @@ import org.apache.log4j.Logger;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
@@ -98,10 +100,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         PreparedStatement pstm = null;
         try {
             conn = PhoenixJDBCHelper.getInstance().getConnection();
-            Map<String, List<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
+            ConcurrentHashMap<String, CopyOnWriteArrayList<Object>> sqlAndSetValues = ParseByOption.getUpdateSqlFromPersonMap(personObject);
             String sql = null;
-            List<Object> setValues = new ArrayList<>();
-            for (Map.Entry<String, List<Object>> entry : sqlAndSetValues.entrySet()) {
+            CopyOnWriteArrayList<Object> setValues = new CopyOnWriteArrayList<>();
+            for (Map.Entry<String, CopyOnWriteArrayList<Object>> entry : sqlAndSetValues.entrySet()) {
                 sql = entry.getKey();
                 setValues = entry.getValue();
             }
