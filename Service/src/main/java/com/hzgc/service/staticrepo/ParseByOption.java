@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ParseByOption {
     private static Logger LOG = Logger.getLogger(PSearchArgsModel.class);
@@ -445,8 +447,8 @@ public class ParseByOption {
      * @param person 需要更新的数据
      * @return  拼装成的sql 以及需要设置的值
      */
-    public static Map<String, List<Object>> getUpdateSqlFromPersonMap(Map<String, Object> person) {
-        List<Object> setValues = new ArrayList<>();
+    public static ConcurrentHashMap<String, CopyOnWriteArrayList<Object>> getUpdateSqlFromPersonMap(Map<String, Object> person) {
+        CopyOnWriteArrayList<Object> setValues = new CopyOnWriteArrayList<>();
         StringBuffer sql = new StringBuffer("");
         sql.append("upsert into ");
         sql.append(ObjectInfoTable.TABLE_NAME);
@@ -530,7 +532,7 @@ public class ParseByOption {
         }
         sql.append(tmp);
         sql.append(")");
-        Map<String, List<Object>> sqlAndSetValues = new HashMap<>();
+        ConcurrentHashMap<String, CopyOnWriteArrayList<Object>> sqlAndSetValues = new ConcurrentHashMap<>();
         sqlAndSetValues.put(new String(sql), setValues);
         return sqlAndSetValues;
     }
