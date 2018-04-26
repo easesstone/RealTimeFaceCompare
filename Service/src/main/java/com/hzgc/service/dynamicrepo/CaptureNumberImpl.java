@@ -3,17 +3,18 @@ package com.hzgc.service.dynamicrepo;
 import com.hzgc.dubbo.dynamicrepo.CaptureNumberService;
 import com.hzgc.dubbo.staticrepo.ObjectInfoTable;
 import com.hzgc.service.staticrepo.ElasticSearchHelper;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import com.hzgc.service.staticrepo.PhoenixJDBCHelper;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,35 +38,27 @@ public class CaptureNumberImpl implements CaptureNumberService {
         String index = DynamicTable.DYNAMIC_INDEX;
         String type = DynamicTable.PERSON_INDEX_TYPE;
         Map<String, Integer> map = new HashMap<>();
-        BoolQueryBuilder totolBQ = QueryBuilders.boolQuery();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        long a = System.currentTimeMillis();
-        String endTime = format.format(a);
-        String startTime = endTime.substring(0, endTime.indexOf(" ")) + " 00:00:00";
-        totolBQ.must(QueryBuilders.rangeQuery(DynamicTable.TIMESTAMP).gte(startTime).lte(endTime));
-        BoolQueryBuilder ipcBQ = QueryBuilders.boolQuery();
-        if (ipcId != null) {
-            for (String ipcid : ipcId) {
-                ipcBQ.should(QueryBuilders.matchPhraseQuery(DynamicTable.IPCID, ipcid));
-            }
-            totolBQ.must(ipcBQ);
-        }
+
+        // 统计所有抓拍总数
         TransportClient client = ElasticSearchHelper.getEsClient();
-        SearchResponse searchResponse1 = client.prepareSearch(index)
+        SearchResponse responseV1 = client.prepareSearch(index).setTypes(type)
+                .setQuery(QueryBuilders.matchAllQuery()).setSize(1).get();
+        int totalNumber = (int) responseV1.getHits().getTotalHits();
+        map.put(totolNum, totalNumber);
+
+        // 查询今天抓拍的数量
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String endTime = format.format(System.currentTimeMillis());
+        SearchResponse responseV2 = client.prepareSearch(index)
                 .setTypes(type)
+                .setQuery(QueryBuilders
+                        .matchPhraseQuery(DynamicTable.DATE,
+                                endTime.substring(0, endTime.indexOf(" ")) ))
                 .setSize(1)
                 .get();
-        SearchHits searchHits1 = searchResponse1.getHits();
-        int totolNumber = (int) searchHits1.getTotalHits();
-        SearchResponse searchResponse2 = client.prepareSearch(index)
-                .setTypes(type)
-                .setQuery(totolBQ)
-                .setSize(1)
-                .get();
-        SearchHits searchHits2 = searchResponse2.getHits();
-        int todayTotolNumber = (int) searchHits2.getTotalHits();
-        map.put(totolNum, totolNumber);
+        int todayTotolNumber = (int) responseV2.getHits().getTotalHits();
         map.put(todyTotolNumber, todayTotolNumber);
+
         return map;
     }
 
@@ -76,25 +69,23 @@ public class CaptureNumberImpl implements CaptureNumberService {
      */
     @Override
     public synchronized Map<String, Integer> staticNumberService(String platformId) {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        String index = ObjectInfoTable.TABLE_NAME;
-        String type = ObjectInfoTable.PERSON_COLF;
         Map<String, Integer> map = new HashMap<>();
-        if (platformId != null) {
-            boolQueryBuilder.must(QueryBuilders.termsQuery(ObjectInfoTable.PLATFORMID, platformId));
-        }
-        SearchRequestBuilder searchRequestBuilder = ElasticSearchHelper.getEsClient()
-                .prepareSearch(index)
-                .setTypes(type)
-                .setQuery(boolQueryBuilder);
-        TermsAggregationBuilder tamAgg = AggregationBuilders.terms("pkey_count").field("pkey");
-        searchRequestBuilder.addAggregation(tamAgg);
-        SearchResponse response = searchRequestBuilder.execute().actionGet();
-        Terms pkey_count = response.getAggregations().get("pkey_count");
-        for (Terms.Bucket bk : pkey_count.getBuckets()) {
-            String pkey = (String) bk.getKey();
-            int pkeyNumber = (int) bk.getDocCount();
-            map.put(pkey, pkeyNumber);
+        String sql = "select " + ObjectInfoTable.PKEY +", count(" + ObjectInfoTable.PKEY +") as countNum from " +
+                ObjectInfoTable.TABLE_NAME + " where " + ObjectInfoTable.PLATFORMID + " = ?";
+        Connection conn = PhoenixJDBCHelper.getInstance().getConnection();
+        PreparedStatement pstm = null;
+        ResultSet resultSet = null;
+        try {
+            pstm = conn.prepareStatement(sql);
+            pstm.setString(1, platformId);
+            resultSet = pstm.executeQuery();
+            while (resultSet.next()) {
+                map.put(resultSet.getString(ObjectInfoTable.PKEY), resultSet.getInt("countNum"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
         }
         return map;
     }
