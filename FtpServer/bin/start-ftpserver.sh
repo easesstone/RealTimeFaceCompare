@@ -71,6 +71,26 @@ function start_ftpserver()
 }
 
 #####################################################################
+# 函数名: drop_caches
+# 描述: ftp 启动的时候，在每个ftp 服务器起一个清楚缓存的定时任务
+# 参数: N/A
+# 返回值: N/A
+# 其他: N/A
+#####################################################################
+function drop_caches()
+{
+    boolDropCaches=$(grep drop_caches /etc/crontab | wc  -l)
+    if [ "$boolDropCaches" == "1" ];then
+        echo "定时清理缓存已经加到定时任务中。"
+    else
+        echo "* */1 * * * root sync;echo 3 > /proc/sys/vm/drop_caches" >> /etc/crontab
+        service crond restart
+    fi
+}
+
+
+
+#####################################################################
 # 函数名: main
 # 描述: 脚本主要业务入口
 # 参数: N/A
@@ -79,6 +99,7 @@ function start_ftpserver()
 #####################################################################
 function main()
 {
+    drop_caches
     start_ftpserver
     ##对是否存在守护进程判断
     check_ftp_pid=$(ps -ef | grep start-check-ftpserver.sh |grep -v grep | awk  '{print $2}' | uniq)
