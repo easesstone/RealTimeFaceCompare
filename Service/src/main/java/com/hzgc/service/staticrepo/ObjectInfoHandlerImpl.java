@@ -1,5 +1,6 @@
 package com.hzgc.service.staticrepo;
 
+import com.hzgc.collect.expand.util.JSONHelper;
 import com.hzgc.dubbo.feature.FaceAttribute;
 import com.hzgc.dubbo.staticrepo.*;
 import com.hzgc.util.common.ObjectUtil;
@@ -14,6 +15,10 @@ import java.util.stream.Collectors;
 public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     private static Logger LOG = Logger.getLogger(ObjectInfoHandlerImpl.class);
+    static final String INNERTOPIC = "staticrepo";
+    static final String DELETE = "DELETE";
+    static final String ADD = "ADD";
+    static final String UPDATE = "UPDATE";
 
     public ObjectInfoHandlerImpl() {
     }
@@ -21,18 +26,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte addObjectInfo(String platformId, Map<String, Object> personObject) {
         LOG.info("personObject: " + personObject.entrySet().toString());
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         long start = System.currentTimeMillis();
         PersonObject person = PersonObject.mapToPersonObject(personObject);
         person.setPlatformid(platformId);
         LOG.info("the rowkey off this add person is: " + person.getId());
 
-        String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY+ ", " + ObjectInfoTable.NAME  + ", "
+        String sql = "upsert into objectinfo(" + ObjectInfoTable.ROWKEY + ", " + ObjectInfoTable.NAME + ", "
                 + ObjectInfoTable.PLATFORMID + ", " + ObjectInfoTable.TAG + ", " + ObjectInfoTable.PKEY + ", "
                 + ObjectInfoTable.IDCARD + ", " + ObjectInfoTable.SEX + ", " + ObjectInfoTable.PHOTO + ", "
                 + ObjectInfoTable.FEATURE + ", " + ObjectInfoTable.REASON + ", " + ObjectInfoTable.CREATOR + ", "
                 + ObjectInfoTable.CPHONE + ", " + ObjectInfoTable.CREATETIME + ", " + ObjectInfoTable.UPDATETIME + ", "
-                + ObjectInfoTable.IMPORTANT + ", "  + ObjectInfoTable.STATUS
+                + ObjectInfoTable.IMPORTANT + ", " + ObjectInfoTable.STATUS
                 + ") values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstm = null;
         try {
@@ -44,11 +49,18 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             e.printStackTrace();
             return 1;
         } finally {
-            PhoenixJDBCHelper.closeConnection(null , pstm, null);
+            PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("添加一条数据到静态库花费时间： " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
-        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
+//        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
+        if (personObject.get(ObjectInfoTable.FEATURE) != null) {
+            StaticRepoObject object = new StaticRepoObject();
+            object.setFeature((float[]) personObject.get(ObjectInfoTable.FEATURE));
+            object.setPkey(person.getPkey());
+            object.setRowkey(person.getId());
+            StaticRepoProducer.getInstance().sendKafkaMessage(INNERTOPIC, ADD, JSONHelper.toJson(object));
+        }
         return 0;
     }
 
@@ -57,18 +69,20 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("rowKeys: " + rowkeys);
         // 获取table 对象，通过封装HBaseHelper 来获取
         long start = System.currentTimeMillis();
-        java.sql.Connection conn = null;
-        String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY  +" = ?";
+        java.sql.Connection conn;
+        String sql = "delete from objectinfo where " + ObjectInfoTable.ROWKEY + " = ?";
         PreparedStatement pstm = null;
         try {
             conn = PhoenixJDBCHelper.getInstance().getConnection();
             pstm = conn.prepareStatement(sql);
-            for (int i = 0; i< rowkeys.size(); i++) {
+            for (int i = 0; i < rowkeys.size(); i++) {
                 pstm.setString(1, rowkeys.get(i));
                 pstm.executeUpdate();
                 if (i % 10 == 0) {
                     conn.commit();
                 }
+                //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
+                StaticRepoProducer.getInstance().sendKafkaMessage(INNERTOPIC, DELETE, rowkeys.get(i));
             }
             conn.commit();
         } catch (SQLException e) {
@@ -78,8 +92,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
         LOG.info("删除静态信息库的" + rowkeys.size() + "条数据花费时间： " + (System.currentTimeMillis() - start));
-        //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
-        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
+//        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
         return 0;
     }
 
@@ -92,7 +105,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         LOG.info("personObject: " + personObject.entrySet().toString());
         long start = System.currentTimeMillis();
         String thePassId = (String) personObject.get(ObjectInfoTable.ROWKEY);
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         if (thePassId == null) {
             LOG.info("the pass Id can not be null....");
             return 1;
@@ -109,7 +122,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             }
             pstm = conn.prepareStatement(sql);
             for (int i = 0; i < setValues.size(); i++) {
-                pstm.setObject(i+1, setValues.get(i));
+                pstm.setObject(i + 1, setValues.get(i));
             }
             pstm.executeUpdate();
             conn.commit();
@@ -119,16 +132,23 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         } finally {
             PhoenixJDBCHelper.closeConnection(null, pstm, null);
         }
-        LOG.info("更新rowkey为: " + thePassId +  "数据花费的时间是: " + (System.currentTimeMillis() - start));
+        LOG.info("更新rowkey为: " + thePassId + "数据花费的时间是: " + (System.currentTimeMillis() - start));
         //数据变动，更新objectinfo table 中的一条数据,表示静态库中的数据有变动
-        new ObjectInfoHandlerTool().updateTotalNumOfHbase();
+        if (personObject.get(ObjectInfoTable.FEATURE) != null) {
+            StaticRepoObject object = new StaticRepoObject();
+            object.setFeature((float[]) personObject.get(ObjectInfoTable.FEATURE));
+            object.setPkey((String)personObject.get(ObjectInfoTable.PKEY));
+            object.setRowkey((String)personObject.get(ObjectInfoTable.ROWKEY));
+            StaticRepoProducer.getInstance().sendKafkaMessage(INNERTOPIC, UPDATE, JSONHelper.toJson(object));
+        }
+
         return 0;
     }
 
     @Override
     public ObjectSearchResult searchByRowkey(String id) {
         long start = System.currentTimeMillis();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ObjectSearchResult result = new ObjectSearchResult();
         PersonObject person;
@@ -163,7 +183,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     public ObjectSearchResult getObjectInfo(PSearchArgsModel pSearchArgsModel) {
         LOG.info("pSearchArgsModel: " + pSearchArgsModel);
         long start = System.currentTimeMillis();
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         // 总的结果
         ObjectSearchResult objectSearchResult = new ObjectSearchResult();
         String searchTotalId = UUID.randomUUID().toString().replace("-", "");
@@ -197,7 +217,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             try {
                 // 实例化pstm 对象，并且设置值，
                 pstm = conn.prepareStatement(sql);
-                for (int i = 0; i< setValues.size(); i++) {
+                for (int i = 0; i < setValues.size(); i++) {
                     pstm.setObject(i + 1, setValues.get(i));
                 }
                 resultSet = pstm.executeQuery();
@@ -217,7 +237,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         int lable = 0;
                         while (resultSet.next()) {
                             String type = resultSet.getString("type");
-                            if (!types.contains(type)){
+                            if (!types.contains(type)) {
                                 types.add(type);
                                 if (types.size() > 1) {
                                     personObjectsMap.put(types.get(lable), personObjects);
@@ -275,10 +295,10 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                         }
                     }
                 } else { // 没有图片的情况下
-                   PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
-                   personSingleResult.setSearchRowkey(searchTotalId);
+                    PersonSingleResult personSingleResult = new PersonSingleResult();   // 需要进行修改
+                    personSingleResult.setSearchRowkey(searchTotalId);
                     //封装personSingleResult
-                   new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
+                    new ObjectInfoHandlerTool().getPersonSingleResult(personSingleResult, resultSet, false);
                     if (personSingleResult.getPersons() != null || personSingleResult.getPersons().size() != 0) {
                         finalResults.add(personSingleResult);
                     }
@@ -293,7 +313,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         objectSearchResult.setFinalResults(finalResults);
         objectSearchResult.setSearchStatus(0);
 
-        LOG.info("总的搜索时间是: " + (System.currentTimeMillis() - start));
+        LOG.debug("总的搜索时间是: " + (System.currentTimeMillis() - start));
         new ObjectInfoHandlerTool().saveSearchRecord(conn, objectSearchResult);
         Integer pageSize = pSearchArgsModel.getPageSize();
         Integer startCount = pSearchArgsModel.getStart();
@@ -301,9 +321,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
             new ObjectInfoHandlerTool().formatTheObjectSearchResult(objectSearchResult, startCount, pageSize);
         }
         PhoenixJDBCHelper.closeConnection(null, pstm, resultSet);
-        LOG.info("***********************");
-        LOG.info(objectSearchResult);
-        LOG.info("***********************");
+        LOG.debug(objectSearchResult);
         return objectSearchResult;
     }
 
@@ -311,7 +329,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
     @Override
     public byte[] getPhotoByKey(String rowkey) {
         String sql = "select photo from " + ObjectInfoTable.TABLE_NAME + " where id = ?";
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         byte[] photo;
@@ -340,15 +358,16 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     /**
      * 根据传进来的参数，进行及实际路查询
-     * @param  searchRecordOpts 历史查询参数
+     *
+     * @param searchRecordOpts 历史查询参数
      * @return ObjectSearchResult 返回结果，封装好的历史数据。
      */
     @Override
     public ObjectSearchResult getRocordOfObjectInfo(SearchRecordOpts searchRecordOpts) {
-        LOG.info("searchRecordOpts: " + searchRecordOpts);
+        LOG.debug("searchRecordOpts: " + searchRecordOpts);
         // 传过来的参数中为空，或者子查询为空，或者子查询大小为0，都返回查询错误。
         if (searchRecordOpts == null) {
-           return getObjectSearchResultError("SearchRecordOpts 为空，请确认参数是否正确.");
+            return getObjectSearchResultError("SearchRecordOpts 为空，请确认参数是否正确.");
         }
         // 总的searchId
         List<SubQueryOpts> subQueryOptsList = searchRecordOpts.getSubQueryOptsList();
@@ -364,7 +383,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         // 子查询Id
         String subQueryId = subQueryOpts.getQueryId();
         if (subQueryId == null) {
-            LOG.info("子查询Id 为空");
+            LOG.error("子查询Id 为空");
             return getObjectSearchResultError("子查询Id 为空，请确认参数是否正确.");
         }
 
@@ -380,7 +399,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
         ObjectSearchResult finnalObjectSearchResult = new ObjectSearchResult();
         List<PersonSingleResult> personSingleResults = new ArrayList<>();
 
-        java.sql.Connection conn = null;
+        java.sql.Connection conn;
         PreparedStatement pstm = null;
         ResultSet resultSet = null;
         try {
@@ -419,7 +438,7 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
                     }
                     personSingleResult.setGroupByPkeys(groupByPkeys);
                     personSingleResult.setPersons(null);
-                } else if (personObjects != null && staticSortParams != null && !staticSortParams.contains(StaticSortParam.PEKEY)){
+                } else if (personObjects != null && staticSortParams != null && !staticSortParams.contains(StaticSortParam.PEKEY)) {
                     personSingleResult.setGroupByPkeys(null);
                     new ObjectInfoHandlerTool().sortPersonObject(personObjects, staticSortParams);
                     personSingleResult.setPersons(personObjects);
@@ -444,6 +463,6 @@ public class ObjectInfoHandlerImpl implements ObjectInfoHandler {
 
     @Override
     public byte[] getSearchPhoto(String rowkey) {
-        return  null;
+        return null;
     }
 }

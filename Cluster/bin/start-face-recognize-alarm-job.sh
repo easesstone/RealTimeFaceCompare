@@ -258,6 +258,7 @@ ${CLUSTER_LIB_DIR}/${METRICS_CORE_VERSION} \
 ${SERVICE_CONF_DIR}/hbase-site.xml,\
 ${SERVICE_CONF_DIR}/jdbc.properties,\
 ${FTP_CONF_DIR}/ftpAddress.properties,\
+${FTP_CONF_DIR}/producer-over-ftp.properties,\
 ${CLUSTER_CONF_DIR}/sparkJob.properties,\
 ${FTP_CONF_DIR}/rocketmq.properties \
 ${COMMON_LIB_DIR}/${CLUSTER_VERSION} > ${LOG_FILE} 2>&1 &

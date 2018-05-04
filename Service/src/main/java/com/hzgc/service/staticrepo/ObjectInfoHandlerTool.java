@@ -1,22 +1,16 @@
 package com.hzgc.service.staticrepo;
 
 import com.hzgc.dubbo.staticrepo.*;
-import com.hzgc.service.util.HBaseHelper;
 import com.hzgc.util.common.ObjectUtil;
-import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.util.Bytes;
 
-import java.io.IOException;
 import java.sql.*;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 class ObjectInfoHandlerTool {
     private org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ObjectInfoHandlerTool.class);
-    public void saveSearchRecord(Connection conn, ObjectSearchResult objectSearchResult) {
+    void saveSearchRecord(Connection conn, ObjectSearchResult objectSearchResult) {
         if (objectSearchResult == null || objectSearchResult.getSearchStatus() == 1
                 || objectSearchResult.getFinalResults() == null || objectSearchResult.getFinalResults().size() == 0) {
             LOG.info("获取的结果为空");
@@ -55,7 +49,7 @@ class ObjectInfoHandlerTool {
     }
 
 
-    public  PersonObject getPersonObjectFromResultSet(ResultSet resultSet) {
+    PersonObject getPersonObjectFromResultSet(ResultSet resultSet) {
         PersonObject personObject = new PersonObject();
         try {
             while (resultSet.next()) {
@@ -86,7 +80,7 @@ class ObjectInfoHandlerTool {
         return personObject;
     }
 
-    public  PreparedStatement getStaticPrepareStatementV1(Connection conn, PersonObject person, String sql) {
+    PreparedStatement getStaticPrepareStatementV1(Connection conn, PersonObject person, String sql) {
         PreparedStatement pstm;
         try {
             pstm = conn.prepareStatement(sql);
@@ -119,14 +113,7 @@ class ObjectInfoHandlerTool {
         }
     }
 
-    /**
-     *
-     * @param personSingleResult
-     * @param resultSet
-     * @param searchByPics
-     * @return personSingelResult
-     */
-     PersonSingleResult getPersonSingleResult(PersonSingleResult personSingleResult, ResultSet resultSet, boolean searchByPics) {
+     void getPersonSingleResult(PersonSingleResult personSingleResult, ResultSet resultSet, boolean searchByPics) {
         List<PersonObject> personObjects = new ArrayList<>();
         try {
             while (resultSet.next()) {
@@ -157,8 +144,7 @@ class ObjectInfoHandlerTool {
 
         personSingleResult.setPersons(personObjects);
         personSingleResult.setSearchNums(personObjects.size());
-        return personSingleResult;
-    }
+     }
 
     /**
      * 根据请求参数，进行分页处理
@@ -206,93 +192,52 @@ class ObjectInfoHandlerTool {
     }
 
     /**
-     *  更新hbase 表格中的一行，用来表示静态库中的数据有变动
-     */
-    public void updateTotalNumOfHbase() {
-        Table objectinfo = HBaseHelper.getTable(ObjectInfoTable.TABLE_NAME);
-        //总记录数加1，用于标志HBase 数据库中的数据有变动
-        Put putOfTNums = new Put(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
-        putOfTNums.setDurability(Durability.ASYNC_WAL);
-        Get getOfTNums = new Get(Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS_ROW_NAME));
-        Result resultTNums = null;
-        try {
-            resultTNums = objectinfo.get(getOfTNums);
-            long tatalNums = Bytes.toLong(resultTNums.getValue(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS)));
-            putOfTNums.addColumn(Bytes.toBytes(ObjectInfoTable.PERSON_COLF),
-                    Bytes.toBytes(ObjectInfoTable.TOTAL_NUMS),
-                    Bytes.toBytes(tatalNums + 1));
-            objectinfo.put(putOfTNums);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * 对结果进行排序
      * @param personObjects 最终返回的一个人员列表
      * @param staticSortParams 排序参数
      */
-    public void sortPersonObject(List<PersonObject> personObjects, List<StaticSortParam> staticSortParams) {
+    void sortPersonObject(List<PersonObject> personObjects, List<StaticSortParam> staticSortParams) {
         if (staticSortParams != null) {
             if (staticSortParams.contains(StaticSortParam.RELATEDDESC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        float sim1 = o1.getSim();
-                        float sim2 = o2.getSim();
-                        return Float.compare(sim2, sim1);
-                    }
+                personObjects.sort((o1, o2) -> {
+                    float sim1 = o1.getSim();
+                    float sim2 = o2.getSim();
+                    return Float.compare(sim2, sim1);
                 });
             }
             if (staticSortParams.contains(StaticSortParam.RELATEDASC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        float sim1 = o1.getSim();
-                        float sim2 = o2.getSim();
-                        return Float.compare(sim1, sim2);
-                    }
+                personObjects.sort((o1, o2) -> {
+                    float sim1 = o1.getSim();
+                    float sim2 = o2.getSim();
+                    return Float.compare(sim1, sim2);
                 });
             }
             if (staticSortParams.contains(StaticSortParam.IMPORTANTASC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        int important1 = o1.getImportant();
-                        int important2 = o2.getImportant();
-                        return Integer.compare(important1, important2);
-                    }
+                personObjects.sort((o1, o2) -> {
+                    int important1 = o1.getImportant();
+                    int important2 = o2.getImportant();
+                    return Integer.compare(important1, important2);
                 });
             }
             if (staticSortParams.contains(StaticSortParam.IMPORTANTDESC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        int important1 = o1.getImportant();
-                        int important2 = o2.getImportant();
-                        return Integer.compare(important2, important1);
-                    }
+                personObjects.sort((o1, o2) -> {
+                    int important1 = o1.getImportant();
+                    int important2 = o2.getImportant();
+                    return Integer.compare(important2, important1);
                 });
             }
             if (staticSortParams.contains(StaticSortParam.TIMEASC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        java.sql.Timestamp timestamp1 = o1.getCreatetime();
-                        java.sql.Timestamp timestamp2 = o2.getCreatetime();
-                        return Long.compare(timestamp1.getTime(), timestamp2.getTime());
-                    }
+                personObjects.sort((o1, o2) -> {
+                    Timestamp timestamp1 = o1.getCreatetime();
+                    Timestamp timestamp2 = o2.getCreatetime();
+                    return Long.compare(timestamp1.getTime(), timestamp2.getTime());
                 });
             }
             if (staticSortParams.contains(StaticSortParam.TIMEDESC)) {
-                Collections.sort(personObjects, new Comparator<PersonObject>() {
-                    @Override
-                    public int compare(PersonObject o1, PersonObject o2) {
-                        java.sql.Timestamp timestamp1 = o1.getCreatetime();
-                        java.sql.Timestamp timestamp2 = o2.getCreatetime();
-                        return Long.compare(timestamp2.getTime(), timestamp1.getTime());
-                    }
+                personObjects.sort((o1, o2) -> {
+                    Timestamp timestamp1 = o1.getCreatetime();
+                    Timestamp timestamp2 = o2.getCreatetime();
+                    return Long.compare(timestamp2.getTime(), timestamp1.getTime());
                 });
             }
         }
